@@ -1,0 +1,36 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Satoshi', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --color-violet: #2600FF;
+  --color-violet-hover: #1a00cc;
+  --color-ink: #030712;
+  --color-slate: #4b5563;
+  --color-fog: #e5e7eb;
+  --color-mist: #d1d5db;
+  --color-cloud: #f9fafb;
+  --color-paper: #ffffff;
+  --color-tint: #f2f2ff;
+}
+
+*, *::before, *::after {
+  font-family: 'Satoshi', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #f9fafb;
+  color: #030712;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+

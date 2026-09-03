@@ -1,0 +1,150 @@
+Build a single-page marketing landing page for "RAG — Regionale Agenturo," a
+local-visibility system for service businesses in the DACH region (Germany,
+Austria, Switzerland). Language: English. Theme: light only.
+
+DESIGN SYSTEM — apply exactly, do not deviate:
+Colors: brand violet #5727e7 (CTAs, bullets, badges, accents ONLY — never
+body text or large fills), ink black #030712 (headlines/primary text),
+slate #4b5563 (body text), fog #e5e7eb (hairline borders/dividers), mist
+#d1d5db (input borders), cloud #f9fafb (page canvas), paper #ffffff (cards/
+nav/inputs), tinted highlight #f2f2ff (badge backgrounds).
+Typography: Satoshi (fallback: Inter or General Sans). 700 for all headlines
+(40-60px), 600 for subheadings/card titles, 500 for buttons/badges, 400 for
+body copy (16-18px).
+Shape: 12px radius on all buttons and inputs, 16px radius on all cards, 8px
+on badges/tags. Shadows: 6%-black only — 0 1px 2px for buttons, 0 4px 16px
+for cards, 0 4px 28px for the transformation-gallery cards only.
+Layout: 1200px max-width container, 64px vertical gaps between sections,
+centered hero stack, alternating/grid feature sections below.
+Do NOT introduce a second accent color. Do NOT use dark/black section
+backgrounds anywhere on the page.
+
+PAGE STRUCTURE (in order):
+
+1. NAV — white bar, hairline bottom border. Logo "RAG" left. Links: Audit,
+   Modules, Compare, Results, FAQ (Satoshi 16/500, #030712). Phone number as
+   plain text (not a button). Right: single filled-violet button "Get a Free
+   Audit."
+
+2. HERO — centered stack. Eyebrow (14px/500, uppercase, slate): "FOR LOCAL
+   BUSINESSES ACROSS GERMANY, AUSTRIA & SWITZERLAND." Headline (60px/700,
+   ink black, centered): "Win Back the Customers Local Competitors Are
+   Taking." Inline platform icons (Google, Google Maps, ChatGPT/Perplexity,
+   Trustpilot) near the headline. Subhead (18px/400, slate): "See exactly
+   where you're invisible on Google, Maps, and AI search — then fix it
+   without hiring another agency to manage." One filled-violet CTA: "Get a
+   Free Audit." Below it, 3 pill badges (violet-on-tint): "Clear Competitive
+   Edge," "Steady New Leads," "Predictable Revenue." Background: a subtle
+   light-gray map graphic with location-pin rating badges (violet pins,
+   ink-black rating text) — decorative, low-opacity, behind the text stack.
+
+3. TRUST ROW — full-bleed white band: "Trusted by 500+ local businesses
+   across the DACH region."
+
+4. PROBLEM SECTION — Section heading (40/700, centered): "One Channel Isn't
+   Where You're Losing Customers." Intro paragraph (18/400, slate,
+   centered, max 2 lines): "Searching for a service takes a few seconds. If
+   a competitor is more visible at the decisive moment, the customer calls
+   them. Here are the primary risk points:" Below: 2×2 grid, each item a
+   violet bullet disc + 16/600 title + 14/400 description:
+   - "You're Ranked #14 While Competitors Fill the Top 3" (Maps)
+   - "ChatGPT Recommends Four Competitors Before It Recommends You" (AI)
+   - "Your Instagram Has Been Quiet for Months — Customers Notice" (social)
+   - "A 3.1-Star Rating From Nine Months Ago Is Still Your First Impression"
+     (reviews)
+   Below the grid, small caption text: "[source needed] 70% of local calls
+   go to the top 3 Google Maps results. [source needed] 80% of customers
+   check social media before contacting a business. [source needed] 85%
+   disregard reviews older than a year."
+
+5. "WHY ONE SERVICE ISN'T ENOUGH" BLOCK — Section heading (40/700,
+   centered): "Why One Service Isn't Enough (But a System Is)." Body
+   paragraph (18/400, slate, centered, max-width ~700px): "You've tried SEO.
+   Maybe an agency ran your Google Ads. Maybe you fixed your website. And it
+   still didn't move the needle — because customers don't search on just
+   one channel. They check Google, scan Maps, ask ChatGPT, read reviews,
+   and scroll your Instagram before they ever call. Fix one and the other
+   four still leak orders. RAG's audit shows exactly which gaps are costing
+   you the most right now — then closes them together, as one system, not
+   five separate fixes fighting each other."
+
+6. SOLUTION SECTION — Section heading (40/700, centered): "A Unified Growth
+   System Built to Capture Local Market Share." Below: 3×2 grid of white
+   cards (16px radius, shadow-md), each with an icon pair and label: "Google
+   Maps & Business Profile," "AI Optimization," "Google & Trustpilot
+   Reviews," "Social Media Presence," "Google & Meta Ads," "Offline
+   Advertising."
+
+7. PROCESS — Section heading (32/700): "4 Simple Steps to Get Predictable
+   Local Leads Without Wasting Your Time." 4-column row, numbered 01-04:
+   "Personal audit" / "Consultation with a manager" / "Turnkey
+   implementation" / "Leads and growth," each with its one-line description.
+
+8. TESTIMONIALS — Section heading (32/700, centered): "8 Calls in Week One.
+   18 Bookings a Week. Ranked in ChatGPT." 3-column white cards (shadow-md),
+   each with initials avatar, name, role, 5-star rating, and quote:
+   - Markus K., Owner, Auto Repair Shop: "I was skeptical because every
+     agency I spoke with told me it takes 6 months to see anything. The
+     team had our initial setup live in just 4 days. By the end of our
+     first week, we tracked 8 direct phone calls from Google Maps. Clear,
+     fast, and completely transparent."
+   - Sabine R., Clinic Director, Cosmetic Dentistry: "We built a new
+     website and ran ads ourselves, but the phone barely rang. During the
+     audit, the team showed us the exact technical gaps where local
+     patients were dropping off. After reconfiguring our setup based on
+     their audit, our weekly booking requests jumped from 3 to 18."
+   - Thomas H., Founder, HVAC/Repair Services: "In a city flooded with
+     contractors, basic SEO wasn't cutting it anymore. The team didn't just
+     push us into the top 3 on Google Maps, they got our services
+     recommended inside ChatGPT and Gemini searches. We are now capturing
+     high-value leads our competitors don't even know exist."
+
+9. TRANSFORMATION GALLERY — Section heading (40/700, centered): "This Is
+   What 'Found First' Actually Looks Like." Small caption below: "Illustrative
+   examples — your results depend on your starting point and market." 4
+   before/after cards (16px radius, shadow-xl — the heaviest shadow on the
+   page), generic "Your Business" placeholder in each, captions:
+   "From Buried on Page 2 to the Top of the Map" / "From Invisible in
+   ChatGPT to Recommended First" / "From a Dead Profile to an Active
+   Storefront" / "From Nowhere Nearby to Impossible to Miss."
+
+10. COMPARISON TABLE — Section heading (32/700): "Stop Paying for
+    Disconnected Tools and Switch to RAG." Two-column comparison table,
+    "Traditional agencies & freelancers" vs "RAG," 7 rows: Unified
+    multi-channel ecosystem / AI search visibility / Automated review
+    collection & reputation management / Online & offline campaign
+    synchronization / Regular analytics & progress reporting / Modular
+    setup / Full GDPR/DSGVO compliance — X for agencies, check for RAG on
+    every row.
+
+11. AUDIT QUIZ — White card on the page canvas (NOT a dark panel), violet
+    progress bar, 5 steps. Intro: "Take a Free 2-Minute Visibility Audit —
+    5 quick questions · Google & AI presence check · A personal walkthrough
+    or growth plan." Steps: location (Munich/Berlin/Hamburg/Frankfurt/Other)
+    → monthly new clients (<10/10-30/30-60/>60) → how clients reach you
+    (word of mouth/Google/social/paid ads/can't answer) → industry (open
+    text) → static AI-check example screen ("We'll Check You in AI Search
+    Right Now" / company-name field / static illustrative result copy,
+    clearly a scripted example, not a live lookup) → concerns (competitor
+    ahead/low leads/irrelevant leads/invisible on Google-AI/tired of
+    contractors) → budget (up to €500/€500-1,500/€1,500-3,000/over
+    €3,000/not ready) → contact form (Name/Phone/Email) → confirmation
+    screen with "Get Breakdown and Action Plan" button.
+
+12. FAQ — accordion, 6 items, headings + full answer text: [pricing
+    structure], [why isn't GBP enough], [how quickly results], [why AI
+    search now], [previous marketing failed], [time required from owner] —
+    use the exact answer copy already approved (not shown again here for
+    length — pull from the approved FAQ copy block).
+
+13. CLOSING CTA — centered band: "Take a Free 2-Minute Visibility Audit" /
+    "Answer 5 questions in 2 minutes to find out your current status on
+    Google and AI, and get a step-by-step growth plan." / filled-violet
+    "Get a Free Audit" button.
+
+14. FOOTER — "RAG — Regionale Agenturo" / tagline: "The unified system for
+    local visibility across Google, AI, and offline channels." Nav column
+    (Audit/Compare/Modules/Results/FAQ). Legal column (Impressum/
+    Datenschutz/DSGVO Compliance/AGB — kept in German, standard for DACH).
+    Contact column (address/phone/email). Copyright line, year 2026.
+    "DSGVO-konform · Made in Deutschland."

@@ -1,0 +1,15 @@
+{
+  "title": "RAG | Local Search, Maps & AI Visibility for DACH Businesses",
+  "description": "RAG helps local businesses across Germany, Austria & Switzerland rank #1 on Google Maps, AI search, and reviews. Take the free 2-minute visibility audit.",
+  "language": "en",
+  "robots": {
+    "index": true
+  },
+  "accessibility": {
+    "addBypassLinks": true,
+    "ignoreReducedMotion": false
+  },
+  "customScripts": {
+    "headEnd": "<script type=\"application/ld+json\">{\"@context\":\"https://schema.org\",\"@type\":\"ProfessionalService\",\"name\":\"RAG — Regionale Agenturo\",\"description\":\"Local visibility system for businesses across Germany, Austria and Switzerland covering Google Maps, AI search, reviews, social, ads and offline advertising.\",\"areaServed\":[\"Germany\",\"Austria\",\"Switzerland\"],\"address\":{\"@type\":\"PostalAddress\",\"streetAddress\":\"Musterstraße 12\",\"postalCode\":\"10115\",\"addressLocality\":\"Berlin\",\"addressCountry\":\"DE\"},\"telephone\":\"+49 30 12345678\",\"email\":\"hallo@rag-agentur.de\"}</script>"
+  }
+}
