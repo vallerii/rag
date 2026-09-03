@@ -666,6 +666,220 @@ function Counter({ to, suffix = '', prefix = '', duration = 1600 }: { to: number
   return <span ref={ref}>{prefix}{v}{suffix}</span>
 }
 
+/** Крупная контурная метка на карте — ставится только в пустые поля, вне текста. */
+function PinMark({ size = 150, color, opacity }: { size?: number; color: string; opacity: number }) {
+  return (
+    <svg width={size} height={size * 1.34} viewBox="0 0 100 134" fill="none" style={{ opacity, display: 'block' }}>
+      <circle cx="50" cy="46" r="45" stroke={color} strokeWidth="1" strokeDasharray="5 11" opacity="0.7" />
+      <circle cx="50" cy="46" r="30" stroke={color} strokeWidth="1" strokeDasharray="3 9" opacity="0.45" />
+      <path d="M50 8c-14.9 0-27 12.1-27 27 0 20.2 27 54 27 54s27-33.8 27-54c0-14.9-12.1-27-27-27z"
+        stroke={color} strokeWidth="2.4" strokeLinejoin="round" />
+      <circle cx="50" cy="35" r="9.5" stroke={color} strokeWidth="2.4" />
+      <path d="M38 108h24" stroke={color} strokeWidth="1.4" opacity="0.5" />
+    </svg>
+  )
+}
+
+/**
+ * Фон секции: спокойный план кварталов + пара магистралей.
+ * Пины живут в боковых полях макета (шире 1620px) либо у нижнего края,
+ * то есть никогда не попадают под текст.
+ */
+function MapBackdrop({ tone = 'dark', shift = 0 }: { tone?: 'dark' | 'light' | 'electric'; shift?: number }) {
+  const isLight = tone === 'light'
+  const base = isLight ? '7,7,12' : '255,255,255'
+  const fine = `rgba(${base},${tone === 'electric' ? 0.1 : isLight ? 0.045 : 0.04})`
+  const bold = `rgba(${base},${tone === 'electric' ? 0.2 : isLight ? 0.09 : 0.085})`
+  const pinColor = isLight ? '#07070C' : '#ffffff'
+  const pinOpacity = tone === 'electric' ? 0.3 : isLight ? 0.11 : 0.16
+
+  return (
+    <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      {/* кварталы: мелкая сетка + опорные линии каждые 4 шага */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: `
+          linear-gradient(90deg, ${bold} 1px, transparent 1px),
+          linear-gradient(0deg, ${bold} 1px, transparent 1px),
+          linear-gradient(90deg, ${fine} 1px, transparent 1px),
+          linear-gradient(0deg, ${fine} 1px, transparent 1px)`,
+        backgroundSize: '376px 376px, 376px 376px, 94px 94px, 94px 94px',
+        backgroundPosition: `${shift}px 0px, 0px ${shift / 2}px, ${shift}px 0px, 0px ${shift / 2}px`,
+      }} />
+
+      {/* магистрали */}
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" fill="none"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+        <g stroke={bold} strokeWidth="1" vectorEffect="non-scaling-stroke">
+          <line x1="-4" y1="86" x2="104" y2="10" />
+          <line x1="-4" y1="34" x2="104" y2="34" />
+        </g>
+      </svg>
+
+      {/* пины — в полях, вне колонки контента */}
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', justifyContent: 'center' }}>
+        <div style={{ position: 'relative', width: '100%', maxWidth: 1240 }}>
+          <div className="mb-pin-side" style={{ position: 'absolute', left: -196, top: '13%' }}>
+            <PinMark size={150} color={pinColor} opacity={pinOpacity} />
+          </div>
+          <div className="mb-pin-side" style={{ position: 'absolute', right: -178, bottom: '16%' }}>
+            <PinMark size={112} color={pinColor} opacity={pinOpacity * 0.8} />
+          </div>
+          <div className="mb-pin-edge" style={{ position: 'absolute', left: '4%', bottom: -78 }}>
+            <PinMark size={124} color={pinColor} opacity={pinOpacity * 0.85} />
+          </div>
+          <div className="mb-pin-edge" style={{ position: 'absolute', right: '7%', bottom: -64 }}>
+            <PinMark size={92} color={pinColor} opacity={pinOpacity * 0.7} />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** Фон-текстура из случайных пересечений — линии под разными углами, скрещивающиеся по полю. */
+function CrossBackdrop({ tone = 'dark' }: { tone?: 'dark' | 'light' }) {
+  const base = tone === 'light' ? '7,7,12' : '255,255,255'
+  // [x1, y1, x2, y2, толщина, прозрачность]
+  const lines: [number, number, number, number, number, number][] = [
+    [-80, 300, 430, -40, 2.6, 0.2],
+    [40, -40, 690, 300, 2, 0.14],
+    [300, 300, 1000, -40, 3, 0.24],
+    [540, -40, 1150, 300, 2, 0.15],
+    [-80, 128, 1280, 44, 2.4, 0.18],
+    [-80, 36, 1280, 196, 2, 0.13],
+    [770, -40, 1280, 232, 2.6, 0.2],
+    [130, 300, 600, -40, 2, 0.12],
+    [880, 300, 1280, 52, 2, 0.16],
+    [-80, 214, 560, 300, 2.4, 0.17],
+    [1010, -40, 1280, 140, 2, 0.13],
+    [200, -40, 260, 300, 2, 0.1],
+    [660, 300, 720, -40, 2.4, 0.14],
+  ]
+  return (
+    <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      <svg viewBox="0 0 1200 260" preserveAspectRatio="xMidYMid slice" fill="none"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+        {lines.map(([x1, y1, x2, y2, w, a], i) => (
+          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
+            stroke={`rgba(${base},${a})`} strokeWidth={w} strokeLinecap="round" />
+        ))}
+      </svg>
+    </div>
+  )
+}
+
+/** Фон секции результатов — ступенчатый график роста в нижней трети. */
+function GrowthBackdrop() {
+  const line = 'rgba(255,255,255,0.2)'
+  const faint = 'rgba(255,255,255,0.11)'
+  const nodes: [number, number][] = [[14, 88], [28, 84], [40, 80], [54, 74], [68, 70], [82, 63], [96, 58]]
+  return (
+    <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" fill="none"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+        <g vectorEffect="non-scaling-stroke">
+          {/* ось */}
+          <line x1="-2" y1="93" x2="102" y2="93" stroke={line} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+          {[6, 18, 30, 42, 54, 66, 78, 90].map(x => (
+            <line key={x} x1={x} y1="93" x2={x} y2="95.4" stroke={line} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+          ))}
+          {/* вертикали от узлов к оси */}
+          {nodes.map(([x, y]) => (
+            <line key={`d${x}`} x1={x} y1={y} x2={x} y2="93" stroke={faint} strokeWidth="1" strokeDasharray="3 6" vectorEffect="non-scaling-stroke" />
+          ))}
+          {/* ступени */}
+          <path d="M2 91 H14 V88 H28 V84 H40 V80 H54 V74 H68 V70 H82 V63 H96 V58 H104"
+            stroke="rgba(255,255,255,0.34)" strokeWidth="3" vectorEffect="non-scaling-stroke" />
+        </g>
+      </svg>
+      {nodes.map(([x, y]) => (
+        <span key={`n${x}`} style={{
+          position: 'absolute', left: `${x}%`, top: `${y}%`, transform: 'translate(-50%,-50%)',
+          width: 9, height: 9, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.5)',
+        }} />
+      ))}
+    </div>
+  )
+}
+
+/** Фон секции аудита — концентрический скан из нижнего правого угла. */
+function ScanBackdrop() {
+  const ring = (step: number, a: number, w = 1) =>
+    `repeating-radial-gradient(circle at 84% 116%, rgba(255,255,255,0) 0 ${step}px, rgba(255,255,255,${a}) ${step}px ${step + w}px)`
+  return (
+    <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: ring(132, 0.14) }} />
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: ring(528, 0.22, 2) }} />
+      <span style={{
+        position: 'absolute', left: '84%', top: '116%', transform: 'translate(-50%,-50%)',
+        width: 18, height: 18, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.3)',
+      }} />
+    </div>
+  )
+}
+
+/** Фон финального CTA — расходящиеся полосы, «развилка» на стыке половин. */
+function ForkBackdrop({ tone, dir }: { tone: 'light' | 'dark'; dir: 'up' | 'down' }) {
+  const c = tone === 'light' ? 'rgba(7,7,12,0.3)' : 'rgba(255,255,255,0.3)'
+  const cSoft = tone === 'light' ? 'rgba(7,7,12,0.16)' : 'rgba(255,255,255,0.16)'
+  const oy = dir === 'up' ? 106 : -6
+  const targets: [number, number][] = dir === 'up'
+    ? [[66, -8], [78, -10], [90, -12], [104, -4], [110, 30]]
+    : [[66, 108], [78, 110], [90, 112], [104, 104], [110, 70]]
+  return (
+    <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" fill="none"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+        {targets.map(([x, y], i) => (
+          <line key={i} x1="102" y1={oy} x2={x} y2={y}
+            stroke={i === 2 ? c : cSoft} strokeWidth={i === 2 ? 3 : 1.6} vectorEffect="non-scaling-stroke" />
+        ))}
+      </svg>
+      <span style={{
+        position: 'absolute', left: '100%', top: `${oy}%`, transform: 'translate(-50%,-50%)',
+        width: 18, height: 18, borderRadius: '50%', border: `2px solid ${c}`,
+      }} />
+    </div>
+  )
+}
+
+/** Фон секции «Die Lücken» — разорванные линии, пропуски складываются в диагональный разлом. */
+function GapsBackdrop() {
+  const rows = 16
+  const lines: React.ReactElement[] = []
+  for (let i = 0; i < rows; i++) {
+    const y = 24 + i * 58
+    const t = i / (rows - 1)
+    const gx = 180 + t * 900 + Math.sin(i * 1.7) * 70      // центр основного пропуска
+    const gw = 200 + Math.sin(i * 0.9) * 90                 // его ширина
+    const op = 0.55 + Math.sin(i * 0.6) * 0.25
+    const a1 = Math.max(0, gx - gw / 2)
+    const a2 = Math.min(1600, gx + gw / 2)
+    lines.push(<line key={`a${i}`} x1="-40" y1={y} x2={a1} y2={y} opacity={op} />)
+    if (i % 3 === 1) {
+      // второй, короткий разрыв ближе к правому краю
+      const bx = 1180 + Math.sin(i) * 120
+      lines.push(<line key={`b${i}`} x1={a2} y1={y} x2={bx - 55} y2={y} opacity={op} />)
+      lines.push(<line key={`c${i}`} x1={bx + 55} y1={y} x2="1640" y2={y} opacity={op} />)
+    } else {
+      lines.push(<line key={`b${i}`} x1={a2} y1={y} x2="1640" y2={y} opacity={op} />)
+    }
+    // засечки на краях разрыва
+    lines.push(<line key={`t1${i}`} x1={a1} y1={y - 6} x2={a1} y2={y + 6} opacity={op * 0.8} />)
+    lines.push(<line key={`t2${i}`} x1={a2} y1={y - 6} x2={a2} y2={y + 6} opacity={op * 0.8} />)
+  }
+
+  return (
+    <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      <svg width="100%" height="100%" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" fill="none"
+        style={{ display: 'block', opacity: 0.13 }}>
+        <g stroke="#ffffff" strokeWidth="1" strokeLinecap="square">{lines}</g>
+      </svg>
+    </div>
+  )
+}
+
 /** Small uppercase section marker with a hairline. */
 function Kicker({ children, tone = 'dark' }: { children: React.ReactNode; tone?: 'dark' | 'light' }) {
   const c = tone === 'dark' ? '#07070C' : '#ffffff'
@@ -1024,7 +1238,6 @@ function RankPanel() {
 
   return (
     <div className="floaty" style={{ position: 'relative', width: '100%', maxWidth: 420 }}>
-      <div style={{ position: 'absolute', inset: '-16% -12%', background: 'radial-gradient(closest-side, rgba(38,0,255,0.45), transparent 72%)', filter: 'blur(28px)', pointerEvents: 'none' }} />
       <div style={{
         position: 'relative', backgroundColor: '#fff', borderRadius: 24, padding: 16,
         boxShadow: '0 40px 90px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)',
@@ -1093,9 +1306,7 @@ function Hero() {
         position: 'relative', backgroundColor: 'var(--ink)', color: '#fff',
         padding: 'clamp(126px, 14vh, 178px) clamp(20px, 4vw, 48px) 0', overflow: 'hidden',
       }}>
-        <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.75 }} />
-        <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: '70vw', height: '70vw', maxWidth: 900, maxHeight: 900, background: 'radial-gradient(closest-side, rgba(38,0,255,0.5), transparent 70%)', filter: 'blur(20px)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '-30%', left: '-15%', width: '60vw', height: '60vw', maxWidth: 700, maxHeight: 700, background: 'radial-gradient(closest-side, rgba(107,75,255,0.22), transparent 70%)', pointerEvents: 'none' }} />
+        <MapBackdrop tone="dark" />
 
         <div style={{ ...SHELL, position: 'relative' }}>
           <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(360px, 0.8fr)', gap: 'clamp(36px, 4vw, 64px)', alignItems: 'center', paddingBottom: 'clamp(56px, 7vw, 90px)' }}>
@@ -1196,25 +1407,11 @@ const problems = [
 
 function ProblemSection() {
   const [active, setActive] = useState(0)
-  const itemRefs = useRef<(HTMLDivElement | null)[]>([])
-
-  useEffect(() => {
-    const observers: IntersectionObserver[] = []
-    itemRefs.current.forEach((el, i) => {
-      if (!el) return
-      const obs = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setActive(i) }, { threshold: 0.55 })
-      obs.observe(el)
-      observers.push(obs)
-    })
-    return () => observers.forEach(o => o.disconnect())
-  }, [])
-
   const ActiveIllust = problems[active].Illust
 
   return (
-    <section id="audit" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden' }}>
-      <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.5 }} />
-      <div style={{ position: 'absolute', top: '30%', left: '-10%', width: 640, height: 640, background: 'radial-gradient(closest-side, rgba(38,0,255,0.28), transparent 70%)', pointerEvents: 'none' }} />
+    <section id="audit" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'clip' }}>
+      <GapsBackdrop />
 
       <div style={{ ...SHELL, position: 'relative' }}>
         <Reveal><Kicker tone="light">Die Lücken</Kicker></Reveal>
@@ -1241,11 +1438,10 @@ function ProblemSection() {
           <div className="problem-sticky" style={{ position: 'relative' }}>
           <div style={{ position: 'sticky', top: 110 }}>
             <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', inset: '-8%', background: 'radial-gradient(closest-side, rgba(38,0,255,0.35), transparent 72%)', filter: 'blur(24px)', pointerEvents: 'none' }} />
               <div key={active} style={{
                 position: 'relative', backgroundColor: '#fff', borderRadius: 22, padding: 12,
                 boxShadow: '0 40px 80px rgba(0,0,0,0.45)',
-                animation: `fadeSwap 0.6s ${EASE} both`,
+                animation: `fadeSwap 0.5s ${EASE} both`,
               }}>
                 <ActiveIllust />
               </div>
@@ -1255,42 +1451,45 @@ function ProblemSection() {
                 {String(active + 1).padStart(2, '0')} / {String(problems.length).padStart(2, '0')}
               </span>
               <div style={{ flex: 1, height: 2, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 2, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${((active + 1) / problems.length) * 100}%`, backgroundColor: 'var(--electric-2)', transition: `width 0.6s ${EASE}` }} />
+                <div style={{ height: '100%', width: `${((active + 1) / problems.length) * 100}%`, backgroundColor: 'var(--electric-2)', transition: `width 0.5s ${EASE}` }} />
               </div>
             </div>
             </div>
           </div>
 
-          {/* RIGHT — scrolling statements */}
+          {/* RIGHT — список; переключение только по наведению / клику */}
           <div>
             {problems.map((p, i) => {
               const on = active === i
               return (
-                <div
+                <button
                   key={p.tag}
-                  ref={el => { itemRefs.current[i] = el }}
+                  type="button"
                   onMouseEnter={() => setActive(i)}
+                  onFocus={() => setActive(i)}
+                  onClick={() => setActive(i)}
+                  aria-expanded={on}
                   style={{
-                    padding: 'clamp(28px, 3vw, 44px) 0',
-                    borderTop: '1px solid var(--line-dark)',
-                    cursor: 'default',
-                    opacity: on ? 1 : 0.42,
-                    transition: 'opacity 0.5s ease',
+                    display: 'block', width: '100%', textAlign: 'left',
+                    background: 'none', border: 'none', borderTop: '1px solid var(--line-dark)',
+                    padding: 'clamp(26px, 2.8vw, 40px) 0',
+                    fontFamily: 'inherit', cursor: 'pointer', color: 'inherit',
+                    opacity: on ? 1 : 0.32,
+                    transform: on ? 'translateX(10px)' : 'none',
+                    transition: `opacity 0.45s ease, transform 0.55s ${EASE}`,
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 14 }}>
-                    <span className="display" style={{ fontSize: 15, color: on ? 'var(--electric-2)' : 'rgba(255,255,255,0.35)', transition: 'color 0.5s ease', letterSpacing: '0.06em' }}>
+                  <span style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 14 }}>
+                    <span className="display" style={{ fontSize: 15, color: on ? 'var(--electric-2)' : 'rgba(255,255,255,0.35)', transition: 'color 0.45s ease', letterSpacing: '0.06em' }}>
                       {String(i + 1).padStart(2, '0')}
                     </span>
                     <span className="eyebrow" style={{ color: 'rgba(255,255,255,0.45)', fontSize: 10.5 }}>{p.tag}</span>
-                  </div>
-                  <h3 className="display" style={{ fontSize: 'clamp(21px, 2.3vw, 32px)', lineHeight: 1.15, marginBottom: 14, color: '#fff' }}>
+                  </span>
+                  <span className="display" style={{ display: 'block', fontSize: 'clamp(21px, 2.3vw, 32px)', lineHeight: 1.15, marginBottom: 14, color: '#fff' }}>
                     {p.heading}
-                  </h3>
-                  <div style={{ overflow: 'hidden', maxHeight: on ? 320 : 0, transition: `max-height 0.7s ${EASE}` }}>
-                    <p style={{ fontSize: 14.5, lineHeight: 1.85, color: 'rgba(255,255,255,0.55)', margin: 0, maxWidth: 560 }}>{p.body}</p>
-                  </div>
-                </div>
+                  </span>
+                  <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.85, color: 'rgba(255,255,255,0.55)', maxWidth: 560 }}>{p.body}</span>
+                </button>
               )
             })}
             <div style={{ borderTop: '1px solid var(--line-dark)', paddingTop: 'clamp(32px, 4vw, 48px)' }}>
@@ -1632,7 +1831,7 @@ function SolutionSection() {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap',
               position: 'relative', overflow: 'hidden',
             }}>
-              <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.6 }} />
+              <CrossBackdrop tone="dark" />
               <div style={{ position: 'relative', maxWidth: 560 }}>
                 <h3 className="display" style={{ fontSize: 'clamp(22px, 2.6vw, 34px)', marginBottom: 12 }}>Nicht sicher, wo Sie anfangen sollen?</h3>
                 <p style={{ fontSize: 14.5, lineHeight: 1.7, color: 'rgba(255,255,255,0.55)', margin: 0 }}>
@@ -1934,7 +2133,7 @@ function RealResults() {
 
   return (
     <section id="results" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: '-10%', right: '-5%', width: 700, height: 700, background: 'radial-gradient(closest-side, rgba(38,0,255,0.3), transparent 70%)', pointerEvents: 'none' }} />
+      <GrowthBackdrop />
 
       <div style={{ ...SHELL, position: 'relative' }}
         onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
@@ -2004,7 +2203,6 @@ function RealResults() {
           </div>
 
           <div style={{ position: 'relative' }}>
-            <div style={{ position: 'absolute', inset: '-6%', background: 'radial-gradient(closest-side, rgba(38,0,255,0.35), transparent 72%)', filter: 'blur(24px)', pointerEvents: 'none' }} />
             <div style={{ position: 'relative', backgroundColor: '#fff', borderRadius: 22, padding: 12, boxShadow: '0 40px 80px rgba(0,0,0,0.45)' }}>
               <c.Illust />
             </div>
@@ -2027,7 +2225,7 @@ function RealResults() {
 // AUDIT QUIZ
 // ─────────────────────────────────────────────────────────────────────────────
 function AuditQuiz() {
-  const [step, setStep] = useState(0)
+  const [step, setStep] = useState(1)
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [companyName, setCompanyName] = useState('')
   const [industry, setIndustry] = useState('')
@@ -2053,12 +2251,11 @@ function AuditQuiz() {
     </button>
   )
 
-  const reset = () => { setStep(0); setAnswers({}); setName(''); setPhone(''); setEmail(''); setCompanyName(''); setIndustry(''); setBookedQuizDay(null); setBookedQuizSlot(null) }
+  const reset = () => { setStep(1); setAnswers({}); setName(''); setPhone(''); setEmail(''); setCompanyName(''); setIndustry(''); setBookedQuizDay(null); setBookedQuizSlot(null) }
 
   return (
     <section id="audit-quiz" style={{ backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(80px, 10vw, 130px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden' }}>
-      <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.5 }} />
-      <div style={{ position: 'absolute', top: '-30%', left: '10%', width: 700, height: 700, background: 'radial-gradient(closest-side, rgba(255,255,255,0.22), transparent 70%)', pointerEvents: 'none' }} />
+      <ScanBackdrop />
       <div className="audit-grid" style={{ ...SHELL, position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0, 500px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
         <div className="audit-copy">
           <Reveal>
@@ -2101,16 +2298,8 @@ function AuditQuiz() {
             </div>
           )}
 
-          {step === 0 && (
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.7, marginBottom: 22 }}>Beantworten Sie 5 kurze Fragen, um genau herauszufinden, wo Sie unsichtbar sind&nbsp;&nbsp;und erhalten Sie einen Schritt-für-Schritt-Wachstumsplan</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <button onClick={() => setStep(1)} style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 14, padding: '14px 28px', borderRadius: 999, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Kostenloses Audit starten</button>
-                {/* Hidden anchor so the hero "Book a Call" button can trigger booking directly */}
-                <button id="quiz-book-direct" onClick={() => setStep(9)} style={{ backgroundColor: '#fff', color: '#2600FF', fontWeight: 500, fontSize: 14, padding: '12px 26px', borderRadius: 12, border: '1.5px solid #c4b5fd', cursor: 'pointer', fontFamily: 'inherit', display: 'none' }}>Direkt zur Buchung</button>
-              </div>
-            </div>
-          )}
+          {/* Скрытый якорь: кнопка «Anruf buchen» в hero может открыть шаг брони напрямую */}
+          <button id="quiz-book-direct" onClick={() => setStep(9)} style={{ display: 'none' }}>Direkt zur Buchung</button>
           {step === 1 && <><h3 style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 18 }}>In welcher Stadt sind Sie ansässig?</h3>{['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Sonstige'].map(c => <Btn key={c} label={c} onClick={() => pick('city', c)} />)}</>}
           {step === 2 && <><h3 style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 18 }}>Wie viele neue Kunden pro Monat?</h3>{['Weniger als 10', '10–30', '30–60', 'Mehr als 60'].map(c => <Btn key={c} label={c} onClick={() => pick('clients', c)} />)}</>}
           {step === 3 && <><h3 style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 18 }}>Wie erreichen Sie die meisten Kunden?</h3>{['Mundpropaganda', 'Google-Suche', 'Social Media', 'Bezahlte Anzeigen', "Ich bin mir nicht sicher"].map(c => <Btn key={c} label={c} onClick={() => pick('channel', c)} />)}</>}
@@ -2324,7 +2513,7 @@ function DualCTA() {
             position: 'relative', overflow: 'hidden',
             transition: 'background-color 0.6s ease',
           }}>
-          <div className="grid-bg-light" style={{ position: 'absolute', inset: 0, opacity: hover === 0 ? 1 : 0.35, transition: 'opacity 0.7s ease' }} />
+          <div style={{ position: 'absolute', inset: 0, opacity: hover === 0 ? 1 : 0.8, transition: 'opacity 0.7s ease' }}><ForkBackdrop tone="light" dir="down" /></div>
           <div style={{ position: 'relative', maxWidth: 620 }}>
             <Reveal><Kicker>Schritt eins</Kicker></Reveal>
             <MaskHeading
@@ -2352,12 +2541,7 @@ function DualCTA() {
             display: 'flex', flexDirection: 'column', justifyContent: 'center',
             position: 'relative', overflow: 'hidden',
           }}>
-          <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: hover === 1 ? 1 : 0.4, transition: 'opacity 0.7s ease' }} />
-          <div style={{
-            position: 'absolute', bottom: '-25%', right: '-15%', width: 560, height: 560,
-            background: 'radial-gradient(closest-side, rgba(38,0,255,0.45), transparent 70%)',
-            transform: hover === 1 ? 'scale(1.15)' : 'scale(1)', transition: `transform 1.1s ${EASE}`, pointerEvents: 'none',
-          }} />
+          <div style={{ position: 'absolute', inset: 0, opacity: hover === 1 ? 1 : 0.8, transition: 'opacity 0.7s ease' }}><ForkBackdrop tone="dark" dir="up" /></div>
           <div style={{ position: 'relative', maxWidth: 620 }}>
             <Reveal><Kicker tone="light">Neugründung</Kicker></Reveal>
             <MaskHeading
@@ -2697,8 +2881,7 @@ function ServicePage({ slug }: { slug: string }) {
     <>
       <Nav />
       <section style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
-        <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.6 }} />
-        <div style={{ position: 'absolute', top: '-40%', right: '-10%', width: 700, height: 700, background: 'radial-gradient(closest-side, rgba(38,0,255,0.5), transparent 70%)', pointerEvents: 'none' }} />
+        <MapBackdrop tone="dark" shift={120} />
         <div style={{ maxWidth: 820, margin: '0 auto', position: 'relative' }}>
           <p className="eyebrow" style={{ color: 'var(--electric-2)', marginBottom: 22 }}>{data.kicker}</p>
           <h1 className="display h-lg" style={{ marginBottom: 22 }}>{data.heroTitle}</h1>
@@ -2846,6 +3029,14 @@ const responsiveCSS = `
 
 @media (min-width: 769px) {
   .show-mobile { display: none !important; }
+}
+
+/* пины фона: в боковых полях, если они есть, иначе у нижнего края */
+.mb-pin-side { display: block; }
+.mb-pin-edge { display: none; }
+@media (max-width: 1660px) {
+  .mb-pin-side { display: none; }
+  .mb-pin-edge { display: block; }
 }
 
 /* legacy reveal (service pages) */
