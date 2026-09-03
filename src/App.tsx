@@ -1795,11 +1795,21 @@ function AuditQuiz() {
 
   return (
     <section id="audit-quiz" style={{ backgroundColor: '#f9fafb', padding: '80px 24px' }}>
-      <div style={{ maxWidth: 520, margin: '0 auto' }}>
-        <h2 style={{ fontSize: 'clamp(20px, 3.5vw, 28px)', fontWeight: 700, color: '#030712', textAlign: 'center', marginBottom: 8, letterSpacing: '-0.5px' }}>
-          Kostenloses <span style={{ color: '#2600FF' }}>2-Minuten-Sichtbarkeits-Audit</span>
-        </h2>
-        <p style={{ fontSize: 14, fontWeight: 400, color: '#4b5563', textAlign: 'center', marginBottom: 24 }}>&thinsp;5 Fragen · Google- &amp; KI-Präsenz-Check · Persönlicher Wachstumsplan</p>
+      <div className="audit-grid" style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 480px', gap: 56, alignItems: 'center' }}>
+        <div className="audit-copy" style={{ textAlign: 'left' }}>
+          <h2 style={{ fontSize: 'clamp(24px, 3.5vw, 34px)', fontWeight: 700, color: '#030712', marginBottom: 14, letterSpacing: '-0.5px' }}>
+            Kostenloses <span style={{ color: '#2600FF' }}>2-Minuten-Sichtbarkeits-Audit</span>
+          </h2>
+          <p style={{ fontSize: 15, fontWeight: 400, color: '#4b5563', marginBottom: 26, lineHeight: 1.7 }}>&thinsp;5 Fragen · Google- &amp; KI-Präsenz-Check · Persönlicher Wachstumsplan</p>
+          <div className="audit-bullets" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {['Kein Verkaufsgespräch, nur Ihre Ergebnisse', 'Fertig in unter 2 Minuten', 'Persönlicher Plan innerhalb von 24 Stunden'].map(b => (
+              <div key={b} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: '50%', backgroundColor: '#f2f2ff', color: '#2600FF', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>✓</span>
+                <span style={{ fontSize: 14, color: '#374151' }}>{b}</span>
+              </div>
+            ))}
+          </div>
+        </div>
         <div style={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: 20, padding: '32px 28px', boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}>
           {step > 0 && step <= TOTAL && (
             <div style={{ marginBottom: 22 }}>
@@ -1929,25 +1939,21 @@ const explainedItems = [
 ]
 
 function LocalVisibilityExplained() {
-  const [open, setOpen] = useState<number | null>(null)
   return (
     <section style={{ backgroundColor: '#fff', padding: '80px 24px' }}>
-      <div style={{ maxWidth: 760, margin: '0 auto' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <h2 className="reveal" style={{ fontSize: 'clamp(20px, 3.5vw, 30px)', fontWeight: 700, color: '#030712', textAlign: 'center', marginBottom: 10, letterSpacing: '-0.5px' }}>
           Lokale Sichtbarkeit, <span style={{ color: '#2600FF' }}>einfach erklärt</span>
         </h2>
         <p style={{ fontSize: 15, color: '#4b5563', textAlign: 'center', marginBottom: 40, lineHeight: 1.65 }}>Die kurzen Antworten auf die Fragen, die uns in fast jedem Erstgespräch gestellt werden.</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div className="explained-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           {explainedItems.map((item, i) => (
-            <div key={i} style={{ backgroundColor: '#f9fafb', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-              <button onClick={() => setOpen(open === i ? null : i)}
-                style={{ width: '100%', padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', gap: 16, fontFamily: 'inherit' }}>
-                <span style={{ fontWeight: 600, fontSize: 15, color: '#030712', lineHeight: 1.4 }}>{item.q}</span>
-                <IconChevron open={open === i} />
-              </button>
-              <div style={{ overflow: 'hidden', maxHeight: open === i ? 300 : 0, transition: 'max-height 0.3s ease' }}>
-                <p style={{ margin: 0, padding: '0 22px 18px', fontSize: 14, color: '#4b5563', lineHeight: 1.75 }}>{item.a}</p>
-              </div>
+            <div key={i} style={{ backgroundColor: '#f9fafb', borderRadius: 16, border: '1px solid #e5e7eb', borderLeft: '3px solid #2600FF', padding: '26px 26px 24px' }}>
+              <span style={{ display: 'inline-block', fontSize: 12, fontWeight: 700, color: '#2600FF', backgroundColor: '#f2f2ff', border: '1px solid #ddd6fe', borderRadius: 6, padding: '2px 8px', marginBottom: 12, letterSpacing: '0.04em' }}>
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <h3 style={{ fontWeight: 600, fontSize: 16, color: '#030712', lineHeight: 1.4, marginBottom: 10 }}>{item.q}</h3>
+              <p style={{ margin: 0, fontSize: 14, color: '#4b5563', lineHeight: 1.75 }}>{item.a}</p>
             </div>
           ))}
         </div>
@@ -1960,12 +1966,12 @@ function FAQ() {
   const [open, setOpen] = useState<number | null>(null)
   return (
     <section id="faq" style={{ backgroundColor: '#fff', padding: '80px 24px' }}>
-      <div style={{ maxWidth: 700, margin: '0 auto' }}>
+      <div style={{ maxWidth: 960, margin: '0 auto' }}>
         <h2 style={{ fontSize: 'clamp(20px, 3.5vw, 28px)', fontWeight: 700, color: '#030712', textAlign: 'center', marginBottom: 10, letterSpacing: '-0.5px' }}>
           Häufige Fragen <span style={{ color: '#2600FF' }}>beantwortet</span>
         </h2>
         <p style={{ fontSize: 14, fontWeight: 400, color: '#4b5563', textAlign: 'center', marginBottom: 36 }}>Alles, was Sie wissen müssen, bevor Sie Ihr Audit starten</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="faq-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, alignItems: 'start' }}>
           {faqs.map((f, i) => (
             <div key={i} style={{ border: '1px solid #e5e7eb', borderRadius: 13, overflow: 'hidden', backgroundColor: '#f9fafb' }}>
               <button onClick={() => setOpen(open === i ? null : i)} style={{ width: '100%', padding: '16px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}>
@@ -1982,61 +1988,58 @@ function FAQ() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CLOSING CTA
+// CLOSING CTA (audit + new-business, side by side on desktop)
 // ─────────────────────────────────────────────────────────────────────────────
-function ClosingCTA() {
+function DualCTA() {
+  const [modal, setModal] = useState(false)
+  const cardStyle: React.CSSProperties = { borderRadius: 20, padding: '48px 36px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }
   return (
-    <section style={{ backgroundColor: '#f2f2ff', padding: '80px 24px', textAlign: 'center', borderTop: '1px solid #ddd6fe' }}>
-      <div style={{ maxWidth: 520, margin: '0 auto' }}>
-        <h2 style={{ fontSize: 'clamp(22px, 4vw, 32px)', fontWeight: 700, color: '#030712', marginBottom: 12, letterSpacing: '-0.5px' }}>
-          Machen Sie das kostenlose <span style={{ color: '#2600FF' }}>2-Minuten-Sichtbarkeits-Audit</span>
-        </h2>
-        <p style={{ fontSize: 14, fontWeight: 400, color: '#4b5563', marginBottom: 26, lineHeight: 1.7 }}>
-          Beantworten Sie in 2 Minuten 5 Fragen, um Ihren aktuellen Status bei Google und KI zu erfahren, und erhalten Sie einen Schritt-für-Schritt-Wachstumsplan
-        </p>
-        <a href="#audit-quiz" className="cta-pulse" style={{ display: 'inline-block', backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 15, padding: '13px 30px', borderRadius: 12, textDecoration: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.12)', transition: 'background 0.15s' }}
-          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1a00cc')}
-          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2600FF')}>
-          Kostenloses Audit erhalten
-        </a>
-      </div>
-    </section>
+    <>
+      {modal && <BookCallModal onClose={() => setModal(false)} />}
+      <section style={{ backgroundColor: '#fff', padding: '80px 24px', borderTop: '1px solid #e5e7eb' }}>
+        <div className="dual-cta-grid" style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28, alignItems: 'stretch' }}>
+          <div style={{ ...cardStyle, backgroundColor: '#f2f2ff', border: '1px solid #ddd6fe' }}>
+            <h2 style={{ fontSize: 'clamp(20px, 3vw, 28px)', fontWeight: 700, color: '#030712', marginBottom: 12, letterSpacing: '-0.5px' }}>
+              Machen Sie das kostenlose <span style={{ color: '#2600FF' }}>2-Minuten-Sichtbarkeits-Audit</span>
+            </h2>
+            <p style={{ fontSize: 14, fontWeight: 400, color: '#4b5563', marginBottom: 26, lineHeight: 1.7 }}>
+              Beantworten Sie in 2 Minuten 5 Fragen, um Ihren aktuellen Status bei Google und KI zu erfahren, und erhalten Sie einen Schritt-für-Schritt-Wachstumsplan
+            </p>
+            <a href="#audit-quiz" className="cta-pulse" style={{ display: 'inline-block', backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 15, padding: '13px 30px', borderRadius: 12, textDecoration: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.12)', transition: 'background 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1a00cc')}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2600FF')}>
+              Kostenloses Audit erhalten
+            </a>
+          </div>
+          <div style={{ ...cardStyle, backgroundColor: '#f9fafb', border: '1px solid #e5e7eb' }}>
+            <span style={{ display: 'inline-block', backgroundColor: '#f2f2ff', color: '#2600FF', fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 8, border: '1px solid #ddd6fe', marginBottom: 20, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+              Neugründung
+            </span>
+            <h2 style={{ fontSize: 'clamp(20px, 3vw, 28px)', fontWeight: 700, color: '#030712', marginBottom: 14, letterSpacing: '-0.4px', lineHeight: 1.3 }}>
+              Starten Sie bei null und wollen{' '}
+              <span style={{ color: '#2600FF' }}>lokale Sichtbarkeit von Anfang an richtig aufbauen?</span>
+            </h2>
+            <p style={{ fontSize: 15, fontWeight: 400, color: '#4b5563', lineHeight: 1.7, marginBottom: 28 }}>
+              Keine Bewertungen, keine Google-Präsenz, keine Social-Media-Follower. Kein Problem. Buchen Sie einen Anruf, und wir entwickeln von Tag eins an ein Sichtbarkeitssystem für Ihre Branche und Ihre Stadt.
+            </p>
+            <button
+              onClick={() => setModal(true)}
+              style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 600, fontSize: 15, padding: '13px 28px', borderRadius: 12, border: 'none', cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 1px 2px rgba(0,0,0,0.12)', transition: 'background 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1a00cc')}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2600FF')}>
+              Kostenloses Beratungsgespräch buchen
+            </button>
+            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 12 }}>Kein Audit nötig. Nur ein Gespräch über Ihre Ziele.</p>
+          </div>
+        </div>
+      </section>
+    </>
   )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FOOTER
 // ─────────────────────────────────────────────────────────────────────────────
-function NewBusinessBlock() {
-  const [modal, setModal] = useState(false)
-  return (
-    <>
-      {modal && <BookCallModal onClose={() => setModal(false)} />}
-      <section style={{ backgroundColor: '#fff', borderTop: '1px solid #e5e7eb', padding: '64px 24px' }}>
-        <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
-          <span style={{ display: 'inline-block', backgroundColor: '#f2f2ff', color: '#2600FF', fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 8, border: '1px solid #ddd6fe', marginBottom: 20, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-            Neugründung
-          </span>
-          <h2 style={{ fontSize: 'clamp(20px, 3.5vw, 30px)', fontWeight: 700, color: '#030712', marginBottom: 14, letterSpacing: '-0.4px', lineHeight: 1.3 }}>
-            Starten Sie bei null und wollen<br/>
-            <span style={{ color: '#2600FF' }}>lokale Sichtbarkeit von Anfang an richtig aufbauen?</span>
-          </h2>
-          <p style={{ fontSize: 15, fontWeight: 400, color: '#4b5563', lineHeight: 1.7, marginBottom: 28, maxWidth: 480, margin: '0 auto 28px' }}>
-            Keine Bewertungen, keine Google-Präsenz, keine Social-Media-Follower. Kein Problem. Buchen Sie einen Anruf, und wir entwickeln von Tag eins an ein Sichtbarkeitssystem für Ihre Branche und Ihre Stadt.
-          </p>
-          <button
-            onClick={() => setModal(true)}
-            style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 600, fontSize: 15, padding: '13px 28px', borderRadius: 12, border: 'none', cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 1px 2px rgba(0,0,0,0.12)', transition: 'background 0.15s' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1a00cc')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2600FF')}>
-            Kostenloses Beratungsgespräch buchen
-          </button>
-          <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 12 }}>Kein Audit nötig. Nur ein Gespräch über Ihre Ziele.</p>
-        </div>
-      </section>
-    </>
-  )
-}
 
 function Footer() {
   return (
@@ -2442,6 +2445,12 @@ const responsiveCSS = `
   .problem-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
   .process-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
   .about-grid { grid-template-columns: 1fr !important; gap: 36px !important; }
+  .audit-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+  .audit-copy { text-align: center !important; }
+  .audit-bullets > div { justify-content: center !important; }
+  .explained-grid { grid-template-columns: 1fr !important; }
+  .faq-grid { grid-template-columns: 1fr !important; }
+  .dual-cta-grid { grid-template-columns: 1fr !important; }
 }
 @media (min-width: 769px) {
   .show-mobile { display: none !important; }
@@ -2660,8 +2669,7 @@ function LandingPage() {
       <AuditQuiz />
       <LocalVisibilityExplained />
       <FAQ />
-      <ClosingCTA />
-      <NewBusinessBlock />
+      <DualCTA />
       <Footer />
     </>
   )
