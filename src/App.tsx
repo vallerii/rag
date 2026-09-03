@@ -602,6 +602,128 @@ function PerplexityLogo() {
 // ─────────────────────────────────────────────────────────────────────────────
 // SHARED: booking days + SlotPicker (reused in nav modal and audit quiz)
 // ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// MOTION / LAYOUT HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+const EASE = 'cubic-bezier(0.16,1,0.3,1)'
+const SHELL: React.CSSProperties = { maxWidth: 1240, margin: '0 auto', width: '100%' }
+
+function useInView(threshold = 0.15) {
+  const ref = useRef<any>(null)
+  const [seen, setSeen] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setSeen(true); obs.disconnect() } }, { threshold })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [threshold])
+  return { ref, seen }
+}
+
+function Reveal({ children, delay = 0, style, className = '', threshold = 0.15 }: {
+  children: React.ReactNode; delay?: number; style?: React.CSSProperties; className?: string; threshold?: number
+}) {
+  const { ref, seen } = useInView(threshold)
+  return (
+    <div ref={ref} className={`rv ${seen ? 'in' : ''} ${className}`} style={{ ...style, ['--d' as any]: `${delay}s` }}>
+      {children}
+    </div>
+  )
+}
+
+/** Headline that reveals line by line behind a mask. Pass an array of lines. */
+function MaskHeading({ lines, className = '', style, delay = 0 }: {
+  lines: React.ReactNode[]; className?: string; style?: React.CSSProperties; delay?: number
+}) {
+  const { ref, seen } = useInView(0.2)
+  return (
+    <h2 ref={ref} className={`mask display ${seen ? 'in' : ''} ${className}`} style={style}>
+      {lines.map((l, i) => (
+        <span key={i} className="mask-line">
+          <span style={{ ['--d' as any]: `${delay + i * 0.09}s` }}>{l}</span>
+        </span>
+      ))}
+    </h2>
+  )
+}
+
+function Counter({ to, suffix = '', prefix = '', duration = 1600 }: { to: number; suffix?: string; prefix?: string; duration?: number }) {
+  const { ref, seen } = useInView(0.4)
+  const [v, setV] = useState(0)
+  useEffect(() => {
+    if (!seen) return
+    let raf = 0
+    const t0 = performance.now()
+    const tick = (t: number) => {
+      const p = Math.min((t - t0) / duration, 1)
+      setV(Math.round(to * (1 - Math.pow(1 - p, 3))))
+      if (p < 1) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [seen, to, duration])
+  return <span ref={ref}>{prefix}{v}{suffix}</span>
+}
+
+/** Small uppercase section marker with a hairline. */
+function Kicker({ children, tone = 'dark' }: { children: React.ReactNode; tone?: 'dark' | 'light' }) {
+  const c = tone === 'dark' ? '#07070C' : '#ffffff'
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <span style={{ width: 28, height: 1, backgroundColor: 'var(--electric)' }} />
+      <p className="eyebrow" style={{ color: c, opacity: 0.55 }}>{children}</p>
+    </div>
+  )
+}
+
+/** Scroll progress 0..1 through an element. */
+function useScrollProgress() {
+  const ref = useRef<any>(null)
+  const [p, setP] = useState(0)
+  useEffect(() => {
+    const onScroll = () => {
+      const el = ref.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      const vh = window.innerHeight
+      const total = r.height + vh * 0.4
+      const done = vh * 0.8 - r.top
+      setP(Math.max(0, Math.min(1, done / total)))
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll) }
+  }, [])
+  return { ref, p }
+}
+
+const PLATFORMS: { Logo: React.ComponentType; name: string }[] = [
+  { Logo: GLogo, name: 'Google' },
+  { Logo: GMapsLogo, name: 'Google Maps' },
+  { Logo: ChatGPTLogo, name: 'ChatGPT' },
+  { Logo: PerplexityLogo, name: 'Perplexity' },
+  { Logo: TrustpilotLogo, name: 'Trustpilot' },
+]
+
+function PlatformMarquee({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
+  const col = tone === 'light' ? 'rgba(255,255,255,0.55)' : 'rgba(7,7,12,0.5)'
+  const items = [...PLATFORMS, ...PLATFORMS, ...PLATFORMS, ...PLATFORMS]
+  const Track = () => (
+    <div className="marquee-track" aria-hidden>
+      {items.map(({ Logo, name }, i) => (
+        <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap' }}>
+          <Logo />
+          <span style={{ fontSize: 13, fontWeight: 500, color: col, letterSpacing: '-0.01em' }}>{name}</span>
+          <span style={{ color: 'var(--electric)', fontSize: 11, marginLeft: 6 }}>◆</span>
+        </span>
+      ))}
+    </div>
+  )
+  return <div className="marquee"><Track /><Track /></div>
+}
+
 function generateBookingDays() {
   const days: { label: string; date: string }[] = []
   const d = new Date()
@@ -631,7 +753,7 @@ function SlotPicker({ onConfirm }: { onConfirm: (day: { label: string; date: str
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginBottom: 16, paddingBottom: 4 }}>
         {days.map((d, i) => (
           <button key={i} onClick={() => { setSelDay(i); setSelSlot(null) }}
-            style={{ flexShrink: 0, padding: '7px 12px', borderRadius: 10, border: `1.5px solid ${selDay === i ? '#2600FF' : '#e5e7eb'}`, backgroundColor: selDay === i ? '#f2f2ff' : '#f9fafb', color: selDay === i ? '#2600FF' : '#4b5563', fontWeight: 600, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
+            style={{ flexShrink: 0, padding: '8px 14px', borderRadius: 999, border: `1px solid ${selDay === i ? '#2600FF' : 'rgba(7,7,12,0.14)'}`, backgroundColor: selDay === i ? '#f2f2ff' : '#f9fafb', color: selDay === i ? '#2600FF' : '#4b5563', fontWeight: 600, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
             {d.label}
           </button>
         ))}
@@ -641,7 +763,7 @@ function SlotPicker({ onConfirm }: { onConfirm: (day: { label: string; date: str
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 18 }}>
           {BOOKING_SLOTS.map(slot => (
             <button key={slot} onClick={() => setSelSlot(slot)}
-              style={{ padding: '11px', borderRadius: 10, border: `1.5px solid ${selSlot === slot ? '#2600FF' : '#e5e7eb'}`, backgroundColor: selSlot === slot ? '#2600FF' : '#fff', color: selSlot === slot ? '#fff' : '#030712', fontWeight: 600, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', boxShadow: selSlot === slot ? '0 1px 2px rgba(0,0,0,0.12)' : 'none' }}>
+              style={{ padding: '12px', borderRadius: 14, border: `1px solid ${selSlot === slot ? '#2600FF' : 'rgba(7,7,12,0.14)'}`, backgroundColor: selSlot === slot ? '#2600FF' : '#fff', color: selSlot === slot ? '#fff' : '#030712', fontWeight: 600, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', boxShadow: selSlot === slot ? '0 1px 2px rgba(0,0,0,0.12)' : 'none' }}>
               {slot}
             </button>
           ))}
@@ -650,7 +772,7 @@ function SlotPicker({ onConfirm }: { onConfirm: (day: { label: string; date: str
       <button
         disabled={selDay === null || selSlot === null}
         onClick={() => { if (selDay !== null && selSlot !== null) onConfirm(days[selDay], selSlot) }}
-        style={{ backgroundColor: selDay !== null && selSlot !== null ? '#2600FF' : '#e5e7eb', color: selDay !== null && selSlot !== null ? '#fff' : '#9ca3af', fontWeight: 500, fontSize: 14, padding: '12px 22px', borderRadius: 12, border: 'none', cursor: selDay !== null && selSlot !== null ? 'pointer' : 'not-allowed', width: '100%', fontFamily: 'inherit', transition: 'all 0.2s' }}>
+        style={{ backgroundColor: selDay !== null && selSlot !== null ? '#2600FF' : '#e5e7eb', color: selDay !== null && selSlot !== null ? '#fff' : '#9ca3af', fontWeight: 600, fontSize: 14, padding: '13px 22px', borderRadius: 999, border: 'none', cursor: selDay !== null && selSlot !== null ? 'pointer' : 'not-allowed', width: '100%', fontFamily: 'inherit', transition: 'all 0.2s' }}>
         Buchung bestätigen
       </button>
     </div>
@@ -688,10 +810,10 @@ function BookCallModal({ onClose }: { onClose: () => void }) {
   return (
     <div
       onClick={handleClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 200, backgroundColor: 'rgba(3,7,18,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      style={{ position: 'fixed', inset: 0, zIndex: 200, backgroundColor: 'rgba(7,7,12,0.55)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div
         onClick={e => e.stopPropagation()}
-        style={{ backgroundColor: '#fff', borderRadius: 16, boxShadow: '0 4px 28px rgba(0,0,0,0.06)', maxWidth: 440, width: '100%', padding: 32, position: 'relative' }}>
+        style={{ backgroundColor: '#fff', borderRadius: 26, boxShadow: '0 40px 90px rgba(7,7,12,0.35)', maxWidth: 460, width: '100%', padding: 36, position: 'relative' }}>
 
         {/* Close button */}
         <button onClick={handleClose} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', cursor: 'pointer', color: '#5c5c5c', lineHeight: 1, padding: 4 }}>
@@ -706,21 +828,21 @@ function BookCallModal({ onClose }: { onClose: () => void }) {
             <input
               value={bName} onChange={e => setBName(e.target.value)}
               placeholder="Ihr Name"
-              style={{ width: '100%', padding: '11px 13px', border: '1px solid #d1d5db', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 10, boxSizing: 'border-box' }} />
+              style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 14, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 10, boxSizing: 'border-box' }} />
             <select
               value={bService} onChange={e => setBService(e.target.value)}
-              style={{ width: '100%', padding: '11px 13px', border: '1px solid #d1d5db', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 10, boxSizing: 'border-box', backgroundColor: '#fff', color: bService ? '#030712' : '#9ca3af', appearance: 'auto' }}>
+              style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 14, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 10, boxSizing: 'border-box', backgroundColor: '#fff', color: bService ? '#030712' : '#9ca3af', appearance: 'auto' }}>
               <option value="" disabled>Service auswählen</option>
               {SERVICE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <input
               value={bEmail} onChange={e => setBEmail(e.target.value)}
               type="email" placeholder="E-Mail-Adresse"
-              style={{ width: '100%', padding: '11px 13px', border: '1px solid #d1d5db', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 20, boxSizing: 'border-box' }} />
+              style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 14, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 20, boxSizing: 'border-box' }} />
             <button
               disabled={!canContinue}
               onClick={() => canContinue && setModalStep(2)}
-              style={{ width: '100%', padding: '13px', borderRadius: 12, border: 'none', backgroundColor: canContinue ? '#2600FF' : '#d1d5db', color: '#fff', fontWeight: 500, fontSize: 15, cursor: canContinue ? 'pointer' : 'not-allowed', fontFamily: 'inherit', transition: 'background 0.15s' }}>
+              style={{ width: '100%', padding: '13px', borderRadius: 999, border: 'none', backgroundColor: canContinue ? '#2600FF' : '#d1d5db', color: '#fff', fontWeight: 500, fontSize: 15, cursor: canContinue ? 'pointer' : 'not-allowed', fontFamily: 'inherit', transition: 'background 0.15s' }}>
               Weiter
             </button>
           </>
@@ -782,29 +904,34 @@ function homeHref(anchor: string) {
 // ─────────────────────────────────────────────────────────────────────────────
 // NAV
 // ─────────────────────────────────────────────────────────────────────────────
-function ServicesNavDropdown() {
+function ServicesNavDropdown({ fg }: { fg: string }) {
   const [open, setOpen] = useState(false)
   return (
     <div style={{ position: 'relative' }} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
-      <a href={homeHref('modules')} style={{ fontWeight: 500, fontSize: 14, color: '#030712', textDecoration: 'none', transition: 'color 0.15s', display: 'flex', alignItems: 'center', gap: 5 }}
-        onMouseEnter={e => (e.currentTarget.style.color = '#2600FF')}
-        onMouseLeave={e => (e.currentTarget.style.color = '#030712')}>
+      <a href={homeHref('modules')} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, display: 'flex', alignItems: 'center', gap: 6 }}>
         Leistungen
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }}>
           <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </a>
       <div style={{
-        position: 'absolute', top: '100%', left: '50%', transform: `translate(-50%, ${open ? '6px' : '-2px'})`,
-        opacity: open ? 1 : 0, pointerEvents: open ? 'auto' : 'none', transition: 'opacity 0.15s ease, transform 0.15s ease',
-        backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, boxShadow: '0 16px 36px rgba(0,0,0,0.12)', padding: 8, minWidth: 280, zIndex: 60,
+        position: 'absolute', top: '100%', left: '50%',
+        transform: `translate(-50%, ${open ? '10px' : '0px'})`,
+        opacity: open ? 1 : 0, pointerEvents: open ? 'auto' : 'none',
+        transition: `opacity 0.28s ease, transform 0.4s ${EASE}`,
+        backgroundColor: '#07070C', borderRadius: 18, padding: 10, minWidth: 320, zIndex: 60,
+        boxShadow: '0 30px 70px rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.1)',
       }}>
-        {modules.map(m => (
-          <a key={m.slug} href={`/services/${m.slug}`} style={{ display: 'block', padding: '9px 12px', borderRadius: 9, textDecoration: 'none', transition: 'background 0.12s' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f5f3ff')}
+        {modules.map((m, i) => (
+          <a key={m.slug} href={`/services/${m.slug}`}
+            style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '11px 13px', borderRadius: 12, textDecoration: 'none', transition: 'background 0.25s' }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.07)')}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#030712', marginBottom: 1 }}>{m.label}</div>
-            <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.4 }}>{m.sentence}</div>
+            <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--electric)', paddingTop: 3, letterSpacing: '0.08em' }}>{String(i + 1).padStart(2, '0')}</span>
+            <span>
+              <span style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: '#fff', marginBottom: 2 }}>{m.label}</span>
+              <span style={{ display: 'block', fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.45 }}>{m.sentence}</span>
+            </span>
           </a>
         ))}
       </div>
@@ -814,40 +941,58 @@ function ServicesNavDropdown() {
 
 function Nav() {
   const [open, setOpen] = useState(false)
+  const [solid, setSolid] = useState(false)
+  useEffect(() => {
+    const onScroll = () => setSolid(window.scrollY > 60)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  const fg = solid ? '#07070C' : '#ffffff'
+
   return (
-    <nav style={{ position: 'sticky', top: 0, zIndex: 50, backgroundColor: '#fff', borderBottom: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <a href="/" style={{ fontWeight: 700, fontSize: 22, color: '#030712', letterSpacing: '-0.5px', textDecoration: 'none' }}>RAG<span style={{ color: '#2600FF' }}>.</span></a>
-        <div style={{ display: 'flex', gap: 30, alignItems: 'center' }} className="hidden-mobile">
-          <a href={homeHref('audit')} style={{ fontWeight: 500, fontSize: 14, color: '#030712', textDecoration: 'none', transition: 'color 0.15s' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#2600FF')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#030712')}>Audit</a>
-          <ServicesNavDropdown />
+    <nav style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 90,
+      backgroundColor: solid ? 'rgba(255,255,255,0.82)' : 'transparent',
+      backdropFilter: solid ? 'saturate(180%) blur(18px)' : 'none',
+      WebkitBackdropFilter: solid ? 'saturate(180%) blur(18px)' : 'none',
+      borderBottom: `1px solid ${solid ? 'var(--line)' : 'transparent'}`,
+      transition: 'background-color 0.5s ease, border-color 0.5s ease, backdrop-filter 0.5s ease',
+    }}>
+      <div style={{ ...SHELL, padding: '0 clamp(20px, 4vw, 48px)', height: solid ? 66 : 82, display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'height 0.5s ' + EASE }}>
+        <a href="/" style={{ fontWeight: 800, fontSize: 21, color: fg, letterSpacing: '-0.05em', textDecoration: 'none', transition: 'color 0.4s ease' }}>
+          RAG<span style={{ color: 'var(--electric)' }}>.</span>
+        </a>
+
+        <div className="hidden-mobile" style={{ display: 'flex', gap: 30, alignItems: 'center' }}>
+          <a href={homeHref('audit')} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>Audit</a>
+          <ServicesNavDropdown fg={fg} />
           {[['Ergebnisse', 'results'], ['FAQ', 'faq']].map(([l, anchor]) => (
-            <a key={l} href={homeHref(anchor)} style={{ fontWeight: 500, fontSize: 14, color: '#030712', textDecoration: 'none', transition: 'color 0.15s' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#2600FF')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#030712')}>{l}</a>
+            <a key={l} href={homeHref(anchor)} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>{l}</a>
           ))}
-          <span style={{ fontWeight: 500, fontSize: 14, color: '#4b5563' }}>+49 30 12345678</span>
-          <a href={homeHref('audit-quiz')} style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 14, padding: '9px 18px', borderRadius: 12, textDecoration: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.12)', transition: 'background 0.15s', whiteSpace: 'nowrap' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1a00cc')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2600FF')}>
+          <span style={{ width: 1, height: 18, backgroundColor: solid ? 'var(--line)' : 'rgba(255,255,255,0.2)' }} />
+          <a href="tel:+493012345678" className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, opacity: 0.75, transition: 'color 0.4s ease' }}>+49 30 12345678</a>
+          <a href={homeHref('audit-quiz')} className={`btn btn-md ${solid ? 'btn-ink' : 'btn-paper'}`}>
             Kostenloses Audit erhalten
+            <span className="arw">→</span>
           </a>
         </div>
-        <button className="show-mobile" style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => setOpen(v => !v)}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#030712" strokeWidth="2" strokeLinecap="round">
-            {open ? <><path d="M18 6L6 18" /><path d="M6 6l12 12" /></> : <><path d="M3 6h18" /><path d="M3 12h18" /><path d="M3 18h18" /></>}
+
+        <button className="show-mobile" aria-label="Menü" style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }} onClick={() => setOpen(v => !v)}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={open ? '#07070C' : fg} strokeWidth="1.8" strokeLinecap="round">
+            {open ? <><path d="M18 6L6 18" /><path d="M6 6l12 12" /></> : <><path d="M3 7h18" /><path d="M3 12h18" /><path d="M3 17h18" /></>}
           </svg>
         </button>
       </div>
+
       {open && (
-        <div className="show-mobile" style={{ display: 'none', flexDirection: 'column', gap: 14, padding: '16px 24px', borderTop: '1px solid #e5e7eb', backgroundColor: '#fff' }}>
+        <div className="show-mobile" style={{ display: 'none', flexDirection: 'column', gap: 2, padding: '10px 24px 26px', backgroundColor: '#fff', borderTop: '1px solid var(--line)' }}>
           {[['Audit', 'audit'], ['Leistungen', 'modules'], ['Ergebnisse', 'results'], ['FAQ', 'faq']].map(([l, anchor]) => (
-            <a key={l} href={homeHref(anchor)} style={{ fontWeight: 500, fontSize: 15, color: '#030712', textDecoration: 'none' }} onClick={() => setOpen(false)}>{l}</a>
+            <a key={l} href={homeHref(anchor)} style={{ fontWeight: 600, fontSize: 22, letterSpacing: '-0.03em', color: '#07070C', textDecoration: 'none', padding: '10px 0', borderBottom: '1px solid var(--line-soft)' }} onClick={() => setOpen(false)}>{l}</a>
           ))}
-          <span style={{ fontWeight: 500, fontSize: 14, color: '#4b5563' }}>+49 30 12345678</span>
-          <a href={homeHref('audit-quiz')} style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 14, padding: '11px 18px', borderRadius: 12, textDecoration: 'none', textAlign: 'center' }} onClick={() => setOpen(false)}>Kostenloses Audit erhalten</a>
+          <span style={{ fontWeight: 500, fontSize: 14, color: 'var(--muted)', padding: '14px 0 10px' }}>+49 30 12345678</span>
+          <a href={homeHref('audit-quiz')} className="btn btn-lg btn-electric" style={{ width: '100%' }} onClick={() => setOpen(false)}>Kostenloses Audit erhalten</a>
         </div>
       )}
     </nav>
@@ -857,50 +1002,161 @@ function Nav() {
 // ─────────────────────────────────────────────────────────────────────────────
 // HERO
 // ─────────────────────────────────────────────────────────────────────────────
-function Hero() {
-  const [bookModal, setBookModal] = useState(false)
+// Live-looking Maps ranking that lifts "your business" from #14 to #1 on a loop.
+function RankPanel() {
+  const [won, setWon] = useState(false)
+  useEffect(() => {
+    const id = setInterval(() => setWon(v => !v), 4200)
+    return () => clearInterval(id)
+  }, [])
+
+  const comps = [
+    { name: 'Mitbewerber Nr. 1', rating: '4,9', reviews: '338' },
+    { name: 'Mitbewerber Nr. 2', rating: '4,8', reviews: '213' },
+    { name: 'Mitbewerber Nr. 3', rating: '4,7', reviews: '185' },
+  ]
+  const H = 72
+  const youIndex = won ? 0 : 3
+  const rows = [
+    ...comps.map((c, i) => ({ ...c, you: false, pos: won ? i + 1 : i })),
+    { name: 'Ihr Unternehmen', rating: won ? '4,9' : '2,8', reviews: won ? '214' : '14', you: true, pos: youIndex },
+  ]
+
   return (
-    <>
-      {bookModal && <BookCallModal onClose={() => setBookModal(false)} />}
-      <section style={{ backgroundColor: '#f9fafb', padding: '80px 24px 96px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, opacity: 0.055, backgroundImage: 'url("https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1400&h=700&fit=crop&auto=format")', backgroundSize: 'cover', backgroundPosition: 'center' }} />
-      <div className="hero-pin-1" style={{ position: 'absolute', top: '16%', left: '7%', display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: 0.5 }}>
-        <MapPin /><div style={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: 7, padding: '2px 7px', fontSize: 10, fontWeight: 600, color: '#030712', marginTop: 2 }}>4.9 ★</div>
-      </div>
-      <div className="hero-pin-2" style={{ position: 'absolute', top: '26%', right: '8%', display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: 0.4 }}>
-        <MapPin color="#7c3aed" /><div style={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: 7, padding: '2px 7px', fontSize: 10, fontWeight: 600, color: '#030712', marginTop: 2 }}>4.7 ★</div>
-      </div>
-      <div style={{ maxWidth: 740, margin: '0 auto', position: 'relative' }}>
-        <p style={{ fontSize: 12, fontWeight: 500, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 18 }}>
-          Für lokale Unternehmen in Deutschland, Österreich &amp; der Schweiz
-        </p>
-        <h1 style={{ fontSize: 'clamp(30px, 5vw, 54px)', fontWeight: 700, color: '#030712', lineHeight: 1.1, letterSpacing: '-1px', marginBottom: 18 }}>
-          Werden Sie zur Nr. 1 in der lokalen Suche,<br /><span style={{ color: '#2600FF' }}>bei Maps und in KI-Suchergebnissen</span>
-        </h1>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 22, flexWrap: 'wrap' }}>
-          {[GLogo, GMapsLogo, ChatGPTLogo, PerplexityLogo, TrustpilotLogo].map((Logo, i) => (
-            <div key={i} style={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: 9, padding: '6px 9px', display: 'flex', alignItems: 'center', boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}>
-              <Logo />
+    <div className="floaty" style={{ position: 'relative', width: '100%', maxWidth: 420 }}>
+      <div style={{ position: 'absolute', inset: '-16% -12%', background: 'radial-gradient(closest-side, rgba(38,0,255,0.45), transparent 72%)', filter: 'blur(28px)', pointerEvents: 'none' }} />
+      <div style={{
+        position: 'relative', backgroundColor: '#fff', borderRadius: 24, padding: 16,
+        boxShadow: '0 40px 90px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 999, backgroundColor: '#F2F2F5', marginBottom: 14 }}>
+          <GMapsLogo />
+          <span style={{ fontSize: 13, color: '#6B6B78', fontWeight: 500 }}>Dienstleister in meiner Nähe</span>
+          <span className="blink" style={{ width: 1.5, height: 14, backgroundColor: 'var(--electric)', marginLeft: 'auto' }} />
+        </div>
+
+        <div style={{ position: 'relative', height: H * 4 }}>
+          {rows.map(r => (
+            <div key={r.name} style={{
+              position: 'absolute', left: 0, right: 0, top: 0, height: H - 8,
+              transform: `translateY(${r.pos * H}px)`,
+              transition: `transform 0.95s ${EASE}, background-color 0.6s ease, box-shadow 0.6s ease`,
+              display: 'flex', alignItems: 'center', gap: 12, padding: '0 14px',
+              borderRadius: 16,
+              backgroundColor: r.you ? (won ? '#F0EDFF' : '#FBFBFC') : '#FBFBFC',
+              boxShadow: r.you && won ? 'inset 0 0 0 1.5px var(--electric)' : 'inset 0 0 0 1px rgba(7,7,12,0.06)',
+              opacity: r.you ? 1 : won ? 0.55 : 1,
+            }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: 10, flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                backgroundColor: r.you ? (won ? 'var(--electric)' : '#FEE2E2') : '#E9E9EE',
+                color: r.you ? (won ? '#fff' : '#DC2626') : '#8E8E9E',
+                fontSize: r.you && !won ? 11 : 13, fontWeight: 800,
+                transition: 'background-color 0.6s ease, color 0.6s ease',
+              }}>{r.you ? (won ? '1' : '14') : r.pos + 1}</div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: '#07070C', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</div>
+                <div style={{ fontSize: 11.5, color: '#6B6B78', display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ color: '#F59E0B' }}>★</span>{r.rating} · {r.reviews} Bewertungen
+                </div>
+              </div>
+              {r.you && won && (
+                <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', color: '#fff', backgroundColor: 'var(--electric)', padding: '5px 9px', borderRadius: 999, whiteSpace: 'nowrap' }}>ANRUF</span>
+              )}
             </div>
           ))}
         </div>
-        <p style={{ fontSize: 16, fontWeight: 400, color: '#4b5563', lineHeight: 1.65, maxWidth: 500, margin: '0 auto 28px' }}>
-          Ein einziges Team kümmert sich um Maps, KI-Suche, Bewertungen und Social Media. So finden lokale Kunden zuerst Sie.
-        </p>
-        <div style={{ marginBottom: 28 }}>
-          <a href="#audit-quiz" className="cta-pulse" style={{ display: 'inline-block', backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 15, padding: '13px 30px', borderRadius: 12, textDecoration: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.12)', transition: 'background 0.15s' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1a00cc')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2600FF')}>
-            Kostenloses Audit erhalten
-          </a>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
-          {['Klarer Wettbewerbsvorteil', 'Stetig neue Leads', 'Planbarer Umsatz'].map(b => (
-            <span key={b} style={{ backgroundColor: '#f2f2ff', color: '#2600FF', fontWeight: 500, fontSize: 12, padding: '5px 13px', borderRadius: 8, border: '1px solid #ddd6fe' }}>{b}</span>
-          ))}
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, padding: '10px 14px', borderRadius: 14, backgroundColor: won ? '#07070C' : '#F2F2F5', transition: 'background-color 0.6s ease' }}>
+          <span style={{ position: 'relative', display: 'flex', width: 8, height: 8 }}>
+            <span className="ring" style={{ position: 'absolute', inset: 0, borderRadius: '50%', backgroundColor: won ? '#4ADE80' : '#DC2626' }} />
+            <span style={{ position: 'relative', width: 8, height: 8, borderRadius: '50%', backgroundColor: won ? '#4ADE80' : '#DC2626' }} />
+          </span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: won ? '#fff' : '#6B6B78', transition: 'color 0.6s ease' }}>
+            {won ? 'Position 1 · 8 Anrufe diese Woche' : 'Position 14 · 0 Anrufe diese Woche'}
+          </span>
         </div>
       </div>
-    </section>
+    </div>
+  )
+}
+
+function Hero() {
+  const [bookModal, setBookModal] = useState(false)
+  const { ref, seen } = useInView(0.05)
+
+  return (
+    <>
+      {bookModal && <BookCallModal onClose={() => setBookModal(false)} />}
+      <section ref={ref} className={`mask ${seen ? 'in' : ''}`} style={{
+        position: 'relative', backgroundColor: 'var(--ink)', color: '#fff',
+        padding: 'clamp(126px, 14vh, 178px) clamp(20px, 4vw, 48px) 0', overflow: 'hidden',
+      }}>
+        <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.75 }} />
+        <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: '70vw', height: '70vw', maxWidth: 900, maxHeight: 900, background: 'radial-gradient(closest-side, rgba(38,0,255,0.5), transparent 70%)', filter: 'blur(20px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: '-30%', left: '-15%', width: '60vw', height: '60vw', maxWidth: 700, maxHeight: 700, background: 'radial-gradient(closest-side, rgba(107,75,255,0.22), transparent 70%)', pointerEvents: 'none' }} />
+
+        <div style={{ ...SHELL, position: 'relative' }}>
+          <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(360px, 0.8fr)', gap: 'clamp(36px, 4vw, 64px)', alignItems: 'center', paddingBottom: 'clamp(56px, 7vw, 90px)' }}>
+            <div>
+              <div className="mask-line" style={{ marginBottom: 26 }}>
+                <span style={{ ['--d' as any]: '0s' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, border: '1px solid rgba(255,255,255,0.18)', borderRadius: 999, padding: '7px 16px' }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#4ADE80' }} />
+                    <span className="eyebrow" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10 }}>Für lokale Unternehmen in Deutschland, Österreich &amp; der Schweiz</span>
+                  </span>
+                </span>
+              </div>
+
+              <h1 className="display" style={{ fontSize: 'clamp(34px, 4vw, 58px)', marginBottom: 26 }}>
+                <span className="mask-line"><span style={{ ['--d' as any]: '0.08s' }}>Werden Sie zur Nr. 1</span></span>
+                <span className="mask-line"><span style={{ ['--d' as any]: '0.16s' }}>in der lokalen Suche,</span></span>
+                <span className="mask-line"><span style={{ ['--d' as any]: '0.24s' }}><span style={{ color: 'var(--electric-2)' }}>bei Maps und in</span></span></span>
+                <span className="mask-line"><span style={{ ['--d' as any]: '0.32s' }}><span style={{ color: 'var(--electric-2)' }}>KI-Suchergebnissen</span></span></span>
+              </h1>
+
+              <div className="mask-line" style={{ marginBottom: 34 }}>
+                <span style={{ ['--d' as any]: '0.42s' }}>
+                  <p className="lead" style={{ color: 'rgba(255,255,255,0.62)', maxWidth: 480, margin: 0 }}>
+                    Ein einziges Team kümmert sich um Maps, KI-Suche, Bewertungen und Social Media. So finden lokale Kunden zuerst Sie.
+                  </p>
+                </span>
+              </div>
+
+              <div className="mask-line" style={{ marginBottom: 30 }}>
+                <span style={{ ['--d' as any]: '0.5s' }}>
+                  <span style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    <a href="#audit-quiz" className="btn btn-lg btn-paper">Kostenloses Audit erhalten <span className="arw">→</span></a>
+                    <button onClick={() => setBookModal(true)} className="btn btn-lg btn-outline-dark">Anruf buchen</button>
+                  </span>
+                </span>
+              </div>
+
+              <div className="mask-line">
+                <span style={{ ['--d' as any]: '0.58s' }}>
+                  <span style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    {['Klarer Wettbewerbsvorteil', 'Stetig neue Leads', 'Planbarer Umsatz'].map(b => (
+                      <span key={b} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 999, padding: '7px 15px' }}>
+                        <span style={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: 'var(--electric-2)' }} />
+                        {b}
+                      </span>
+                    ))}
+                  </span>
+                </span>
+              </div>
+            </div>
+
+            <div className="hero-visual" style={{ display: 'flex', justifyContent: 'flex-end', opacity: seen ? 1 : 0, transform: seen ? 'none' : 'translateY(40px)', transition: `opacity 1s ease 0.35s, transform 1.1s ${EASE} 0.35s` }}>
+              <RankPanel />
+            </div>
+          </div>
+        </div>
+
+        <div style={{ position: 'relative', borderTop: '1px solid var(--line-dark)', padding: '22px 0' }}>
+          <PlatformMarquee tone="light" />
+        </div>
+      </section>
     </>
   )
 }
@@ -946,10 +1202,7 @@ function ProblemSection() {
     const observers: IntersectionObserver[] = []
     itemRefs.current.forEach((el, i) => {
       if (!el) return
-      const obs = new IntersectionObserver(
-        ([entry]) => { if (entry.isIntersecting) setActive(i) },
-        { threshold: 0.55 }
-      )
+      const obs = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setActive(i) }, { threshold: 0.55 })
       obs.observe(el)
       observers.push(obs)
     })
@@ -959,121 +1212,92 @@ function ProblemSection() {
   const ActiveIllust = problems[active].Illust
 
   return (
-    <section id="audit" style={{ backgroundColor: '#f9fafb', padding: '80px 24px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-        {/* Section header */}
-        <h2 className="reveal" style={{ fontSize: 'clamp(24px, 4vw, 40px)', fontWeight: 700, color: '#030712', textAlign: 'center', marginBottom: 10, letterSpacing: '-0.5px' }}>
-          Einen Kanal zu reparieren, macht Sie nicht sichtbar. <span style={{ color: '#2600FF' }}>Es behebt nur ein Teilstück davon</span>
-        </h2>
-        <p style={{ fontSize: 15, fontWeight: 400, color: '#4b5563', textAlign: 'center', maxWidth: 500, margin: '0 auto 56px', lineHeight: 1.6 }}>
-          Jede der folgenden Lücken ist ein eigener Grund, warum sich ein Kunde für jemand anderen statt für Sie entscheidet
-        </p>
+    <section id="audit" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden' }}>
+      <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.5 }} />
+      <div style={{ position: 'absolute', top: '30%', left: '-10%', width: 640, height: 640, background: 'radial-gradient(closest-side, rgba(38,0,255,0.28), transparent 70%)', pointerEvents: 'none' }} />
 
-        {/* Two-column scroll layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'start' }} className="problem-grid">
+      <div style={{ ...SHELL, position: 'relative' }}>
+        <Reveal><Kicker tone="light">Die Lücken</Kicker></Reveal>
+        <div className="problem-head" style={{ marginTop: 26, marginBottom: 'clamp(48px, 6vw, 84px)' }}>
+          <MaskHeading
+            className="h-lg"
+            style={{ maxWidth: 1080 }}
+            lines={[
+              <>Einen Kanal zu reparieren, macht Sie</>,
+              <>nicht sichtbar. <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>Es behebt nur ein</span></>,
+              <><span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>Teilstück davon</span></>,
+            ]}
+          />
+          <Reveal delay={0.15}>
+            <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.5)', margin: '26px 0 0', maxWidth: 520 }}>
+              Jede der folgenden Lücken ist ein eigener Grund, warum sich ein Kunde für jemand anderen statt für Sie entscheidet
+            </p>
+          </Reveal>
+        </div>
 
-          {/* LEFT — scrolling text blocks */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {problems.map((p, i) => (
-              <div
-                key={p.tag}
-                ref={el => { itemRefs.current[i] = el }}
-                onClick={() => setActive(i)}
-                style={{
-                  padding: '36px 28px',
-                  borderLeft: `3px solid ${active === i ? '#2600FF' : '#e5e7eb'}`,
-                  backgroundColor: active === i ? '#fff' : 'transparent',
-                  borderRadius: active === i ? '0 16px 16px 0' : '0',
-                  boxShadow: active === i ? '0 4px 20px rgba(38,0,255,0.07)' : 'none',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer',
-                  marginBottom: 4,
-                }}
-              >
-                <span style={{
-                  display: 'inline-block',
-                  backgroundColor: active === i ? '#f2f2ff' : '#f3f4f6',
-                  color: active === i ? '#2600FF' : '#6b7280',
-                  fontWeight: 600,
-                  fontSize: 11,
-                  letterSpacing: '0.07em',
-                  textTransform: 'uppercase',
-                  padding: '3px 10px',
-                  borderRadius: 6,
-                  marginBottom: 12,
-                  transition: 'all 0.3s',
-                }}>
-                  {p.tag}
-                </span>
-                <h3 style={{
-                  fontWeight: 700,
-                  fontSize: 17,
-                  color: active === i ? '#030712' : '#6b7280',
-                  marginBottom: active === i ? 12 : 0,
-                  lineHeight: 1.35,
-                  transition: 'color 0.3s',
-                }}>
-                  {p.heading}
-                </h3>
-                {active === i && (
-                  <p style={{
-                    fontWeight: 400,
-                    fontSize: 14,
-                    color: '#4b5563',
-                    lineHeight: 1.75,
-                    margin: 0,
-                  }}>
-                    {p.body}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
+        <div className="problem-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.95fr) minmax(0, 1.05fr)', gap: 'clamp(32px, 5vw, 80px)' }}>
 
-          {/* RIGHT — sticky illustration */}
-          <div style={{ position: 'sticky', top: 88 }}>
-            <div style={{
-              backgroundColor: '#fff',
-              border: '1px solid #e5e7eb',
-              borderRadius: 20,
-              overflow: 'hidden',
-              boxShadow: '0 8px 32px rgba(38,0,255,0.08)',
-              transition: 'box-shadow 0.3s',
-            }}>
-              {/* Illustration area — fades between states */}
-              <div style={{ padding: '8px 8px 0', transition: 'opacity 0.3s' }} key={active}>
+          {/* LEFT — sticky visual */}
+          <div className="problem-sticky" style={{ position: 'relative' }}>
+          <div style={{ position: 'sticky', top: 110 }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', inset: '-8%', background: 'radial-gradient(closest-side, rgba(38,0,255,0.35), transparent 72%)', filter: 'blur(24px)', pointerEvents: 'none' }} />
+              <div key={active} style={{
+                position: 'relative', backgroundColor: '#fff', borderRadius: 22, padding: 12,
+                boxShadow: '0 40px 80px rgba(0,0,0,0.45)',
+                animation: `fadeSwap 0.6s ${EASE} both`,
+              }}>
                 <ActiveIllust />
               </div>
-              {/* Caption */}
-              <div style={{ padding: '16px 20px 20px' }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#2600FF', marginBottom: 8 }} />
-                <p style={{ fontWeight: 600, fontSize: 13, color: '#030712', margin: 0, lineHeight: 1.4 }}>
-                  {problems[active].heading}
-                </p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 22 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.16em', color: 'var(--electric-2)' }}>
+                {String(active + 1).padStart(2, '0')} / {String(problems.length).padStart(2, '0')}
+              </span>
+              <div style={{ flex: 1, height: 2, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${((active + 1) / problems.length) * 100}%`, backgroundColor: 'var(--electric-2)', transition: `width 0.6s ${EASE}` }} />
               </div>
-              {/* Step dots */}
-              <div style={{ display: 'flex', gap: 6, padding: '0 20px 18px', justifyContent: 'center' }}>
-                {problems.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActive(i)}
-                    style={{
-                      width: active === i ? 20 : 6,
-                      height: 6,
-                      borderRadius: 3,
-                      backgroundColor: active === i ? '#2600FF' : '#ddd6fe',
-                      border: 'none',
-                      cursor: 'pointer',
-                      transition: 'all 0.25s ease',
-                      padding: 0,
-                    }}
-                  />
-                ))}
-              </div>
+            </div>
+            </div>
+          </div>
+
+          {/* RIGHT — scrolling statements */}
+          <div>
+            {problems.map((p, i) => {
+              const on = active === i
+              return (
+                <div
+                  key={p.tag}
+                  ref={el => { itemRefs.current[i] = el }}
+                  onMouseEnter={() => setActive(i)}
+                  style={{
+                    padding: 'clamp(28px, 3vw, 44px) 0',
+                    borderTop: '1px solid var(--line-dark)',
+                    cursor: 'default',
+                    opacity: on ? 1 : 0.42,
+                    transition: 'opacity 0.5s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 14 }}>
+                    <span className="display" style={{ fontSize: 15, color: on ? 'var(--electric-2)' : 'rgba(255,255,255,0.35)', transition: 'color 0.5s ease', letterSpacing: '0.06em' }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="eyebrow" style={{ color: 'rgba(255,255,255,0.45)', fontSize: 10.5 }}>{p.tag}</span>
+                  </div>
+                  <h3 className="display" style={{ fontSize: 'clamp(21px, 2.3vw, 32px)', lineHeight: 1.15, marginBottom: 14, color: '#fff' }}>
+                    {p.heading}
+                  </h3>
+                  <div style={{ overflow: 'hidden', maxHeight: on ? 320 : 0, transition: `max-height 0.7s ${EASE}` }}>
+                    <p style={{ fontSize: 14.5, lineHeight: 1.85, color: 'rgba(255,255,255,0.55)', margin: 0, maxWidth: 560 }}>{p.body}</p>
+                  </div>
+                </div>
+              )
+            })}
+            <div style={{ borderTop: '1px solid var(--line-dark)', paddingTop: 'clamp(32px, 4vw, 48px)' }}>
+              <a href="#audit-quiz" className="btn btn-lg btn-electric">Finden Sie die Ursache für meinen Kundenverlust <span className="arw">→</span></a>
             </div>
           </div>
         </div>
-
       </div>
     </section>
   )
@@ -1085,43 +1309,72 @@ function ProblemSection() {
 // ─────────────────────────────────────────────────────────────────────────────
 function AboutRAG() {
   return (
-    <section style={{ backgroundColor: '#fff', padding: '80px 24px' }}>
-      <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-        {/* Two-column: text left, photo right */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 340px', gap: 56, alignItems: 'center', marginBottom: 52 }} className="about-grid">
+    <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ ...SHELL }}>
+        <Reveal><Kicker>Wer wir sind</Kicker></Reveal>
+
+        <div className="about-top" style={{ marginTop: 28, maxWidth: 900 }}>
+          <MaskHeading
+            className="h-md"
+            lines={[
+              <>Lokale Kunden zu gewinnen ist schwerer</>,
+              <>geworden. Wir sind seit über 10 Jahren</>,
+              <>immer <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>einen Schritt voraus.</span></>,
+            ]}
+          />
+        </div>
+
+        {/* photo band + copy */}
+        <div className="about-band" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.9fr) minmax(0, 1.1fr)', gap: 'clamp(28px, 4vw, 64px)', alignItems: 'center', marginTop: 'clamp(48px, 6vw, 88px)' }}>
+          <Reveal>
+            <div style={{
+              position: 'relative', aspectRatio: '1/1', borderRadius: 4, overflow: 'hidden',
+              backgroundColor: '#E3E2DA', display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: 14,
+            }}>
+              <div className="grid-bg-light" style={{ position: 'absolute', inset: 0, opacity: 0.6 }} />
+              <svg width="64" height="64" viewBox="0 0 56 56" fill="none" aria-hidden style={{ position: 'relative', opacity: 0.45 }}>
+                <circle cx="28" cy="22" r="10" fill="#07070C" />
+                <path d="M8 50c0-11.05 8.95-20 20-20s20 8.95 20 20" fill="#07070C" />
+              </svg>
+              <span style={{ position: 'relative', fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(7,7,12,0.4)', textAlign: 'center', lineHeight: 1.8 }}>
+                Teamfoto<br />(durch echtes Foto ersetzen)
+              </span>
+              <span style={{ position: 'absolute', left: 18, bottom: 18, fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--electric)' }}>RAG · Team</span>
+            </div>
+          </Reveal>
+
           <div>
-            <p style={{ fontSize: 11, fontWeight: 700, color: '#2600FF', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>WER WIR SIND</p>
-            <h2 className="reveal" style={{ fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, color: '#030712', marginBottom: 24, letterSpacing: '-0.5px', lineHeight: 1.2 }}>
-              Lokale Kunden zu gewinnen ist schwerer geworden.<br />Wir sind seit über 10 Jahren immer einen Schritt voraus.
-            </h2>
-            <p style={{ fontSize: 15, color: '#4b5563', lineHeight: 1.8, marginBottom: 18 }}>
-              Lokale Suche bedeutete früher einen Eintrag und eine Website. Heute bedeutet sie Google Maps, KI-Antworten in ChatGPT und Gemini, Bewertungen auf drei Plattformen, Social Proof, bezahlte Anzeigen und den Flyer am Aushang um die Ecke. All das konkurriert um denselben Kunden – und all das ändert sich alle paar Monate.
-            </p>
-            <p style={{ fontSize: 15, color: '#4b5563', lineHeight: 1.8, marginBottom: 0 }}>
-              RAG ist ein Team von Spezialisten für lokale Sichtbarkeit, das ausschließlich mit Unternehmen in Deutschland, Österreich und der Schweiz arbeitet. Seit über 10 Jahren verfolgen wir, wie lokale Kunden wirklich suchen und kaufen, und haben ein System entwickelt, das jeden Kanal als ein zusammenhängendes Problem behandelt – nicht als sechs separate Dienstleister, die es zu koordinieren gilt.
-            </p>
-          </div>
-          {/* Photo placeholder */}
-          <div style={{ borderRadius: 20, overflow: 'hidden', border: '1px solid #e5e7eb', boxShadow: '0 4px 24px rgba(0,0,0,0.07)', aspectRatio: '4/5', backgroundColor: '#f2f2ff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, minHeight: 280 }}>
-            <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden>
-              <circle cx="28" cy="28" r="28" fill="#ede9fe"/>
-              <circle cx="28" cy="22" r="10" fill="#c4b5fd"/>
-              <path d="M8 50c0-11.05 8.95-20 20-20s20 8.95 20 20" fill="#c4b5fd"/>
-            </svg>
-            <span style={{ fontSize: 12, fontWeight: 500, color: '#7c3aed', textAlign: 'center', padding: '0 20px', lineHeight: 1.5 }}>Teamfoto<br />(durch echtes Foto ersetzen)</span>
+            <Reveal delay={0.08}>
+              <p className="h-sm display" style={{ marginBottom: 22, maxWidth: 560 }}>
+                All das konkurriert um denselben Kunden — und all das ändert sich alle paar Monate.
+              </p>
+            </Reveal>
+            <Reveal delay={0.11}>
+              <p style={{ fontSize: 15.5, lineHeight: 1.85, color: 'var(--muted)', maxWidth: 560, margin: '0 0 18px' }}>
+                Lokale Suche bedeutete früher einen Eintrag und eine Website. Heute bedeutet sie Google Maps, KI-Antworten in ChatGPT und Gemini, Bewertungen auf drei Plattformen, Social Proof, bezahlte Anzeigen und den Flyer am Aushang um die Ecke.
+              </p>
+            </Reveal>
+            <Reveal delay={0.14}>
+              <p style={{ fontSize: 15.5, lineHeight: 1.85, color: 'var(--muted)', maxWidth: 560, margin: 0 }}>
+                RAG ist ein Team von Spezialisten für lokale Sichtbarkeit, das ausschließlich mit Unternehmen in Deutschland, Österreich und der Schweiz arbeitet. Seit über 10 Jahren verfolgen wir, wie lokale Kunden wirklich suchen und kaufen, und haben ein System entwickelt, das jeden Kanal als ein zusammenhängendes Problem behandelt — nicht als sechs separate Dienstleister, die es zu koordinieren gilt.
+              </p>
+            </Reveal>
+
           </div>
         </div>
-        {/* Stat row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, backgroundColor: '#e5e7eb', borderRadius: 16, overflow: 'hidden' }}>
+
+        {/* stat strip — hairlines, no boxes */}
+        <div className="about-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', marginTop: 'clamp(48px, 6vw, 84px)', borderTop: '1px solid var(--line)' }}>
           {[
-            { stat: '500+', label: 'lokale Unternehmen in der DACH-Region' },
-            { stat: '10+ Jahre', label: 'ausschließlich auf lokale Sichtbarkeit fokussiert' },
-            { stat: 'Nur DACH', label: 'Spezialisten statt Generalisten-Agentur' },
-          ].map(({ stat, label }) => (
-            <div key={stat} style={{ backgroundColor: '#f9fafb', padding: '28px 24px', textAlign: 'center' }}>
-              <div className={stat === '500+' ? 'count-glow' : undefined} style={{ fontSize: 28, fontWeight: 700, color: '#2600FF', lineHeight: 1, marginBottom: 6 }}>{stat}</div>
-              <div style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.5 }}>{label}</div>
-            </div>
+            { big: <><Counter to={500} />+</>, label: 'lokale Unternehmen in der DACH-Region' },
+            { big: <><Counter to={10} />+ Jahre</>, label: 'ausschließlich auf lokale Sichtbarkeit fokussiert' },
+            { big: <>Nur DACH</>, label: 'Spezialisten statt Generalisten-Agentur' },
+          ].map((s, i) => (
+            <Reveal key={i} delay={0.1 + i * 0.08} style={{ padding: '30px 24px 0 0', borderRight: i < 2 ? '1px solid var(--line)' : 'none', paddingLeft: i > 0 ? 24 : 0 }}>
+              <div className="display" style={{ fontSize: 'clamp(34px, 4vw, 58px)', color: 'var(--electric)', marginBottom: 10 }}>{s.big}</div>
+              <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.55, maxWidth: 240 }}>{s.label}</div>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -1197,13 +1450,13 @@ function QuoteModal({ selected, onClose }: { selected: string[]; onClose: () => 
   const [sent, setSent] = useState(false)
 
   const toggle = (s: string) => setServices(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
-  const inputStyle: React.CSSProperties = { width: '100%', padding: '10px 14px', borderRadius: 10, border: '1.5px solid #e5e7eb', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', color: '#030712', backgroundColor: '#fff' }
+  const inputStyle: React.CSSProperties = { width: '100%', padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(7,7,12,0.14)', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', color: '#030712', backgroundColor: '#fff' }
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(3,7,18,0.4)', backdropFilter: 'blur(2px)' }} />
-      <div style={{ position: 'relative', backgroundColor: '#fff', borderRadius: 20, padding: '32px 28px', maxWidth: 480, width: '100%', boxShadow: '0 24px 60px rgba(0,0,0,0.18)', maxHeight: '90vh', overflowY: 'auto' }}>
+      <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(7,7,12,0.55)', backdropFilter: 'blur(6px)' }} />
+      <div style={{ position: 'relative', backgroundColor: '#fff', borderRadius: 26, padding: '34px 30px', maxWidth: 480, width: '100%', boxShadow: '0 40px 90px rgba(7,7,12,0.35)', maxHeight: '90vh', overflowY: 'auto' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#6b7280', lineHeight: 1 }}>×</button>
         {sent ? (
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
@@ -1237,7 +1490,7 @@ function QuoteModal({ selected, onClose }: { selected: string[]; onClose: () => 
             <button
               disabled={!name || !contact || services.length === 0}
               onClick={() => setSent(true)}
-              style={{ width: '100%', padding: '13px', borderRadius: 12, border: 'none', backgroundColor: (!name || !contact || services.length === 0) ? '#e5e7eb' : '#2600FF', color: (!name || !contact || services.length === 0) ? '#9ca3af' : '#fff', fontWeight: 600, fontSize: 14, cursor: (!name || !contact || services.length === 0) ? 'default' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}>
+              style={{ width: '100%', padding: '13px', borderRadius: 999, border: 'none', backgroundColor: (!name || !contact || services.length === 0) ? '#e5e7eb' : '#2600FF', color: (!name || !contact || services.length === 0) ? '#9ca3af' : '#fff', fontWeight: 600, fontSize: 14, cursor: (!name || !contact || services.length === 0) ? 'default' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}>
               Anfrage senden
             </button>
           </>
@@ -1250,105 +1503,168 @@ function QuoteModal({ selected, onClose }: { selected: string[]; onClose: () => 
 function SolutionSection() {
   const [selected, setSelected] = useState<string[]>([])
   const [quoteOpen, setQuoteOpen] = useState(false)
-  const [expanded, setExpanded] = useState<string[]>([])
+  const [expanded, setExpanded] = useState<string | null>(null)
 
   const toggle = (label: string) => setSelected(prev => prev.includes(label) ? prev.filter(x => x !== label) : [...prev, label])
-  const toggleExpanded = (label: string) => setExpanded(prev => prev.includes(label) ? prev.filter(x => x !== label) : [...prev, label])
 
   return (
     <>
       {quoteOpen && <QuoteModal selected={selected} onClose={() => setQuoteOpen(false)} />}
-      <section id="modules" style={{ backgroundColor: '#f9fafb', padding: '80px 24px', paddingBottom: selected.length > 0 ? '140px' : '80px', transition: 'padding-bottom 0.3s' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <h2 className="reveal" style={{ fontSize: 'clamp(22px, 4vw, 38px)', fontWeight: 700, color: '#030712', textAlign: 'center', marginBottom: 10, letterSpacing: '-0.5px' }}>
-            Wählen Sie den Service. <span style={{ color: '#2600FF' }}>Wir vermitteln Ihnen den passenden Spezialisten</span>
-          </h2>
-          <p style={{ fontSize: 14, fontWeight: 400, color: '#4b5563', textAlign: 'center', marginBottom: 36, lineHeight: 1.6 }}>
-            Wählen Sie alle Leistungen aus, die Ihr Unternehmen braucht. Wir erstellen daraus einen Plan. Nicht sicher?{' '}
-            <a href="#audit-quiz" style={{ color: '#2600FF', textDecoration: 'underline', fontWeight: 500 }}>Machen Sie stattdessen das kostenlose Audit.</a>
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
-            {modules.map(m => {
+      <section id="modules" style={{
+        backgroundColor: 'var(--paper)',
+        padding: `clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px) ${selected.length > 0 ? '160px' : 'clamp(80px, 10vw, 140px)'}`,
+        transition: 'padding-bottom 0.4s',
+      }}>
+        <div style={{ ...SHELL }}>
+          <Reveal><Kicker>Das System</Kicker></Reveal>
+          <div className="sol-head" style={{ marginTop: 26, marginBottom: 'clamp(40px, 5vw, 68px)' }}>
+            <MaskHeading
+              className="h-lg"
+              style={{ maxWidth: 1080 }}
+              lines={[
+                <>Wählen Sie den Service. <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Wir</span></>,
+                <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>vermitteln Ihnen den passenden</span></>,
+                <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Spezialisten</span></>,
+              ]}
+            />
+            <Reveal delay={0.12}>
+              <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '26px 0 0', maxWidth: 560 }}>
+                Wählen Sie alle Leistungen aus, die Ihr Unternehmen braucht. Wir erstellen daraus einen Plan. Nicht sicher?{' '}
+                <a href="#audit-quiz" className="ul" style={{ color: 'var(--ink)', fontWeight: 600 }}>Machen Sie stattdessen das kostenlose Audit.</a>
+              </p>
+            </Reveal>
+          </div>
+
+          {/* module rows */}
+          <div style={{ borderTop: '1px solid var(--line)' }}>
+            {modules.map((m, i) => {
               const checked = selected.includes(m.label)
-              const isOpen = expanded.includes(m.label)
+              const isOpen = expanded === m.label
               return (
-                <div key={m.label}
-                  onClick={() => toggle(m.label)}
-                  style={{ backgroundColor: '#fff', border: `2px solid ${checked ? '#2600FF' : '#e5e7eb'}`, borderRadius: 16, overflow: 'hidden', boxShadow: checked ? '0 8px 28px rgba(38,0,255,0.1)' : '0 4px 16px rgba(0,0,0,0.05)', transition: 'border-color 0.2s, box-shadow 0.2s', cursor: 'pointer', position: 'relative' }}>
-                  {checked && (
-                    <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 2, backgroundColor: '#2600FF', borderRadius: 8, padding: '3px 10px', fontSize: 11, fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5l2.5 2.5 4.5-5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      Zu Ihrem Plan hinzugefügt
-                    </div>
-                  )}
-                  <m.Illust />
-                  <div style={{ padding: '14px 18px 18px' }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                      <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${checked ? '#2600FF' : '#d1d5db'}`, backgroundColor: checked ? '#2600FF' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1, transition: 'all 0.15s' }}>
-                        {checked && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <h3 style={{ fontWeight: 700, fontSize: 14, color: '#030712', marginBottom: 4 }}>{m.label}</h3>
-                        <p style={{ fontWeight: 400, fontSize: 13, color: '#4b5563', lineHeight: 1.55, margin: 0 }}>{m.sentence}</p>
+                <Reveal key={m.label} delay={Math.min(i * 0.05, 0.25)}>
+                  <div className="row" style={{
+                    borderBottom: '1px solid var(--line)',
+                    backgroundColor: checked ? 'rgba(38,0,255,0.035)' : 'transparent',
+                  }}>
+                    <div className="mod-row" style={{
+                      display: 'grid', gridTemplateColumns: '58px minmax(0,1fr) minmax(0,0.9fr) auto',
+                      alignItems: 'center', gap: 'clamp(14px, 2vw, 32px)',
+                      padding: 'clamp(22px, 2.4vw, 34px) 0',
+                    }}>
+                      <span className="row-idx display" style={{ fontSize: 14, color: 'rgba(7,7,12,0.3)', letterSpacing: '0.08em' }}>
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+
+                      <h3 className="row-title display" style={{ fontSize: 'clamp(19px, 1.9vw, 27px)', lineHeight: 1.15, margin: 0, color: checked ? 'var(--electric)' : 'var(--ink)' }}>
+                        {m.label}
+                      </h3>
+
+                      <p className="mod-sentence" style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>{m.sentence}</p>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end' }}>
                         <button
-                          onClick={e => { e.stopPropagation(); toggleExpanded(m.label) }}
-                          style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 600, color: '#2600FF' }}>
-                          {isOpen ? 'Weniger anzeigen' : 'Mehr erfahren'}
-                          <IconChevron open={isOpen} />
+                          onClick={() => setExpanded(isOpen ? null : m.label)}
+                          aria-label="Details"
+                          style={{
+                            width: 40, height: 40, borderRadius: '50%', border: '1px solid var(--line)',
+                            background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            transition: `transform 0.5s ${EASE}, background-color 0.3s, border-color 0.3s`,
+                            transform: isOpen ? 'rotate(45deg)' : 'none',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--bone)' }}
+                          onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}>
+                          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="#07070C" strokeWidth="1.5" strokeLinecap="round" /></svg>
                         </button>
-                        <div style={{ overflow: 'hidden', maxHeight: isOpen ? 460 : 0, transition: 'max-height 0.3s ease' }}>
-                          <div style={{ paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            <div>
-                              <p style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 3px' }}>Was es ist</p>
-                              <p style={{ fontSize: 12.5, color: '#374151', lineHeight: 1.6, margin: 0 }}>{m.what}</p>
+                        <button
+                          onClick={() => toggle(m.label)}
+                          className="btn btn-md"
+                          style={{
+                            fontSize: 12.5, padding: '10px 18px', whiteSpace: 'nowrap',
+                            backgroundColor: checked ? 'var(--electric)' : 'transparent',
+                            color: checked ? '#fff' : 'var(--ink)',
+                            border: checked ? '1px solid var(--electric)' : '1px solid var(--line)',
+                            ['--btn-fill' as any]: checked ? '#07070C' : 'var(--electric)',
+                            ['--btn-fill-text' as any]: '#fff',
+                          }}>
+                          {checked ? '✓ Im Plan' : 'Hinzufügen'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* expandable detail */}
+                    <div style={{ overflow: 'hidden', maxHeight: isOpen ? 620 : 0, transition: `max-height 0.7s ${EASE}` }}>
+                      <div className="mod-detail" style={{
+                        display: 'grid', gridTemplateColumns: '58px minmax(0,260px) minmax(0,1fr)',
+                        gap: 'clamp(14px, 2vw, 32px)', padding: '4px 0 clamp(28px, 3vw, 40px)',
+                      }}>
+                        <span />
+                        <div style={{ borderRadius: 14, overflow: 'hidden', backgroundColor: 'var(--bone)', alignSelf: 'start' }}>
+                          <m.Illust />
+                        </div>
+                        <div className="mod-detail-cols" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+                          {[
+                            { k: 'Was es ist', v: m.what },
+                            { k: 'Wie es funktioniert', v: m.how },
+                            { k: 'Warum Sie es brauchen', v: m.why, accent: true },
+                          ].map(col => (
+                            <div key={col.k}>
+                              <p className="eyebrow" style={{ fontSize: 9.5, color: col.accent ? 'var(--electric)' : 'rgba(7,7,12,0.35)', marginBottom: 8 }}>{col.k}</p>
+                              <p style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--muted)', margin: 0 }}>{col.v}</p>
                             </div>
-                            <div>
-                              <p style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 3px' }}>Wie es funktioniert</p>
-                              <p style={{ fontSize: 12.5, color: '#374151', lineHeight: 1.6, margin: 0 }}>{m.how}</p>
-                            </div>
-                            <div>
-                              <p style={{ fontSize: 10, fontWeight: 700, color: '#2600FF', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 3px' }}>Warum Sie es brauchen</p>
-                              <p style={{ fontSize: 12.5, color: '#374151', lineHeight: 1.6, margin: 0 }}>{m.why}</p>
-                            </div>
-                            <a href={`/services/${m.slug}`} onClick={e => e.stopPropagation()}
-                              style={{ fontSize: 12, fontWeight: 600, color: '#2600FF', textDecoration: 'underline' }}>
-                              Zur vollständigen Service-Seite →
-                            </a>
-                          </div>
+                          ))}
+                          <a href={`/services/${m.slug}`} className="ul" style={{ gridColumn: '1 / -1', fontSize: 13, fontWeight: 600, color: 'var(--electric)' }}>
+                            Zur vollständigen Service-Seite →
+                          </a>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                </Reveal>
               )
             })}
-            {/* 7th card — "Not Sure" */}
-            <div style={{ backgroundColor: '#f5f3ff', border: '2px dashed #c4b5fd', borderRadius: 16, padding: '28px 22px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', minHeight: 160 }}>
-              <h3 style={{ fontWeight: 700, fontSize: 15, color: '#030712', marginBottom: 8 }}>Nicht sicher, wo Sie anfangen sollen?</h3>
-              <p style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.6, marginBottom: 18 }}>Machen Sie das kostenlose 2-Minuten-Audit und wir sagen Ihnen genau, welche Leistungen Ihr Unternehmen braucht.</p>
-              <a href="#audit-quiz"
-                onClick={e => e.stopPropagation()}
-                style={{ display: 'inline-block', backgroundColor: '#2600FF', color: '#fff', fontWeight: 600, fontSize: 13, padding: '10px 18px', borderRadius: 10, textDecoration: 'none', transition: 'background 0.15s' }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1a00cc')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2600FF')}>
-                Kostenloses Audit starten →
+          </div>
+
+          {/* not-sure band */}
+          <Reveal delay={0.1}>
+            <div className="notsure" style={{
+              marginTop: 'clamp(40px, 5vw, 64px)', backgroundColor: 'var(--ink)', color: '#fff',
+              borderRadius: 24, padding: 'clamp(32px, 4vw, 52px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap',
+              position: 'relative', overflow: 'hidden',
+            }}>
+              <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.6 }} />
+              <div style={{ position: 'relative', maxWidth: 560 }}>
+                <h3 className="display" style={{ fontSize: 'clamp(22px, 2.6vw, 34px)', marginBottom: 12 }}>Nicht sicher, wo Sie anfangen sollen?</h3>
+                <p style={{ fontSize: 14.5, lineHeight: 1.7, color: 'rgba(255,255,255,0.55)', margin: 0 }}>
+                  Machen Sie das kostenlose 2-Minuten-Audit und wir sagen Ihnen genau, welche Leistungen Ihr Unternehmen braucht.
+                </p>
+              </div>
+              <a href="#audit-quiz" className="btn btn-lg btn-paper" style={{ position: 'relative', flexShrink: 0 }}>
+                Kostenloses Audit starten <span className="arw">→</span>
               </a>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* Sticky bottom bar */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100, transform: selected.length > 0 ? 'translateY(0)' : 'translateY(100%)', transition: 'transform 0.3s cubic-bezier(0.16,1,0.3,1)', backgroundColor: '#fff', borderTop: '1px solid #e5e7eb', boxShadow: '0 -4px 24px rgba(0,0,0,0.1)', padding: '14px 24px' }}>
-        <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <div style={{ fontSize: 14, fontWeight: 500, color: '#4b5563' }}>
-            Ihr Plan: <span style={{ fontWeight: 700, color: '#030712' }}>{selected.length} Leistung{selected.length !== 1 ? 'en' : ''} ausgewählt</span>
-          </div>
-          <button onClick={() => setQuoteOpen(true)}
-            style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 600, fontSize: 14, padding: '11px 24px', borderRadius: 12, border: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s', whiteSpace: 'nowrap' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1a00cc')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2600FF')}>
-            Individuelles Angebot erhalten →
+      {/* Sticky selection bar */}
+      <div style={{
+        position: 'fixed', bottom: 20, left: 0, right: 0, zIndex: 100,
+        display: 'flex', justifyContent: 'center', padding: '0 20px',
+        transform: selected.length > 0 ? 'translateY(0)' : 'translateY(160%)',
+        transition: `transform 0.6s ${EASE}`, pointerEvents: selected.length > 0 ? 'auto' : 'none',
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', justifyContent: 'center',
+          backgroundColor: 'rgba(7,7,12,0.92)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          borderRadius: 999, padding: '10px 10px 10px 26px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+          border: '1px solid rgba(255,255,255,0.1)',
+        }}>
+          <span style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.6)' }}>
+            Ihr Plan: <strong style={{ color: '#fff' }}>{selected.length} Leistung{selected.length !== 1 ? 'en' : ''}</strong>
+          </span>
+          <button onClick={() => setQuoteOpen(true)} className="btn btn-md btn-electric" style={{ ['--btn-fill' as any]: '#fff', ['--btn-fill-text' as any]: '#07070C' }}>
+            Individuelles Angebot <span className="arw">→</span>
           </button>
         </div>
       </div>
@@ -1367,100 +1683,56 @@ const steps = [
 ]
 
 function Process() {
-  const sectionRef = useRef<HTMLElement>(null)
-  const [active, setActive] = useState(-1)
-
-  useEffect(() => {
-    const el = sectionRef.current
-    if (!el) return
-    const obs = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        // Cascade each step in with a delay
-        steps.forEach((_, i) => {
-          setTimeout(() => setActive(i), i * 420)
-        })
-        obs.disconnect()
-      }
-    }, { threshold: 0.3 })
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [])
+  const { ref, p } = useScrollProgress()
 
   return (
-    <section ref={sectionRef} style={{ backgroundColor: '#fff', padding: '80px 24px' }}>
-      <style>{`
-        @keyframes stepPop {
-          0% { opacity:0; transform: translateY(18px) scale(0.94); }
-          60% { transform: translateY(-3px) scale(1.02); }
-          100% { opacity:1; transform: translateY(0) scale(1); }
-        }
-        @keyframes connectorGrow {
-          from { width: 0; }
-          to { width: 100%; }
-        }
-        @keyframes dotSlide {
-          0% { left: 0%; opacity:0; }
-          20% { opacity:1; }
-          80% { opacity:1; }
-          100% { left: 100%; opacity:0; }
-        }
-      `}</style>
-      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <h2 className="reveal" style={{ fontSize: 'clamp(20px, 3.5vw, 30px)', fontWeight: 700, color: '#030712', textAlign: 'center', marginBottom: 52, letterSpacing: '-0.5px' }}>
-          Vier Schritte zu <span style={{ color: '#2600FF' }}>planbaren lokalen Leads</span>
-        </h2>
+    <section ref={ref} style={{ backgroundColor: 'var(--bone)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
+      <div style={{ ...SHELL }}>
+        <Reveal><Kicker>Der Ablauf</Kicker></Reveal>
+        <MaskHeading
+          className="h-lg"
+          style={{ marginTop: 26, marginBottom: 'clamp(48px, 6vw, 80px)', maxWidth: 900 }}
+          lines={[<>Vier Schritte zu</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>planbaren</span> lokalen Leads</>]}
+        />
 
-        {/* Steps row with animated connectors */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, position: 'relative', alignItems: 'start' }} className="process-grid">
-          {steps.map((s, i) => (
-            <div key={s.num} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-              {/* Connector line between steps */}
-              {i < steps.length - 1 && (
-                <div style={{ position: 'absolute', top: 28, left: '50%', width: '100%', height: 2, zIndex: 0 }}>
-                  {/* Track */}
-                  <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: '#e5e7eb', borderRadius: 1 }}/>
-                  {/* Fill */}
-                  {active >= i + 1 && (
-                    <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', backgroundColor: '#2600FF', borderRadius: 1, animation: 'connectorGrow 0.35s ease forwards' }}/>
-                  )}
-                  {/* Travelling dot */}
-                  {active === i && (
-                    <div style={{ position: 'absolute', top: -4, width: 10, height: 10, borderRadius: '50%', backgroundColor: '#2600FF', boxShadow: '0 0 8px rgba(38,0,255,0.5)', animation: 'dotSlide 0.4s ease forwards' }}/>
-                  )}
-                </div>
-              )}
-
-              {/* Step circle */}
-              <div style={{
-                width: 56, height: 56, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                backgroundColor: active >= i ? '#2600FF' : '#f3f4f6',
-                border: `2px solid ${active >= i ? '#2600FF' : '#e5e7eb'}`,
-                zIndex: 1, position: 'relative', transition: 'background-color 0.3s, border-color 0.3s',
-                animation: active === i ? 'stepPop 0.4s ease forwards' : 'none',
-                boxShadow: active >= i ? '0 0 0 6px rgba(38,0,255,0.08)' : 'none',
-              }}>
-                <span style={{ fontWeight: 700, fontSize: 16, color: active >= i ? '#fff' : '#9ca3af', transition: 'color 0.3s', fontFamily: 'Satoshi, sans-serif' }}>{s.num}</span>
-              </div>
-
-              {/* Content */}
-              <div style={{
-                marginTop: 16, padding: '0 12px', textAlign: 'center',
-                opacity: active >= i ? 1 : 0,
-                transform: active >= i ? 'translateY(0)' : 'translateY(10px)',
-                transition: 'opacity 0.4s ease, transform 0.4s ease',
-              }}>
-                <h3 style={{ fontWeight: 700, fontSize: 14, color: '#030712', marginBottom: 6 }}>{s.title}</h3>
-                <p style={{ fontWeight: 400, fontSize: 13, color: '#4b5563', lineHeight: 1.6, margin: 0 }}>{s.desc}</p>
-                {'cta' in s && s.cta && (
-                  <a href="#audit-quiz" style={{ display: 'inline-block', marginTop: 12, backgroundColor: '#2600FF', color: '#fff', fontWeight: 600, fontSize: 12, padding: '8px 16px', borderRadius: 9, textDecoration: 'none', transition: 'background 0.15s' }}
-                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1a00cc')}
-                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2600FF')}>
-                    Kostenloses Audit starten →
-                  </a>
-                )}
+        <div className="process-wrap" style={{ display: 'grid', gridTemplateColumns: '80px minmax(0,1fr)', gap: 'clamp(16px, 3vw, 48px)' }}>
+          {/* rail */}
+          <div className="process-rail" style={{ position: 'relative' }}>
+            <div style={{ position: 'sticky', top: 120, height: 'calc(100vh - 240px)', display: 'flex', justifyContent: 'center' }}>
+              <div style={{ width: 2, height: '100%', backgroundColor: 'rgba(7,7,12,0.1)', position: 'relative', borderRadius: 2 }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: `${p * 100}%`, backgroundColor: 'var(--electric)', borderRadius: 2, transition: 'height 0.15s linear' }} />
+                <div style={{ position: 'absolute', top: `${p * 100}%`, left: '50%', transform: 'translate(-50%, -50%)', width: 12, height: 12, borderRadius: '50%', backgroundColor: 'var(--electric)', boxShadow: '0 0 0 6px rgba(38,0,255,0.15)', transition: 'top 0.15s linear' }} />
               </div>
             </div>
-          ))}
+          </div>
+
+          {/* steps */}
+          <div>
+            {steps.map((s, i) => (
+              <Reveal key={s.num} threshold={0.3}>
+                <div className="step-row" style={{
+                  display: 'grid', gridTemplateColumns: 'minmax(0, 0.42fr) minmax(0, 0.58fr)',
+                  gap: 'clamp(20px, 3vw, 48px)',
+                  padding: 'clamp(34px, 4vw, 56px) 0',
+                  borderTop: '1px solid var(--line)',
+                  marginLeft: i % 2 === 1 ? 'clamp(0px, 4vw, 56px)' : 0,
+                }}>
+                  <div>
+                    <div className="display" style={{ fontSize: 'clamp(54px, 8vw, 104px)', lineHeight: 0.9, marginBottom: 18, color: 'transparent', WebkitTextStroke: '1.6px #2600FF' }}>{s.num}</div>
+                    <h3 className="display" style={{ fontSize: 'clamp(19px, 2vw, 28px)', lineHeight: 1.18, margin: 0 }}>{s.title}</h3>
+                  </div>
+                  <div style={{ paddingTop: 'clamp(0px, 6vw, 88px)' }}>
+                    <p style={{ fontSize: 15, lineHeight: 1.85, color: 'var(--muted)', margin: 0, maxWidth: 460 }}>{s.desc}</p>
+                    {'cta' in s && s.cta && (
+                      <a href="#audit-quiz" className="btn btn-md btn-ink" style={{ marginTop: 22 }}>
+                        Kostenloses Audit starten <span className="arw">→</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -1638,125 +1910,113 @@ function ChevronIcon({ flip }: { flip?: boolean }) {
 
 function RealResults() {
   const [active, setActive] = useState(0)
-  const [dir, setDir] = useState<'next' | 'prev'>('next')
   const [paused, setPaused] = useState(false)
   const total = caseStudies.length
   const touchX = useRef<number | null>(null)
 
-  const goPrev = () => { setDir('prev'); setActive(a => (a - 1 + total) % total) }
-  const goNext = () => { setDir('next'); setActive(a => (a + 1) % total) }
-  const goTo = (i: number) => { setDir(i > active ? 'next' : 'prev'); setActive(i) }
-
-  // Auto-advance every 5s; restarts on any manual navigation and pauses on hover/touch.
   useEffect(() => {
     if (paused) return
-    const id = setInterval(() => { setDir('next'); setActive(a => (a + 1) % total) }, 5000)
+    const id = setInterval(() => setActive(a => (a + 1) % total), 6000)
     return () => clearInterval(id)
   }, [active, paused, total])
 
   const onTouchStart = (e: React.TouchEvent) => { touchX.current = e.touches[0].clientX; setPaused(true) }
   const onTouchEnd = (e: React.TouchEvent) => {
     if (touchX.current === null) return
-    const delta = e.changedTouches[0].clientX - touchX.current
-    if (delta > 50) goPrev()
-    else if (delta < -50) goNext()
+    const d = e.changedTouches[0].clientX - touchX.current
+    if (d > 50) setActive(a => (a - 1 + total) % total)
+    else if (d < -50) setActive(a => (a + 1) % total)
     touchX.current = null
     setPaused(false)
   }
 
   const c = caseStudies[active]
-  const arrowBtnStyle: React.CSSProperties = {
-    width: 38, height: 38, borderRadius: '50%', border: '1px solid #e5e7eb', backgroundColor: '#fff',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4b5563', cursor: 'pointer',
-    flexShrink: 0, transition: 'all 0.15s', fontFamily: 'inherit',
-  }
 
   return (
-    <section id="results" style={{ backgroundColor: '#f9fafb', padding: '80px 24px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-        <h2 className="reveal" style={{ fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, color: '#030712', textAlign: 'center', marginBottom: 10, letterSpacing: '-0.5px' }}>
-          Echte Ergebnisse, <span style={{ color: '#2600FF' }}>echte Unternehmen</span>
-        </h2>
-        <p style={{ fontSize: 15, fontWeight: 400, color: '#4b5563', textAlign: 'center', marginBottom: 40 }}>
-          Was sich für drei Unternehmen verändert hat, die genau dort gestartet sind, wo Sie jetzt stehen.
-        </p>
+    <section id="results" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: '-10%', right: '-5%', width: 700, height: 700, background: 'radial-gradient(closest-side, rgba(38,0,255,0.3), transparent 70%)', pointerEvents: 'none' }} />
 
-        <div style={{ maxWidth: 640, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12 }}
-          onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
-          <button aria-label="Vorherige Fallstudie" onClick={goPrev} style={arrowBtnStyle} className="hidden-mobile"
-            onMouseEnter={e => { const b = e.currentTarget; b.style.borderColor = '#2600FF'; b.style.color = '#2600FF' }}
-            onMouseLeave={e => { const b = e.currentTarget; b.style.borderColor = '#e5e7eb'; b.style.color = '#4b5563' }}>
-            <ChevronIcon />
-          </button>
+      <div style={{ ...SHELL, position: 'relative' }}
+        onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
+        onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
 
-          <div style={{ flex: 1, overflow: 'hidden' }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-            <div key={active} className={`testimonial-card ${dir === 'next' ? 'case-slide-next' : 'case-slide-prev'}`} style={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: 20, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column' }}>
-              {/* Before/After visual */}
-              <div style={{ padding: '16px 16px 0' }}>
-                <c.Illust />
+        <Reveal><Kicker tone="light">Ergebnisse</Kicker></Reveal>
+
+        <div className="res-head" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap', marginTop: 26, marginBottom: 'clamp(40px, 5vw, 64px)' }}>
+          <div>
+            <MaskHeading className="h-lg" lines={[<>Echte Ergebnisse,</>, <><span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>echte Unternehmen</span></>]} />
+            <Reveal delay={0.12}>
+              <p style={{ fontSize: 15, lineHeight: 1.75, color: 'rgba(255,255,255,0.5)', margin: '18px 0 0', maxWidth: 480 }}>
+                Was sich für drei Unternehmen verändert hat, die genau dort gestartet sind, wo Sie jetzt stehen.
+              </p>
+            </Reveal>
+          </div>
+          {/* tabs */}
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {caseStudies.map((cs, i) => (
+              <button key={cs.name} onClick={() => setActive(i)}
+                style={{
+                  position: 'relative', background: 'none', border: 'none', cursor: 'pointer',
+                  padding: '10px 16px', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600,
+                  color: active === i ? '#fff' : 'rgba(255,255,255,0.4)',
+                  transition: 'color 0.35s ease',
+                }}>
+                {cs.name}
+                <span style={{
+                  position: 'absolute', left: 16, right: 16, bottom: 2, height: 1.5, borderRadius: 2,
+                  backgroundColor: 'var(--electric-2)',
+                  transform: active === i ? 'scaleX(1)' : 'scaleX(0)',
+                  transformOrigin: 'left', transition: `transform 0.5s ${EASE}`,
+                }} />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div key={active} className="res-body" style={{
+          display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+          gap: 'clamp(32px, 5vw, 72px)', alignItems: 'start',
+          animation: `fadeSwap 0.6s ${EASE} both`,
+        }}>
+          <div>
+            <p className="serif" style={{ fontSize: 'clamp(28px, 3.6vw, 52px)', lineHeight: 1.15, letterSpacing: '-0.02em', color: '#fff', margin: '0 0 28px' }}>
+              {c.quote}
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 34 }}>
+              <div style={{ width: 44, height: 44, borderRadius: '50%', backgroundColor: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13.5 }}>{c.initials}</div>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 14.5 }}>{c.name}</div>
+                <div style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.45)' }}>{c.role}</div>
               </div>
-              {/* Client identity */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '18px 22px 0' }}>
-                <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#2600FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, color: '#fff', flexShrink: 0 }}>{c.initials}</div>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 14, color: '#030712' }}>{c.name}</div>
-                  <div style={{ fontWeight: 400, fontSize: 12, color: '#4b5563' }}>{c.role}</div>
+            </div>
+            <div>
+              {[
+                { label: 'Ausgangslage', value: c.startingPoint },
+                { label: 'Unser Ansatz', value: c.approach },
+                { label: 'Das Ergebnis', value: c.result, accent: true },
+              ].map(row => (
+                <div key={row.label} className="res-row" style={{ display: 'grid', gridTemplateColumns: '132px minmax(0,1fr)', gap: 18, padding: '16px 0', borderTop: '1px solid var(--line-dark)' }}>
+                  <span className="eyebrow" style={{ fontSize: 9.5, color: row.accent ? 'var(--electric-2)' : 'rgba(255,255,255,0.35)', paddingTop: 3 }}>{row.label}</span>
+                  <span style={{ fontSize: 14, lineHeight: 1.7, color: row.accent ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: row.accent ? 600 : 400 }}>{row.value}</span>
                 </div>
-              </div>
-              {/* Structured lines */}
-              <div style={{ padding: '16px 22px 0', display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
-                {[
-                  { label: 'Ausgangslage', value: c.startingPoint },
-                  { label: 'Unser Ansatz', value: c.approach },
-                  { label: 'Das Ergebnis', value: c.result, accent: true },
-                ].map(row => (
-                  <div key={row.label} style={{ display: 'flex', gap: 8 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: row.accent ? '#2600FF' : '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.07em', whiteSpace: 'nowrap', paddingTop: 2, minWidth: 90 }}>{row.label}</span>
-                    <span style={{ fontSize: 13, fontWeight: row.accent ? 600 : 400, color: row.accent ? '#030712' : '#374151', lineHeight: 1.55 }}>{row.value}</span>
-                  </div>
-                ))}
-              </div>
-              {/* Pull-quote */}
-              <div style={{ margin: '16px 22px 22px', padding: '14px 16px', backgroundColor: '#f2f2ff', borderRadius: 12, borderLeft: '3px solid #2600FF' }}>
-                <p style={{ fontSize: 13, fontWeight: 500, color: '#2600FF', fontStyle: 'italic', margin: 0, lineHeight: 1.55 }}>{c.quote}</p>
-              </div>
+              ))}
             </div>
           </div>
 
-          <button aria-label="Nächste Fallstudie" onClick={goNext} style={arrowBtnStyle} className="hidden-mobile"
-            onMouseEnter={e => { const b = e.currentTarget; b.style.borderColor = '#2600FF'; b.style.color = '#2600FF' }}
-            onMouseLeave={e => { const b = e.currentTarget; b.style.borderColor = '#e5e7eb'; b.style.color = '#4b5563' }}>
-            <ChevronIcon flip />
-          </button>
+          <div style={{ position: 'relative' }}>
+            <div style={{ position: 'absolute', inset: '-6%', background: 'radial-gradient(closest-side, rgba(38,0,255,0.35), transparent 72%)', filter: 'blur(24px)', pointerEvents: 'none' }} />
+            <div style={{ position: 'relative', backgroundColor: '#fff', borderRadius: 22, padding: 12, boxShadow: '0 40px 80px rgba(0,0,0,0.45)' }}>
+              <c.Illust />
+            </div>
+          </div>
         </div>
 
-        {/* Mobile arrows + dots */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 24 }}>
-          <button aria-label="Vorherige Fallstudie" onClick={goPrev} style={arrowBtnStyle} className="show-mobile">
-            <ChevronIcon />
-          </button>
-          <div style={{ display: 'flex', gap: 6 }}>
-            {caseStudies.map((_, i) => (
-              <button
-                key={i}
-                aria-label={`Zur Fallstudie ${i + 1}`}
-                onClick={() => goTo(i)}
-                style={{
-                  width: active === i ? 20 : 6,
-                  height: 6,
-                  borderRadius: 3,
-                  backgroundColor: active === i ? '#2600FF' : '#ddd6fe',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.25s ease',
-                  padding: 0,
-                }}
-              />
-            ))}
-          </div>
-          <button aria-label="Nächste Fallstudie" onClick={goNext} style={arrowBtnStyle} className="show-mobile">
-            <ChevronIcon flip />
-          </button>
+        {/* progress dots */}
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 'clamp(36px, 4vw, 56px)' }}>
+          {caseStudies.map((_, i) => (
+            <button key={i} aria-label={`Fallstudie ${i + 1}`} onClick={() => setActive(i)}
+              style={{ width: active === i ? 32 : 8, height: 4, borderRadius: 4, border: 'none', padding: 0, cursor: 'pointer', backgroundColor: active === i ? 'var(--electric-2)' : 'rgba(255,255,255,0.2)', transition: `all 0.45s ${EASE}` }} />
+          ))}
         </div>
       </div>
     </section>
@@ -1784,33 +2044,51 @@ function AuditQuiz() {
 
 
   const Btn = ({ label, onClick }: { label: string; onClick: () => void }) => (
-    <button onClick={onClick} style={{ display: 'block', width: '100%', padding: '11px 16px', textAlign: 'left', backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 10, fontWeight: 500, fontSize: 13, color: '#030712', cursor: 'pointer', marginBottom: 8, transition: 'all 0.15s', fontFamily: 'inherit' }}
-      onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = '#2600FF'; b.style.backgroundColor = '#f2f2ff'; b.style.color = '#2600FF' }}
-      onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = '#e5e7eb'; b.style.backgroundColor = '#f9fafb'; b.style.color = '#030712' }}>
+    <button onClick={onClick}
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, width: '100%', padding: '13px 16px', textAlign: 'left', backgroundColor: '#fff', border: '1px solid var(--line)', borderRadius: 14, fontWeight: 500, fontSize: 14, color: 'var(--ink)', cursor: 'pointer', marginBottom: 8, transition: 'all 0.25s ease', fontFamily: 'inherit' }}
+      onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = '#2600FF'; b.style.backgroundColor = '#F4F2FF'; b.style.transform = 'translateX(4px)' }}
+      onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = 'rgba(7,7,12,0.12)'; b.style.backgroundColor = '#fff'; b.style.transform = 'none' }}>
       {label}
+      <span style={{ color: '#2600FF', fontSize: 13 }}>→</span>
     </button>
   )
 
   const reset = () => { setStep(0); setAnswers({}); setName(''); setPhone(''); setEmail(''); setCompanyName(''); setIndustry(''); setBookedQuizDay(null); setBookedQuizSlot(null) }
 
   return (
-    <section id="audit-quiz" style={{ backgroundColor: '#f9fafb', padding: '80px 24px' }}>
-      <div className="audit-grid" style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 480px', gap: 56, alignItems: 'center' }}>
-        <div className="audit-copy" style={{ textAlign: 'left' }}>
-          <h2 style={{ fontSize: 'clamp(24px, 3.5vw, 34px)', fontWeight: 700, color: '#030712', marginBottom: 14, letterSpacing: '-0.5px' }}>
-            Kostenloses <span style={{ color: '#2600FF' }}>2-Minuten-Sichtbarkeits-Audit</span>
-          </h2>
-          <p style={{ fontSize: 15, fontWeight: 400, color: '#4b5563', marginBottom: 26, lineHeight: 1.7 }}>&thinsp;5 Fragen · Google- &amp; KI-Präsenz-Check · Persönlicher Wachstumsplan</p>
-          <div className="audit-bullets" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {['Kein Verkaufsgespräch, nur Ihre Ergebnisse', 'Fertig in unter 2 Minuten', 'Persönlicher Plan innerhalb von 24 Stunden'].map(b => (
-              <div key={b} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: '50%', backgroundColor: '#f2f2ff', color: '#2600FF', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>✓</span>
-                <span style={{ fontSize: 14, color: '#374151' }}>{b}</span>
-              </div>
+    <section id="audit-quiz" style={{ backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(80px, 10vw, 130px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden' }}>
+      <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.5 }} />
+      <div style={{ position: 'absolute', top: '-30%', left: '10%', width: 700, height: 700, background: 'radial-gradient(closest-side, rgba(255,255,255,0.22), transparent 70%)', pointerEvents: 'none' }} />
+      <div className="audit-grid" style={{ ...SHELL, position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0, 500px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
+        <div className="audit-copy">
+          <Reveal>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+              <span style={{ width: 28, height: 1, backgroundColor: 'rgba(255,255,255,0.6)' }} />
+              <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.7)' }}>Kostenlos · 2 Minuten</p>
+            </div>
+          </Reveal>
+          <MaskHeading
+            className="h-md"
+            style={{ marginBottom: 24, color: '#fff' }}
+            lines={[<>Kostenloses <span className="serif italic-serif">2-Minuten-</span></>, <><span className="serif italic-serif">Sichtbarkeits-Audit</span></>]}
+          />
+          <Reveal delay={0.12}>
+            <p style={{ fontSize: 16, lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', marginBottom: 34, maxWidth: 460 }}>
+              5 Fragen · Google- &amp; KI-Präsenz-Check · Persönlicher Wachstumsplan
+            </p>
+          </Reveal>
+          <div className="audit-bullets" style={{ display: 'flex', flexDirection: 'column' }}>
+            {['Kein Verkaufsgespräch, nur Ihre Ergebnisse', 'Fertig in unter 2 Minuten', 'Persönlicher Plan innerhalb von 24 Stunden'].map((b, i) => (
+              <Reveal key={b} delay={0.16 + i * 0.07}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em' }}>{String(i + 1).padStart(2, '0')}</span>
+                  <span style={{ fontSize: 15, color: '#fff' }}>{b}</span>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
-        <div style={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: 20, padding: '32px 28px', boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}>
+        <div style={{ backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 26, padding: 'clamp(26px, 3vw, 38px)', boxShadow: '0 40px 80px rgba(7,7,12,0.28)' }}>
           {step > 0 && step <= TOTAL && (
             <div style={{ marginBottom: 22 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
@@ -1827,27 +2105,27 @@ function AuditQuiz() {
             <div style={{ textAlign: 'center' }}>
               <p style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.7, marginBottom: 22 }}>Beantworten Sie 5 kurze Fragen, um genau herauszufinden, wo Sie unsichtbar sind&nbsp;&nbsp;und erhalten Sie einen Schritt-für-Schritt-Wachstumsplan</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <button onClick={() => setStep(1)} style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 14, padding: '12px 26px', borderRadius: 12, border: 'none', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.12)', fontFamily: 'inherit' }}>Kostenloses Audit starten</button>
+                <button onClick={() => setStep(1)} style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 14, padding: '14px 28px', borderRadius: 999, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Kostenloses Audit starten</button>
                 {/* Hidden anchor so the hero "Book a Call" button can trigger booking directly */}
                 <button id="quiz-book-direct" onClick={() => setStep(9)} style={{ backgroundColor: '#fff', color: '#2600FF', fontWeight: 500, fontSize: 14, padding: '12px 26px', borderRadius: 12, border: '1.5px solid #c4b5fd', cursor: 'pointer', fontFamily: 'inherit', display: 'none' }}>Direkt zur Buchung</button>
               </div>
             </div>
           )}
-          {step === 1 && <><h3 style={{ fontWeight: 600, fontSize: 15, color: '#030712', marginBottom: 16 }}>In welcher Stadt sind Sie ansässig?</h3>{['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Sonstige'].map(c => <Btn key={c} label={c} onClick={() => pick('city', c)} />)}</>}
-          {step === 2 && <><h3 style={{ fontWeight: 600, fontSize: 15, color: '#030712', marginBottom: 16 }}>Wie viele neue Kunden pro Monat?</h3>{['Weniger als 10', '10–30', '30–60', 'Mehr als 60'].map(c => <Btn key={c} label={c} onClick={() => pick('clients', c)} />)}</>}
-          {step === 3 && <><h3 style={{ fontWeight: 600, fontSize: 15, color: '#030712', marginBottom: 16 }}>Wie erreichen Sie die meisten Kunden?</h3>{['Mundpropaganda', 'Google-Suche', 'Social Media', 'Bezahlte Anzeigen', "Ich bin mir nicht sicher"].map(c => <Btn key={c} label={c} onClick={() => pick('channel', c)} />)}</>}
+          {step === 1 && <><h3 style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 18 }}>In welcher Stadt sind Sie ansässig?</h3>{['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Sonstige'].map(c => <Btn key={c} label={c} onClick={() => pick('city', c)} />)}</>}
+          {step === 2 && <><h3 style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 18 }}>Wie viele neue Kunden pro Monat?</h3>{['Weniger als 10', '10–30', '30–60', 'Mehr als 60'].map(c => <Btn key={c} label={c} onClick={() => pick('clients', c)} />)}</>}
+          {step === 3 && <><h3 style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 18 }}>Wie erreichen Sie die meisten Kunden?</h3>{['Mundpropaganda', 'Google-Suche', 'Social Media', 'Bezahlte Anzeigen', "Ich bin mir nicht sicher"].map(c => <Btn key={c} label={c} onClick={() => pick('channel', c)} />)}</>}
           {step === 4 && (
             <div>
-              <h3 style={{ fontWeight: 600, fontSize: 15, color: '#030712', marginBottom: 16 }}>In welcher Branche sind Sie tätig?</h3>
-              <input value={industry} onChange={e => setIndustry(e.target.value)} placeholder="z. B. Autowerkstatt, Zahnmedizin, Heizungstechnik…" style={{ width: '100%', padding: '11px 13px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', marginBottom: 10 }} />
-              <button onClick={() => pick('industry', industry || 'Nicht angegeben')} style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 13, padding: '11px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', width: '100%', fontFamily: 'inherit' }}>Weiter</button>
+              <h3 style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 18 }}>In welcher Branche sind Sie tätig?</h3>
+              <input value={industry} onChange={e => setIndustry(e.target.value)} placeholder="z. B. Autowerkstatt, Zahnmedizin, Heizungstechnik…" style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', marginBottom: 10 }} />
+              <button onClick={() => pick('industry', industry || 'Nicht angegeben')} style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 13, padding: '13px 20px', borderRadius: 999, border: 'none', cursor: 'pointer', width: '100%', fontFamily: 'inherit' }}>Weiter</button>
             </div>
           )}
           {step === 5 && (
             <div>
               <h3 style={{ fontWeight: 600, fontSize: 14, color: '#030712', marginBottom: 4 }}>Wir prüfen jetzt Ihre Sichtbarkeit in der KI-Suche</h3>
               <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 14 }}>Illustratives Beispiel, keine Live-Abfrage</p>
-              <input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Name Ihres Unternehmens" style={{ width: '100%', padding: '11px 13px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', outline: 'none', marginBottom: 12, boxSizing: 'border-box' }} />
+              <input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Name Ihres Unternehmens" style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 13, fontFamily: 'inherit', outline: 'none', marginBottom: 12, boxSizing: 'border-box' }} />
               <div style={{ backgroundColor: '#f2f2ff', border: '1px solid #ddd6fe', borderRadius: 10, padding: 14, marginBottom: 12 }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: '#2600FF', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>KI-Sichtbarkeits-Check: {answers.city || 'Ihre Region'}</div>
                 <p style={{ fontSize: 12, color: '#374151', lineHeight: 1.75, margin: '0 0 10px' }}>
@@ -1863,19 +2141,19 @@ function AuditQuiz() {
                   Ein vollständiges Sichtbarkeits-Audit und ein Schritt-für-Schritt-Optimierungsplan werden nach Abschluss der Umfrage erstellt und zugesendet.
                 </p>
               </div>
-              <button onClick={() => setStep(6)} style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 13, padding: '11px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', width: '100%', fontFamily: 'inherit' }}>So ändern Sie das</button>
+              <button onClick={() => setStep(6)} style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 13, padding: '13px 20px', borderRadius: 999, border: 'none', cursor: 'pointer', width: '100%', fontFamily: 'inherit' }}>So ändern Sie das</button>
             </div>
           )}
-          {step === 6 && <><h3 style={{ fontWeight: 600, fontSize: 15, color: '#030712', marginBottom: 16 }}>Was ist Ihre größte Sorge?</h3>{['Ein Mitbewerber ist mir voraus', 'Zu wenig Leads', 'Leads passen nicht', "Ich bin bei Google & KI unsichtbar", "Ich habe es satt, Dienstleister zu koordinieren", 'Sonstiges'].map(c => <Btn key={c} label={c} onClick={() => pick('concern', c)} />)}</>}
-          {step === 7 && <><h3 style={{ fontWeight: 600, fontSize: 15, color: '#030712', marginBottom: 16 }}>Monatliches Marketingbudget?</h3>{['Bis 500 €', '500–1.500 €', '1.500–3.000 €', 'Über 3.000 €', "Ich bin noch nicht investitionsbereit"].map(c => <Btn key={c} label={c} onClick={() => pick('budget', c)} />)}</>}
+          {step === 6 && <><h3 style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 18 }}>Was ist Ihre größte Sorge?</h3>{['Ein Mitbewerber ist mir voraus', 'Zu wenig Leads', 'Leads passen nicht', "Ich bin bei Google & KI unsichtbar", "Ich habe es satt, Dienstleister zu koordinieren", 'Sonstiges'].map(c => <Btn key={c} label={c} onClick={() => pick('concern', c)} />)}</>}
+          {step === 7 && <><h3 style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 18 }}>Monatliches Marketingbudget?</h3>{['Bis 500 €', '500–1.500 €', '1.500–3.000 €', 'Über 3.000 €', "Ich bin noch nicht investitionsbereit"].map(c => <Btn key={c} label={c} onClick={() => pick('budget', c)} />)}</>}
           {step === 8 && (
             <div>
               <h3 style={{ fontWeight: 600, fontSize: 15, color: '#030712', marginBottom: 5 }}>Erhalten Sie Ihre Analyse &amp; Ihren Aktionsplan</h3>
               <p style={{ fontSize: 12, color: '#4b5563', marginBottom: 16 }}>Ein Berater sendet Ihnen innerhalb von 24 Stunden Ihren persönlichen Plan.</p>
-              <input value={name} onChange={e => setName(e.target.value)} placeholder="Vollständiger Name" style={{ width: '100%', padding: '11px 13px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', outline: 'none', marginBottom: 8, boxSizing: 'border-box' }} />
-              <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="Telefonnummer" style={{ width: '100%', padding: '11px 13px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', outline: 'none', marginBottom: 8, boxSizing: 'border-box' }} />
-              <input value={email} onChange={e => setEmail(e.target.value)} placeholder="E-Mail-Adresse" style={{ width: '100%', padding: '11px 13px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', outline: 'none', marginBottom: 14, boxSizing: 'border-box' }} />
-              <button onClick={() => setStep(9)} style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 14, padding: '12px 22px', borderRadius: 12, border: 'none', cursor: 'pointer', width: '100%', boxShadow: '0 1px 2px rgba(0,0,0,0.12)', fontFamily: 'inherit' }}>Analyse und Aktionsplan erhalten</button>
+              <input value={name} onChange={e => setName(e.target.value)} placeholder="Vollständiger Name" style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 13, fontFamily: 'inherit', outline: 'none', marginBottom: 8, boxSizing: 'border-box' }} />
+              <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="Telefonnummer" style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 13, fontFamily: 'inherit', outline: 'none', marginBottom: 8, boxSizing: 'border-box' }} />
+              <input value={email} onChange={e => setEmail(e.target.value)} placeholder="E-Mail-Adresse" style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 13, fontFamily: 'inherit', outline: 'none', marginBottom: 14, boxSizing: 'border-box' }} />
+              <button onClick={() => setStep(9)} style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 600, fontSize: 14, padding: '13px 22px', borderRadius: 999, border: 'none', cursor: 'pointer', width: '100%', boxShadow: '0 1px 2px rgba(0,0,0,0.12)', fontFamily: 'inherit' }}>Analyse und Aktionsplan erhalten</button>
             </div>
           )}
 
@@ -1940,22 +2218,39 @@ const explainedItems = [
 
 function LocalVisibilityExplained() {
   return (
-    <section style={{ backgroundColor: '#fff', padding: '80px 24px' }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <h2 className="reveal" style={{ fontSize: 'clamp(20px, 3.5vw, 30px)', fontWeight: 700, color: '#030712', textAlign: 'center', marginBottom: 10, letterSpacing: '-0.5px' }}>
-          Lokale Sichtbarkeit, <span style={{ color: '#2600FF' }}>einfach erklärt</span>
-        </h2>
-        <p style={{ fontSize: 15, color: '#4b5563', textAlign: 'center', marginBottom: 40, lineHeight: 1.65 }}>Die kurzen Antworten auf die Fragen, die uns in fast jedem Erstgespräch gestellt werden.</p>
-        <div className="explained-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-          {explainedItems.map((item, i) => (
-            <div key={i} style={{ backgroundColor: '#f9fafb', borderRadius: 16, border: '1px solid #e5e7eb', borderLeft: '3px solid #2600FF', padding: '26px 26px 24px' }}>
-              <span style={{ display: 'inline-block', fontSize: 12, fontWeight: 700, color: '#2600FF', backgroundColor: '#f2f2ff', border: '1px solid #ddd6fe', borderRadius: 6, padding: '2px 8px', marginBottom: 12, letterSpacing: '0.04em' }}>
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <h3 style={{ fontWeight: 600, fontSize: 16, color: '#030712', lineHeight: 1.4, marginBottom: 10 }}>{item.q}</h3>
-              <p style={{ margin: 0, fontSize: 14, color: '#4b5563', lineHeight: 1.75 }}>{item.a}</p>
-            </div>
-          ))}
+    <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
+      <div style={{ ...SHELL }}>
+        <div className="expl-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.4fr) minmax(0, 1fr)', gap: 'clamp(32px, 5vw, 80px)', alignItems: 'start' }}>
+          <div className="expl-sticky" style={{ position: 'sticky', top: 120 }}>
+            <Reveal><Kicker>Grundlagen</Kicker></Reveal>
+            <MaskHeading
+              className="h-md"
+              style={{ marginTop: 22, marginBottom: 20 }}
+              lines={[<>Lokale Sichtbarkeit,</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>einfach erklärt</span></>]}
+            />
+            <Reveal delay={0.12}>
+              <p style={{ fontSize: 14.5, lineHeight: 1.8, color: 'var(--muted)', margin: 0, maxWidth: 320 }}>
+                Die kurzen Antworten auf die Fragen, die uns in fast jedem Erstgespräch gestellt werden.
+              </p>
+            </Reveal>
+          </div>
+
+          <div>
+            {explainedItems.map((item, i) => (
+              <Reveal key={i} delay={Math.min(i * 0.06, 0.24)}>
+                <div className="expl-row" style={{
+                  display: 'grid', gridTemplateColumns: '46px minmax(0, 0.9fr) minmax(0, 1.1fr)',
+                  gap: 'clamp(14px, 2vw, 32px)',
+                  padding: 'clamp(26px, 3vw, 40px) 0',
+                  borderTop: '1px solid var(--line)',
+                }}>
+                  <span className="display" style={{ fontSize: 13, color: 'var(--electric)', letterSpacing: '0.08em', paddingTop: 6 }}>{String(i + 1).padStart(2, '0')}</span>
+                  <h3 className="display" style={{ fontSize: 'clamp(18px, 1.7vw, 24px)', lineHeight: 1.2, margin: 0 }}>{item.q}</h3>
+                  <p style={{ fontSize: 14, lineHeight: 1.85, color: 'var(--muted)', margin: 0 }}>{item.a}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -1963,24 +2258,46 @@ function LocalVisibilityExplained() {
 }
 
 function FAQ() {
-  const [open, setOpen] = useState<number | null>(null)
+  const [open, setOpen] = useState<number | null>(0)
   return (
-    <section id="faq" style={{ backgroundColor: '#fff', padding: '80px 24px' }}>
-      <div style={{ maxWidth: 960, margin: '0 auto' }}>
-        <h2 style={{ fontSize: 'clamp(20px, 3.5vw, 28px)', fontWeight: 700, color: '#030712', textAlign: 'center', marginBottom: 10, letterSpacing: '-0.5px' }}>
-          Häufige Fragen <span style={{ color: '#2600FF' }}>beantwortet</span>
-        </h2>
-        <p style={{ fontSize: 14, fontWeight: 400, color: '#4b5563', textAlign: 'center', marginBottom: 36 }}>Alles, was Sie wissen müssen, bevor Sie Ihr Audit starten</p>
-        <div className="faq-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, alignItems: 'start' }}>
-          {faqs.map((f, i) => (
-            <div key={i} style={{ border: '1px solid #e5e7eb', borderRadius: 13, overflow: 'hidden', backgroundColor: '#f9fafb' }}>
-              <button onClick={() => setOpen(open === i ? null : i)} style={{ width: '100%', padding: '16px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}>
-                <span style={{ fontWeight: 600, fontSize: 14, color: '#030712', lineHeight: 1.4 }}>{f.q}</span>
-                <IconChevron open={open === i} />
-              </button>
-              {open === i && <div style={{ padding: '0 18px 14px', fontSize: 13, color: '#4b5563', lineHeight: 1.75 }}>{f.a}</div>}
-            </div>
-          ))}
+    <section id="faq" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
+      <div style={{ ...SHELL, maxWidth: 1000 }}>
+        <Reveal><Kicker>FAQ</Kicker></Reveal>
+        <div className="faq-head" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 28, flexWrap: 'wrap', marginTop: 26, marginBottom: 'clamp(36px, 4vw, 56px)' }}>
+          <MaskHeading className="h-lg" lines={[<>Häufige Fragen</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>beantwortet</span></>]} />
+          <Reveal delay={0.12}>
+            <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, paddingBottom: 8, maxWidth: 280 }}>Alles, was Sie wissen müssen, bevor Sie Ihr Audit starten</p>
+          </Reveal>
+        </div>
+
+        <div style={{ borderTop: '1px solid var(--line)' }}>
+          {faqs.map((f, i) => {
+            const isOpen = open === i
+            return (
+              <div key={i} style={{ borderBottom: '1px solid var(--line)' }}>
+                <button onClick={() => setOpen(isOpen ? null : i)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24,
+                    padding: 'clamp(22px, 2.4vw, 32px) 0', background: 'none', border: 'none', cursor: 'pointer',
+                    textAlign: 'left', fontFamily: 'inherit',
+                  }}>
+                  <span className="display" style={{ fontSize: 'clamp(17px, 1.7vw, 25px)', lineHeight: 1.25, color: isOpen ? 'var(--electric)' : 'var(--ink)', transition: 'color 0.35s ease' }}>{f.q}</span>
+                  <span style={{
+                    flexShrink: 0, width: 38, height: 38, borderRadius: '50%',
+                    border: `1px solid ${isOpen ? 'var(--electric)' : 'var(--line)'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transform: isOpen ? 'rotate(45deg)' : 'none',
+                    transition: `transform 0.5s ${EASE}, border-color 0.35s ease`,
+                  }}>
+                    <svg width="13" height="13" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke={isOpen ? '#2600FF' : '#07070C'} strokeWidth="1.5" strokeLinecap="round" /></svg>
+                  </span>
+                </button>
+                <div style={{ overflow: 'hidden', maxHeight: isOpen ? 400 : 0, transition: `max-height 0.6s ${EASE}` }}>
+                  <p className="faq-answer" style={{ margin: 0, paddingBottom: 30, paddingRight: 62, maxWidth: 760, fontSize: 14.5, lineHeight: 1.85, color: 'var(--muted)' }}>{f.a}</p>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>
@@ -1992,44 +2309,71 @@ function FAQ() {
 // ─────────────────────────────────────────────────────────────────────────────
 function DualCTA() {
   const [modal, setModal] = useState(false)
-  const cardStyle: React.CSSProperties = { borderRadius: 20, padding: '48px 36px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }
+  const [hover, setHover] = useState<0 | 1 | null>(null)
+
   return (
     <>
       {modal && <BookCallModal onClose={() => setModal(false)} />}
-      <section style={{ backgroundColor: '#fff', padding: '80px 24px', borderTop: '1px solid #e5e7eb' }}>
-        <div className="dual-cta-grid" style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28, alignItems: 'stretch' }}>
-          <div style={{ ...cardStyle, backgroundColor: '#f2f2ff', border: '1px solid #ddd6fe' }}>
-            <h2 style={{ fontSize: 'clamp(20px, 3vw, 28px)', fontWeight: 700, color: '#030712', marginBottom: 12, letterSpacing: '-0.5px' }}>
-              Machen Sie das kostenlose <span style={{ color: '#2600FF' }}>2-Minuten-Sichtbarkeits-Audit</span>
-            </h2>
-            <p style={{ fontSize: 14, fontWeight: 400, color: '#4b5563', marginBottom: 26, lineHeight: 1.7 }}>
-              Beantworten Sie in 2 Minuten 5 Fragen, um Ihren aktuellen Status bei Google und KI zu erfahren, und erhalten Sie einen Schritt-für-Schritt-Wachstumsplan
-            </p>
-            <a href="#audit-quiz" className="cta-pulse" style={{ display: 'inline-block', backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 15, padding: '13px 30px', borderRadius: 12, textDecoration: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.12)', transition: 'background 0.15s' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1a00cc')}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2600FF')}>
-              Kostenloses Audit erhalten
-            </a>
+      <section className="dual-cta-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '68vh' }}>
+        {/* left — light */}
+        <div
+          onMouseEnter={() => setHover(0)} onMouseLeave={() => setHover(null)}
+          style={{
+            backgroundColor: 'var(--paper)', padding: 'clamp(56px, 7vw, 110px) clamp(24px, 5vw, 80px)',
+            display: 'flex', flexDirection: 'column', justifyContent: 'center',
+            position: 'relative', overflow: 'hidden',
+            transition: 'background-color 0.6s ease',
+          }}>
+          <div className="grid-bg-light" style={{ position: 'absolute', inset: 0, opacity: hover === 0 ? 1 : 0.35, transition: 'opacity 0.7s ease' }} />
+          <div style={{ position: 'relative', maxWidth: 620 }}>
+            <Reveal><Kicker>Schritt eins</Kicker></Reveal>
+            <MaskHeading
+              className="h-md"
+              style={{ marginTop: 22, marginBottom: 18 }}
+              lines={[<>Machen Sie das kostenlose</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>2-Minuten-</span></>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Sichtbarkeits-Audit</span></>]}
+            />
+            <Reveal delay={0.1}>
+              <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', marginBottom: 30 }}>
+                Beantworten Sie in 2 Minuten 5 Fragen, um Ihren aktuellen Status bei Google und KI zu erfahren, und erhalten Sie einen Schritt-für-Schritt-Wachstumsplan
+              </p>
+            </Reveal>
+            <Reveal delay={0.16}>
+              <a href="#audit-quiz" className="btn btn-lg btn-electric">Kostenloses Audit erhalten <span className="arw">→</span></a>
+            </Reveal>
           </div>
-          <div style={{ ...cardStyle, backgroundColor: '#f9fafb', border: '1px solid #e5e7eb' }}>
-            <span style={{ display: 'inline-block', backgroundColor: '#f2f2ff', color: '#2600FF', fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 8, border: '1px solid #ddd6fe', marginBottom: 20, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              Neugründung
-            </span>
-            <h2 style={{ fontSize: 'clamp(20px, 3vw, 28px)', fontWeight: 700, color: '#030712', marginBottom: 14, letterSpacing: '-0.4px', lineHeight: 1.3 }}>
-              Starten Sie bei null und wollen{' '}
-              <span style={{ color: '#2600FF' }}>lokale Sichtbarkeit von Anfang an richtig aufbauen?</span>
-            </h2>
-            <p style={{ fontSize: 15, fontWeight: 400, color: '#4b5563', lineHeight: 1.7, marginBottom: 28 }}>
-              Keine Bewertungen, keine Google-Präsenz, keine Social-Media-Follower. Kein Problem. Buchen Sie einen Anruf, und wir entwickeln von Tag eins an ein Sichtbarkeitssystem für Ihre Branche und Ihre Stadt.
-            </p>
-            <button
-              onClick={() => setModal(true)}
-              style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 600, fontSize: 15, padding: '13px 28px', borderRadius: 12, border: 'none', cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 1px 2px rgba(0,0,0,0.12)', transition: 'background 0.15s' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1a00cc')}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2600FF')}>
-              Kostenloses Beratungsgespräch buchen
-            </button>
-            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 12 }}>Kein Audit nötig. Nur ein Gespräch über Ihre Ziele.</p>
+        </div>
+
+        {/* right — dark */}
+        <div
+          onMouseEnter={() => setHover(1)} onMouseLeave={() => setHover(null)}
+          style={{
+            backgroundColor: 'var(--ink)', color: '#fff',
+            padding: 'clamp(56px, 7vw, 110px) clamp(24px, 5vw, 80px)',
+            display: 'flex', flexDirection: 'column', justifyContent: 'center',
+            position: 'relative', overflow: 'hidden',
+          }}>
+          <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: hover === 1 ? 1 : 0.4, transition: 'opacity 0.7s ease' }} />
+          <div style={{
+            position: 'absolute', bottom: '-25%', right: '-15%', width: 560, height: 560,
+            background: 'radial-gradient(closest-side, rgba(38,0,255,0.45), transparent 70%)',
+            transform: hover === 1 ? 'scale(1.15)' : 'scale(1)', transition: `transform 1.1s ${EASE}`, pointerEvents: 'none',
+          }} />
+          <div style={{ position: 'relative', maxWidth: 620 }}>
+            <Reveal><Kicker tone="light">Neugründung</Kicker></Reveal>
+            <MaskHeading
+              className="h-md"
+              style={{ marginTop: 22, marginBottom: 18 }}
+              lines={[<>Starten Sie bei null und</>, <>wollen <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>lokale Sichtbarkeit</span></>, <><span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>von Anfang an richtig</span></>, <><span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>aufbauen?</span></>]}
+            />
+            <Reveal delay={0.1}>
+              <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.55)', marginBottom: 30 }}>
+                Keine Bewertungen, keine Google-Präsenz, keine Social-Media-Follower. Kein Problem. Buchen Sie einen Anruf, und wir entwickeln von Tag eins an ein Sichtbarkeitssystem für Ihre Branche und Ihre Stadt.
+              </p>
+            </Reveal>
+            <Reveal delay={0.16}>
+              <button onClick={() => setModal(true)} className="btn btn-lg btn-paper">Kostenloses Beratungsgespräch buchen <span className="arw">→</span></button>
+              <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.35)', marginTop: 14 }}>Kein Audit nötig. Nur ein Gespräch über Ihre Ziele.</p>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -2043,37 +2387,51 @@ function DualCTA() {
 
 function Footer() {
   return (
-    <footer style={{ backgroundColor: '#030712', color: '#e5e7eb', padding: '52px 24px 28px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 36, marginBottom: 44 }}>
+    <footer style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(56px, 6vw, 88px) clamp(20px, 4vw, 48px) 28px', position: 'relative', overflow: 'hidden', borderTop: '1px solid var(--line-dark)' }}>
+      <div style={{ ...SHELL, position: 'relative' }}>
+        <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) repeat(3, minmax(0,1fr))', gap: 'clamp(28px, 4vw, 56px)', marginBottom: 'clamp(48px, 6vw, 80px)' }}>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 20, color: '#fff', marginBottom: 8 }}>RAG<span style={{ color: '#2600FF' }}>.</span></div>
-            <p style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.7, maxWidth: 210 }}>Das einheitliche System für lokale Sichtbarkeit bei Google, KI und Offline-Kanälen.</p>
+            <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.5)', maxWidth: 300, margin: '0 0 22px' }}>
+              Das einheitliche System für lokale Sichtbarkeit bei Google, KI und Offline-Kanälen.
+            </p>
+            <a href={homeHref('audit-quiz')} className="btn btn-md btn-outline-dark">Kostenloses Audit erhalten <span className="arw">→</span></a>
           </div>
+          {[
+            { title: 'Navigation', items: [['Audit', 'audit'], ['Leistungen', 'modules'], ['Ergebnisse', 'results'], ['FAQ', 'faq']] as [string, string][] },
+          ].map(col => (
+            <div key={col.title}>
+              <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>{col.title}</p>
+              {col.items.map(([l, anchor]) => (
+                <a key={l} href={homeHref(anchor)} className="ul" style={{ display: 'block', width: 'fit-content', fontSize: 14, color: 'rgba(255,255,255,0.75)', marginBottom: 10 }}>{l}</a>
+              ))}
+            </div>
+          ))}
           <div>
-            <div style={{ fontWeight: 600, fontSize: 11, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 12 }}>Navigation</div>
-            {[['Audit', 'audit'], ['Leistungen', 'modules'], ['Ergebnisse', 'results'], ['FAQ', 'faq']].map(([l, anchor]) => (
-              <a key={l} href={homeHref(anchor)} style={{ display: 'block', fontSize: 13, color: '#d1d5db', textDecoration: 'none', marginBottom: 7, transition: 'color 0.15s' }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#d1d5db')}>{l}</a>
-            ))}
-          </div>
-          <div>
-            <div style={{ fontWeight: 600, fontSize: 11, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 12 }}>Rechtliches</div>
+            <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>Rechtliches</p>
             {['Impressum', 'Datenschutz', 'DSGVO-Konformität', 'AGB'].map(l => (
-              <a key={l} href="#" style={{ display: 'block', fontSize: 13, color: '#d1d5db', textDecoration: 'none', marginBottom: 7, transition: 'color 0.15s' }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#d1d5db')}>{l}</a>
+              <a key={l} href="#" className="ul" style={{ display: 'block', width: 'fit-content', fontSize: 14, color: 'rgba(255,255,255,0.75)', marginBottom: 10 }}>{l}</a>
             ))}
           </div>
           <div>
-            <div style={{ fontWeight: 600, fontSize: 11, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 12 }}>Kontakt</div>
-            <p style={{ fontSize: 13, color: '#d1d5db', lineHeight: 1.85, margin: 0 }}>Musterstraße 12<br />10115 Berlin, Deutschland<br />+49 30 12345678<br />hallo@rag-agentur.de</p>
+            <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>Kontakt</p>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', lineHeight: 1.9, margin: 0 }}>
+              Musterstraße 12<br />10115 Berlin, Deutschland<br />
+              <a href="tel:+493012345678" className="ul" style={{ color: 'inherit' }}>+49 30 12345678</a><br />
+              <a href="mailto:hallo@rag-agentur.de" className="ul" style={{ color: 'inherit' }}>hallo@rag-agentur.de</a>
+            </p>
           </div>
         </div>
-        <div style={{ borderTop: '1px solid #1f2937', paddingTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-          <p style={{ fontSize: 12, color: '#6b7280', margin: 0 }}>© 2026 RAG, Regionale Agentur. Alle Rechte vorbehalten.</p>
-          <p style={{ fontSize: 12, color: '#6b7280', margin: 0 }}>DSGVO-konform · Made in Deutschland</p>
+
+        {/* oversized wordmark */}
+        <div aria-hidden style={{ position: 'relative', lineHeight: 0.8, marginBottom: 24, overflow: 'hidden' }}>
+          <span className="display" style={{ fontSize: 'clamp(72px, 20vw, 300px)', letterSpacing: '-0.06em', display: 'block', color: '#fff' }}>
+            RAG<span style={{ color: 'var(--electric)' }}>.</span>
+          </span>
+        </div>
+
+        <div style={{ borderTop: '1px solid var(--line-dark)', paddingTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: 0 }}>© 2026 RAG, Regionale Agentur. Alle Rechte vorbehalten.</p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: 0 }}>DSGVO-konform · Made in Deutschland</p>
         </div>
       </div>
     </footer>
@@ -2291,7 +2649,7 @@ function ServiceLeadForm({ serviceLabel }: { serviceLabel: string }) {
   const [name, setName] = useState('')
   const [contact, setContact] = useState('')
   const [sent, setSent] = useState(false)
-  const inputStyle: React.CSSProperties = { width: '100%', padding: '11px 14px', borderRadius: 10, border: '1.5px solid #e5e7eb', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', color: '#030712', backgroundColor: '#fff' }
+  const inputStyle: React.CSSProperties = { width: '100%', padding: '11px 14px', borderRadius: 12, border: '1px solid rgba(7,7,12,0.14)', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', color: '#030712', backgroundColor: '#fff' }
 
   if (sent) {
     return (
@@ -2309,7 +2667,7 @@ function ServiceLeadForm({ serviceLabel }: { serviceLabel: string }) {
       <button
         disabled={!name || !contact}
         onClick={() => setSent(true)}
-        style={{ padding: '13px', borderRadius: 12, border: 'none', backgroundColor: (!name || !contact) ? '#e5e7eb' : '#2600FF', color: (!name || !contact) ? '#9ca3af' : '#fff', fontWeight: 600, fontSize: 14, cursor: (!name || !contact) ? 'default' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}>
+        style={{ padding: '13px', borderRadius: 999, border: 'none', backgroundColor: (!name || !contact) ? '#e5e7eb' : '#2600FF', color: (!name || !contact) ? '#9ca3af' : '#fff', fontWeight: 600, fontSize: 14, cursor: (!name || !contact) ? 'default' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}>
         Anfrage senden
       </button>
     </div>
@@ -2324,7 +2682,7 @@ function ServicePage({ slug }: { slug: string }) {
     return (
       <>
         <Nav />
-        <section style={{ padding: '120px 24px', textAlign: 'center' }}>
+        <section style={{ padding: '180px 24px 120px', textAlign: 'center' }}>
           <h1 style={{ fontSize: 26, fontWeight: 700, color: '#030712', marginBottom: 14 }}>Service nicht gefunden</h1>
           <a href="/" style={{ color: '#2600FF', fontWeight: 600, textDecoration: 'none' }}>← Zurück zur Startseite</a>
         </section>
@@ -2338,16 +2696,18 @@ function ServicePage({ slug }: { slug: string }) {
   return (
     <>
       <Nav />
-      <section style={{ backgroundColor: '#f9fafb', padding: '64px 24px 56px' }}>
-        <div style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#2600FF', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>{data.kicker}</p>
-          <h1 style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 700, color: '#030712', lineHeight: 1.15, letterSpacing: '-0.8px', marginBottom: 18 }}>{data.heroTitle}</h1>
-          <p style={{ fontSize: 16, color: '#4b5563', lineHeight: 1.65, maxWidth: 560, margin: '0 auto 28px' }}>{data.heroSubtitle}</p>
-          <a href="#get-audit" style={{ display: 'inline-block', backgroundColor: '#2600FF', color: '#fff', fontWeight: 600, fontSize: 15, padding: '13px 28px', borderRadius: 12, textDecoration: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.12)' }}>{data.ctaTitle} →</a>
+      <section style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
+        <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.6 }} />
+        <div style={{ position: 'absolute', top: '-40%', right: '-10%', width: 700, height: 700, background: 'radial-gradient(closest-side, rgba(38,0,255,0.5), transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ maxWidth: 820, margin: '0 auto', position: 'relative' }}>
+          <p className="eyebrow" style={{ color: 'var(--electric-2)', marginBottom: 22 }}>{data.kicker}</p>
+          <h1 className="display h-lg" style={{ marginBottom: 22 }}>{data.heroTitle}</h1>
+          <p className="lead" style={{ color: 'rgba(255,255,255,0.6)', maxWidth: 620, margin: '0 0 34px' }}>{data.heroSubtitle}</p>
+          <a href="#get-audit" className="btn btn-lg btn-paper">{data.ctaTitle} <span className="arw">→</span></a>
         </div>
       </section>
 
-      <section style={{ backgroundColor: '#fff', padding: '64px 24px' }}>
+      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px)' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <div style={{ marginBottom: 44 }}><data.Illust /></div>
 
@@ -2400,17 +2760,17 @@ function ServicePage({ slug }: { slug: string }) {
         </div>
       </section>
 
-      <section id="get-audit" style={{ backgroundColor: '#f9fafb', padding: '64px 24px' }}>
+      <section id="get-audit" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px)' }}>
         <div style={{ maxWidth: 460, margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{ fontSize: 'clamp(20px, 3.5vw, 28px)', fontWeight: 700, color: '#030712', marginBottom: 10 }}>{data.ctaTitle}</h2>
           <p style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.65, marginBottom: 28 }}>{data.ctaBody}</p>
-          <div style={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: 20, padding: '28px 26px', boxShadow: '0 4px 16px rgba(0,0,0,0.06)', textAlign: 'left' }}>
+          <div style={{ backgroundColor: '#fff', border: '1px solid var(--line)', borderRadius: 24, padding: '30px 28px', boxShadow: '0 20px 50px rgba(7,7,12,0.07)', textAlign: 'left' }}>
             <ServiceLeadForm serviceLabel={data.heroTitle} />
           </div>
         </div>
       </section>
 
-      <section style={{ backgroundColor: '#fff', padding: '64px 24px 80px' }}>
+      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
           <h2 style={{ fontSize: 19, fontWeight: 700, color: '#030712', textAlign: 'center', marginBottom: 8 }}>Entdecken Sie unsere weiteren Leistungen</h2>
           <p style={{ fontSize: 14, color: '#4b5563', textAlign: 'center', marginBottom: 32 }}>Die meisten Unternehmen brauchen mehr als einen Kanal, um echte Ergebnisse zu sehen. Entdecken Sie das gesamte System.</p>
@@ -2439,127 +2799,58 @@ function ServicePage({ slug }: { slug: string }) {
 // RESPONSIVE
 // ─────────────────────────────────────────────────────────────────────────────
 const responsiveCSS = `
+@keyframes fadeSwap {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (max-width: 1024px) {
+  .hero-grid { grid-template-columns: 1fr !important; }
+  .hero-visual { justify-content: flex-start !important; margin-top: 8px; }
+  .hero-visual > div { max-width: 100% !important; }
+  .about-top, .about-band, .problem-head, .sol-head, .res-head, .faq-head { grid-template-columns: 1fr !important; }
+  .about-band { gap: 40px !important; }
+  .problem-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+  .problem-sticky > div { position: static !important; }
+  .audit-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+  .res-body { grid-template-columns: 1fr !important; }
+  .expl-grid { grid-template-columns: 1fr !important; }
+  .expl-sticky { position: static !important; }
+  .expl-row { grid-template-columns: 40px 1fr !important; }
+  .expl-row > p { grid-column: 2 / -1; margin-top: 12px !important; }
+  .mod-row { grid-template-columns: 44px minmax(0,1fr) auto !important; }
+  .mod-sentence { display: none; }
+  .mod-detail { grid-template-columns: 1fr !important; }
+  .mod-detail-cols { grid-template-columns: 1fr !important; gap: 18px !important; }
+  .footer-grid { grid-template-columns: 1fr 1fr !important; }
+}
+
 @media (max-width: 768px) {
   .hidden-mobile { display: none !important; }
   .show-mobile { display: flex !important; }
-  .problem-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
-  .process-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
-  .about-grid { grid-template-columns: 1fr !important; gap: 36px !important; }
-  .audit-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
-  .audit-copy { text-align: center !important; }
-  .audit-bullets > div { justify-content: center !important; }
-  .explained-grid { grid-template-columns: 1fr !important; }
-  .faq-grid { grid-template-columns: 1fr !important; }
+  .hero-stats { gap: 20px !important; }
+  .process-wrap { grid-template-columns: 1fr !important; }
+  .process-rail { display: none !important; }
+  .step-row { grid-template-columns: 1fr !important; margin-left: 0 !important; gap: 14px !important; }
+  .step-row > div:last-child { padding-top: 0 !important; }
   .dual-cta-grid { grid-template-columns: 1fr !important; }
+  .audit-grid { grid-template-columns: 1fr !important; gap: 34px !important; }
+  .res-row { grid-template-columns: 1fr !important; gap: 6px !important; }
+  .about-stats { grid-template-columns: 1fr !important; }
+  .about-stats > div { border-right: none !important; border-bottom: 1px solid var(--line); padding-left: 0 !important; padding-bottom: 22px; }
+  .footer-grid { grid-template-columns: 1fr !important; }
+  .faq-answer { padding-right: 0 !important; }
+  .mod-row { grid-template-columns: 34px minmax(0,1fr) !important; row-gap: 14px !important; }
+  .mod-row > div:last-child { grid-column: 1 / -1; justify-content: flex-start !important; }
 }
+
 @media (min-width: 769px) {
   .show-mobile { display: none !important; }
 }
 
-/* ── Global scroll-reveal ── */
-.reveal {
-  opacity: 0;
-  transform: translateY(22px);
-  transition: opacity 0.55s ease, transform 0.55s ease;
-}
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-.reveal-delay-1 { transition-delay: 0.1s; }
-.reveal-delay-2 { transition-delay: 0.2s; }
-.reveal-delay-3 { transition-delay: 0.3s; }
-.reveal-delay-4 { transition-delay: 0.4s; }
-
-/* ── Real Results case-study carousel slide ── */
-@keyframes caseSlideNext {
-  from { opacity: 0; transform: translateX(28px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-@keyframes caseSlidePrev {
-  from { opacity: 0; transform: translateX(-28px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-.case-slide-next { animation: caseSlideNext 0.35s ease both; }
-.case-slide-prev { animation: caseSlidePrev 0.35s ease both; }
-
-/* ── Hero radar rings ── */
-@keyframes radarPulse {
-  0%   { transform: scale(1); opacity: 0.6; }
-  100% { transform: scale(7); opacity: 0; }
-}
-.radar-ring-1 { animation: radarPulse 3s ease-out infinite; transform-box: fill-box; transform-origin: center; }
-.radar-ring-2 { animation: radarPulse 3s ease-out infinite 1s; transform-box: fill-box; transform-origin: center; }
-.radar-ring-3 { animation: radarPulse 3s ease-out infinite 2s; transform-box: fill-box; transform-origin: center; }
-
-/* ── Hero "Your Business #1" card float ── */
-@keyframes cardFloat {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-8px); }
-}
-.hero-card-float { animation: cardFloat 3.4s ease-in-out infinite; }
-
-/* ── Hero pin drift ── */
-@keyframes pinDrift {
-  0%, 100% { transform: translateY(0px) scale(1); opacity: 0.55; }
-  50%       { transform: translateY(-6px) scale(1.07); opacity: 0.75; }
-}
-.hero-pin-1 { animation: pinDrift 4s ease-in-out infinite; }
-.hero-pin-2 { animation: pinDrift 4s ease-in-out infinite 1.4s; }
-
-/* ── Trust row count-up glow ── */
-@keyframes numberGlow {
-  0%, 100% { text-shadow: none; }
-  50%       { text-shadow: 0 0 18px rgba(38,0,255,0.35); }
-}
-.count-glow { animation: numberGlow 2.4s ease-in-out infinite 1s; }
-
-/* ── CTA button pulse ── */
-@keyframes ctaPulse {
-  0%, 100% { box-shadow: 0 1px 2px rgba(0,0,0,0.12); }
-  50%       { box-shadow: 0 0 0 8px rgba(38,0,255,0.12), 0 1px 2px rgba(0,0,0,0.12); }
-}
-.cta-pulse { animation: ctaPulse 2.6s ease-in-out infinite; }
-
-/* ── Testimonial card shimmer on hover ── */
-.testimonial-card {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  position: relative;
-  overflow: hidden;
-}
-.testimonial-card::after {
-  content: '';
-  position: absolute;
-  top: -60%;
-  left: -60%;
-  width: 60%;
-  height: 220%;
-  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.55) 50%, transparent 60%);
-  transform: skewX(-15deg);
-  opacity: 0;
-  transition: opacity 0s;
-}
-.testimonial-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0,0,0,0.1); }
-.testimonial-card:hover::after { animation: shimmer 0.55s ease forwards; }
-@keyframes shimmer {
-  0%   { left: -60%; opacity: 1; }
-  100% { left: 130%; opacity: 1; }
-}
-
-/* ── Comparison table row reveal ── */
-@keyframes rowSlideIn {
-  from { opacity: 0; transform: translateX(-12px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-.table-row-anim { animation: rowSlideIn 0.4s ease both; }
-
-/* ── Badge entrance bounce ── */
-@keyframes badgeBounce {
-  0%   { transform: scale(0.7); opacity: 0; }
-  60%  { transform: scale(1.1); opacity: 1; }
-  100% { transform: scale(1); }
-}
-.badge-bounce { animation: badgeBounce 0.5s ease both; }
+/* legacy reveal (service pages) */
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.visible { opacity: 1; transform: none; }
 `
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2589,44 +2880,37 @@ function BookCallWidget({ sentinelRef }: { sentinelRef: React.RefObject<HTMLDivE
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          position: 'fixed', right: 0, top: '50%', transform: 'translateY(-50%)',
-          zIndex: 40, display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+          position: 'fixed', right: 18, top: '50%', transform: 'translateY(-50%)',
+          zIndex: 80, display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
           pointerEvents: visible ? 'auto' : 'none',
           opacity: visible ? 1 : 0,
-          transition: 'opacity 0.3s ease',
+          transition: 'opacity 0.45s ease',
         }}>
         <div style={{
-          backgroundColor: '#fff',
-          border: '1px solid #e5e7eb',
-          borderRight: 'none',
-          borderRadius: '12px 0 0 12px',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.07)',
-          padding: hovered ? '18px 20px' : '14px 14px',
+          backgroundColor: 'rgba(255,255,255,0.94)',
+          backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+          border: '1px solid rgba(7,7,12,0.08)',
+          borderRadius: 20,
+          boxShadow: '0 20px 50px rgba(0,0,0,0.18)',
+          padding: hovered ? '20px' : '14px 12px',
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
-          transition: 'padding 0.25s ease',
-          maxWidth: hovered ? 200 : 48,
+          transition: `padding 0.45s ${EASE}, max-width 0.45s ${EASE}`,
+          maxWidth: hovered ? 210 : 52,
           overflow: 'hidden',
-          whiteSpace: 'nowrap',
         }}>
-          {!hovered && (
-            <button onClick={() => setModal(true)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2600FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/>
+          {!hovered ? (
+            <button onClick={() => setModal(true)} aria-label="Anruf buchen"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#2600FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" />
               </svg>
-              <span style={{ fontSize: 9, fontWeight: 600, color: '#2600FF', textTransform: 'uppercase', letterSpacing: '0.05em', writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Buchen</span>
+              <span className="eyebrow" style={{ fontSize: 9, color: '#2600FF', writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Buchen</span>
             </button>
-          )}
-          {hovered && (
+          ) : (
             <>
-              <p style={{ fontSize: 12, color: '#6b7280', textAlign: 'center', lineHeight: 1.5, margin: 0 }}>Wissen Sie schon, was Sie brauchen?</p>
-              <p style={{ fontSize: 11, fontWeight: 600, color: '#030712', textAlign: 'center', margin: 0 }}>Kein Audit nötig.</p>
-              <button onClick={() => setModal(true)}
-                style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 600, fontSize: 13, padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', width: '100%', transition: 'background 0.15s' }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1a00cc')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2600FF')}>
-                Anruf buchen
-              </button>
+              <p style={{ fontSize: 12.5, color: 'var(--muted)', textAlign: 'center', lineHeight: 1.5, margin: 0, whiteSpace: 'normal' }}>Wissen Sie schon, was Sie brauchen?</p>
+              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)', textAlign: 'center', margin: 0 }}>Kein Audit nötig.</p>
+              <button onClick={() => setModal(true)} className="btn btn-md btn-electric" style={{ width: '100%', fontSize: 13 }}>Anruf buchen</button>
             </>
           )}
         </div>
@@ -2651,18 +2935,9 @@ function LandingPage() {
       <BookCallWidget sentinelRef={widgetSentinel} />
       <Nav />
       <Hero />
-      {/* Sentinel: widget is visible while this is on screen (i.e. within the hero area) */}
       <div ref={widgetSentinel} style={{ height: 1, pointerEvents: 'none' }} />
       <AboutRAG />
       <ProblemSection />
-      <section style={{ backgroundColor: '#f9fafb', padding: '0 24px 72px', textAlign: 'center' }}>
-        <a href="#audit-quiz"
-          style={{ display: 'inline-block', backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 16, padding: '14px 32px', borderRadius: 12, textDecoration: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.12)', transition: 'background 0.15s' }}
-          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1a00cc')}
-          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2600FF')}>
-          Finden Sie die Ursache für meinen Kundenverlust
-        </a>
-      </section>
       <SolutionSection />
       <Process />
       <RealResults />
