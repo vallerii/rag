@@ -392,6 +392,53 @@ function IllustAIOptimization() {
   )
 }
 
+function IllustWebsiteSearch() {
+  return (
+    <div style={{ height: 120, backgroundColor: '#f7f7fb', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18 }}>
+      {/* browser window with a clear page structure */}
+      <svg width="120" height="80" viewBox="0 0 120 80" fill="none">
+        <rect x="0.75" y="0.75" width="118.5" height="78.5" rx="7" fill="#fff" stroke="#e5e7eb" strokeWidth="1.5" />
+        <path d="M0 14h120" stroke="#e5e7eb" strokeWidth="1.5" />
+        <circle cx="10" cy="7.5" r="2" fill="#EA4335" />
+        <circle cx="18" cy="7.5" r="2" fill="#FBBC05" />
+        <circle cx="26" cy="7.5" r="2" fill="#34A853" />
+        <rect x="10" y="22" width="46" height="7" rx="3.5" fill="#07070C" />
+        <rect x="10" y="34" width="72" height="4" rx="2" fill="#d7d7e0" />
+        <rect x="10" y="42" width="62" height="4" rx="2" fill="#d7d7e0" />
+        <rect x="10" y="54" width="30" height="14" rx="4" fill="#2600FF" />
+        <rect x="46" y="54" width="30" height="14" rx="4" fill="none" stroke="#d7d7e0" strokeWidth="1.5" />
+        <rect x="88" y="22" width="22" height="46" rx="4" fill="#f2f2f7" />
+      </svg>
+      {/* Google search glyph */}
+      <svg width="52" height="52" viewBox="0 0 48 48" fill="none">
+        <circle cx="21" cy="21" r="14" fill="none" stroke="#4285F4" strokeWidth="4" />
+        <path d="M31.5 31.5L42 42" stroke="#34A853" strokeWidth="4" strokeLinecap="round" />
+        <path d="M21 7a14 14 0 0114 14" stroke="#EA4335" strokeWidth="4" strokeLinecap="round" fill="none" />
+        <path d="M7 21a14 14 0 0114-14" stroke="#FBBC05" strokeWidth="4" strokeLinecap="round" fill="none" />
+      </svg>
+    </div>
+  )
+}
+
+function IllustCitations() {
+  return (
+    <div style={{ height: 120, backgroundColor: '#f7f7fb', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
+      {[0, 1, 2].map(i => (
+        <svg key={i} width="64" height="76" viewBox="0 0 64 76" fill="none">
+          <rect x="0.75" y="0.75" width="62.5" height="74.5" rx="7" fill="#fff" stroke="#e5e7eb" strokeWidth="1.5" />
+          <rect x="10" y="12" width="26" height="5" rx="2.5" fill="#07070C" />
+          <rect x="10" y="24" width="44" height="3.5" rx="1.75" fill="#d7d7e0" />
+          <rect x="10" y="33" width="36" height="3.5" rx="1.75" fill="#d7d7e0" />
+          <rect x="10" y="42" width="40" height="3.5" rx="1.75" fill="#d7d7e0" />
+          <circle cx="16" cy="60" r="6" fill={i === 2 ? '#2600FF' : '#34A853'} opacity={i === 2 ? 1 : 0.9} />
+          <path d={i === 2 ? 'M13.4 60l1.9 1.9 3.4-3.6' : 'M13.4 60l1.9 1.9 3.4-3.6'} stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          <rect x="27" y="57" width="24" height="3.5" rx="1.75" fill="#d7d7e0" />
+        </svg>
+      ))}
+    </div>
+  )
+}
+
 function IllustReviews() {
   return (
     <div style={{ height: 120, backgroundColor: '#f7f7fb', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 22 }}>
@@ -707,12 +754,14 @@ function MapBackdrop({ tone = 'dark', shift = 0 }: { tone?: 'dark' | 'light' | '
         backgroundPosition: `${shift}px 0px, 0px ${shift / 2}px, ${shift}px 0px, 0px ${shift / 2}px`,
       }} />
 
-      {/* магистрали */}
+      {/* главные дороги: одна диагональ + одна горизонталь.
+          vector-effect НЕ наследуется от <g>, ставить его на каждую линию,
+          иначе при preserveAspectRatio="none" штрих растягивается вместе с SVG. */}
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" fill="none"
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-        <g stroke={bold} strokeWidth="1" vectorEffect="non-scaling-stroke">
-          <line x1="-4" y1="86" x2="104" y2="10" />
-          <line x1="-4" y1="34" x2="104" y2="34" />
+        <g stroke={bold}>
+          <line x1="-4" y1="86" x2="104" y2="10" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
+          <line x1="-4" y1="34" x2="104" y2="34" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
         </g>
       </svg>
 
@@ -762,7 +811,7 @@ function CrossBackdrop({ tone = 'dark' }: { tone?: 'dark' | 'light' }) {
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
         {lines.map(([x1, y1, x2, y2, w, a], i) => (
           <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
-            stroke={`rgba(${base},${a})`} strokeWidth={w} strokeLinecap="round" />
+            stroke={`rgba(${base},${a})`} strokeWidth={w} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
         ))}
       </svg>
     </div>
@@ -1067,7 +1116,7 @@ function BookCallModal({ onClose }: { onClose: () => void }) {
           <>
             <h2 style={{ fontWeight: 700, fontSize: 22, color: '#030712', marginBottom: 6, letterSpacing: '-0.4px' }}>Wählen Sie einen Termin für Ihren Anruf</h2>
             <p style={{ fontSize: 14, fontWeight: 400, color: '#4b5563', marginBottom: 20, lineHeight: 1.6 }}>
-              Wählen Sie einen passenden Termin. Ein Berater bespricht live mit Ihnen Ihre Audit-Ergebnisse.
+              Wählen Sie einen passenden Termin. Ein Berater bespricht live mit Ihnen die Ergebnisse Ihres Sichtbarkeits-Checks.
             </p>
             <SlotPicker onConfirm={(day, slot) => { setBookedDay(day); setBookedSlot(slot); setModalStep(3) }} />
           </>
@@ -1090,7 +1139,7 @@ function BookCallModal({ onClose }: { onClose: () => void }) {
               </p>
             </div>
             <p style={{ fontSize: 11, color: '#9ca3af', lineHeight: 1.6, marginBottom: 20, fontStyle: 'italic' }}>
-              Hinweis (Build): Hierfür wird ein echtes Terminbuchungssystem (Cal.com / Calendly) benötigt, das mit dem Buchungsschritt nach dem Audit geteilt wird. Ein einziges Verfügbarkeitssystem sollte hinter beiden Einstiegspunkten stehen.
+              Hinweis (Build): Hierfür wird ein echtes Terminbuchungssystem (Cal.com / Calendly) benötigt, das mit dem Buchungsschritt nach dem Sichtbarkeits-Check geteilt wird. Ein einziges Verfügbarkeitssystem sollte hinter beiden Einstiegspunkten stehen.
             </p>
             <button onClick={handleClose}
               style={{ padding: '11px 28px', borderRadius: 12, border: '1.5px solid #d1d5db', backgroundColor: '#fff', color: '#030712', fontWeight: 500, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -1118,11 +1167,15 @@ function homeHref(anchor: string) {
 // ─────────────────────────────────────────────────────────────────────────────
 // NAV
 // ─────────────────────────────────────────────────────────────────────────────
+function linkHref(target: string) {
+  return target.startsWith('/') ? target : homeHref(target)
+}
+
 function ServicesNavDropdown({ fg }: { fg: string }) {
   const [open, setOpen] = useState(false)
   return (
     <div style={{ position: 'relative' }} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
-      <a href={homeHref('modules')} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, display: 'flex', alignItems: 'center', gap: 6 }}>
+      <a href="/services" className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, display: 'flex', alignItems: 'center', gap: 6 }}>
         Leistungen
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }}>
           <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -1148,6 +1201,9 @@ function ServicesNavDropdown({ fg }: { fg: string }) {
             </span>
           </a>
         ))}
+        <a href="/services" style={{ display: 'block', padding: '11px 13px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 6, fontSize: 12.5, fontWeight: 600, color: 'var(--electric-2)', textDecoration: 'none' }}>
+          Alle Leistungen ansehen →
+        </a>
       </div>
     </div>
   )
@@ -1166,7 +1222,7 @@ function Nav() {
   const fg = solid ? '#07070C' : '#ffffff'
 
   return (
-    <nav style={{
+    <header style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 90,
       backgroundColor: solid ? 'rgba(255,255,255,0.82)' : 'transparent',
       backdropFilter: solid ? 'saturate(180%) blur(18px)' : 'none',
@@ -1174,21 +1230,21 @@ function Nav() {
       borderBottom: `1px solid ${solid ? 'var(--line)' : 'transparent'}`,
       transition: 'background-color 0.5s ease, border-color 0.5s ease, backdrop-filter 0.5s ease',
     }}>
-      <div style={{ ...SHELL, padding: '0 clamp(20px, 4vw, 48px)', height: solid ? 66 : 82, display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'height 0.5s ' + EASE }}>
+      <nav aria-label="Hauptnavigation" style={{ ...SHELL, padding: '0 clamp(20px, 4vw, 48px)', height: solid ? 66 : 82, display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'height 0.5s ' + EASE }}>
         <a href="/" style={{ fontWeight: 800, fontSize: 21, color: fg, letterSpacing: '-0.05em', textDecoration: 'none', transition: 'color 0.4s ease' }}>
           RAG<span style={{ color: 'var(--electric)' }}>.</span>
         </a>
 
         <div className="hidden-mobile" style={{ display: 'flex', gap: 30, alignItems: 'center' }}>
-          <a href={homeHref('audit')} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>Audit</a>
+          <a href={homeHref('audit')} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>Sichtbarkeit</a>
           <ServicesNavDropdown fg={fg} />
-          {[['Ergebnisse', 'results'], ['FAQ', 'faq']].map(([l, anchor]) => (
-            <a key={l} href={homeHref(anchor)} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>{l}</a>
+          {[['Ergebnisse', 'results'], ['Ratgeber', '/ratgeber'], ['FAQ', 'faq']].map(([l, target]) => (
+            <a key={l} href={linkHref(target)} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>{l}</a>
           ))}
           <span style={{ width: 1, height: 18, backgroundColor: solid ? 'var(--line)' : 'rgba(255,255,255,0.2)' }} />
           <a href="tel:+493012345678" className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, opacity: 0.75, transition: 'color 0.4s ease' }}>+49 30 12345678</a>
           <a href={homeHref('audit-quiz')} className={`btn btn-md ${solid ? 'btn-ink' : 'btn-paper'}`}>
-            Kostenloses Audit erhalten
+            Sichtbarkeits-Check starten
             <span className="arw">→</span>
           </a>
         </div>
@@ -1198,18 +1254,18 @@ function Nav() {
             {open ? <><path d="M18 6L6 18" /><path d="M6 6l12 12" /></> : <><path d="M3 7h18" /><path d="M3 12h18" /><path d="M3 17h18" /></>}
           </svg>
         </button>
-      </div>
+      </nav>
 
       {open && (
-        <div className="show-mobile" style={{ display: 'none', flexDirection: 'column', gap: 2, padding: '10px 24px 26px', backgroundColor: '#fff', borderTop: '1px solid var(--line)' }}>
-          {[['Audit', 'audit'], ['Leistungen', 'modules'], ['Ergebnisse', 'results'], ['FAQ', 'faq']].map(([l, anchor]) => (
-            <a key={l} href={homeHref(anchor)} style={{ fontWeight: 600, fontSize: 22, letterSpacing: '-0.03em', color: '#07070C', textDecoration: 'none', padding: '10px 0', borderBottom: '1px solid var(--line-soft)' }} onClick={() => setOpen(false)}>{l}</a>
+        <nav aria-label="Mobile Navigation" className="show-mobile" style={{ display: 'none', flexDirection: 'column', gap: 2, padding: '10px 24px 26px', backgroundColor: '#fff', borderTop: '1px solid var(--line)' }}>
+          {[['Sichtbarkeit', 'audit'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], ['Ergebnisse', 'results'], ['FAQ', 'faq']].map(([l, target]) => (
+            <a key={l} href={linkHref(target)} style={{ fontWeight: 600, fontSize: 22, letterSpacing: '-0.03em', color: '#07070C', textDecoration: 'none', padding: '10px 0', borderBottom: '1px solid var(--line-soft)' }} onClick={() => setOpen(false)}>{l}</a>
           ))}
           <span style={{ fontWeight: 500, fontSize: 14, color: 'var(--muted)', padding: '14px 0 10px' }}>+49 30 12345678</span>
-          <a href={homeHref('audit-quiz')} className="btn btn-lg btn-electric" style={{ width: '100%' }} onClick={() => setOpen(false)}>Kostenloses Audit erhalten</a>
-        </div>
+          <a href={homeHref('audit-quiz')} className="btn btn-lg btn-electric" style={{ width: '100%' }} onClick={() => setOpen(false)}>Sichtbarkeits-Check starten</a>
+        </nav>
       )}
-    </nav>
+    </header>
   )
 }
 
@@ -1296,12 +1352,10 @@ function RankPanel() {
 }
 
 function Hero() {
-  const [bookModal, setBookModal] = useState(false)
   const { ref, seen } = useInView(0.05)
 
   return (
     <>
-      {bookModal && <BookCallModal onClose={() => setBookModal(false)} />}
       <section ref={ref} className={`mask ${seen ? 'in' : ''}`} style={{
         position: 'relative', backgroundColor: 'var(--ink)', color: '#fff',
         padding: 'clamp(126px, 14vh, 178px) clamp(20px, 4vw, 48px) 0', overflow: 'hidden',
@@ -1321,16 +1375,15 @@ function Hero() {
               </div>
 
               <h1 className="display" style={{ fontSize: 'clamp(34px, 4vw, 58px)', marginBottom: 26 }}>
-                <span className="mask-line"><span style={{ ['--d' as any]: '0.08s' }}>Werden Sie zur Nr. 1</span></span>
-                <span className="mask-line"><span style={{ ['--d' as any]: '0.16s' }}>in der lokalen Suche,</span></span>
-                <span className="mask-line"><span style={{ ['--d' as any]: '0.24s' }}><span style={{ color: 'var(--electric-2)' }}>bei Maps und in</span></span></span>
-                <span className="mask-line"><span style={{ ['--d' as any]: '0.32s' }}><span style={{ color: 'var(--electric-2)' }}>KI-Suchergebnissen</span></span></span>
+                <span className="mask-line"><span style={{ ['--d' as any]: '0.08s' }}>Werden Sie zur</span></span>
+                <span className="mask-line"><span style={{ ['--d' as any]: '0.16s' }}><span style={{ color: 'var(--electric-2)' }}>ersten Wahl</span></span></span>
+                <span className="mask-line"><span style={{ ['--d' as any]: '0.24s' }}>in Ihrer Region.</span></span>
               </h1>
 
               <div className="mask-line" style={{ marginBottom: 34 }}>
                 <span style={{ ['--d' as any]: '0.42s' }}>
                   <p className="lead" style={{ color: 'rgba(255,255,255,0.62)', maxWidth: 480, margin: 0 }}>
-                    Ein einziges Team kümmert sich um Maps, KI-Suche, Bewertungen und Social Media. So finden lokale Kunden zuerst Sie.
+                    Wir machen Ihr Unternehmen dort sichtbar, wo Kunden heute suchen und entscheiden: bei Google Maps, Google, ChatGPT, Perplexity und in sozialen Netzwerken.
                   </p>
                 </span>
               </div>
@@ -1338,8 +1391,8 @@ function Hero() {
               <div className="mask-line" style={{ marginBottom: 30 }}>
                 <span style={{ ['--d' as any]: '0.5s' }}>
                   <span style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                    <a href="#audit-quiz" className="btn btn-lg btn-paper">Kostenloses Audit erhalten <span className="arw">→</span></a>
-                    <button onClick={() => setBookModal(true)} className="btn btn-lg btn-outline-dark">Anruf buchen</button>
+                    <a href="#audit-quiz" className="btn btn-lg btn-paper">Kostenlosen Sichtbarkeits-Check starten <span className="arw">→</span></a>
+                    <a href="#start" className="btn btn-lg btn-outline-dark">Google Business Profil ab 149 €</a>
                   </span>
                 </span>
               </div>
@@ -1347,7 +1400,7 @@ function Hero() {
               <div className="mask-line">
                 <span style={{ ['--d' as any]: '0.58s' }}>
                   <span style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                    {['Klarer Wettbewerbsvorteil', 'Stetig neue Leads', 'Planbarer Umsatz'].map(b => (
+                    {['Mehr lokale Sichtbarkeit', 'Mehr Vertrauen', 'Mehr qualifizierte Anfragen'].map(b => (
                       <span key={b} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 999, padding: '7px 15px' }}>
                         <span style={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: 'var(--electric-2)' }} />
                         {b}
@@ -1506,6 +1559,63 @@ function ProblemSection() {
 // ─────────────────────────────────────────────────────────────────────────────
 // ABOUT RAG SECTION
 // ─────────────────────────────────────────────────────────────────────────────
+function SearchReality() {
+  const platforms = ['Google Maps', 'Google Search', 'ChatGPT', 'Perplexity', 'Bewertungen', 'Instagram']
+  return (
+    <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
+      <div style={{ ...SHELL }}>
+        <Reveal><Kicker>Die neue Realität</Kicker></Reveal>
+
+        <div style={{ marginTop: 28, maxWidth: 1000 }}>
+          <MaskHeading
+            className="h-lg"
+            lines={[<>Ihre Kunden suchen nicht</>, <>mehr <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>nur bei Google.</span></>]}
+          />
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'clamp(24px, 4vw, 72px)', marginTop: 'clamp(34px, 4vw, 56px)' }}>
+          <Reveal delay={0.08}>
+            <p className="lead" style={{ color: 'var(--muted)', margin: 0 }}>
+              Sie suchen bei Google Maps, fragen ChatGPT und Perplexity, lesen Bewertungen und prüfen Ihre Website und Ihre sozialen Netzwerke — meist innerhalb weniger Minuten.
+            </p>
+          </Reveal>
+          <Reveal delay={0.14}>
+            <p className="h-sm display" style={{ margin: 0 }}>
+              Wir sorgen dafür, dass überall ein klares, glaubwürdiges Bild Ihres Unternehmens entsteht.
+            </p>
+          </Reveal>
+        </div>
+
+        <Reveal delay={0.18}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(16px, 3vw, 34px)', alignItems: 'center', marginTop: 'clamp(40px, 5vw, 64px)', paddingTop: 26, borderTop: '1px solid var(--line)' }}>
+            {platforms.map(pl => (
+              <span key={pl} className="eyebrow" style={{ fontSize: 11, color: 'rgba(7,7,12,0.45)' }}>{pl}</span>
+            ))}
+          </div>
+        </Reveal>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'clamp(24px, 4vw, 72px)', marginTop: 'clamp(48px, 6vw, 88px)', paddingTop: 'clamp(34px, 4vw, 54px)', borderTop: '1px solid var(--line)' }}>
+          <Reveal>
+            <h3 className="h-sm display" style={{ margin: 0, maxWidth: 420 }}>
+              Lokale Sichtbarkeit entsteht nicht an <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>einem einzigen Ort.</span>
+            </h3>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div>
+              <p style={{ fontSize: 15.5, lineHeight: 1.85, color: 'var(--muted)', margin: '0 0 16px', maxWidth: 520 }}>
+                Damit Ihr Unternehmen gefunden, verstanden und empfohlen wird, müssen mehrere Bereiche zusammenspielen: Ihr Google-Profil, Ihre Website, Bewertungen, Inhalte, Erwähnungen und Ihr gesamter digitaler Auftritt.
+              </p>
+              <p style={{ fontSize: 15.5, lineHeight: 1.85, color: 'var(--ink)', margin: 0, maxWidth: 520, fontWeight: 600 }}>
+                Wir verbinden diese Elemente zu einem System, das Ihre lokale Präsenz Schritt für Schritt stärkt.
+              </p>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function AboutRAG() {
   return (
     <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden' }}>
@@ -1556,7 +1666,7 @@ function AboutRAG() {
             </Reveal>
             <Reveal delay={0.14}>
               <p style={{ fontSize: 15.5, lineHeight: 1.85, color: 'var(--muted)', maxWidth: 560, margin: 0 }}>
-                RAG ist ein Team von Spezialisten für lokale Sichtbarkeit, das ausschließlich mit Unternehmen in Deutschland, Österreich und der Schweiz arbeitet. Seit über 10 Jahren verfolgen wir, wie lokale Kunden wirklich suchen und kaufen, und haben ein System entwickelt, das jeden Kanal als ein zusammenhängendes Problem behandelt — nicht als sechs separate Dienstleister, die es zu koordinieren gilt.
+                RAG ist ein Team von Spezialisten für lokale Sichtbarkeit, das ausschließlich mit Unternehmen in Deutschland, Österreich und der Schweiz arbeitet. Seit über 10 Jahren verfolgen wir, wie lokale Kunden wirklich suchen und kaufen, und haben ein System entwickelt, das jeden Kanal als ein zusammenhängendes Problem behandelt — nicht als ein halbes Dutzend separater Dienstleister, die es zu koordinieren gilt.
               </p>
             </Reveal>
 
@@ -1591,8 +1701,17 @@ const modules = [
     slug: 'google-maps-business-profile',
     sentence: 'In den lokalen Top-Ergebnissen platziert und für jede Suchabsicht optimiert.',
     what: 'Ihr Unternehmenseintrag auf Google Maps und in den Suchergebnissen mit Adresse, Öffnungszeiten, Fotos und verifizierten Bewertungen.',
-    how: 'Wir bereinigen Ihre Profildaten, wählen ertragsstarke Kategorien aus, optimieren lokalisierte Inhalte und bauen konsistente Zitate auf, um Ihren Eintrag in die Top 3 von Google Maps zu bringen.',
+    how: 'Wir bereinigen Ihre Profildaten, wählen ertragsstarke Kategorien aus, optimieren lokalisierte Inhalte und sorgen für einheitliche Firmendaten in lokalen Verzeichnissen und Branchenportalen (NAP-Konsistenz), um Ihren Eintrag in die Top 3 von Google Maps zu bringen.',
     why: 'Über 70 % der Klicks und Anrufe bei lokalen Dienstleistungen gehen direkt an die Top-3-Positionen auf der Karte. Diese Positionen zu sichern, generiert sofort Anfragen von lokalen Kunden – ganz ohne Klickkosten.',
+  },
+  {
+    Illust: IllustWebsiteSearch,
+    label: 'Website & Google Search',
+    slug: 'website-google-search',
+    sentence: 'Eine Website, die Menschen, Suchmaschinen und KI-Systeme klar verstehen.',
+    what: 'Ihre Website ist die Wissensbasis Ihres Unternehmens. Sie erklärt Kunden, Suchmaschinen und KI-Systemen, wer Sie sind, welche Leistungen Sie anbieten, wo Sie tätig sind und warum man Ihnen vertrauen kann.',
+    how: 'Wir bauen eine klare Struktur: Leistungsseiten, Regionen- und Servicegebietsseiten, Unternehmens- und Teamseite, Referenzen, Ratgeber-Artikel und Glossar – dazu interne Verlinkung, saubere Technik und strukturierte Daten.',
+    why: 'Google und KI-Systeme können nur empfehlen, was sie verstehen. Ohne klare Struktur bleibt Ihre Website ein hübsches Bild – statt der Quelle, aus der Suchergebnisse und KI-Antworten über Sie entstehen.',
   },
   {
     Illust: IllustAIOptimization,
@@ -1613,6 +1732,15 @@ const modules = [
     why: 'Hohe Sternebewertungen und viele Rezensionen wirken sich direkt auf Conversion-Raten und Suchrankings aus, weil sie schon vor dem ersten Kontakt Vertrauen schaffen.',
   },
   {
+    Illust: IllustCitations,
+    label: 'Lokale Verzeichnisse & Erwähnungen',
+    slug: 'local-citations',
+    sentence: 'Einheitliche Firmendaten überall dort, wo nach Ihnen gesucht wird.',
+    what: 'Ihre Einträge und Nennungen auf Branchenportalen, Kartendiensten, Kammer- und Verbandsverzeichnissen sowie in lokalen Medien.',
+    how: 'Wir erfassen bestehende Einträge, korrigieren veraltete Adressen und Rufnummern, löschen Dubletten und legen fehlende Einträge auf den Portalen an, die in Ihrer Branche und Region tatsächlich zählen.',
+    why: 'Name, Adresse, Telefonnummer, Leistungen und Beschreibung müssen überall übereinstimmen. Widersprüchliche Angaben schwächen Ihre lokale Platzierung und sorgen dafür, dass KI-Systeme kein verlässliches Bild Ihres Unternehmens zusammensetzen können.',
+  },
+  {
     Illust: IllustSocial,
     label: 'Social-Media-Präsenz',
     slug: 'social-media',
@@ -1628,7 +1756,7 @@ const modules = [
     sentence: 'Sofortige Sichtbarkeit, während organische Rankings wachsen.',
     what: 'Gezielte bezahlte Werbekampagnen auf Google Search, Instagram und Facebook.',
     how: 'Wir erstellen keyword-genaue Suchkampagnen, gestalten konversionsstarke visuelle Anzeigen, schreiben direkte Werbetexte und messen Conversions präzise.',
-    why: 'Bezahlte Medien geben Ihnen sofortige Kontrolle über die Kundengewinnung und bringen qualifizierte Leads in Ihre Pipeline, ohne auf organisches Wachstum warten zu müssen.',
+    why: 'Organische Sichtbarkeit schafft die Grundlage — Anzeigen beschleunigen sie. Bezahlte Kampagnen bringen früher qualifizierte Anfragen und liefern nebenbei Daten darüber, welche Suchanfragen und Leistungen wirklich Kunden bringen.',
   },
   {
     Illust: IllustOffline,
@@ -1700,6 +1828,72 @@ function QuoteModal({ selected, onClose }: { selected: string[]; onClose: () => 
 }
 
 function SolutionSection() {
+  return (
+    <section id="modules" style={{ backgroundColor: 'var(--paper)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
+      <div style={{ ...SHELL }}>
+        <Reveal><Kicker>Das System</Kicker></Reveal>
+        <div className="sol-head" style={{ marginTop: 26, marginBottom: 'clamp(36px, 4vw, 60px)' }}>
+          <MaskHeading
+            className="h-lg"
+            style={{ maxWidth: 1080 }}
+            lines={[
+              <>Woraus lokale</>,
+              <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Sichtbarkeit besteht</span></>,
+            ]}
+          />
+          <Reveal delay={0.12}>
+            <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '26px 0 0', maxWidth: 560 }}>
+              Acht Bereiche, ein System. Google Maps ist der zentrale Kanal — alles andere zahlt darauf ein.
+            </p>
+          </Reveal>
+        </div>
+
+        <div style={{ borderTop: '1px solid var(--line)' }}>
+          {modules.map((m, i) => (
+            <Reveal key={m.slug} delay={Math.min(i * 0.04, 0.24)}>
+              <a href={`/services/${m.slug}`} className="row" style={{
+                display: 'flex', alignItems: 'baseline', gap: 'clamp(14px, 2vw, 30px)',
+                padding: 'clamp(16px, 1.8vw, 24px) 0', borderBottom: '1px solid var(--line)',
+                textDecoration: 'none', color: 'inherit',
+              }}>
+                <span className="row-idx display" style={{ fontSize: 13, color: 'rgba(7,7,12,0.3)', letterSpacing: '0.08em', flexShrink: 0 }}>
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <h3 className="row-title display" style={{
+                  fontSize: i === 0 ? 'clamp(24px, 2.8vw, 40px)' : 'clamp(20px, 2.1vw, 30px)',
+                  lineHeight: 1.15, margin: 0, flex: 1,
+                }}>
+                  {m.label}
+                  {i === 0 && (
+                    <span className="eyebrow hidden-mobile" style={{ fontSize: 9.5, color: 'var(--electric)', marginLeft: 16, verticalAlign: 'middle' }}>
+                      Zentraler Kanal
+                    </span>
+                  )}
+                </h3>
+                <span className="ul" style={{ fontSize: 13, fontWeight: 600, color: 'var(--electric)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  Mehr erfahren →
+                </span>
+              </a>
+            </Reveal>
+          ))}
+        </div>
+
+        <Reveal delay={0.12}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap', marginTop: 'clamp(34px, 4vw, 54px)' }}>
+            <p style={{ fontSize: 14.5, lineHeight: 1.75, color: 'var(--muted)', margin: 0, maxWidth: 460 }}>
+              Alle Bereiche im Detail — mit Beschreibung, Beispielen und der Möglichkeit, sich daraus ein Paket zusammenzustellen.
+            </p>
+            <a href="/services" className="btn btn-lg btn-ink" style={{ flexShrink: 0 }}>
+              Alle Leistungen ansehen <span className="arw">→</span>
+            </a>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+
+function ServiceSelector() {
   const [selected, setSelected] = useState<string[]>([])
   const [quoteOpen, setQuoteOpen] = useState(false)
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -1709,34 +1903,85 @@ function SolutionSection() {
   return (
     <>
       {quoteOpen && <QuoteModal selected={selected} onClose={() => setQuoteOpen(false)} />}
-      <section id="modules" style={{
+      <section id="auswahl" style={{
         backgroundColor: 'var(--paper)',
         padding: `clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px) ${selected.length > 0 ? '160px' : 'clamp(80px, 10vw, 140px)'}`,
         transition: 'padding-bottom 0.4s',
       }}>
         <div style={{ ...SHELL }}>
-          <Reveal><Kicker>Das System</Kicker></Reveal>
+          <Reveal><Kicker>Ihr Plan</Kicker></Reveal>
           <div className="sol-head" style={{ marginTop: 26, marginBottom: 'clamp(40px, 5vw, 68px)' }}>
             <MaskHeading
               className="h-lg"
               style={{ maxWidth: 1080 }}
               lines={[
-                <>Wählen Sie den Service. <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Wir</span></>,
-                <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>vermitteln Ihnen den passenden</span></>,
-                <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Spezialisten</span></>,
+                <>Stellen Sie sich Ihr</>,
+                <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Paket zusammen</span></>,
               ]}
             />
             <Reveal delay={0.12}>
               <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '26px 0 0', maxWidth: 560 }}>
-                Wählen Sie alle Leistungen aus, die Ihr Unternehmen braucht. Wir erstellen daraus einen Plan. Nicht sicher?{' '}
-                <a href="#audit-quiz" className="ul" style={{ color: 'var(--ink)', fontWeight: 600 }}>Machen Sie stattdessen das kostenlose Audit.</a>
+                Google Maps ist der zentrale Kanal — alles andere zahlt darauf ein. Wählen Sie die Bereiche aus, die Ihr Unternehmen braucht, und fordern Sie ein Angebot dafür an. Nicht sicher?{' '}
+                <a href="/#audit-quiz" className="ul" style={{ color: 'var(--ink)', fontWeight: 600 }}>Machen Sie den kostenlosen Sichtbarkeits-Check.</a>
               </p>
             </Reveal>
           </div>
 
+          {/* zentraler Kanal — bewusst größer als alles andere */}
+          <Reveal>
+            <div style={{
+              border: '1px solid var(--line)', borderRadius: 26, overflow: 'hidden',
+              backgroundColor: selected.includes(modules[0].label) ? 'rgba(38,0,255,0.04)' : 'var(--bone)',
+              marginBottom: 'clamp(30px, 3.5vw, 52px)', transition: 'background-color 0.4s ease',
+            }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
+                <div style={{ padding: 'clamp(26px, 3vw, 46px)' }}>
+                  <span className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)' }}>01 · Zentraler Kanal</span>
+                  <h3 className="display" style={{ fontSize: 'clamp(27px, 3.4vw, 46px)', lineHeight: 1.08, margin: '16px 0 14px' }}>
+                    {modules[0].label}
+                  </h3>
+                  <p style={{ fontSize: 16, lineHeight: 1.7, color: 'var(--ink)', fontWeight: 600, margin: '0 0 14px', maxWidth: 460 }}>
+                    {modules[0].sentence}
+                  </p>
+                  <p style={{ fontSize: 14.5, lineHeight: 1.8, color: 'var(--muted)', margin: '0 0 26px', maxWidth: 460 }}>
+                    {modules[0].why}
+                  </p>
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    <button onClick={() => toggle(modules[0].label)} className="btn btn-md btn-ink">
+                      {selected.includes(modules[0].label) ? '✓ Im Plan' : 'Zum Plan hinzufügen'}
+                    </button>
+                    <a href={`/services/${modules[0].slug}`} className="btn btn-md" style={{ border: '1px solid var(--line)', color: 'var(--ink)' }}>
+                      Zur Leistungsseite <span className="arw">→</span>
+                    </a>
+                  </div>
+                </div>
+
+                <div style={{ backgroundColor: 'var(--paper)', padding: 'clamp(26px, 3vw, 46px)', borderLeft: '1px solid var(--line)' }}>
+                  <p style={{ fontSize: 13.5, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 20px', maxWidth: 380 }}>
+                    Alle weiteren Bereiche zahlen auf diesen einen Punkt ein — auf das Bild, das ein Kunde von Ihnen bekommt, wenn er lokal sucht.
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {modules.slice(1).map(m => (
+                      <a key={m.slug} href={`/services/${m.slug}`} style={{
+                        fontSize: 12.5, fontWeight: 500, color: 'var(--ink)', textDecoration: 'none',
+                        border: '1px solid var(--line)', borderRadius: 999, padding: '8px 15px',
+                        transition: 'border-color 0.25s, color 0.25s',
+                      }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--electric)'; e.currentTarget.style.color = 'var(--electric)' }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(7,7,12,0.12)'; e.currentTarget.style.color = 'var(--ink)' }}>
+                        {m.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+
           {/* module rows */}
           <div style={{ borderTop: '1px solid var(--line)' }}>
-            {modules.map((m, i) => {
+            {modules.slice(1).map((m, idx) => {
+              const i = idx + 1
               const checked = selected.includes(m.label)
               const isOpen = expanded === m.label
               return (
@@ -1754,9 +1999,14 @@ function SolutionSection() {
                         {String(i + 1).padStart(2, '0')}
                       </span>
 
-                      <h3 className="row-title display" style={{ fontSize: 'clamp(19px, 1.9vw, 27px)', lineHeight: 1.15, margin: 0, color: checked ? 'var(--electric)' : 'var(--ink)' }}>
-                        {m.label}
-                      </h3>
+                      <div>
+                        <h3 className="row-title display" style={{ fontSize: i === 0 ? 'clamp(22px, 2.4vw, 34px)' : 'clamp(19px, 1.9vw, 27px)', lineHeight: 1.15, margin: 0, color: checked ? 'var(--electric)' : 'var(--ink)' }}>
+                          {m.label}
+                        </h3>
+                        {i === 0 && (
+                          <span className="eyebrow" style={{ display: 'inline-block', marginTop: 10, fontSize: 9.5, color: 'var(--electric)' }}>Zentraler Kanal</span>
+                        )}
+                      </div>
 
                       <p className="mod-sentence" style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>{m.sentence}</p>
 
@@ -1835,11 +2085,11 @@ function SolutionSection() {
               <div style={{ position: 'relative', maxWidth: 560 }}>
                 <h3 className="display" style={{ fontSize: 'clamp(22px, 2.6vw, 34px)', marginBottom: 12 }}>Nicht sicher, wo Sie anfangen sollen?</h3>
                 <p style={{ fontSize: 14.5, lineHeight: 1.7, color: 'rgba(255,255,255,0.55)', margin: 0 }}>
-                  Machen Sie das kostenlose 2-Minuten-Audit und wir sagen Ihnen genau, welche Leistungen Ihr Unternehmen braucht.
+                  Machen Sie den kostenlosen 2-Minuten-Sichtbarkeits-Check. Wir sagen Ihnen genau, welche Bereiche Ihr Unternehmen zuerst braucht.
                 </p>
               </div>
-              <a href="#audit-quiz" className="btn btn-lg btn-paper" style={{ position: 'relative', flexShrink: 0 }}>
-                Kostenloses Audit starten <span className="arw">→</span>
+              <a href="/#audit-quiz" className="btn btn-lg btn-paper" style={{ position: 'relative', flexShrink: 0 }}>
+                Sichtbarkeits-Check starten <span className="arw">→</span>
               </a>
             </div>
           </Reveal>
@@ -1874,11 +2124,106 @@ function SolutionSection() {
 // ─────────────────────────────────────────────────────────────────────────────
 // PROCESS
 // ─────────────────────────────────────────────────────────────────────────────
+function TwoRoutes() {
+  const [modal, setModal] = useState(false)
+  const routeA = [
+    'Analyse Ihrer aktuellen Sichtbarkeit',
+    'Stärken und Schwachstellen',
+    'Vergleich mit lokalen Mitbewerbern',
+    'Liste der wichtigsten Maßnahmen',
+    'Schritt-für-Schritt-Empfehlung',
+  ]
+  const routeB = [
+    'Erstellung oder Einrichtung des Profils',
+    'Auswahl der Hauptkategorie',
+    'Unternehmensbeschreibung und Leistungen',
+    'Kontaktdaten, Öffnungszeiten, Verbindung zur Website',
+    'Empfehlungen zu Fotos',
+    'Link und Vorlage für die ersten Bewertungen',
+  ]
+
+  return (
+    <>
+      {modal && <BookCallModal onClose={() => setModal(false)} />}
+      <section id="start" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'clip' }}>
+        <div aria-hidden style={{ position: 'absolute', inset: 0, opacity: 0.55 }}><CrossBackdrop tone="dark" /></div>
+        <div style={{ ...SHELL, position: 'relative' }}>
+          <Reveal><Kicker tone="light">Zwei Wege</Kicker></Reveal>
+          <div style={{ marginTop: 26, marginBottom: 'clamp(44px, 5vw, 72px)', maxWidth: 900 }}>
+            <MaskHeading
+              className="h-lg"
+              lines={[<>Wo steht Ihr</>, <><span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>Unternehmen heute?</span></>]}
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(28px, 4vw, 64px)' }}>
+            <Reveal>
+              <div style={{ borderTop: '1px solid var(--line-dark)', paddingTop: 30, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <span className="eyebrow" style={{ fontSize: 10, color: 'var(--electric-2)' }}>Variante 01</span>
+                <h3 className="display" style={{ fontSize: 'clamp(21px, 2.2vw, 30px)', lineHeight: 1.2, margin: '16px 0 14px' }}>
+                  Sie sind bereits online — werden aber nicht ausreichend gefunden?
+                </h3>
+                <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.55)', margin: '0 0 24px' }}>
+                  Wir analysieren kostenlos, wie Ihr Unternehmen aktuell bei Google Maps, in der Google-Suche und in der KI-Suche dargestellt wird.
+                </p>
+                <div style={{ marginBottom: 28 }}>
+                  {routeA.map((r, i) => (
+                    <div key={r} style={{ display: 'flex', gap: 14, padding: '11px 0', borderTop: i === 0 ? 'none' : '1px solid var(--line-dark)' }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', paddingTop: 2 }}>{String(i + 1).padStart(2, '0')}</span>
+                      <span style={{ fontSize: 14.5, color: 'rgba(255,255,255,0.8)' }}>{r}</span>
+                    </div>
+                  ))}
+                </div>
+                <a href="#audit-quiz" className="btn btn-lg btn-paper" style={{ marginTop: 'auto', alignSelf: 'flex-start' }}>
+                  Kostenlosen Sichtbarkeits-Check erhalten <span className="arw">→</span>
+                </a>
+              </div>
+            </Reveal>
+
+            <Reveal delay={0.1}>
+              <div style={{ borderTop: '1px solid var(--line-dark)', paddingTop: 30, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <span className="eyebrow" style={{ fontSize: 10, color: 'var(--electric-2)' }}>Variante 02</span>
+                <h3 className="display" style={{ fontSize: 'clamp(21px, 2.2vw, 30px)', lineHeight: 1.2, margin: '16px 0 14px' }}>
+                  Sie starten gerade? Beginnen Sie mit Google Maps.
+                </h3>
+                <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.55)', margin: '0 0 18px' }}>
+                  Wir erstellen und optimieren Ihr Google-Unternehmensprofil — die professionelle Grundlage für Ihre lokale Sichtbarkeit.
+                </p>
+                <p className="display" style={{ fontSize: 'clamp(28px, 3vw, 42px)', color: 'var(--electric-2)', margin: '0 0 22px' }}>ab 149 €</p>
+                <div style={{ marginBottom: 28 }}>
+                  {routeB.map((r, i) => (
+                    <div key={r} style={{ display: 'flex', gap: 14, padding: '11px 0', borderTop: i === 0 ? 'none' : '1px solid var(--line-dark)' }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', paddingTop: 2 }}>{String(i + 1).padStart(2, '0')}</span>
+                      <span style={{ fontSize: 14.5, color: 'rgba(255,255,255,0.8)' }}>{r}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 'auto' }}>
+                  <button onClick={() => setModal(true)} className="btn btn-lg btn-electric">
+                    Google-Profil starten <span className="arw">→</span>
+                  </button>
+                  <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.35)', margin: '14px 0 0' }}>
+                    Hinweis: Die Verifizierung des Profils muss Google teilweise direkt mit dem Inhaber durchführen.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+    </>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROCESS
+// ─────────────────────────────────────────────────────────────────────────────
 const steps = [
-  { num: '01', title: 'Wir analysieren Ihre aktuelle Sichtbarkeit im Detail', desc: 'Wir erfassen Ihr Google-Maps-Ranking, Ihre KI-Suchpräsenz, Bewertungen und Social-Media-Profile. Dann zeigen wir Ihnen genau, wo sich Kunden für Mitbewerber statt für Sie entscheiden.', cta: true },
-  { num: '02', title: 'Sie erhalten einen Plan, keine Verkaufsshow', desc: "Ein persönlicher Berater bespricht Ihre Ergebnisse mit Ihnen und zeigt, welche Leistungen zuerst etwas bewegen. Sie entscheiden, was aktiviert wird. Kein Paket, das Sie nicht brauchen." },
-  { num: '03', title: 'Wir kümmern uns um jedes Detail', desc: 'Unser Team baut, startet und betreut jede Leistung von Anfang bis Ende. Nichts landet wieder auf Ihrem Schreibtisch.' },
-  { num: '04', title: 'Sie sehen zu, wie die Leads eintreffen', desc: 'Verfolgen Sie Anrufe, Rankings und Bewertungen in einem wöchentlichen Bericht. Echte Zahlen statt Schönwetter-Kennzahlen.' },
+  { num: '01', title: 'Analysieren — wir prüfen Ihre aktuelle Sichtbarkeit', desc: 'Wir erfassen Ihr Google-Maps-Ranking, Ihre Website, Ihre KI-Suchpräsenz, Bewertungen und Verzeichniseinträge — und vergleichen sie mit Ihren wichtigsten lokalen Mitbewerbern.', cta: true },
+  { num: '02', title: 'Priorisieren — Sie erhalten einen Plan, keine Verkaufsshow', desc: "Sie bekommen einen konkreten Plan: Was bringt jetzt den größten Effekt? Ein persönlicher Berater bespricht die Ergebnisse mit Ihnen, und Sie entscheiden, was aktiviert wird. Kein Paket, das Sie nicht brauchen." },
+  { num: '03', title: 'Optimieren — wir bringen die Grundlagen in Ordnung', desc: 'Wir verbessern Google-Unternehmensprofil, Website, Inhalte, Bewertungen und die relevanten Plattformen. Unser Team übernimmt die Umsetzung, nichts landet wieder auf Ihrem Schreibtisch.' },
+  { num: '04', title: 'Ausbauen — wir erweitern Ihre lokale Präsenz', desc: 'Wir veröffentlichen neue Inhalte, stärken Ihre Reputation und erweitern Ihre Sichtbarkeit Schritt für Schritt auf weitere Kanäle.' },
+  { num: '05', title: 'Messen — Sie sehen, was die Arbeit bewirkt', desc: 'Wir beobachten Rankings, Anrufe, Anfragen, Website-Besuche und Bewertungen und berichten regelmäßig. Echte Zahlen statt Schönwetter-Kennzahlen.' },
 ]
 
 function Process() {
@@ -1891,7 +2236,7 @@ function Process() {
         <MaskHeading
           className="h-lg"
           style={{ marginTop: 26, marginBottom: 'clamp(48px, 6vw, 80px)', maxWidth: 900 }}
-          lines={[<>Vier Schritte zu</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>planbaren</span> lokalen Leads</>]}
+          lines={[<>Fünf Schritte zu</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>planbaren</span> lokalen Leads</>]}
         />
 
         <div className="process-wrap" style={{ display: 'grid', gridTemplateColumns: '80px minmax(0,1fr)', gap: 'clamp(16px, 3vw, 48px)' }}>
@@ -1924,7 +2269,7 @@ function Process() {
                     <p style={{ fontSize: 15, lineHeight: 1.85, color: 'var(--muted)', margin: 0, maxWidth: 460 }}>{s.desc}</p>
                     {'cta' in s && s.cta && (
                       <a href="#audit-quiz" className="btn btn-md btn-ink" style={{ marginTop: 22 }}>
-                        Kostenloses Audit starten <span className="arw">→</span>
+                        Sichtbarkeits-Check starten <span className="arw">→</span>
                       </a>
                     )}
                   </div>
@@ -2012,7 +2357,7 @@ function IllustCaseReviews() {
       <text x="85" y="148" textAnchor="middle" fontSize="9" fontWeight="700" fill="#dc2626" fontFamily="Arial, sans-serif">⌀ 3 / Woche</text>
       {/* AFTER — jumped to 18 */}
       <rect x="176" y="6" width="158" height="158" rx="8" fill="#fff" stroke="#bbf7d0" strokeWidth="1.5"/>
-      <text x="255" y="22" textAnchor="middle" fontSize="8" fontWeight="700" fill="#059669" fontFamily="Arial, sans-serif">NACHHER · nach Audit-Fix</text>
+      <text x="255" y="22" textAnchor="middle" fontSize="8" fontWeight="700" fill="#059669" fontFamily="Arial, sans-serif">NACHHER · nach Optimierung</text>
       <text x="184" y="38" fontSize="7" fontWeight="600" fill="#4b5563" fontFamily="Arial, sans-serif">Wöchentliche Buchungsanfragen</text>
       {[14,16,18,15,18,17,18].map((v,i)=>(
         <g key={i}>
@@ -2104,6 +2449,46 @@ function ChevronIcon({ flip }: { flip?: boolean }) {
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ transform: flip ? 'scaleX(-1)' : undefined }}>
       <path d="M11 4l-5 5 5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+  )
+}
+
+function SystemSummary() {
+  const lines = [
+    ['Ihre Website', 'erklärt Ihre Leistungen.'],
+    ['Google Maps', 'zeigt Ihre lokale Präsenz.'],
+    ['Bewertungen', 'schaffen Vertrauen.'],
+    ['Soziale Netzwerke', 'zeigen die Menschen hinter dem Unternehmen.'],
+    ['Suchmaschinen und KI-Systeme', 'verbinden diese Informationen.'],
+  ]
+  return (
+    <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
+      <div style={{ ...SHELL }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(28px, 4vw, 72px)', alignItems: 'start' }}>
+          <div>
+            <Reveal><Kicker>Das Zusammenspiel</Kicker></Reveal>
+            <MaskHeading
+              className="h-md"
+              style={{ marginTop: 22 }}
+              lines={[<>Aus einzelnen Kanälen wird</>, <>ein <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>klares Bild</span> Ihres</>, <>Unternehmens.</>]}
+            />
+          </div>
+          <div>
+            {lines.map(([a, b], i) => (
+              <Reveal key={a} delay={0.06 * i}>
+                <p style={{ fontSize: 'clamp(16px, 1.5vw, 19px)', lineHeight: 1.6, margin: 0, padding: '16px 0', borderTop: '1px solid var(--line)', color: 'var(--muted)' }}>
+                  <strong style={{ color: 'var(--ink)', fontWeight: 600 }}>{a}</strong> {b}
+                </p>
+              </Reveal>
+            ))}
+            <Reveal delay={0.34}>
+              <p className="h-sm display" style={{ margin: '34px 0 0', maxWidth: 560 }}>
+                So entsteht eine digitale Präsenz, die gefunden wird, Vertrauen aufbaut und neue Anfragen erzeugt.
+              </p>
+            </Reveal>
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -2209,6 +2594,36 @@ function RealResults() {
           </div>
         </div>
 
+        {/* what we make measurable */}
+        <div style={{ position: 'relative', marginTop: 'clamp(48px, 6vw, 88px)', paddingTop: 'clamp(30px, 4vw, 48px)', borderTop: '1px solid var(--line-dark)', backgroundColor: 'var(--ink)' }}>
+          <Reveal>
+            <h3 className="display" style={{ fontSize: 'clamp(20px, 2.1vw, 30px)', margin: '0 0 8px' }}>Was wir sichtbar machen</h3>
+          </Reveal>
+          <Reveal delay={0.06}>
+            <p style={{ fontSize: 14.5, lineHeight: 1.75, color: 'rgba(255,255,255,0.5)', margin: '0 0 26px', maxWidth: 520 }}>
+              Diese Kennzahlen berichten wir regelmäßig — damit Sichtbarkeit nachvollziehbar bleibt und nicht Gefühlssache ist.
+            </p>
+          </Reveal>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '0 clamp(20px, 3vw, 48px)' }}>
+            {[
+              'Aufrufe und Impressionen bei Google Maps',
+              'Anrufe und Klicks aus dem Unternehmensprofil',
+              'Positionen bei lokalen Suchanfragen',
+              'Anzahl und Qualität der Bewertungen',
+              'Organische Besuche auf der Website',
+              'Eingehende Anfragen',
+              'Erwähnungen und Zitate in der KI-Suche',
+            ].map((m, i) => (
+              <Reveal key={m} delay={Math.min(i * 0.04, 0.2)}>
+                <div style={{ display: 'flex', gap: 12, padding: '13px 0', borderTop: '1px solid var(--line-dark)' }}>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--electric-2)', letterSpacing: '0.1em', paddingTop: 3 }}>{String(i + 1).padStart(2, '0')}</span>
+                  <span style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(255,255,255,0.75)' }}>{m}</span>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+
         {/* progress dots */}
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 'clamp(36px, 4vw, 56px)' }}>
           {caseStudies.map((_, i) => (
@@ -2267,11 +2682,11 @@ function AuditQuiz() {
           <MaskHeading
             className="h-md"
             style={{ marginBottom: 24, color: '#fff' }}
-            lines={[<>Kostenloses <span className="serif italic-serif">2-Minuten-</span></>, <><span className="serif italic-serif">Sichtbarkeits-Audit</span></>]}
+            lines={[<>Kostenloses <span className="serif italic-serif">2-Minuten-</span></>, <><span className="serif italic-serif">Sichtbarkeits-Check</span></>]}
           />
           <Reveal delay={0.12}>
             <p style={{ fontSize: 16, lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', marginBottom: 34, maxWidth: 460 }}>
-              5 Fragen · Google- &amp; KI-Präsenz-Check · Persönlicher Wachstumsplan
+              5 Fragen zu Ihrem Unternehmen + Kontaktdaten · Google- &amp; KI-Präsenz-Check · Persönlicher Wachstumsplan
             </p>
           </Reveal>
           <div className="audit-bullets" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -2327,7 +2742,7 @@ function AuditQuiz() {
                   <span style={{ display: 'inline-block', backgroundColor: '#e5e7eb', borderRadius: 4, padding: '1px 7px', filter: 'blur(3.5px)', userSelect: 'none', fontSize: 11 }}>Becker Pro</span>
                 </p>
                 <p style={{ fontSize: 12, color: '#4b5563', lineHeight: 1.75, margin: 0, borderTop: '1px solid #ddd6fe', paddingTop: 8 }}>
-                  Ein vollständiges Sichtbarkeits-Audit und ein Schritt-für-Schritt-Optimierungsplan werden nach Abschluss der Umfrage erstellt und zugesendet.
+                  Ein vollständiges Sichtbarkeits-Check und ein Schritt-für-Schritt-Optimierungsplan werden nach Abschluss der Umfrage erstellt und zugesendet.
                 </p>
               </div>
               <button onClick={() => setStep(6)} style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 13, padding: '13px 20px', borderRadius: 999, border: 'none', cursor: 'pointer', width: '100%', fontFamily: 'inherit' }}>So ändern Sie das</button>
@@ -2351,7 +2766,7 @@ function AuditQuiz() {
             <div>
               <h3 style={{ fontWeight: 700, fontSize: 16, color: '#030712', marginBottom: 4 }}>Wählen Sie einen Termin für Ihren Anruf</h3>
               <p style={{ fontSize: 12, color: '#4b5563', marginBottom: 18, lineHeight: 1.6 }}>
-                Wählen Sie einen passenden Termin, ein Berater bespricht live mit Ihnen Ihre Audit-Ergebnisse
+                Wählen Sie einen passenden Termin, ein Berater bespricht live mit Ihnen die Ergebnisse Ihres Sichtbarkeits-Checks
               </p>
               <SlotPicker onConfirm={(day, slot) => { setBookedQuizDay(day); setBookedQuizSlot(slot); setStep(10) }} />
             </div>
@@ -2368,11 +2783,11 @@ function AuditQuiz() {
                   {bookedQuizDay?.date ?? ''} um {bookedQuizSlot} Uhr
                 </div>
                 <div style={{ fontSize: 12, color: '#4b5563' }}>
-                  Eine Kalendereinladung und Ihre Audit-Ergebnisse werden an <strong>{email || 'Ihre E-Mail-Adresse'}</strong> gesendet
+                  Eine Kalendereinladung und Ihre Check-Ergebnisse werden an <strong>{email || 'Ihre E-Mail-Adresse'}</strong> gesendet
                 </div>
               </div>
               <p style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.6, marginBottom: 16 }}>
-                Ihr Berater sichtet Ihr Audit vor dem Anruf, damit Sie eine persönliche Beratung erhalten – keine Standard-Präsentation.
+                Ihr Berater sichtet Ihre Ergebnisse vor dem Anruf, damit Sie eine persönliche Beratung erhalten – keine Standard-Präsentation.
               </p>
               <button onClick={reset} style={{ backgroundColor: '#f2f2ff', color: '#2600FF', fontWeight: 500, fontSize: 13, padding: '9px 20px', borderRadius: 10, border: '1px solid #ddd6fe', cursor: 'pointer', fontFamily: 'inherit' }}>Neu starten</button>
             </div>
@@ -2387,11 +2802,12 @@ function AuditQuiz() {
 // FAQ
 // ─────────────────────────────────────────────────────────────────────────────
 const faqs = [
-  { q: 'Wie wird RAG abgerechnet?', a: "RAG ist als monatliches Retainer-Modell aufgebaut, mit dem Preis abhängig von den aktivierten Modulen. Nach dem kostenlosen Audit wählen Sie ein Paket, das zu Ihrem Budget passt. Es gibt keine versteckten Gebühren oder langfristige Bindung. Die meisten Kunden starten mit dem Kern-Sichtbarkeitspaket (Maps, Bewertungen, KI) und ergänzen Anzeigen oder Offline-Werbung, sobald sie skalieren wollen." },
-  { q: "Warum reicht ein Google-Unternehmensprofil allein nicht aus?", a: "Ein gut optimiertes Google-Unternehmensprofil bringt Sie auf Google Maps. Es deckt aber nicht die KI-Suche (ChatGPT, Gemini, Perplexity), Bewertungsplattformen wie Trustpilot, Social Media oder Offline-Kontaktpunkte ab. Kunden nutzen all das, bevor sie anrufen. Nur einen Kanal zu reparieren, während die anderen Lecks bleiben, ist der Grund, warum so viele Unternehmer das Gefühl haben, dass nichts funktioniert." },
+  { q: 'Können Sie Platz 1 bei Google garantieren?', a: "Nein — und niemand kann das seriös versprechen. Google bewertet lokale Ergebnisse unter anderem nach Relevanz, Entfernung zum Suchenden und Bekanntheit des Unternehmens. Auf einen Teil davon haben wir direkten Einfluss, auf anderes nicht. Was wir zusagen: Wir bringen alle beeinflussbaren Faktoren in Ordnung, arbeiten kontinuierlich daran und zeigen Ihnen an konkreten Zahlen, was sich bewegt." },
+  { q: 'Brauche ich unbedingt eine Website?', a: "Für den Start nicht zwingend. Ein vollständig gepflegtes Google-Unternehmensprofil kann die erste Grundlage sein. Sobald Sie mehrere Leistungen, mehrere Regionen oder erklärungsbedürftige Angebote haben, wird die Website aber zur Wissensbasis, aus der Google und KI-Systeme ihre Antworten über Sie ziehen." },
+  { q: 'Wie kann mein Unternehmen in ChatGPT erscheinen?', a: "Indem die Informationen über Ihr Unternehmen im Web klar, zugänglich und widerspruchsfrei sind: verständlich beschriebene Leistungen, eine logisch strukturierte Website, übereinstimmende Angaben auf allen Plattformen, externe Erwähnungen und Inhalte, die für Suchsysteme abrufbar sind. Eine separate \"KI-Optimierung\" jenseits sauberer Grundlagen gibt es nicht — wir sorgen dafür, dass diese Grundlagen stimmen." },
+  { q: 'Wie wird RAG abgerechnet?', a: "RAG ist als monatliches Retainer-Modell aufgebaut, mit dem Preis abhängig von den aktivierten Modulen. Nach dem kostenlosen Sichtbarkeits-Check wählen Sie ein Paket, das zu Ihrem Budget passt. Es gibt keine versteckten Gebühren oder langfristige Bindung. Die meisten Kunden starten mit dem Kern-Sichtbarkeitspaket (Maps, Bewertungen, KI) und ergänzen Anzeigen oder Offline-Werbung, sobald sie skalieren wollen." },
   { q: 'Wie schnell sehe ich Ergebnisse?', a: 'Die meisten Kunden sehen innerhalb der ersten 2–4 Wochen messbare Verbesserungen bei Anrufvolumen und Ranking-Position. Bewertungsdynamik und KI-Sichtbarkeit bauen sich in der Regel über 6–8 Wochen auf. Wir verfolgen alles und teilen wöchentliche Fortschrittsberichte, damit Sie immer wissen, was sich bewegt hat.' },
-  { q: 'Warum ist KI-Suche gerade jetzt wichtig?', a: "Ein wachsender Anteil der Dienstleistungssuchen beginnt heute mit \"frag ChatGPT\" oder einer Perplexity-Anfrage statt einer Google-Suche. Wird Ihr Unternehmen nicht von KI-Modellen empfohlen, sind Sie für dieses Publikum komplett unsichtbar. RAG optimiert Ihren Online-Auftritt gezielt dafür, in KI-generierten lokalen Empfehlungen zu erscheinen." },
-  { q: "Ich habe es schon mit anderen Agenturen versucht, ohne Erfolg. Was ist hier anders?", a: "Die meisten Agenturen konzentrieren sich auf einen einzigen Kanal, meist SEO oder Anzeigen, und optimieren isoliert. Es bewegt sich nichts, weil Kunden mehrere Signale nutzen, bevor sie jemanden kontaktieren. RAG behandelt alle fünf Kanäle als ein System. Das Audit zeigt Ihnen zudem genau, welche Lücke Sie am meisten kostet, sodass Sie nicht raten müssen." },
+  { q: "Ich habe es schon mit anderen Agenturen versucht, ohne Erfolg. Was ist hier anders?", a: "Die meisten Agenturen konzentrieren sich auf einen einzigen Kanal, meist SEO oder Anzeigen, und optimieren isoliert. Es bewegt sich nichts, weil Kunden mehrere Signale nutzen, bevor sie jemanden kontaktieren. RAG behandelt alle Kanäle als ein System. Der Sichtbarkeits-Check zeigt Ihnen zudem genau, welche Lücke Sie am meisten kostet, sodass Sie nicht raten müssen." },
   { q: 'Wie viel von meiner Zeit kostet das?', a: "Nach dem ersten Onboarding-Gespräch (ca. 45 Minuten) fast keine. Wir übernehmen Einrichtung, Optimierung und laufende Betreuung. Sie sichten einen kurzen Wochenbericht und beantworten Bewertungen, die wir Ihnen markieren. Die meisten Kunden wenden weniger als 30 Minuten pro Woche auf." },
 ]
 
@@ -2403,6 +2819,8 @@ const explainedItems = [
   { q: 'Warum braucht es einen umfassenden Ansatz?', a: 'Ein Kunde findet Sie vielleicht auf Google Maps, checkt Ihr Instagram, liest Ihre Bewertungen und fragt ChatGPT, ob Sie gut sind – alles innerhalb von fünf Minuten. Scheitert nur einer dieser Checks, geht er zum nächsten Ergebnis. Einen Kanal zu reparieren und die anderen zu ignorieren, kostet Sie trotzdem den Verkauf.' },
   { q: 'Wie wird ein lokales Unternehmen bei Google gefunden?', a: "Google rankt lokale Ergebnisse vor allem nach drei Dingen: wie vollständig und aktiv Ihr Unternehmensprofil ist, wie viele aktuelle Top-Bewertungen Sie haben, und wie relevant Ihr Eintrag für die Suche ist. Die meisten Unternehmen verlieren bei allen drei Punkten, einfach weil niemand dafür zuständig ist, sie aktuell zu halten." },
   { q: 'Warum sind Bewertungen so wichtig?', a: "Bewertungen sind das schnellste Vertrauenssignal, das ein Fremder prüfen kann. 85 % der Kunden behandeln sie wie eine persönliche Empfehlung – aber nur, wenn sie aktuell sind. Ein 4,9-Sterne-Schnitt von vor zwei Jahren wirkt inaktiv. Ein stetiger Strom frischer Bewertungen wirkt wie ein Unternehmen, das gerade jetzt floriert." },
+  { q: 'Wie funktioniert lokales SEO?', a: "Lokales SEO sorgt dafür, dass Ihr Unternehmen bei Suchanfragen mit örtlichem Bezug erscheint. Dafür zählen vor allem drei Dinge: ein vollständiges, aktives Google-Unternehmensprofil, eine Website, die Ihre Leistungen und Ihr Einzugsgebiet klar beschreibt, und einheitliche Angaben zu Name, Adresse und Telefonnummer über alle Plattformen und Verzeichnisse hinweg." },
+  { q: 'Wie wird ein Unternehmen in ChatGPT und Perplexity gefunden?', a: "KI-Systeme geben wieder, was sie im Web verlässlich über Sie finden. Sie brauchen also klare Leistungsbeschreibungen, eine logisch strukturierte Website, übereinstimmende Informationen auf allen Plattformen und externe Erwähnungen, die das bestätigen. Gute Grundlagen in Suche und Profil wirken direkt auch hier — eine getrennte Zauberformel für KI gibt es nicht." },
 ]
 
 function LocalVisibilityExplained() {
@@ -2418,9 +2836,22 @@ function LocalVisibilityExplained() {
               lines={[<>Lokale Sichtbarkeit,</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>einfach erklärt</span></>]}
             />
             <Reveal delay={0.12}>
-              <p style={{ fontSize: 14.5, lineHeight: 1.8, color: 'var(--muted)', margin: 0, maxWidth: 320 }}>
+              <p style={{ fontSize: 14.5, lineHeight: 1.8, color: 'var(--muted)', margin: '0 0 26px', maxWidth: 320 }}>
                 Die kurzen Antworten auf die Fragen, die uns in fast jedem Erstgespräch gestellt werden.
               </p>
+            </Reveal>
+            <Reveal delay={0.18}>
+              <div style={{ borderTop: '1px solid var(--line)', paddingTop: 20, maxWidth: 320 }}>
+                <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(7,7,12,0.35)', marginBottom: 14 }}>Ausführlich im Ratgeber</p>
+                {ratgeberArticles.map(a => (
+                  <a key={a.slug} href={`/ratgeber/${a.slug}`} className="ul" style={{ display: 'block', width: 'fit-content', fontSize: 14, fontWeight: 600, color: 'var(--ink)', marginBottom: 10, lineHeight: 1.5 }}>
+                    {a.title}
+                  </a>
+                ))}
+                <a href="/glossar" className="ul" style={{ display: 'inline-block', marginTop: 8, fontSize: 13, fontWeight: 600, color: 'var(--electric)' }}>
+                  Alle Begriffe im Glossar →
+                </a>
+              </div>
             </Reveal>
           </div>
 
@@ -2450,12 +2881,21 @@ function FAQ() {
   const [open, setOpen] = useState<number | null>(0)
   return (
     <section id="faq" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqs.map(f => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      }} />
       <div style={{ ...SHELL, maxWidth: 1000 }}>
         <Reveal><Kicker>FAQ</Kicker></Reveal>
         <div className="faq-head" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 28, flexWrap: 'wrap', marginTop: 26, marginBottom: 'clamp(36px, 4vw, 56px)' }}>
           <MaskHeading className="h-lg" lines={[<>Häufige Fragen</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>beantwortet</span></>]} />
           <Reveal delay={0.12}>
-            <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, paddingBottom: 8, maxWidth: 280 }}>Alles, was Sie wissen müssen, bevor Sie Ihr Audit starten</p>
+            <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, paddingBottom: 8, maxWidth: 280 }}>Alles, was Sie wissen müssen, bevor Sie Ihren Sichtbarkeits-Check starten</p>
           </Reveal>
         </div>
 
@@ -2519,7 +2959,7 @@ function DualCTA() {
             <MaskHeading
               className="h-md"
               style={{ marginTop: 22, marginBottom: 18 }}
-              lines={[<>Machen Sie das kostenlose</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>2-Minuten-</span></>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Sichtbarkeits-Audit</span></>]}
+              lines={[<>Machen Sie das kostenlose</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>2-Minuten-</span></>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Sichtbarkeits-Check</span></>]}
             />
             <Reveal delay={0.1}>
               <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', marginBottom: 30 }}>
@@ -2527,7 +2967,7 @@ function DualCTA() {
               </p>
             </Reveal>
             <Reveal delay={0.16}>
-              <a href="#audit-quiz" className="btn btn-lg btn-electric">Kostenloses Audit erhalten <span className="arw">→</span></a>
+              <a href="#audit-quiz" className="btn btn-lg btn-electric">Sichtbarkeits-Check starten <span className="arw">→</span></a>
             </Reveal>
           </div>
         </div>
@@ -2547,16 +2987,16 @@ function DualCTA() {
             <MaskHeading
               className="h-md"
               style={{ marginTop: 22, marginBottom: 18 }}
-              lines={[<>Starten Sie bei null und</>, <>wollen <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>lokale Sichtbarkeit</span></>, <><span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>von Anfang an richtig</span></>, <><span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>aufbauen?</span></>]}
+              lines={[<>Noch keine</>, <><span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>digitale Präsenz?</span></>, <>Starten Sie mit Google Maps.</>]}
             />
             <Reveal delay={0.1}>
               <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.55)', marginBottom: 30 }}>
-                Keine Bewertungen, keine Google-Präsenz, keine Social-Media-Follower. Kein Problem. Buchen Sie einen Anruf, und wir entwickeln von Tag eins an ein Sichtbarkeitssystem für Ihre Branche und Ihre Stadt.
+                Keine Bewertungen, kein Google-Profil, keine Social-Media-Follower. Kein Problem. Wir erstellen und optimieren Ihr Google-Unternehmensprofil ab 149 € — die professionelle Grundlage, auf der alles Weitere aufbaut.
               </p>
             </Reveal>
             <Reveal delay={0.16}>
-              <button onClick={() => setModal(true)} className="btn btn-lg btn-paper">Kostenloses Beratungsgespräch buchen <span className="arw">→</span></button>
-              <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.35)', marginTop: 14 }}>Kein Audit nötig. Nur ein Gespräch über Ihre Ziele.</p>
+              <button onClick={() => setModal(true)} className="btn btn-lg btn-paper">Google Business Profil ab 149 € starten <span className="arw">→</span></button>
+              <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.35)', marginTop: 14 }}>Kein Check nötig. Wir sprechen kurz über Ihr Unternehmen und legen los.</p>
             </Reveal>
           </div>
         </div>
@@ -2578,15 +3018,15 @@ function Footer() {
             <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.5)', maxWidth: 300, margin: '0 0 22px' }}>
               Das einheitliche System für lokale Sichtbarkeit bei Google, KI und Offline-Kanälen.
             </p>
-            <a href={homeHref('audit-quiz')} className="btn btn-md btn-outline-dark">Kostenloses Audit erhalten <span className="arw">→</span></a>
+            <a href={homeHref('audit-quiz')} className="btn btn-md btn-outline-dark">Sichtbarkeits-Check starten <span className="arw">→</span></a>
           </div>
           {[
-            { title: 'Navigation', items: [['Audit', 'audit'], ['Leistungen', 'modules'], ['Ergebnisse', 'results'], ['FAQ', 'faq']] as [string, string][] },
+            { title: 'Navigation', items: [['Sichtbarkeit', 'audit'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], ['Ergebnisse', 'results'], ['FAQ', 'faq']] as [string, string][] },
           ].map(col => (
             <div key={col.title}>
               <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>{col.title}</p>
-              {col.items.map(([l, anchor]) => (
-                <a key={l} href={homeHref(anchor)} className="ul" style={{ display: 'block', width: 'fit-content', fontSize: 14, color: 'rgba(255,255,255,0.75)', marginBottom: 10 }}>{l}</a>
+              {col.items.map(([l, target]) => (
+                <a key={l} href={linkHref(target)} className="ul" style={{ display: 'block', width: 'fit-content', fontSize: 14, color: 'rgba(255,255,255,0.75)', marginBottom: 10 }}>{l}</a>
               ))}
             </div>
           ))}
@@ -2674,8 +3114,38 @@ const servicePages: ServicePageData[] = [
       { q: 'Wie lange dauert es, bis ich Ergebnisse auf Google Maps sehe?', a: 'Erste Ranking-Verbesserungen und mehr Kundenaktionen zeigen sich in der Regel innerhalb von 30 bis 90 Tagen nach der Profiloptimierung und Bereinigung der Verzeichniseinträge.' },
       { q: 'Brauche ich ein physisches Ladengeschäft, um Google Business Profile zu nutzen?', a: 'Nein. Dienstleistungsunternehmen, die zu ihren Kunden fahren, können optimierte Profile mit festgelegten Servicegebieten betreiben, ohne die Privatadresse offenzulegen.' },
     ],
-    ctaTitle: 'Holen Sie sich Ihr kostenloses Local-Maps-Audit',
-    ctaBody: 'Fordern Sie ein umfassendes Audit Ihres Google-Unternehmensprofils an, um Ranking-Blocker und lokale Wachstumschancen zu identifizieren.',
+    ctaTitle: 'Kostenloser Sichtbarkeits-Check Ihres Google-Profils',
+    ctaBody: 'Wir prüfen Ihr Google-Unternehmensprofil, benennen die Blocker in Ihrer Platzierung und zeigen die lokalen Wachstumschancen, die Sie aktuell liegen lassen.',
+  },
+  {
+    slug: 'website-google-search',
+    Illust: IllustWebsiteSearch,
+    kicker: 'WEBSITE & GOOGLE SEARCH',
+    heroTitle: 'Eine Website, die Menschen, Google und KI-Systeme verstehen',
+    heroSubtitle: 'Ihre Website ist die Wissensbasis Ihres Unternehmens. Wir strukturieren sie so, dass Kunden schnell finden, was sie suchen – und Suchmaschinen wie KI-Systeme Ihre Leistungen korrekt wiedergeben.',
+    whatTitle: 'Was bedeutet eine strukturierte Website?',
+    whatBody: 'Eine gute Website sieht nicht nur gut aus. Sie erklärt in klarer Struktur, wer Sie sind, welche Leistungen Sie anbieten, in welchen Regionen Sie arbeiten und warum man Ihnen vertrauen kann – für Menschen und für Maschinen gleichermaßen lesbar.',
+    howTitle: 'Wie wir Ihre Website aufbauen',
+    howItems: [
+      { title: 'Klare Seitenstruktur', body: 'Eigene Seiten für jede Leistung, für Ihre Regionen und Servicegebiete, für Unternehmen und Team sowie für Referenzen und Kundenprojekte.' },
+      { title: 'Inhalte, die Fragen beantworten', body: 'Ratgeber-Artikel zu den Fragen Ihrer Kunden und ein Glossar, das Fachbegriffe verständlich erklärt – die Grundlage für Sichtbarkeit in Suche und KI.' },
+      { title: 'Interne Verlinkung', body: 'Glossar führt zum Ratgeber, Ratgeber zur passenden Leistung, Leistung zur Anfrage. So findet jeder Besucher den nächsten sinnvollen Schritt.' },
+      { title: 'Technik & strukturierte Daten', body: 'Ladezeiten, mobile Darstellung, Indexierbarkeit und Schema-Markup, damit Ihre Inhalte gefunden, verstanden und korrekt zitiert werden können.' },
+    ],
+    receiveTitle: 'Was Sie erhalten',
+    receiveItems: [
+      'Eine Website-Struktur, die jede Leistung und jede Region eigenständig sichtbar macht.',
+      'Inhalte, die Suchmaschinen und KI-Systeme als Quelle über Ihr Unternehmen nutzen können.',
+      'Einen klaren Weg vom ersten Besuch bis zur Anfrage – ohne Umwege.',
+    ],
+    whyTitle: 'Warum die Website die Basis bleibt',
+    whyBody: 'Google-Profil, Bewertungen und soziale Netzwerke verweisen alle auf einen Punkt: Ihre Website. Fehlen dort klare Antworten, brechen Interessenten genau in dem Moment ab, in dem sie sich entscheiden wollten – und KI-Systeme haben keine verlässliche Quelle über Sie.',
+    faq: [
+      { q: 'Können Sie meine bestehende Website optimieren?', a: 'In den meisten Fällen ja. Wir prüfen Struktur, Inhalte und Technik Ihrer bestehenden Website und verbessern gezielt das, was Sichtbarkeit und Anfragen blockiert. Nur wenn die technische Basis eine sinnvolle Weiterentwicklung nicht zulässt, empfehlen wir einen Neuaufbau.' },
+      { q: 'Brauche ich unbedingt eine Website?', a: 'Für den Start reicht ein gut gepflegtes Google-Unternehmensprofil oft aus. Sobald Sie aber mehrere Leistungen, mehrere Regionen oder erklärungsbedürftige Angebote haben, ist die Website der Ort, an dem all das verständlich zusammenkommt – auch für KI-Systeme.' },
+    ],
+    ctaTitle: 'Kostenloser Sichtbarkeits-Check Ihrer Website',
+    ctaBody: 'Wir prüfen Struktur, Inhalte und Technik Ihrer Website und zeigen Ihnen, welche Schritte Ihre Sichtbarkeit bei Google und in der KI-Suche am stärksten verbessern.',
   },
   {
     slug: 'ai-search-optimization',
@@ -2704,7 +3174,7 @@ const servicePages: ServicePageData[] = [
       { q: 'Wie unterscheidet sich KI-Optimierung von klassischem SEO?', a: 'Klassisches SEO rankt einzelne Webseiten in den Suchergebnissen. KI-Optimierung sorgt dafür, dass generative KI-Modelle (wie ChatGPT und Perplexity) Ihre Marke in ihren Zusammenfassungen referenzieren und empfehlen.' },
       { q: 'Können KI-Plattformen eine Empfehlung für mein Unternehmen garantieren?', a: 'Generative Modelle basieren auf probabilistischem Datenabruf. Durch strukturierte Entitätsautorität und klare semantische Signale maximieren wir die Wahrscheinlichkeit, dass Ihr Unternehmen als primäre Antwort ausgewählt wird.' },
     ],
-    ctaTitle: 'Holen Sie sich Ihr kostenloses KI-Sichtbarkeits-Audit',
+    ctaTitle: 'Kostenloser Check Ihrer KI-Sichtbarkeit',
     ctaBody: 'Erfahren Sie, wie ChatGPT, Perplexity und Google AI Ihre Marke aktuell bewerten, und erhalten Sie einen Optimierungsfahrplan.',
   },
   {
@@ -2734,8 +3204,38 @@ const servicePages: ServicePageData[] = [
       { q: 'Ist es im Einklang mit den Plattformrichtlinien, um Bewertungen zu bitten?', a: 'Ja. Google und Trustpilot erlauben es Unternehmen, Kunden um authentisches Feedback zu bitten. Wir halten uns strikt an die Plattformrichtlinien und vermeiden gefilterte oder incentivierte Bewertungen.' },
       { q: 'Wie gehen Sie mit negativem Kundenfeedback um?', a: 'Wir richten schnelle Benachrichtigungsabläufe und öffentliche Antwortstrukturen ein, die Anliegen professionell adressieren und Verantwortungsbewusstsein gegenüber potenziellen Kunden zeigen.' },
     ],
-    ctaTitle: 'Holen Sie sich Ihr kostenloses Bewertungsprofil-Audit',
+    ctaTitle: 'Kostenloser Check Ihres Bewertungsprofils',
     ctaBody: 'Vergleichen Sie Ihre aktuelle Bewertungsgeschwindigkeit und Sternebewertung mit den führenden Mitbewerbern in Ihrem Markt.',
+  },
+  {
+    slug: 'local-citations',
+    Illust: IllustCitations,
+    kicker: 'LOKALE VERZEICHNISSE & ERWÄHNUNGEN',
+    heroTitle: 'Überall dieselben Angaben — überall auffindbar',
+    heroSubtitle: 'Wir bringen Ihre Firmendaten auf allen relevanten Portalen in Übereinstimmung und sorgen dafür, dass Ihr Unternehmen dort auftaucht, wo in Ihrer Branche und Region gesucht wird.',
+    whatTitle: 'Was sind lokale Verzeichnisse und Erwähnungen?',
+    whatBody: 'Jede Nennung Ihres Unternehmens außerhalb Ihrer eigenen Kanäle — Branchenportale, Kartendienste, Kammer- und Verbandsverzeichnisse, lokale Medien — bestätigt, dass es Ihren Betrieb gibt und dass die Angaben stimmen. Diese Quellen nutzen Suchmaschinen und KI-Systeme, um sich ein Bild von Ihnen zu machen.',
+    howTitle: 'Wie wir vorgehen',
+    howItems: [
+      { title: 'Bestandsaufnahme', body: 'Wir erfassen, wo Ihr Unternehmen bereits eingetragen ist — inklusive vergessener Einträge mit alter Adresse oder alter Rufnummer.' },
+      { title: 'Korrektur und Bereinigung', body: 'Wir korrigieren abweichende Angaben, führen Dubletten zusammen und lassen veraltete Einträge entfernen.' },
+      { title: 'Gezielter Ausbau', body: 'Wir legen fehlende Einträge auf den Portalen an, die in Ihrer Branche und Ihrer Region tatsächlich Reichweite haben — statt auf hunderten belanglosen Verzeichnissen.' },
+      { title: 'Laufende Kontrolle', body: 'Wir prüfen regelmäßig, ob Angaben von Dritten verändert wurden, und halten Name, Adresse und Telefonnummer überall identisch.' },
+    ],
+    receiveTitle: 'Was Sie erhalten',
+    receiveItems: [
+      'Einheitliche Firmendaten auf allen relevanten Plattformen (NAP-Konsistenz).',
+      'Eine dokumentierte Übersicht Ihrer Einträge mit Zugangsdaten und Status.',
+      'Eine stabilere Grundlage für Ihre Platzierung bei Google Maps und für KI-Antworten über Ihr Unternehmen.',
+    ],
+    whyTitle: 'Warum widersprüchliche Angaben teuer sind',
+    whyBody: 'Eine alte Telefonnummer in einem vergessenen Portal kostet Sie zweimal: Anrufe, die nirgends ankommen, und Signale, die Ihrer Sichtbarkeit widersprechen. Konsistenz ist unspektakuläre Arbeit — und einer der häufigsten Gründe, warum ein gut gepflegtes Google-Profil trotzdem nicht nach oben kommt.',
+    faq: [
+      { q: 'Brauche ich Einträge in hunderten Verzeichnissen?', a: 'Nein. Entscheidend sind die Portale, die in Ihrer Branche und Region tatsächlich genutzt und von Suchmaschinen ausgewertet werden. Masse an belanglosen Einträgen bringt nichts und erschwert die Pflege.' },
+      { q: 'Was passiert mit alten, falschen Einträgen?', a: 'Wir beantragen Korrektur oder Löschung. Bei manchen Portalen dauert das einige Wochen, weil die Freigabe beim Betreiber liegt — wir verfolgen den Status und melden zurück.' },
+    ],
+    ctaTitle: 'Kostenloser Check Ihrer Einträge',
+    ctaBody: 'Wir prüfen, wo Ihr Unternehmen eingetragen ist, welche Angaben voneinander abweichen und welche Portale in Ihrer Region fehlen.',
   },
   {
     slug: 'social-media',
@@ -2764,7 +3264,7 @@ const servicePages: ServicePageData[] = [
       { q: 'Wie oft werden Inhalte auf meinen Kanälen veröffentlicht?', a: 'Die Veröffentlichungsfrequenz orientiert sich an den Standards der jeweiligen Plattform, typischerweise 3 bis 5 strukturierte Beiträge pro Woche zzgl. regelmäßiger Story-Updates.' },
       { q: 'Übernehmen Sie sowohl die visuelle Produktion als auch das Texten?', a: 'Ja. Wir übernehmen die komplette Produktion – von Grafik-Layouts über Videoschnitt und Texterstellung bis zur Veröffentlichungsplanung.' },
     ],
-    ctaTitle: 'Holen Sie sich Ihr kostenloses Social-Media-Audit',
+    ctaTitle: 'Kostenloser Check Ihrer Social-Media-Präsenz',
     ctaBody: 'Fordern Sie eine Bewertung Ihrer bestehenden Social-Media-Kanäle an, um Lücken in Präsentation und Engagement aufzudecken.',
   },
   {
@@ -2794,8 +3294,8 @@ const servicePages: ServicePageData[] = [
       { q: 'Welches Budget brauche ich, um Werbekampagnen zu starten?', a: 'Das nötige Werbebudget hängt vom lokalen Wettbewerb und Branchenkennzahlen ab. Wir bewerten die Kampagnenparameter, um ein Startbudget festzulegen, das schnell aussagekräftige Daten liefert.' },
       { q: 'Sollte mein Unternehmen in Google Ads oder Meta Ads investieren?', a: 'Google Ads erfassen direkte Kaufabsicht von Nutzern, die aktiv nach Leistungen suchen. Meta Ads erzeugen visuell Nachfrage bei gezielten Zielgruppen. Die Kombination beider bietet umfassende Kanalabdeckung.' },
     ],
-    ctaTitle: 'Holen Sie sich Ihr kostenloses Anzeigenkonto-Audit',
-    ctaBody: 'Erhalten Sie ein vollständiges Audit Ihres aktuellen Anzeigenkontos oder eine individuelle Kampagnenstrategie.',
+    ctaTitle: 'Kostenloser Check Ihres Anzeigenkontos',
+    ctaBody: 'Wir sehen uns Ihr aktuelles Anzeigenkonto an oder entwickeln eine Kampagnenstrategie für Ihre Region und Ihre Leistungen.',
   },
   {
     slug: 'offline-advertising',
@@ -2840,7 +3340,7 @@ function ServiceLeadForm({ serviceLabel }: { serviceLabel: string }) {
       <div style={{ textAlign: 'center', padding: '8px 0' }}>
         <div style={{ fontSize: 32, marginBottom: 10 }}>✓</div>
         <h3 style={{ fontWeight: 700, fontSize: 18, color: '#030712', marginBottom: 6 }}>Anfrage gesendet!</h3>
-        <p style={{ fontSize: 14, color: '#4b5563' }}>Ein Berater sendet Ihnen Ihr {serviceLabel}-Audit innerhalb von 24 Stunden.</p>
+        <p style={{ fontSize: 14, color: '#4b5563' }}>Ein Berater sendet Ihnen Ihren {serviceLabel}-Check innerhalb von 24 Stunden.</p>
       </div>
     )
   }
@@ -2858,18 +3358,664 @@ function ServiceLeadForm({ serviceLabel }: { serviceLabel: string }) {
   )
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTENT HUB — Glossar → Ratgeber → Leistung → Anfrage
+// Glossar erklärt den Begriff, der Ratgeber erklärt den Zusammenhang,
+// die Leistungsseite verkauft die Umsetzung, der Check ist die Anfrage.
+// ─────────────────────────────────────────────────────────────────────────────
+
+type GlossarEntry = {
+  term: string
+  short: string
+  body: string
+  ratgeber?: string
+  service?: string
+}
+
+const glossarEntries: GlossarEntry[] = [
+  {
+    term: 'Lokale Sichtbarkeit',
+    short: 'Wie gut Ihr Unternehmen dort auffindbar ist, wo Kunden in Ihrer Region suchen.',
+    body: 'Lokale Sichtbarkeit ist kein einzelner Kanal, sondern die Summe aus Google-Unternehmensprofil, Website, Bewertungen, Verzeichniseinträgen, sozialen Netzwerken und dem, was KI-Systeme über Sie wiedergeben. Sie entscheidet darüber, ob ein kaufbereiter Kunde Sie überhaupt zu Gesicht bekommt.',
+    ratgeber: 'wie-funktioniert-lokales-seo',
+  },
+  {
+    term: 'Google-Unternehmensprofil',
+    short: 'Ihr kostenloser Eintrag bei Google, der in Maps und in der Suche erscheint.',
+    body: 'Das Google-Unternehmensprofil (früher Google My Business) enthält Name, Adresse, Öffnungszeiten, Leistungen, Fotos und Bewertungen. Es ist die Grundlage für jede lokale Platzierung: Ohne vollständiges, gepflegtes Profil erscheint ein Unternehmen bei lokalen Suchanfragen faktisch nicht.',
+    ratgeber: 'google-maps-ranking-verbessern',
+    service: 'google-maps-business-profile',
+  },
+  {
+    term: 'Local Pack',
+    short: 'Der Kartenblock mit drei Einträgen ganz oben in den Google-Ergebnissen.',
+    body: 'Bei Suchanfragen mit örtlichem Bezug zeigt Google eine Karte mit drei Unternehmen an. Dieser Block bekommt einen sehr großen Teil aller Klicks und Anrufe. Wer dort nicht auftaucht, konkurriert nur noch um die Aufmerksamkeit, die darunter übrig bleibt.',
+    ratgeber: 'google-maps-ranking-verbessern',
+    service: 'google-maps-business-profile',
+  },
+  {
+    term: 'NAP-Konsistenz',
+    short: 'Name, Adresse und Telefonnummer müssen überall identisch geschrieben sein.',
+    body: 'NAP steht für Name, Address, Phone. Weichen diese Angaben zwischen Google, Website, Branchenverzeichnissen und sozialen Profilen voneinander ab, entstehen widersprüchliche Signale — für Suchmaschinen ebenso wie für Kunden. Konsistenz ist unspektakulär, aber eine der zuverlässigsten Grundlagen lokaler Sichtbarkeit.',
+    ratgeber: 'google-maps-ranking-verbessern',
+    service: 'local-citations',
+  },
+  {
+    term: 'Lokale Verzeichnisse & Erwähnungen',
+    short: 'Einträge und Nennungen Ihres Unternehmens auf Portalen außerhalb Ihrer eigenen Kanäle.',
+    body: 'Branchenportale, Kammer- und Verbandsverzeichnisse, Kartendienste, lokale Presse: Jede korrekte Nennung bestätigt, dass es Ihr Unternehmen gibt und dass die Angaben stimmen. Solche Erwähnungen sind auch die Quellen, aus denen KI-Systeme ihr Bild von einem Unternehmen zusammensetzen.',
+    ratgeber: 'in-chatgpt-und-perplexity-gefunden-werden',
+    service: 'local-citations',
+  },
+  {
+    term: 'Bewertungen',
+    short: 'Öffentliches Kundenfeedback auf Google, Trustpilot und Branchenportalen.',
+    body: 'Bewertungen wirken doppelt: Sie beeinflussen, ob ein Interessent anruft, und sie gehören zu den Signalen, die Google für die Einordnung lokaler Ergebnisse heranzieht. Entscheidend ist nicht nur die Sternebewertung, sondern Aktualität, Anzahl, Inhalt und ob auf Bewertungen geantwortet wird.',
+    service: 'reviews',
+  },
+  {
+    term: 'Suchintention',
+    short: 'Die Absicht hinter einer Suchanfrage — Information, Vergleich oder Kauf.',
+    body: '„Was kostet eine Heizungswartung" und „Heizungsnotdienst in meiner Nähe" sind zwei völlig verschiedene Situationen. Inhalte funktionieren dann, wenn sie zur Absicht passen: Ratgeber und Glossar bedienen die Recherche, Leistungs- und Regionenseiten die Entscheidung.',
+    ratgeber: 'wie-funktioniert-lokales-seo',
+    service: 'website-google-search',
+  },
+  {
+    term: 'Strukturierte Daten (Schema-Markup)',
+    short: 'Maschinenlesbare Zusatzangaben im Quelltext Ihrer Website.',
+    body: 'Mit Schema-Markup wird aus einer Textseite eine eindeutige Aussage: Das hier ist ein Unternehmen, das sind die Öffnungszeiten, das ist eine Leistung, das ist eine Bewertung. Suchmaschinen und KI-Systeme müssen dann nicht raten, was auf der Seite steht.',
+    ratgeber: 'in-chatgpt-und-perplexity-gefunden-werden',
+    service: 'website-google-search',
+  },
+  {
+    term: 'KI-Suche & AI Overviews',
+    short: 'Antworten, die ein KI-System zusammenfasst, statt eine Linkliste auszugeben.',
+    body: 'ChatGPT, Perplexity und die KI-Übersichten in der Google-Suche beantworten Fragen direkt und nennen dabei einige wenige Quellen und Unternehmen. Wer in diesen Antworten nicht vorkommt, ist für diesen Teil der Kundschaft nicht vorhanden — auch bei guter klassischer Platzierung.',
+    ratgeber: 'in-chatgpt-und-perplexity-gefunden-werden',
+    service: 'ai-search-optimization',
+  },
+  {
+    term: 'GEO (Generative Engine Optimization)',
+    short: 'Die Arbeit daran, in KI-generierten Antworten korrekt vorzukommen.',
+    body: 'GEO ist keine geheime zweite Disziplin neben SEO. Es geht um dieselben Grundlagen — klare Inhalte, saubere Technik, abrufbare Seiten, übereinstimmende Angaben, externe Bestätigung — nur konsequent auf die Frage ausgerichtet, ob ein Sprachmodell Ihr Unternehmen verlässlich wiedergeben kann.',
+    ratgeber: 'in-chatgpt-und-perplexity-gefunden-werden',
+    service: 'ai-search-optimization',
+  },
+  {
+    term: 'Servicegebiet',
+    short: 'Die Region, in der Sie arbeiten — auch ohne Ladengeschäft vor Ort.',
+    body: 'Betriebe, die zu ihren Kunden fahren, können im Google-Profil ein Servicegebiet hinterlegen, statt eine Adresse zu veröffentlichen. Auf der Website gehört dazu je eine eigene Seite pro Region, damit für jede Stadt nachvollziehbar ist, welche Leistung Sie dort anbieten.',
+    service: 'website-google-search',
+  },
+  {
+    term: 'Sichtbarkeits-Check',
+    short: 'Unsere kostenlose Bestandsaufnahme Ihrer aktuellen lokalen Präsenz.',
+    body: 'Wir sehen uns an, wie Ihr Unternehmen heute bei Google Maps, in der Google-Suche und in der KI-Suche dargestellt wird, vergleichen das mit Ihren lokalen Mitbewerbern und benennen die Maßnahmen, die in Ihrer Situation den größten Effekt haben. Ohne Verkaufsgespräch.',
+  },
+]
+
+type RatgeberArticle = {
+  slug: string
+  title: string
+  teaser: string
+  minutes: number
+  intro: string
+  sections: { h: string; p: string[] }[]
+  terms: string[]
+  serviceSlug: string
+  serviceNote: string
+}
+
+const ratgeberArticles: RatgeberArticle[] = [
+  {
+    slug: 'wie-funktioniert-lokales-seo',
+    title: 'Wie funktioniert lokales SEO?',
+    teaser: 'Warum lokale Ergebnisse anders zustande kommen als normale Suchergebnisse — und woran Sie tatsächlich arbeiten können.',
+    minutes: 6,
+    intro: 'Lokales SEO ist die Arbeit daran, bei Suchanfragen mit örtlichem Bezug gefunden zu werden: „Zahnarzt in der Nähe", „Heizung reparieren Siegen", „bestes Café Innenstadt". Diese Ergebnisse funktionieren nach anderen Regeln als eine gewöhnliche Websuche.',
+    sections: [
+      {
+        h: 'Der Unterschied zur klassischen Suche',
+        p: [
+          'Bei einer normalen Suche ranken Seiten. Bei einer lokalen Suche ranken Unternehmen. Google zeigt zuerst eine Karte mit drei Einträgen — das Local Pack — und erst darunter klassische Ergebnisse. Diese drei Plätze bekommen den größten Teil der Anrufe und Routenanfragen.',
+          'Deshalb reicht eine gut gebaute Website allein nicht aus: Ohne gepflegtes Google-Unternehmensprofil fehlt Ihnen der Eintrag, um den es in diesem Block überhaupt geht.',
+        ],
+      },
+      {
+        h: 'Die drei Faktoren, die Google selbst nennt',
+        p: [
+          'Google beschreibt für lokale Ergebnisse drei Faktoren: Relevanz (passt Ihr Profil zur Suchanfrage?), Entfernung (wie weit sind Sie vom Suchenden entfernt?) und Bekanntheit (wie bekannt ist Ihr Unternehmen — Erwähnungen, Verlinkungen, Bewertungen).',
+          'Die Entfernung können Sie nicht beeinflussen. Genau deshalb sind pauschale Versprechen auf „Platz 1" unseriös: Derselbe Betrieb steht für einen Nutzer zwei Straßen weiter oben und für einen Nutzer am anderen Stadtrand weiter unten.',
+        ],
+      },
+      {
+        h: 'Woran Sie tatsächlich arbeiten können',
+        p: [
+          'Relevanz entsteht durch ein vollständiges Profil mit korrekter Hauptkategorie, klar benannten Leistungen und einer Website, die dieselben Leistungen ausführlich erklärt. Bekanntheit entsteht durch echte Bewertungen, einheitliche Angaben in Verzeichnissen und Erwähnungen außerhalb Ihrer eigenen Kanäle.',
+          'Das klingt unspektakulär, ist aber der Grund, warum in den meisten Städten dieselben zwei, drei Betriebe dauerhaft oben stehen: Bei ihnen kümmert sich jemand regelmäßig darum.',
+        ],
+      },
+      {
+        h: 'In welcher Reihenfolge man arbeitet',
+        p: [
+          'Zuerst das Google-Unternehmensprofil, weil es am schnellsten wirkt. Dann die einheitlichen Firmendaten in den wichtigsten Verzeichnissen, weil widersprüchliche Angaben jede weitere Maßnahme ausbremsen. Dann die Website mit eigenen Seiten je Leistung und je Region. Dann ein verlässlicher Ablauf für Bewertungen.',
+          'Anzeigen kommen zuletzt — nicht weil sie unwichtig wären, sondern weil sie die Lücke überbrücken, solange die organische Sichtbarkeit noch wächst.',
+        ],
+      },
+      {
+        h: 'Wie lange es dauert',
+        p: [
+          'Profil- und Verzeichnisarbeit zeigt sich häufig innerhalb weniger Wochen an Aufrufen und Anrufen. Bewertungen und Website-Inhalte brauchen länger, weil sie sich aufbauen müssen. Wichtig ist, dass Sie beides messen: Ohne Zahlen zu Aufrufen, Anrufen und Anfragen bleibt jede Einschätzung Gefühlssache.',
+        ],
+      },
+    ],
+    terms: ['Local Pack', 'Google-Unternehmensprofil', 'NAP-Konsistenz', 'Suchintention'],
+    serviceSlug: 'google-maps-business-profile',
+    serviceNote: 'Wir richten Ihr Profil ein, wählen die Kategorien und bringen Ihre Einträge in Ordnung.',
+  },
+  {
+    slug: 'google-maps-ranking-verbessern',
+    title: 'Wie kommt mein Unternehmen bei Google Maps nach oben?',
+    teaser: 'Die Arbeitsschritte, die bei Google Maps tatsächlich etwas bewegen — und die Abkürzungen, die Ihr Profil gefährden.',
+    minutes: 7,
+    intro: 'Google Maps ist für die meisten lokalen Betriebe der wichtigste Kanal überhaupt: Wer dort in den ersten Ergebnissen steht, bekommt Anrufe, ohne dass ein einziger Klick bezahlt werden muss. Was dorthin führt, ist keine Geheimwissenschaft, sondern eine Liste, die konsequent abgearbeitet werden will.',
+    sections: [
+      {
+        h: '1. Das Profil vollständig ausfüllen',
+        p: [
+          'Öffnungszeiten, Leistungen, Beschreibung, Kontaktdaten, Verbindung zur Website, Fotos: Jedes leere Feld ist eine Information, die Google nicht hat und ein Kunde nicht sieht. Vollständigkeit ist der Schritt mit dem besten Verhältnis von Aufwand zu Wirkung.',
+        ],
+      },
+      {
+        h: '2. Die richtige Hauptkategorie wählen',
+        p: [
+          'Die Hauptkategorie entscheidet mit darüber, bei welchen Suchanfragen Ihr Profil überhaupt in Frage kommt. Sie sollte exakt beschreiben, was Sie hauptsächlich tun — nicht das breiteste denkbare Feld. Weitere Tätigkeiten kommen als Nebenkategorien und als Leistungen dazu.',
+        ],
+      },
+      {
+        h: '3. Bewertungen zu einem Ablauf machen',
+        p: [
+          'Nicht „mehr Bewertungen", sondern mehr echte Bewertungen mit konkreten Erfahrungen. Dafür braucht es einen festen Moment, in dem gefragt wird, einen kurzen Weg zur Abgabe und Antworten auf das, was geschrieben wird — auch auf Kritik.',
+          'Alte Bewertungen verlieren an Überzeugungskraft. Ein stetiger Strom frischer Rückmeldungen wirkt auf Kunden wie auf Google anders als ein sehr guter Durchschnitt von vor zwei Jahren.',
+        ],
+      },
+      {
+        h: '4. Einheitliche Firmendaten überall',
+        p: [
+          'Name, Adresse und Telefonnummer müssen auf Ihrer Website, im Profil und in den relevanten Verzeichnissen identisch sein. Alte Einträge mit früherer Adresse oder alter Rufnummer sind erstaunlich oft der Grund, warum sich ein Profil trotz guter Pflege nicht bewegt.',
+        ],
+      },
+      {
+        h: '5. Aktivität zeigen',
+        p: [
+          'Neue Fotos, aktualisierte Leistungen, gepflegte Öffnungszeiten an Feiertagen, beantwortete Fragen: Ein Profil, an dem sichtbar gearbeitet wird, wirkt für Kunden lebendig — und liefert Google laufend frische Informationen.',
+        ],
+      },
+      {
+        h: 'Was Sie nicht tun sollten',
+        p: [
+          'Keine gekauften oder erfundenen Bewertungen. Keine Keywords im Unternehmensnamen, die nicht zum tatsächlichen Namen gehören. Keine Adressen, an denen Sie nicht arbeiten. All das verstößt gegen die Google-Richtlinien und kann zur Sperrung des Profils führen — dann ist nicht die Platzierung weg, sondern der gesamte Eintrag.',
+        ],
+      },
+    ],
+    terms: ['Google-Unternehmensprofil', 'Local Pack', 'NAP-Konsistenz', 'Bewertungen'],
+    serviceSlug: 'google-maps-business-profile',
+    serviceNote: 'Wir übernehmen Einrichtung, Kategorien, Bewertungsprozess und laufende Pflege.',
+  },
+  {
+    slug: 'in-chatgpt-und-perplexity-gefunden-werden',
+    title: 'Wie wird ein Unternehmen in ChatGPT und Perplexity gefunden?',
+    teaser: 'Was KI-Systeme brauchen, um Ihr Unternehmen zu nennen — und warum es dafür keine getrennte Zauberformel gibt.',
+    minutes: 6,
+    intro: 'Immer mehr Menschen stellen ihre Frage direkt an ein KI-System, statt eine Ergebnisliste durchzusehen. Die Antwort nennt dann zwei, drei Anbieter. Wer dort nicht vorkommt, existiert für diese Kundschaft nicht — auch mit guter klassischer Platzierung.',
+    sections: [
+      {
+        h: 'Wie eine KI-Antwort entsteht',
+        p: [
+          'Moderne KI-Systeme antworten nicht nur aus dem Gedächtnis. Sie rufen bei aktuellen Fragen Webinhalte ab, fassen sie zusammen und geben einige Quellen an. Für Ihr Unternehmen heißt das: Es zählt, was im Web verlässlich über Sie zu finden ist — und ob es abrufbar ist.',
+        ],
+      },
+      {
+        h: 'Klare Inhalte statt Werbesprache',
+        p: [
+          'Ein Sprachmodell kann nur wiedergeben, was eindeutig formuliert ist. „Ganzheitliche Lösungen für Ihren Erfolg" ist für ein KI-System wertlos. „Wir reparieren Gasheizungen in Siegen und im Umkreis von 30 Kilometern, Notdienst rund um die Uhr" ist eine Aussage, die zitiert werden kann.',
+          'Deshalb ist die Website die Grundlage: Sie ist der einzige Ort, an dem Sie vollständig bestimmen, welche Informationen über Sie im Umlauf sind.',
+        ],
+      },
+      {
+        h: 'Abrufbar sein',
+        p: [
+          'Inhalte, die technisch nicht erreichbar sind, existieren für KI-Systeme nicht. Dazu gehören blockierte Seiten, Inhalte, die erst nach Interaktion erscheinen, und Zugriffsregeln, die die Crawler der KI-Anbieter aussperren. Wer dort vorkommen möchte, muss diese Zugriffe zulassen — eine bewusste Entscheidung, die man treffen sollte, statt sie dem Zufall zu überlassen.',
+        ],
+      },
+      {
+        h: 'Übereinstimmung und externe Bestätigung',
+        p: [
+          'KI-Systeme gleichen Quellen ab. Wenn Ihre Telefonnummer auf der Website, im Google-Profil und in Verzeichnissen unterschiedlich ist, sinkt die Wahrscheinlichkeit, dass eine Antwort Sie sicher nennt. Umgekehrt stärkt jede korrekte externe Erwähnung das Bild.',
+        ],
+      },
+      {
+        h: 'Was das mit SEO zu tun hat',
+        p: [
+          'Sehr viel. Google selbst hält fest, dass es für die KI-Funktionen der Suche keine gesonderte Optimierung braucht — es gelten die bekannten Grundlagen: nützliche Inhalte, saubere Technik, indexierbare Seiten, interne Verlinkung, ein aktuelles Unternehmensprofil.',
+          'Seriös ist deshalb nicht das Versprechen einer geheimen KI-Optimierung, sondern die konsequente Arbeit an diesen Grundlagen — plus die Beobachtung, ob und wie Ihr Unternehmen in KI-Antworten auftaucht.',
+        ],
+      },
+      {
+        h: 'Was niemand garantieren kann',
+        p: [
+          'KI-Antworten sind nicht deterministisch: Dieselbe Frage kann zu unterschiedlichen Antworten führen. Garantierte Nennungen kann niemand zusagen. Was man tun kann, ist die Wahrscheinlichkeit systematisch erhöhen und regelmäßig prüfen, was die Systeme über Sie sagen.',
+        ],
+      },
+    ],
+    terms: ['KI-Suche & AI Overviews', 'GEO (Generative Engine Optimization)', 'Strukturierte Daten (Schema-Markup)', 'Lokale Verzeichnisse & Erwähnungen'],
+    serviceSlug: 'ai-search-optimization',
+    serviceNote: 'Wir strukturieren Ihre Unternehmensdaten und beobachten, wie KI-Systeme Sie wiedergeben.',
+  },
+]
+
+type Crumb = { label: string; href?: string }
+
+function Breadcrumbs({ items, tone = 'dark' }: { items: Crumb[]; tone?: 'dark' | 'light' }) {
+  const dim = tone === 'dark' ? 'rgba(255,255,255,0.45)' : 'rgba(7,7,12,0.45)'
+  const current = tone === 'dark' ? 'rgba(255,255,255,0.85)' : 'var(--ink)'
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((it, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: it.label,
+      ...(it.href ? { item: origin + it.href } : {}),
+    })),
+  }
+  return (
+    <nav aria-label="Breadcrumb" style={{ marginBottom: 22 }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <ol style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 9, listStyle: 'none', margin: 0, padding: 0 }}>
+        {items.map((it, i) => (
+          <li key={it.label} style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 12.5 }}>
+            {it.href
+              ? <a href={it.href} className="ul" style={{ color: dim }}>{it.label}</a>
+              : <span aria-current="page" style={{ color: current }}>{it.label}</span>}
+            {i < items.length - 1 && <span aria-hidden style={{ color: dim, opacity: 0.55 }}>/</span>}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+const SITE_NAME = 'RAG — Regionale Agentur'
+
+function JsonLd({ data }: { data: object }) {
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
+}
+
+// Seitentitel, Description, Canonical und Social-Tags pro Route —
+// index.html ist statisch und liefert sonst überall dieselben Angaben.
+function usePageMeta(title: string, description: string, ogType: 'website' | 'article' = 'website') {
+  useEffect(() => {
+    document.documentElement.lang = 'de'
+    document.title = title
+
+    const url = window.location.origin + window.location.pathname
+
+    const upsertMeta = (attr: 'name' | 'property', key: string, content: string) => {
+      let tag = document.head.querySelector(`meta[${attr}="${key}"]`)
+      if (!tag) {
+        tag = document.createElement('meta')
+        tag.setAttribute(attr, key)
+        document.head.appendChild(tag)
+      }
+      tag.setAttribute('content', content)
+    }
+
+    upsertMeta('name', 'description', description)
+    upsertMeta('property', 'og:title', title)
+    upsertMeta('property', 'og:description', description)
+    upsertMeta('property', 'og:type', ogType)
+    upsertMeta('property', 'og:url', url)
+    upsertMeta('property', 'og:site_name', SITE_NAME)
+    upsertMeta('property', 'og:locale', 'de_DE')
+    upsertMeta('name', 'twitter:card', 'summary_large_image')
+    upsertMeta('name', 'twitter:title', title)
+    upsertMeta('name', 'twitter:description', description)
+
+    let canonical = document.head.querySelector('link[rel="canonical"]') as HTMLLinkElement | null
+    if (!canonical) {
+      canonical = document.createElement('link')
+      canonical.rel = 'canonical'
+      document.head.appendChild(canonical)
+    }
+    canonical.href = url
+  }, [title, description, ogType])
+}
+
+function ContentCTA() {
+  return (
+    <section style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px)', position: 'relative', overflow: 'clip' }}>
+      <div aria-hidden style={{ position: 'absolute', inset: 0, opacity: 0.5 }}><CrossBackdrop tone="dark" /></div>
+      <div style={{ ...SHELL, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
+        <div style={{ maxWidth: 560 }}>
+          <h2 className="display" style={{ fontSize: 'clamp(22px, 2.6vw, 34px)', margin: '0 0 12px' }}>
+            Wie steht Ihr Unternehmen heute da?
+          </h2>
+          <p style={{ fontSize: 14.5, lineHeight: 1.75, color: 'rgba(255,255,255,0.55)', margin: 0 }}>
+            Wir prüfen kostenlos Ihre Sichtbarkeit bei Google Maps, in der Google-Suche und in der KI-Suche — und sagen Ihnen, was zuerst zu tun ist.
+          </p>
+        </div>
+        <a href="/#audit-quiz" className="btn btn-lg btn-paper" style={{ flexShrink: 0 }}>
+          Kostenlosen Sichtbarkeits-Check starten <span className="arw">→</span>
+        </a>
+      </div>
+    </section>
+  )
+}
+
+function ContentHero({ kicker, title, sub, meta, crumbs }: { kicker: string; title: React.ReactNode; sub: string; meta?: string; crumbs?: Crumb[] }) {
+  return (
+    <section style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(60px, 7vw, 96px)', position: 'relative', overflow: 'hidden' }}>
+      <MapBackdrop tone="dark" shift={120} />
+      <div style={{ ...SHELL, position: 'relative' }}>
+        {crumbs && <Breadcrumbs items={crumbs} />}
+        <p className="eyebrow" style={{ color: 'var(--electric-2)', marginBottom: 22 }}>{kicker}</p>
+        <h1 className="display h-lg" style={{ marginBottom: 22, maxWidth: 900 }}>{title}</h1>
+        <p className="lead" style={{ color: 'rgba(255,255,255,0.6)', maxWidth: 640, margin: 0 }}>{sub}</p>
+        {meta && <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.35)', margin: '20px 0 0', letterSpacing: '0.04em' }}>{meta}</p>}
+      </div>
+    </section>
+  )
+}
+
+function RatgeberIndex() {
+  usePageMeta(
+    'Ratgeber — lokale Sichtbarkeit verständlich erklärt | RAG',
+    'Wie lokales SEO funktioniert, wie Sie bei Google Maps nach oben kommen und wie Ihr Unternehmen in ChatGPT und Perplexity gefunden wird.',
+  )
+  return (
+    <>
+      <Nav />
+      <main id="inhalt">
+      <ContentHero
+        crumbs={[{ label: 'Start', href: '/' }, { label: 'Ratgeber' }]}
+        kicker="RATGEBER"
+        title={<>Lokale Sichtbarkeit, <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>ohne Fachchinesisch</span></>}
+        sub="Die drei Fragen, die uns Inhaberinnen und Inhaber am häufigsten stellen — ausführlich beantwortet, ohne Versprechen, die niemand halten kann."
+      />
+      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)' }}>
+        <div style={{ ...SHELL, borderTop: '1px solid var(--line)' }}>
+          {ratgeberArticles.map((a, i) => (
+            <a key={a.slug} href={`/ratgeber/${a.slug}`} className="row" style={{
+              display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: 'clamp(14px, 2vw, 40px)', alignItems: 'center',
+              padding: 'clamp(26px, 3vw, 42px) 0', borderBottom: '1px solid var(--line)',
+              textDecoration: 'none', color: 'inherit',
+            }}>
+              <div>
+                <span className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)' }}>{String(i + 1).padStart(2, '0')} · {a.minutes} Min. Lesezeit</span>
+                <h2 className="display" style={{ fontSize: 'clamp(21px, 2.2vw, 30px)', lineHeight: 1.18, margin: '12px 0 0' }}>{a.title}</h2>
+              </div>
+              <div>
+                <p style={{ fontSize: 14.5, lineHeight: 1.8, color: 'var(--muted)', margin: '0 0 14px' }}>{a.teaser}</p>
+                <span className="ul" style={{ fontSize: 13, fontWeight: 600, color: 'var(--electric)' }}>Artikel lesen →</span>
+              </div>
+            </a>
+          ))}
+          <p style={{ fontSize: 14.5, color: 'var(--muted)', marginTop: 34 }}>
+            Begriffe kurz nachschlagen? <a href="/glossar" className="ul" style={{ color: 'var(--ink)', fontWeight: 600 }}>Zum Glossar</a>
+          </p>
+        </div>
+      </section>
+      <ContentCTA />
+      </main>
+      <Footer />
+    </>
+  )
+}
+
+function RatgeberArticlePage({ slug }: { slug: string }) {
+  const a = ratgeberArticles.find(x => x.slug === slug)
+  usePageMeta(
+    a ? `${a.title} | RAG Ratgeber` : 'Artikel nicht gefunden | RAG',
+    a ? a.teaser : 'Dieser Ratgeber-Artikel existiert nicht.',
+    'article',
+  )
+  if (!a) {
+    return (
+      <>
+        <Nav />
+        <main id="inhalt" style={{ padding: '180px clamp(20px,4vw,48px) 120px' }}>
+          <div style={{ ...SHELL }}>
+            <h1 className="display" style={{ fontSize: 30, marginBottom: 14 }}>Artikel nicht gefunden</h1>
+            <a href="/ratgeber" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>← Zurück zum Ratgeber</a>
+          </div>
+        </main>
+        <Footer />
+      </>
+    )
+  }
+
+  const service = modules.find(m => m.slug === a.serviceSlug)
+  const terms = glossarEntries.filter(g => a.terms.includes(g.term))
+  const others = ratgeberArticles.filter(x => x.slug !== a.slug)
+
+  return (
+    <>
+      <Nav />
+      <main id="inhalt">
+      <article>
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: a.title,
+        description: a.teaser,
+        inLanguage: 'de',
+        author: { '@type': 'Organization', name: SITE_NAME },
+        publisher: { '@type': 'Organization', name: SITE_NAME },
+        mainEntityOfPage: (typeof window !== 'undefined' ? window.location.origin : '') + '/ratgeber/' + a.slug,
+      }} />
+      <ContentHero
+        crumbs={[{ label: 'Start', href: '/' }, { label: 'Ratgeber', href: '/ratgeber' }, { label: a.title }]}
+        kicker="RATGEBER"
+        title={a.title}
+        sub={a.teaser}
+        meta={`${a.minutes} Minuten Lesezeit`}
+      />
+
+      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(56px, 7vw, 90px) clamp(20px,4vw,48px)' }}>
+        <div style={{ ...SHELL, maxWidth: 1240 }}><div style={{ maxWidth: 760 }}>
+          <p className="lead" style={{ color: 'var(--ink)', margin: '0 0 clamp(34px, 4vw, 52px)' }}>{a.intro}</p>
+          {a.sections.map(sec => (
+            <div key={sec.h} style={{ marginBottom: 'clamp(30px, 4vw, 48px)' }}>
+              <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 27px)', lineHeight: 1.22, margin: '0 0 14px' }}>{sec.h}</h2>
+              {sec.p.map((t, i) => (
+                <p key={i} style={{ fontSize: 15.5, lineHeight: 1.85, color: 'var(--muted)', margin: '0 0 14px' }}>{t}</p>
+              ))}
+            </div>
+          ))}
+        </div></div>
+      </section>
+
+      {/* Glossar → Begriffe aus dem Artikel */}
+      <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(50px, 6vw, 80px) clamp(20px,4vw,48px)' }}>
+        <div style={{ ...SHELL, maxWidth: 1240 }}><div style={{ maxWidth: 760 }}>
+          <Kicker>Begriffe aus diesem Artikel</Kicker>
+          <div style={{ marginTop: 22, borderTop: '1px solid var(--line)' }}>
+            {terms.map(t => (
+              <a key={t.term} href="/glossar" style={{
+                display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16,
+                padding: '16px 0', borderBottom: '1px solid var(--line)', textDecoration: 'none', color: 'inherit',
+              }}>
+                <span className="display" style={{ fontSize: 16 }}>{t.term}</span>
+                <span style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--muted)' }}>{t.short}</span>
+              </a>
+            ))}
+          </div>
+        </div></div>
+      </section>
+
+      {/* Ratgeber → Leistung */}
+      {service && (
+        <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(50px, 6vw, 80px) clamp(20px,4vw,48px)' }}>
+          <div style={{ ...SHELL, maxWidth: 1240 }}><div style={{ maxWidth: 760 }}>
+            <Kicker>Passende Leistung</Kicker>
+            <div style={{ marginTop: 22, border: '1px solid var(--line)', borderRadius: 20, padding: 'clamp(24px, 3vw, 36px)' }}>
+              <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 28px)', margin: '0 0 10px' }}>{service.label}</h2>
+              <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '0 0 22px' }}>{a.serviceNote}</p>
+              <a href={`/services/${service.slug}`} className="btn btn-md btn-ink">Zur Leistungsseite <span className="arw">→</span></a>
+            </div>
+            <div style={{ marginTop: 'clamp(34px, 4vw, 52px)' }}>
+              <Kicker>Weiterlesen</Kicker>
+              <div style={{ marginTop: 18 }}>
+                {others.map(o => (
+                  <a key={o.slug} href={`/ratgeber/${o.slug}`} className="ul" style={{ display: 'block', width: 'fit-content', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 10 }}>
+                    {o.title} →
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div></div>
+        </section>
+      )}
+
+      </article>
+      <ContentCTA />
+      </main>
+      <Footer />
+    </>
+  )
+}
+
+function GlossarPage() {
+  usePageMeta(
+    'Glossar — Begriffe der lokalen Sichtbarkeit | RAG',
+    'Local Pack, NAP-Konsistenz, GEO, strukturierte Daten: die wichtigsten Begriffe rund um Google Maps, lokale Suche und KI-Suche, kurz erklärt.',
+  )
+  return (
+    <>
+      <Nav />
+      <main id="inhalt">
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'DefinedTermSet',
+        name: 'Glossar der lokalen Sichtbarkeit',
+        inLanguage: 'de',
+        hasDefinedTerm: glossarEntries.map(g => ({
+          '@type': 'DefinedTerm',
+          name: g.term,
+          description: g.body,
+        })),
+      }} />
+      <ContentHero
+        crumbs={[{ label: 'Start', href: '/' }, { label: 'Glossar' }]}
+        kicker="GLOSSAR"
+        title={<>Die Begriffe, <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>kurz erklärt</span></>}
+        sub="Von Local Pack bis GEO: was hinter den Wörtern steckt, die in Angeboten und Berichten zur lokalen Sichtbarkeit auftauchen."
+      />
+      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(56px, 7vw, 90px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)' }}>
+        <div style={{ ...SHELL }}>
+          <div style={{ borderTop: '1px solid var(--line)' }}>
+            {glossarEntries.map((g, i) => {
+              const article = g.ratgeber ? ratgeberArticles.find(a => a.slug === g.ratgeber) : undefined
+              const service = g.service ? modules.find(m => m.slug === g.service) : undefined
+              return (
+                <div key={g.term} style={{
+                  display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                  gap: 'clamp(14px, 2vw, 48px)', padding: 'clamp(26px, 3vw, 40px) 0', borderBottom: '1px solid var(--line)',
+                }}>
+                  <div>
+                    <span className="display" style={{ fontSize: 13, color: 'var(--electric)', letterSpacing: '0.08em' }}>{String(i + 1).padStart(2, '0')}</span>
+                    <h2 className="display" style={{ fontSize: 'clamp(19px, 1.9vw, 26px)', lineHeight: 1.2, margin: '10px 0 8px' }}>{g.term}</h2>
+                    <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--ink)', fontWeight: 600, margin: 0, maxWidth: 360 }}>{g.short}</p>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 15, lineHeight: 1.85, color: 'var(--muted)', margin: 0 }}>{g.body}</p>
+                    {(article || service) && (
+                      <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginTop: 16 }}>
+                        {article && (
+                          <a href={`/ratgeber/${article.slug}`} className="ul" style={{ fontSize: 13, fontWeight: 600, color: 'var(--electric)' }}>Im Ratgeber →</a>
+                        )}
+                        {service && (
+                          <a href={`/services/${service.slug}`} className="ul" style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>Passende Leistung →</a>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+      <ContentCTA />
+      </main>
+      <Footer />
+    </>
+  )
+}
+
+function ServicesIndex() {
+  usePageMeta(
+    'Leistungen — woraus lokale Sichtbarkeit besteht | RAG',
+    'Google Maps, Website & Google Search, KI-Suche, Bewertungen, lokale Verzeichnisse, Social Media, Anzeigen und Offline-Werbung: die acht Bereiche, die lokale Sichtbarkeit ausmachen — einzeln erklärt und als Paket zusammenstellbar.',
+  )
+  return (
+    <>
+      <Nav />
+      <main id="inhalt">
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: 'Leistungen von RAG',
+        itemListElement: modules.map((m, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: m.label,
+          url: (typeof window !== 'undefined' ? window.location.origin : '') + '/services/' + m.slug,
+        })),
+      }} />
+      <section style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
+        <MapBackdrop tone="dark" shift={120} />
+        <div style={{ ...SHELL, position: 'relative' }}>
+          <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Leistungen' }]} />
+          <p className="eyebrow" style={{ color: 'var(--electric-2)', marginBottom: 22 }}>LEISTUNGEN</p>
+          <h1 className="display h-lg" style={{ marginBottom: 22, maxWidth: 900 }}>
+            Woraus lokale <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>Sichtbarkeit besteht</span>
+          </h1>
+          <p className="lead" style={{ color: 'rgba(255,255,255,0.6)', maxWidth: 620, margin: '0 0 34px' }}>
+            Acht Bereiche, die zusammen darüber entscheiden, ob lokale Kunden Sie finden, verstehen und Ihnen vertrauen. Google Maps ist der zentrale Kanal — alles andere zahlt darauf ein.
+          </p>
+          <a href="/#audit-quiz" className="btn btn-lg btn-paper">Kostenlosen Sichtbarkeits-Check starten <span className="arw">→</span></a>
+        </div>
+      </section>
+
+      <ServiceSelector />
+      </main>
+      <Footer />
+    </>
+  )
+}
+
 function ServicePage({ slug }: { slug: string }) {
   const data = servicePages.find(s => s.slug === slug)
   const [faqOpen, setFaqOpen] = useState<number | null>(null)
+  usePageMeta(
+    data ? `${data.heroTitle} | RAG` : 'Leistung nicht gefunden | RAG',
+    data ? data.heroSubtitle : 'Diese Leistungsseite existiert nicht.',
+  )
 
   if (!data) {
     return (
       <>
         <Nav />
-        <section style={{ padding: '180px 24px 120px', textAlign: 'center' }}>
-          <h1 style={{ fontSize: 26, fontWeight: 700, color: '#030712', marginBottom: 14 }}>Service nicht gefunden</h1>
-          <a href="/" style={{ color: '#2600FF', fontWeight: 600, textDecoration: 'none' }}>← Zurück zur Startseite</a>
-        </section>
+        <main id="inhalt" style={{ padding: '180px clamp(20px,4vw,48px) 120px' }}>
+          <div style={{ ...SHELL }}>
+          <h1 className="display" style={{ fontSize: 30, marginBottom: 14 }}>Leistung nicht gefunden</h1>
+          <a href="/services" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>← Zurück zu den Leistungen</a>
+          </div>
+        </main>
         <Footer />
       </>
     )
@@ -2880,24 +4026,58 @@ function ServicePage({ slug }: { slug: string }) {
   return (
     <>
       <Nav />
+      <main id="inhalt">
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'Service',
+        name: modules.find(m => m.slug === slug)?.label ?? data.heroTitle,
+        description: data.heroSubtitle,
+        serviceType: data.kicker,
+        areaServed: ['Germany', 'Austria', 'Switzerland'],
+        provider: { '@type': 'ProfessionalService', name: SITE_NAME },
+      }} />
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: data.faq.map(f => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      }} />
       <section style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
         <MapBackdrop tone="dark" shift={120} />
-        <div style={{ maxWidth: 820, margin: '0 auto', position: 'relative' }}>
-          <p className="eyebrow" style={{ color: 'var(--electric-2)', marginBottom: 22 }}>{data.kicker}</p>
-          <h1 className="display h-lg" style={{ marginBottom: 22 }}>{data.heroTitle}</h1>
+        <div style={{ ...SHELL, position: 'relative' }}>
+          <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Leistungen', href: '/services' }, { label: modules.find(m => m.slug === slug)?.label ?? data.heroTitle }]} />
+          <h1 className="display h-lg" style={{ marginBottom: 22, maxWidth: 900 }}>{data.heroTitle}</h1>
           <p className="lead" style={{ color: 'rgba(255,255,255,0.6)', maxWidth: 620, margin: '0 0 34px' }}>{data.heroSubtitle}</p>
           <a href="#get-audit" className="btn btn-lg btn-paper">{data.ctaTitle} <span className="arw">→</span></a>
         </div>
       </section>
 
       <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px)' }}>
-        <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <div style={{ marginBottom: 44 }}><data.Illust /></div>
+        <div style={{ ...SHELL, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(28px, 4vw, 64px)', alignItems: 'start' }}>
+          <div className="svc-rail" style={{ position: 'sticky', top: 96 }}>
+            <div style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: 'var(--bone)', marginBottom: 26 }}><data.Illust /></div>
 
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#030712', marginBottom: 12 }}>{data.whatTitle}</h2>
+            <div style={{ backgroundColor: '#f2f2ff', border: '1px solid #ddd6fe', borderRadius: 16, padding: '28px 26px' }}>
+              <h2 className="display" style={{ fontSize: 18, marginBottom: 14 }}>{data.receiveTitle}</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {data.receiveItems.map(item => (
+                  <div key={item} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginTop: 2, flexShrink: 0 }}><circle cx="8" cy="8" r="8" fill="#2600FF" /><path d="M4.5 8l2.5 2.5 4.5-5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>{item}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ maxWidth: 680 }}>
+          <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 26px)', marginBottom: 12 }}>{data.whatTitle}</h2>
           <p style={{ fontSize: 15, color: '#4b5563', lineHeight: 1.75, marginBottom: 40 }}>{data.whatBody}</p>
 
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#030712', marginBottom: 20 }}>{data.howTitle}</h2>
+          <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 26px)', marginBottom: 20 }}>{data.howTitle}</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18, marginBottom: 40 }}>
             {data.howItems.map(item => (
               <div key={item.title} style={{ display: 'flex', gap: 14 }}>
@@ -2910,22 +4090,10 @@ function ServicePage({ slug }: { slug: string }) {
             ))}
           </div>
 
-          <div style={{ backgroundColor: '#f2f2ff', border: '1px solid #ddd6fe', borderRadius: 16, padding: '28px 26px', marginBottom: 40 }}>
-            <h2 style={{ fontSize: 17, fontWeight: 700, color: '#030712', marginBottom: 14 }}>{data.receiveTitle}</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {data.receiveItems.map(item => (
-                <div key={item} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginTop: 2, flexShrink: 0 }}><circle cx="8" cy="8" r="8" fill="#2600FF" /><path d="M4.5 8l2.5 2.5 4.5-5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                  <p style={{ fontSize: 14, color: '#374151', lineHeight: 1.6, margin: 0 }}>{item}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#030712', marginBottom: 12 }}>{data.whyTitle}</h2>
+          <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 26px)', marginBottom: 12 }}>{data.whyTitle}</h2>
           <p style={{ fontSize: 15, color: '#4b5563', lineHeight: 1.75, marginBottom: 40 }}>{data.whyBody}</p>
 
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#030712', marginBottom: 16 }}>Häufig gestellte Fragen</h2>
+          <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 26px)', marginBottom: 16 }}>Häufig gestellte Fragen</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {data.faq.map((item, i) => (
               <div key={i} style={{ backgroundColor: '#f9fafb', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
@@ -2940,24 +4108,29 @@ function ServicePage({ slug }: { slug: string }) {
               </div>
             ))}
           </div>
+          </div>
         </div>
       </section>
 
       <section id="get-audit" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px)' }}>
-        <div style={{ maxWidth: 460, margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: 'clamp(20px, 3.5vw, 28px)', fontWeight: 700, color: '#030712', marginBottom: 10 }}>{data.ctaTitle}</h2>
-          <p style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.65, marginBottom: 28 }}>{data.ctaBody}</p>
-          <div style={{ backgroundColor: '#fff', border: '1px solid var(--line)', borderRadius: 24, padding: '30px 28px', boxShadow: '0 20px 50px rgba(7,7,12,0.07)', textAlign: 'left' }}>
+        <div style={{ ...SHELL, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(28px, 4vw, 64px)', alignItems: 'center' }}>
+          <div>
+            <Kicker>Anfrage</Kicker>
+            <h2 className="display" style={{ fontSize: 'clamp(22px, 2.6vw, 34px)', margin: '20px 0 12px', maxWidth: 460 }}>{data.ctaTitle}</h2>
+            <p style={{ fontSize: 15, color: 'var(--muted)', lineHeight: 1.8, margin: 0, maxWidth: 460 }}>{data.ctaBody}</p>
+          </div>
+          <div style={{ backgroundColor: '#fff', border: '1px solid var(--line)', borderRadius: 24, padding: '30px 28px', boxShadow: '0 20px 50px rgba(7,7,12,0.07)' }}>
             <ServiceLeadForm serviceLabel={data.heroTitle} />
           </div>
         </div>
       </section>
 
       <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 19, fontWeight: 700, color: '#030712', textAlign: 'center', marginBottom: 8 }}>Entdecken Sie unsere weiteren Leistungen</h2>
-          <p style={{ fontSize: 14, color: '#4b5563', textAlign: 'center', marginBottom: 32 }}>Die meisten Unternehmen brauchen mehr als einen Kanal, um echte Ergebnisse zu sehen. Entdecken Sie das gesamte System.</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+        <div style={{ ...SHELL }}>
+          <Kicker>Weitere Leistungen</Kicker>
+          <h2 className="display" style={{ fontSize: 'clamp(20px, 2.2vw, 28px)', margin: '20px 0 8px' }}>Lokale Sichtbarkeit entsteht selten aus einem einzigen Kanal</h2>
+          <p style={{ fontSize: 14.5, color: 'var(--muted)', lineHeight: 1.75, marginBottom: 32, maxWidth: 560 }}>Die meisten Unternehmen brauchen mehrere Bereiche, die zusammenspielen. Hier ist der Rest des Systems.</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: 16 }}>
             {others.map(m => (
               <a key={m.slug} href={`/services/${m.slug}`} style={{ display: 'block', backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 14, padding: '18px', textDecoration: 'none', transition: 'border-color 0.15s' }}
                 onMouseEnter={e => (e.currentTarget.style.borderColor = '#2600FF')}
@@ -2967,11 +4140,12 @@ function ServicePage({ slug }: { slug: string }) {
               </a>
             ))}
           </div>
-          <div style={{ textAlign: 'center', marginTop: 28 }}>
-            <a href="/" style={{ fontSize: 13, fontWeight: 600, color: '#2600FF', textDecoration: 'underline' }}>Das komplette RAG-System auf der Startseite ansehen →</a>
+          <div style={{ marginTop: 28 }}>
+            <a href="/services" className="ul" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--electric)' }}>Alle Leistungen mit Details ansehen →</a>
           </div>
         </div>
       </section>
+      </main>
 
       <Footer />
     </>
@@ -3100,7 +4274,7 @@ function BookCallWidget({ sentinelRef }: { sentinelRef: React.RefObject<HTMLDivE
           ) : (
             <>
               <p style={{ fontSize: 12.5, color: 'var(--muted)', textAlign: 'center', lineHeight: 1.5, margin: 0, whiteSpace: 'normal' }}>Wissen Sie schon, was Sie brauchen?</p>
-              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)', textAlign: 'center', margin: 0 }}>Kein Audit nötig.</p>
+              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)', textAlign: 'center', margin: 0 }}>Kein Check nötig.</p>
               <button onClick={() => setModal(true)} className="btn btn-md btn-electric" style={{ width: '100%', fontSize: 13 }}>Anruf buchen</button>
             </>
           )}
@@ -3111,6 +4285,22 @@ function BookCallWidget({ sentinelRef }: { sentinelRef: React.RefObject<HTMLDivE
 }
 
 function LandingPage() {
+  // Beim direkten Aufruf von /#anchor steht der Inhalt erst nach dem Mount —
+  // ohne diesen Sprung landet der Besucher oben statt beim gewünschten Abschnitt.
+  useEffect(() => {
+    const id = decodeURIComponent(window.location.hash.slice(1))
+    if (!id) return
+    // Schriften und Reveal-Animationen verschieben das Layout noch nach dem Mount,
+    // deshalb mehrfach nachfassen statt einmal zu springen.
+    const timers = [60, 300, 800, 1500].map(delay => setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ block: 'start' })
+    }, delay))
+    return () => timers.forEach(clearTimeout)
+  }, [])
+  usePageMeta(
+    'RAG — System für lokale Sichtbarkeit bei Google Maps, Google & KI-Suche',
+    'Wir machen lokale Unternehmen in Deutschland, Österreich und der Schweiz dort sichtbar, wo Kunden heute suchen: Google Maps, Google, ChatGPT, Perplexity, Bewertungen und soziale Netzwerke. Kostenloser Sichtbarkeits-Check.',
+  )
   const widgetSentinel = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -3125,17 +4315,22 @@ function LandingPage() {
       <style>{responsiveCSS}</style>
       <BookCallWidget sentinelRef={widgetSentinel} />
       <Nav />
+      <main id="inhalt">
       <Hero />
       <div ref={widgetSentinel} style={{ height: 1, pointerEvents: 'none' }} />
+      <SearchReality />
       <AboutRAG />
       <ProblemSection />
       <SolutionSection />
+      <TwoRoutes />
       <Process />
+      <SystemSummary />
       <RealResults />
       <AuditQuiz />
       <LocalVisibilityExplained />
       <FAQ />
       <DualCTA />
+      </main>
       <Footer />
     </>
   )
@@ -3151,6 +4346,19 @@ export default function App() {
   const serviceMatch = path.match(/^\/services\/([a-z0-9-]+)\/?$/)
   if (serviceMatch) {
     return <ServicePage slug={serviceMatch[1]} />
+  }
+  if (/^\/services\/?$/.test(path)) {
+    return <ServicesIndex />
+  }
+  const ratgeberMatch = path.match(/^\/ratgeber\/([a-z0-9-]+)\/?$/)
+  if (ratgeberMatch) {
+    return <RatgeberArticlePage slug={ratgeberMatch[1]} />
+  }
+  if (/^\/ratgeber\/?$/.test(path)) {
+    return <RatgeberIndex />
+  }
+  if (/^\/glossar\/?$/.test(path)) {
+    return <GlossarPage />
   }
   return <LandingPage />
 }

@@ -1,0 +1,24 @@
+# robots.txt — RAG
+# Die Domain unten muss vor dem Livegang auf die echte Domain geaendert werden.
+
+User-agent: *
+Allow: /
+
+# Suchsysteme mit KI-Funktionen ausdruecklich zugelassen —
+# ohne diesen Zugriff kann kein KI-System das Unternehmen korrekt wiedergeben.
+User-agent: Googlebot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://rag-agentur.de/sitemap.xml
