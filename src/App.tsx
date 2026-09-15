@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { getLang, setLang, dateLocale, type Lang } from './i18n'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SHARED ILLUSTRATION PRIMITIVES
@@ -24,7 +25,7 @@ function Avatar({ cx, cy, r = 18, bg = '#ede9fe', border = '#c4b5fd', label = 'M
       <circle cx={cx} cy={cy} r={r + 2} fill="white" opacity="0.7" />
       <circle cx={cx} cy={cy} r={r} fill={bg} stroke={border} strokeWidth="1.2" />
       <text x={cx} y={cy + fontSize * 0.38} textAnchor="middle" fontSize={fontSize} fontWeight="700"
-        fill="#2600FF" fontFamily="Satoshi, Inter, sans-serif">{label}</text>
+        fill="#2600FF" fontFamily="Satoshi, 'RAG Cyrillic Sans', Inter, sans-serif">{label}</text>
     </g>
   )
 }
@@ -35,9 +36,9 @@ function RatingBadge({ x, y, rating, source = 'G' }: { x: number; y: number; rat
     <g>
       <rect x={x} y={y} width="46" height="18" rx="9" fill="white" stroke="#e5e7eb" strokeWidth="1" />
       <text x={x + 7} y={y + 12} fontSize="8" fontWeight="700" fill={source === 'G' ? '#4285F4' : '#00b67a'}
-        fontFamily="Satoshi, Inter, sans-serif">{source}</text>
-      <text x={x + 16} y={y + 12} fontSize="7.5" fontWeight="600" fill="#f59e0b" fontFamily="Satoshi, Inter, sans-serif">★</text>
-      <text x={x + 24} y={y + 12} fontSize="7.5" fontWeight="700" fill="#030712" fontFamily="Satoshi, Inter, sans-serif">{rating}</text>
+        fontFamily="Satoshi, 'RAG Cyrillic Sans', Inter, sans-serif">{source}</text>
+      <text x={x + 16} y={y + 12} fontSize="7.5" fontWeight="600" fill="#f59e0b" fontFamily="Satoshi, 'RAG Cyrillic Sans', Inter, sans-serif">★</text>
+      <text x={x + 24} y={y + 12} fontSize="7.5" fontWeight="700" fill="#030712" fontFamily="Satoshi, 'RAG Cyrillic Sans', Inter, sans-serif">{rating}</text>
     </g>
   )
 }
@@ -320,7 +321,7 @@ function IllustConnected() {
       {channels.map((c, i) => (
         <g key={i}>
           <circle cx={c.cx} cy={c.cy} r={18} fill={c.bg} stroke={c.border} strokeWidth="1.5" />
-          <text x={c.cx} y={c.cy + 4} textAnchor="middle" fontSize="9" fontWeight="700" fill="#374151" fontFamily="Satoshi, Inter, sans-serif">{c.label}</text>
+          <text x={c.cx} y={c.cy + 4} textAnchor="middle" fontSize="9" fontWeight="700" fill="#374151" fontFamily="Satoshi, 'RAG Cyrillic Sans', Inter, sans-serif">{c.label}</text>
         </g>
       ))}
       {/* Connected lines (appearing after arrow) */}
@@ -333,7 +334,7 @@ function IllustConnected() {
       {/* Central hub */}
       <circle cx={112} cy={68} r={22} fill="#2600FF" opacity="0.12" />
       <circle cx={112} cy={68} r={14} fill="#2600FF" />
-      <text x={112} y={72.5} textAnchor="middle" fontSize="9" fontWeight="700" fill="white" fontFamily="Satoshi, Inter, sans-serif">RAG</text>
+      <text x={112} y={72.5} textAnchor="middle" fontSize="9" fontWeight="700" fill="white" fontFamily="Satoshi, 'RAG Cyrillic Sans', Inter, sans-serif">RAG</text>
     </svg>
   )
 }
@@ -995,8 +996,8 @@ function generateBookingDays() {
     const dow = d.getDay()
     if (dow !== 0 && dow !== 6) {
       days.push({
-        label: d.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' }),
-        date: d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' }),
+        label: d.toLocaleDateString(dateLocale(), { weekday: 'short', day: 'numeric', month: 'short' }),
+        date: d.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' }),
       })
     }
   }
@@ -1209,6 +1210,33 @@ function ServicesNavDropdown({ fg }: { fg: string }) {
   )
 }
 
+// DE / RU switch — see src/i18n. Labels are language codes, never translated.
+function LangSwitch({ fg, border }: { fg: string; border: string }) {
+  const current = getLang()
+  const opts: Lang[] = ['de', 'ru']
+  return (
+    <div role="group" aria-label="Sprache / Язык" data-no-translate
+      style={{ display: 'inline-flex', border: `1px solid ${border}`, borderRadius: 999, padding: 2, gap: 2, transition: 'border-color 0.4s ease' }}>
+      {opts.map(l => {
+        const active = l === current
+        return (
+          <button key={l} type="button" lang={l} aria-pressed={active}
+            onClick={() => { if (!active) setLang(l) }}
+            style={{
+              fontFamily: 'inherit', fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', lineHeight: 1,
+              padding: '6px 9px', borderRadius: 999, border: 'none', cursor: active ? 'default' : 'pointer',
+              backgroundColor: active ? 'var(--electric)' : 'transparent',
+              color: active ? '#fff' : fg, opacity: active ? 1 : 0.7,
+              transition: 'background-color 0.25s ease, color 0.4s ease, opacity 0.25s ease',
+            }}>
+            {l.toUpperCase()}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 function Nav() {
   const [open, setOpen] = useState(false)
   const [solid, setSolid] = useState(false)
@@ -1219,12 +1247,14 @@ function Nav() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const fg = solid ? '#07070C' : '#ffffff'
+  // Open mobile menu is white, so the bar above it switches to the light look too.
+  const light = solid || open
+  const fg = light ? '#07070C' : '#ffffff'
 
   return (
     <header style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 90,
-      backgroundColor: solid ? 'rgba(255,255,255,0.82)' : 'transparent',
+      backgroundColor: solid ? 'rgba(255,255,255,0.82)' : open ? '#ffffff' : 'transparent',
       backdropFilter: solid ? 'saturate(180%) blur(18px)' : 'none',
       WebkitBackdropFilter: solid ? 'saturate(180%) blur(18px)' : 'none',
       borderBottom: `1px solid ${solid ? 'var(--line)' : 'transparent'}`,
@@ -1235,25 +1265,29 @@ function Nav() {
           RAG<span style={{ color: 'var(--electric)' }}>.</span>
         </a>
 
-        <div className="hidden-mobile" style={{ display: 'flex', gap: 30, alignItems: 'center' }}>
+        <div className="hidden-mobile nav-links" style={{ display: 'flex', gap: 30, alignItems: 'center' }}>
           <a href={homeHref('audit')} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>Sichtbarkeit</a>
           <ServicesNavDropdown fg={fg} />
           {[['Ergebnisse', 'results'], ['Ratgeber', '/ratgeber'], ['FAQ', 'faq']].map(([l, target]) => (
             <a key={l} href={linkHref(target)} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>{l}</a>
           ))}
-          <span style={{ width: 1, height: 18, backgroundColor: solid ? 'var(--line)' : 'rgba(255,255,255,0.2)' }} />
-          <a href="tel:+493012345678" className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, opacity: 0.75, transition: 'color 0.4s ease' }}>+49 30 12345678</a>
-          <a href={homeHref('audit-quiz')} className={`btn btn-md ${solid ? 'btn-ink' : 'btn-paper'}`}>
+          <LangSwitch fg={fg} border={solid ? 'var(--line)' : 'rgba(255,255,255,0.25)'} />
+          <span className="nav-phone" style={{ width: 1, height: 18, backgroundColor: solid ? 'var(--line)' : 'rgba(255,255,255,0.2)' }} />
+          <a href="tel:+493012345678" className="ul nav-phone" style={{ fontWeight: 500, fontSize: 14, color: fg, opacity: 0.75, transition: 'color 0.4s ease' }}>+49 30 12345678</a>
+          <a href={homeHref('audit-quiz')} className={`btn btn-md ${solid ? 'btn-ink' : 'btn-paper'}`} style={{ whiteSpace: 'nowrap' }}>
             Sichtbarkeits-Check starten
             <span className="arw">→</span>
           </a>
         </div>
 
-        <button className="show-mobile" aria-label="Menü" style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }} onClick={() => setOpen(v => !v)}>
+        <div className="show-mobile" style={{ display: 'none', alignItems: 'center', gap: 12 }}>
+        <LangSwitch fg={fg} border={light ? 'var(--line)' : 'rgba(255,255,255,0.25)'} />
+        <button aria-label="Menü" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }} onClick={() => setOpen(v => !v)}>
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={open ? '#07070C' : fg} strokeWidth="1.8" strokeLinecap="round">
             {open ? <><path d="M18 6L6 18" /><path d="M6 6l12 12" /></> : <><path d="M3 7h18" /><path d="M3 12h18" /><path d="M3 17h18" /></>}
           </svg>
         </button>
+        </div>
       </nav>
 
       {open && (
@@ -4182,6 +4216,12 @@ const responsiveCSS = `
   .footer-grid { grid-template-columns: 1fr 1fr !important; }
 }
 
+/* desktop nav between tablet and wide: drop the phone, tighten the gaps */
+@media (max-width: 1180px) {
+  .nav-phone { display: none !important; }
+  .nav-links { gap: 20px !important; }
+}
+
 @media (max-width: 768px) {
   .hidden-mobile { display: none !important; }
   .show-mobile { display: flex !important; }
@@ -4360,5 +4400,40 @@ export default function App() {
   if (/^\/glossar\/?$/.test(path)) {
     return <GlossarPage />
   }
-  return <LandingPage />
+  if (path === '/' || path === '/index.html') {
+    return <LandingPage />
+  }
+  return <NotFoundPage />
+}
+
+// Unknown URL — real "not found" instead of silently rendering the landing page.
+function NotFoundPage() {
+  usePageMeta('Seite nicht gefunden | RAG', 'Diese Seite existiert nicht.')
+  useEffect(() => {
+    let robots = document.head.querySelector('meta[name="robots"]') as HTMLMetaElement | null
+    if (!robots) {
+      robots = document.createElement('meta')
+      robots.name = 'robots'
+      document.head.appendChild(robots)
+    }
+    robots.content = 'noindex'
+  }, [])
+  return (
+    <>
+      <Nav />
+      <main id="inhalt" style={{ backgroundColor: 'var(--ink)', color: '#fff', minHeight: '70vh', padding: '180px clamp(20px,4vw,48px) 120px' }}>
+        <div style={{ ...SHELL }}>
+          <p className="eyebrow" style={{ color: 'var(--electric-2)', marginBottom: 18 }}>404</p>
+          <h1 className="display h-lg" style={{ margin: '0 0 18px' }}>Seite nicht gefunden</h1>
+          <p className="lead" style={{ color: 'rgba(255,255,255,0.7)', maxWidth: 520, margin: '0 0 32px' }}>Diese Adresse gibt es nicht oder nicht mehr. Hier geht es weiter:</p>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <a href="/" className="btn btn-md btn-paper">Zur Startseite <span className="arw">→</span></a>
+            <a href="/services" className="btn btn-md btn-outline-dark">Leistungen</a>
+            <a href="/ratgeber" className="btn btn-md btn-outline-dark">Ratgeber</a>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </>
+  )
 }
