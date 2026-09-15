@@ -925,20 +925,32 @@ function linkHref(target: string) {
 
 function ServicesNavDropdown({ fg }: { fg: string }) {
   const [open, setOpen] = useState(false)
+  // Small close delay: the pointer can cross the gap between the link and the panel
+  // (or leave it for a moment) without the menu disappearing.
+  const closeTimer = useRef<number | null>(null)
+  const show = () => { if (closeTimer.current) window.clearTimeout(closeTimer.current); setOpen(true) }
+  const hide = () => { if (closeTimer.current) window.clearTimeout(closeTimer.current); closeTimer.current = window.setTimeout(() => setOpen(false), 180) }
+  useEffect(() => () => { if (closeTimer.current) window.clearTimeout(closeTimer.current) }, [])
   return (
-    <div style={{ position: 'relative' }} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+    <div style={{ position: 'relative' }} onMouseEnter={show} onMouseLeave={hide}
+      onFocus={show} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) hide() }}>
       <a href="/services" className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, display: 'flex', alignItems: 'center', gap: 6 }}>
         Leistungen
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }}>
           <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </a>
+      {/* outer layer is a transparent hover bridge from the link down to the panel */}
       <div style={{
-        position: 'absolute', top: '100%', left: '50%',
-        transform: `translate(-50%, ${open ? '10px' : '0px'})`,
-        opacity: open ? 1 : 0, pointerEvents: open ? 'auto' : 'none',
+        position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+        paddingTop: 18, zIndex: 60,
+        pointerEvents: open ? 'auto' : 'none',
+      }}>
+      <div style={{
+        transform: `translateY(${open ? '0px' : '-8px'})`,
+        opacity: open ? 1 : 0,
         transition: `opacity 0.28s ease, transform 0.4s ${EASE}`,
-        backgroundColor: '#07070C', borderRadius: 18, padding: 10, minWidth: 320, zIndex: 60,
+        backgroundColor: '#07070C', borderRadius: 18, padding: 10, minWidth: 320,
         boxShadow: '0 30px 70px rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.1)',
       }}>
         {modules.map((m, i) => (
@@ -956,6 +968,7 @@ function ServicesNavDropdown({ fg }: { fg: string }) {
         <a href="/services" style={{ display: 'block', padding: '11px 13px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 6, fontSize: 12.5, fontWeight: 600, color: 'var(--electric-2)', textDecoration: 'none' }}>
           Alle Leistungen ansehen →
         </a>
+      </div>
       </div>
     </div>
   )
