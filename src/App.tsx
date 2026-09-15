@@ -55,255 +55,6 @@ function PinIcon({ cx, cy, scale = 1 }: { cx: number; cy: number; scale?: number
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PROBLEM SECTION ILLUSTRATIONS
-// ─────────────────────────────────────────────────────────────────────────────
-
-function IllustProblemMaps() {
-  // Google Maps search results: Before (you at #14) vs After (you at #1)
-  return (
-    <svg viewBox="0 0 340 180" fill="none" width="100%" height="180" aria-hidden>
-      {/* Card background */}
-      <rect width="340" height="180" rx="12" fill="#f9fafb"/>
-      {/* BEFORE panel */}
-      <rect x="6" y="6" width="158" height="168" rx="8" fill="#fff" stroke="#e5e7eb" strokeWidth="1"/>
-      <text x="85" y="22" textAnchor="middle" fontSize="8" fontWeight="700" fill="#9ca3af" fontFamily="Arial, sans-serif">VORHER</text>
-      {/* Search bar */}
-      <rect x="14" y="28" width="142" height="14" rx="7" fill="#f3f4f6"/>
-      <text x="25" y="38" fontSize="6.5" fill="#9ca3af" fontFamily="Arial, sans-serif">Restaurants in meiner Nähe</text>
-      {/* Competitor rows */}
-      {[['Mitbewerber Nr. 1','4,9 ★ (338)'],['Mitbewerber Nr. 2','4,8 ★ (213)'],['Mitbewerber Nr. 3','4,7 ★ (185)']].map(([name,rating],i) => (
-        <g key={i}>
-          <rect x="14" y={50+i*26} width="142" height="22" rx="4" fill="#f9fafb"/>
-          <circle cx="24" cy={61+i*26} r="5" fill="#EA4335" opacity="0.85"/>
-          <text x="24" y={64+i*26} textAnchor="middle" fontSize="5" fontWeight="700" fill="white" fontFamily="Arial, sans-serif">{i+1}</text>
-          <text x="33" y={60+i*26} fontSize="6.5" fontWeight="600" fill="#111827" fontFamily="Arial, sans-serif">{name}</text>
-          <text x="33" y={68+i*26} fontSize="5.5" fill="#6b7280" fontFamily="Arial, sans-serif">{rating}</text>
-        </g>
-      ))}
-      {/* "Your Business" at #14 — faded */}
-      <rect x="14" y="130" width="142" height="22" rx="4" fill="#fef2f2" stroke="#fecaca" strokeWidth="0.8"/>
-      <rect x="14" y="130" width="28" height="22" rx="4" fill="#fee2e2"/>
-      <text x="28" y="145" textAnchor="middle" fontSize="7" fontWeight="800" fill="#dc2626" fontFamily="Arial, sans-serif">#14</text>
-      <text x="47" y="139" fontSize="6.5" fontWeight="600" fill="#6b7280" fontFamily="Arial, sans-serif">Ihr Unternehmen</text>
-      <text x="47" y="147" fontSize="5.5" fill="#9ca3af" fontFamily="Arial, sans-serif">2,8 ★ (14) · weit hinten</text>
-      {/* Blurred address */}
-      <rect x="47" y="149" width="60" height="4" rx="2" fill="#e5e7eb" opacity="0.7"/>
-
-      {/* AFTER panel */}
-      <rect x="176" y="6" width="158" height="168" rx="8" fill="#fff" stroke="#bbf7d0" strokeWidth="1.5"/>
-      <text x="255" y="22" textAnchor="middle" fontSize="8" fontWeight="700" fill="#059669" fontFamily="Arial, sans-serif">NACHHER</text>
-      {/* Search bar */}
-      <rect x="184" y="28" width="142" height="14" rx="7" fill="#f3f4f6"/>
-      <text x="195" y="38" fontSize="6.5" fill="#9ca3af" fontFamily="Arial, sans-serif">Restaurants in meiner Nähe</text>
-      {/* Your Business highlighted #1 */}
-      <rect x="184" y="46" width="142" height="46" rx="6" fill="#f0fdf4" stroke="#86efac" strokeWidth="1"/>
-      {/* Maps pin */}
-      <path d="M197 58c0-3.3 2.7-6 6-6s6 2.7 6 6c0 4.5-6 11-6 11s-6-6.5-6-11z" fill="#EA4335"/>
-      <circle cx="203" cy="58" r="2.2" fill="white"/>
-      <text x="212" y="57" fontSize="7" fontWeight="700" fill="#111827" fontFamily="Arial, sans-serif">Ihr Unternehmen</text>
-      <text x="212" y="65" fontSize="6" fill="#f59e0b" fontFamily="Arial, sans-serif">4,9 ★★★★★</text>
-      <text x="212" y="72" fontSize="5.5" fill="#059669" fontWeight="600" fontFamily="Arial, sans-serif">180+ verifizierte Bewertungen</text>
-      <rect x="213" y="75" width="38" height="10" rx="5" fill="#2600FF"/>
-      <text x="232" y="83" textAnchor="middle" fontSize="5.5" fontWeight="700" fill="white" fontFamily="Arial, sans-serif">Route</text>
-      {/* Competitors below — smaller */}
-      {[['Mitbewerber Nr. 2','4,8 ★'],['Mitbewerber Nr. 3','4,7 ★']].map(([name,r],i) => (
-        <g key={i}>
-          <rect x="184" y={100+i*24} width="142" height="20" rx="4" fill="#f9fafb"/>
-          <circle cx="194" cy={110+i*24} r="4" fill="#EA4335" opacity="0.5"/>
-          <text x="202" y={109+i*24} fontSize="6" fill="#6b7280" fontFamily="Arial, sans-serif">{name}</text>
-          <text x="202" y={116+i*24} fontSize="5.5" fill="#9ca3af" fontFamily="Arial, sans-serif">{r}</text>
-        </g>
-      ))}
-    </svg>
-  )
-}
-
-function IllustProblemAI() {
-  // ChatGPT dark interface: Before (you not listed) vs After (you #1)
-  return (
-    <svg viewBox="0 0 340 180" fill="none" width="100%" height="180" aria-hidden>
-      <rect width="340" height="180" rx="12" fill="#f9fafb"/>
-      {/* BEFORE panel — dark ChatGPT UI */}
-      <rect x="6" y="6" width="158" height="168" rx="8" fill="#1e1e2e"/>
-      {/* Sidebar strip */}
-      <rect x="6" y="6" width="28" height="168" rx="8" fill="#161621"/>
-      <text x="20" y="25" textAnchor="middle" fontSize="5.5" fill="#6b7280" fontFamily="Arial, sans-serif">☰</text>
-      <text x="20" y="38" textAnchor="middle" fontSize="5" fill="#6b7280" fontFamily="Arial, sans-serif">Chat</text>
-      <text x="20" y="50" textAnchor="middle" fontSize="5" fill="#4b5563" fontFamily="Arial, sans-serif">Verl.</text>
-      <text x="85" y="22" textAnchor="middle" fontSize="7" fontWeight="700" fill="#6b7280" fontFamily="Arial, sans-serif">VORHER</text>
-      {/* Prompt bar */}
-      <rect x="38" y="154" width="118" height="13" rx="6" fill="#2d2d3f"/>
-      <text x="97" y="163" textAnchor="middle" fontSize="5.5" fill="#6b7280" fontFamily="Arial, sans-serif">Beste Heizungsreparatur in meiner Nähe?</text>
-      {/* AI response rows */}
-      {[['#1. ████████ Unternehmen','5★ · lokaler Service'],['#2. ████ Unternehmen','5★ · Service'],['#3. ██████ Unternehmen','4,5★'],['#4. ████ Unternehmen','4,5★']].map(([t,s],i) => (
-        <g key={i}>
-          <rect x="38" y={30+i*28} width="118" height="24" rx="4" fill={i===0?"#2d2d3f":"transparent"}/>
-          <rect x="42" y={34+i*28} width={[64,58,62,60][i]||60} height="4" rx="2" fill="#374151"/>
-          <rect x="42" y={41+i*28} width="40" height="3" rx="1.5" fill="#1f2937"/>
-          <text x="43" y={37+i*28} fontSize="5.5" fontWeight="600" fill="#9ca3af" fontFamily="Arial, sans-serif">{`#${i+1}.`}</text>
-          {/* blurred name bar */}
-          <rect x="52" y={33+i*28} width="55" height="5" rx="2" fill="#374151" opacity="0.8"/>
-          <text x="43" y={45+i*28} fontSize="4.5" fill="#6b7280" fontFamily="Arial, sans-serif">{s}</text>
-        </g>
-      ))}
-
-      {/* AFTER panel */}
-      <rect x="176" y="6" width="158" height="168" rx="8" fill="#1e1e2e"/>
-      <rect x="176" y="6" width="28" height="168" rx="8" fill="#161621"/>
-      <text x="190" y="25" textAnchor="middle" fontSize="5.5" fill="#6b7280" fontFamily="Arial, sans-serif">☰</text>
-      <text x="255" y="22" textAnchor="middle" fontSize="7" fontWeight="700" fill="#4ade80" fontFamily="Arial, sans-serif">NACHHER</text>
-      <rect x="208" y="154" width="118" height="13" rx="6" fill="#2d2d3f"/>
-      <text x="267" y="163" textAnchor="middle" fontSize="5.5" fill="#6b7280" fontFamily="Arial, sans-serif">Beste Heizungsreparatur in meiner Nähe?</text>
-      {/* #1 Your Business highlighted */}
-      <rect x="208" y="30" width="118" height="40" rx="4" fill="#14532d" stroke="#22c55e" strokeWidth="0.8"/>
-      <text x="213" y="41" fontSize="6" fontWeight="700" fill="#4ade80" fontFamily="Arial, sans-serif">#1. Ihr Unternehmen</text>
-      <text x="213" y="50" fontSize="5" fill="#86efac" fontFamily="Arial, sans-serif">· Höchster Vertrauenswert der Region</text>
-      <text x="213" y="57" fontSize="5" fill="#86efac" fontFamily="Arial, sans-serif">· 5,0-Sterne-Bewertung von 200+</text>
-      <text x="213" y="64" fontSize="5" fill="#86efac" fontFamily="Arial, sans-serif">· Schnellste Reaktionszeiten u...</text>
-      {/* Competitors below blurred */}
-      {['#2. ██████ Unternehmen','#3. ████ Unternehmen','#4. ██████ Unternehmen'].map((t,i) => (
-        <g key={i}>
-          <rect x="208" y={78+i*26} width="118" height="22" rx="4"/>
-          <text x="213" y={88+i*26} fontSize="5.5" fill="#6b7280" fontFamily="Arial, sans-serif">{t.split(' ')[0]}</text>
-          <rect x="225" y={84+i*26} width="55" height="4" rx="2" fill="#374151" opacity="0.6"/>
-          <rect x="213" y={90+i*26} width="40" height="3" rx="1.5" fill="#1f2937"/>
-        </g>
-      ))}
-    </svg>
-  )
-}
-
-function IllustProblemSocial() {
-  // Instagram profile: Before (inactive) vs After (optimized)
-  return (
-    <svg viewBox="0 0 340 210" fill="none" width="100%" height="210" aria-hidden>
-      <rect width="340" height="210" rx="12" fill="#f9fafb"/>
-      {/* BEFORE phone */}
-      <rect x="18" y="6" width="128" height="198" rx="14" fill="#111827"/>
-      <rect x="22" y="22" width="120" height="178" rx="8" fill="white"/>
-      <text x="82" y="16" textAnchor="middle" fontSize="6" fontWeight="700" fill="#6b7280" fontFamily="Arial, sans-serif">VORHER</text>
-      {/* Status bar */}
-      <text x="30" y="32" fontSize="5" fill="#374151" fontFamily="Arial, sans-serif">9:41</text>
-      {/* Profile header */}
-      <circle cx="48" cy="58" r="14" fill="#e5e7eb"/>
-      <circle cx="48" cy="53" r="5" fill="#9ca3af"/>
-      <path d="M36 68c0-6.6 5.4-12 12-12s12 5.4 12 12" fill="#9ca3af" opacity="0.5"/>
-      <text x="76" y="50" fontSize="7" fontWeight="700" fill="#111827" fontFamily="Arial, sans-serif">Ihr Unternehmen</text>
-      <text x="76" y="60" fontSize="5.5" fill="#6b7280" fontFamily="Arial, sans-serif">14 Follower  2 Beiträge  54 Folgt</text>
-      <text x="76" y="70" fontSize="5" fill="#9ca3af" fontFamily="Arial, sans-serif">Willkommen auf meiner Seite...</text>
-      <rect x="36" y="76" width="76" height="11" rx="5" fill="#f3f4f6" stroke="#d1d5db" strokeWidth="0.8"/>
-      <text x="74" y="84.5" textAnchor="middle" fontSize="5.5" fill="#6b7280" fontFamily="Arial, sans-serif">Profil bearbeiten</text>
-      {/* Story circles — empty */}
-      {[0,1,2].map(i => <circle key={i} cx={38+i*22} cy={106} r="10" fill="#f3f4f6" stroke="#e5e7eb" strokeWidth="1"/>)}
-      {/* Post grid — 2 old dark photos */}
-      <rect x="28" y="122" width="50" height="50" rx="2" fill="#374151"/>
-      <rect x="82" y="122" width="50" height="50" rx="2" fill="#1f2937"/>
-      <text x="53" y="180" textAnchor="middle" fontSize="5" fill="#9ca3af" fontFamily="Arial, sans-serif">vor 2 Jahren</text>
-      <text x="107" y="180" textAnchor="middle" fontSize="5" fill="#9ca3af" fontFamily="Arial, sans-serif">vor 2 Jahren</text>
-
-      {/* AFTER phone */}
-      <rect x="194" y="6" width="128" height="198" rx="14" fill="#111827"/>
-      <rect x="198" y="22" width="120" height="178" rx="8" fill="white"/>
-      <text x="258" y="16" textAnchor="middle" fontSize="6" fontWeight="700" fill="#059669" fontFamily="Arial, sans-serif">NACHHER</text>
-      <text x="206" y="32" fontSize="5" fill="#374151" fontFamily="Arial, sans-serif">9:41</text>
-      {/* Profile — optimized */}
-      <defs>
-        <radialGradient id="igAvatar" cx="40%" cy="40%" r="70%">
-          <stop offset="0%" stopColor="#a855f7"/>
-          <stop offset="100%" stopColor="#2600FF"/>
-        </radialGradient>
-      </defs>
-      <circle cx="224" cy="58" r="15" fill="url(#igAvatar)"/>
-      <text x="224" y="62" textAnchor="middle" fontSize="10" fontWeight="900" fill="white" fontFamily="Arial, sans-serif">Y3</text>
-      {/* Verified badge */}
-      <circle cx="235" cy="47" r="4.5" fill="#2600FF"/>
-      <text x="235" y="50" textAnchor="middle" fontSize="5" fontWeight="700" fill="white" fontFamily="Arial, sans-serif">✓</text>
-      <text x="252" y="50" fontSize="7" fontWeight="700" fill="#111827" fontFamily="Arial, sans-serif">Ihr Unternehmen</text>
-      <text x="252" y="59" fontSize="5.5" fill="#6b7280" fontFamily="Arial, sans-serif">125K  583  918</text>
-      <text x="252" y="66" fontSize="4.5" fill="#9ca3af" fontFamily="Arial, sans-serif">Follower Beiträge Folgt</text>
-      <text x="206" y="76" fontSize="5" fill="#374151" fontFamily="Arial, sans-serif">Preisgekrönte Agentur | Wir lassen Marken wachsen</text>
-      {/* CTA button */}
-      <rect x="204" y="81" width="50" height="11" rx="5" fill="#2600FF"/>
-      <text x="229" y="89.5" textAnchor="middle" fontSize="5.5" fontWeight="700" fill="white" fontFamily="Arial, sans-serif">Jetzt buchen</text>
-      <rect x="258" y="81" width="32" height="11" rx="5" fill="#f3f4f6" stroke="#d1d5db" strokeWidth="0.8"/>
-      <text x="274" y="89.5" textAnchor="middle" fontSize="5.5" fill="#374151" fontFamily="Arial, sans-serif">Nachricht</text>
-      {/* Highlights */}
-      {[['#2600FF','Info'],['#059669','Arbeiten'],['#ea580c','Blog'],['#7c3aed','Kontakt']].map(([c,l],i) => (
-        <g key={i}>
-          <circle cx={210+i*24} cy={106} r="10" fill={c} opacity="0.85"/>
-          <text x={210+i*24} y={120} textAnchor="middle" fontSize="4.5" fill="#374151" fontFamily="Arial, sans-serif">{l}</text>
-        </g>
-      ))}
-      {/* Post grid — professional */}
-      {[['#1d4ed8',''],['#065f46',''],['#7c3aed',''],['#9a3412',''],['#1e1b4b',''],['#134e4a','']].map((c,i) => (
-        <rect key={i} x={204+(i%3)*38} y={126+Math.floor(i/3)*38} width="34" height="34" rx="2" fill={c[0]}/>
-      ))}
-    </svg>
-  )
-}
-
-function IllustProblemReviews() {
-  // Google Maps review card: Before (3.1★, stale) vs After (4.9★, active)
-  return (
-    <svg viewBox="0 0 340 200" fill="none" width="100%" height="200" aria-hidden>
-      <rect width="340" height="200" rx="12" fill="#f9fafb"/>
-      {/* BEFORE card */}
-      <rect x="6" y="6" width="158" height="188" rx="8" fill="white" stroke="#fecaca" strokeWidth="1"/>
-      <text x="85" y="20" textAnchor="middle" fontSize="7" fontWeight="700" fill="#dc2626" fontFamily="Arial, sans-serif">VORHER</text>
-      {/* Google Maps header */}
-      <path d="M20 32c0-2.2 1.8-4 4-4s4 1.8 4 4c0 3-4 7-4 7s-4-4-4-7z" fill="#EA4335"/>
-      <circle cx="24" cy="32" r="1.5" fill="white"/>
-      <text x="32" y="33" fontSize="6" fontWeight="600" fill="#374151" fontFamily="Arial, sans-serif">Google Maps</text>
-      <text x="14" y="46" fontSize="8" fontWeight="700" fill="#111827" fontFamily="Arial, sans-serif">Ihr Unternehmen</text>
-      {/* 3.1 stars */}
-      <text x="14" y="58" fontSize="13" fontWeight="800" fill="#dc2626" fontFamily="Arial, sans-serif">3,1</text>
-      <text x="34" y="58" fontSize="10" fill="#f59e0b" fontFamily="Arial, sans-serif">★★★</text>
-      <text x="64" y="58" fontSize="10" fill="#d1d5db" fontFamily="Arial, sans-serif">★★</text>
-      <text x="14" y="68" fontSize="6" fill="#6b7280" fontFamily="Arial, sans-serif">5 Bewertungen insgesamt</text>
-      <text x="14" y="78" fontSize="6" fontWeight="600" fill="#dc2626" fontFamily="Arial, sans-serif">Letzte Bewertung vor 9 Monaten</text>
-      {/* Divider */}
-      <line x1="14" y1="84" x2="152" y2="84" stroke="#f3f4f6" strokeWidth="1"/>
-      {/* Review rows — blurred */}
-      {[0,1,2].map(i => (
-        <g key={i}>
-          <circle cx="22" cy={98+i*30} r="7" fill="#e5e7eb"/>
-          <rect x="34" y={93+i*30} width="50" height="4" rx="2" fill="#d1d5db"/>
-          <text x="34" y={105+i*30} fontSize="7" fill="#f59e0b" fontFamily="Arial, sans-serif">★★</text>
-          <text x="53" y={105+i*30} fontSize="7" fill="#d1d5db" fontFamily="Arial, sans-serif">★★★</text>
-          <rect x="34" y={108+i*30} width="100" height="3" rx="1.5" fill="#f3f4f6"/>
-          <rect x="34" y={113+i*30} width="80" height="3" rx="1.5" fill="#f3f4f6"/>
-        </g>
-      ))}
-
-      {/* AFTER card */}
-      <rect x="176" y="6" width="158" height="188" rx="8" fill="white" stroke="#bbf7d0" strokeWidth="1.5"/>
-      <text x="255" y="20" textAnchor="middle" fontSize="7" fontWeight="700" fill="#059669" fontFamily="Arial, sans-serif">NACHHER</text>
-      <path d="M190 32c0-2.2 1.8-4 4-4s4 1.8 4 4c0 3-4 7-4 7s-4-4-4-7z" fill="#EA4335"/>
-      <circle cx="194" cy="32" r="1.5" fill="white"/>
-      <text x="202" y="33" fontSize="6" fontWeight="600" fill="#374151" fontFamily="Arial, sans-serif">Google Maps</text>
-      <text x="184" y="46" fontSize="8" fontWeight="700" fill="#111827" fontFamily="Arial, sans-serif">Ihr Unternehmen</text>
-      {/* 4.9 stars */}
-      <text x="184" y="58" fontSize="13" fontWeight="800" fill="#059669" fontFamily="Arial, sans-serif">4,9</text>
-      <text x="205" y="58" fontSize="10" fill="#f59e0b" fontFamily="Arial, sans-serif">★★★★★</text>
-      <text x="184" y="68" fontSize="6" fontWeight="600" fill="#059669" fontFamily="Arial, sans-serif">250+ verifizierte Kundenbewertungen</text>
-      <line x1="184" y1="74" x2="322" y2="74" stroke="#f3f4f6" strokeWidth="1"/>
-      {/* Review rows with "Response from owner" badges */}
-      {[0,1,2].map(i => (
-        <g key={i}>
-          <circle cx="192" cy={88+i*34} r="7" fill="#e5e7eb"/>
-          <rect x="204" y={83+i*34} width="45" height="4" rx="2" fill="#d1d5db"/>
-          <text x="204" y={94+i*34} fontSize="7.5" fill="#f59e0b" fontFamily="Arial, sans-serif">★★★★★</text>
-          <rect x="248" y={89+i*34} width="60" height="9" rx="4" fill="#f0fdf4" stroke="#86efac" strokeWidth="0.8"/>
-          <text x="278" y={96+i*34} textAnchor="middle" fontSize="4.5" fontWeight="600" fill="#059669" fontFamily="Arial, sans-serif">Antwort vom Inhaber</text>
-          <rect x="204" y={100+i*34} width="90" height="3" rx="1.5" fill="#f3f4f6"/>
-          <rect x="204" y={105+i*34} width="70" height="3" rx="1.5" fill="#f3f4f6"/>
-        </g>
-      ))}
-    </svg>
-  )
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // WHY ONE SERVICE — CONNECTED CHANNELS ILLUSTRATION
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1266,7 +1017,7 @@ function Nav() {
         </a>
 
         <div className="hidden-mobile nav-links" style={{ display: 'flex', gap: 30, alignItems: 'center' }}>
-          <a href={homeHref('audit')} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>Sichtbarkeit</a>
+          <a href={homeHref('modules')} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>Sichtbarkeit</a>
           <ServicesNavDropdown fg={fg} />
           {[['Ergebnisse', 'results'], ['Ratgeber', '/ratgeber'], ['FAQ', 'faq']].map(([l, target]) => (
             <a key={l} href={linkHref(target)} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>{l}</a>
@@ -1292,7 +1043,7 @@ function Nav() {
 
       {open && (
         <nav aria-label="Mobile Navigation" className="show-mobile" style={{ display: 'none', flexDirection: 'column', gap: 2, padding: '10px 24px 26px', backgroundColor: '#fff', borderTop: '1px solid var(--line)' }}>
-          {[['Sichtbarkeit', 'audit'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], ['Ergebnisse', 'results'], ['FAQ', 'faq']].map(([l, target]) => (
+          {[['Sichtbarkeit', 'modules'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], ['Ergebnisse', 'results'], ['FAQ', 'faq']].map(([l, target]) => (
             <a key={l} href={linkHref(target)} style={{ fontWeight: 600, fontSize: 22, letterSpacing: '-0.03em', color: '#07070C', textDecoration: 'none', padding: '10px 0', borderBottom: '1px solid var(--line-soft)' }} onClick={() => setOpen(false)}>{l}</a>
           ))}
           <span style={{ fontWeight: 500, fontSize: 14, color: 'var(--muted)', padding: '14px 0 10px' }}>+49 30 12345678</span>
@@ -1460,145 +1211,18 @@ function Hero() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TRUST ROW
+// HOMEPAGE STORY (Sept 2026): Hero → der Markt hat sich verändert → woraus lokale
+// Sichtbarkeit besteht (je Bereich: was sich verändert hat + was wir tun)
+// → zwei Wege → Ablauf → Ergebnisse → Ratgeber → FAQ → Check.
 // ─────────────────────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────────────────────
-// PROBLEM SECTION — scroll-driven split layout
-// ─────────────────────────────────────────────────────────────────────────────
-const problems = [
-  {
-    Illust: IllustProblemMaps,
-    tag: 'Google Maps',
-    heading: 'Unsichtbar für Kunden, die gerade jetzt suchen',
-    body: "Über 70 % aller Anrufe und Buchungen gehen direkt an die Top-3-Einträge auf Google Maps. Steht Ihr Unternehmen nicht in diesen Top 3, rufen lokale Kunden, die gerade nach Ihrer Leistung suchen, Ihre Mitbewerber an, ohne Ihren Namen je gesehen zu haben.",
-  },
-  {
-    Illust: IllustProblemAI,
-    tag: 'KI-Suche',
-    heading: 'KI empfiehlt Ihre Mitbewerber – nicht Sie',
-    body: "Google rollt AI Overviews für über 1 Milliarde Nutzer aus, während täglich Millionen Menschen ChatGPT und Gemini nach lokalen Empfehlungen fragen. Ist Ihr Unternehmen nicht für KI strukturiert, empfehlen diese Tools aktiv Ihre Mitbewerber – Sie bleiben für moderne Käufer komplett unsichtbar.",
-  },
-  {
-    Illust: IllustProblemSocial,
-    tag: 'Social Media',
-    heading: 'Ein inaktives Profil signalisiert ein Unternehmen im Abstieg',
-    body: "Über 80 % der Käufer prüfen Social-Media-Profile, um ein Unternehmen zu verifizieren, bevor sie Kontakt aufnehmen. Wirken Ihre Profile inaktiv oder veraltet, gehen Kunden von Vernachlässigung aus und wählen einen Mitbewerber mit sichtbar aktiver Arbeit.",
-  },
-  {
-    Illust: IllustProblemReviews,
-    tag: 'Bewertungen',
-    heading: 'Veraltete Bewertungen kosten Sie täglich neue Kunden',
-    body: "Alte Rückmeldungen schaffen kein Vertrauen. Aktuelle schon. Über 85 % der Verbraucher ignorieren Bewertungen, die älter als drei Monate sind. Sehen Käufer keine aktuellen Bewertungen, zweifeln sie an Ihrer heutigen Servicequalität und wenden sich Mitbewerbern mit frischen 5-Sterne-Bewertungen zu.",
-  },
-]
 
-function ProblemSection() {
-  const [active, setActive] = useState(0)
-  const ActiveIllust = problems[active].Illust
-
+// 1 — Der Markt hat sich verändert
+function MarketShift() {
+  const journey = ['Google Maps', 'Bewertungen', 'Website', 'KI-Antwort', 'Auswahl', 'Anruf']
   return (
-    <section id="audit" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'clip' }}>
-      <GapsBackdrop />
-
-      <div style={{ ...SHELL, position: 'relative' }}>
-        <Reveal><Kicker tone="light">Die Lücken</Kicker></Reveal>
-        <div className="problem-head" style={{ marginTop: 26, marginBottom: 'clamp(48px, 6vw, 84px)' }}>
-          <MaskHeading
-            className="h-lg"
-            style={{ maxWidth: 1080 }}
-            lines={[
-              <>Einen Kanal zu reparieren, macht Sie</>,
-              <>nicht sichtbar. <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>Es behebt nur ein</span></>,
-              <><span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>Teilstück davon</span></>,
-            ]}
-          />
-          <Reveal delay={0.15}>
-            <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.5)', margin: '26px 0 0', maxWidth: 520 }}>
-              Jede der folgenden Lücken ist ein eigener Grund, warum sich ein Kunde für jemand anderen statt für Sie entscheidet
-            </p>
-          </Reveal>
-        </div>
-
-        <div className="problem-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.95fr) minmax(0, 1.05fr)', gap: 'clamp(32px, 5vw, 80px)' }}>
-
-          {/* LEFT — sticky visual */}
-          <div className="problem-sticky" style={{ position: 'relative' }}>
-          <div style={{ position: 'sticky', top: 110 }}>
-            <div style={{ position: 'relative' }}>
-              <div key={active} style={{
-                position: 'relative', backgroundColor: '#fff', borderRadius: 22, padding: 12,
-                boxShadow: '0 40px 80px rgba(0,0,0,0.45)',
-                animation: `fadeSwap 0.5s ${EASE} both`,
-              }}>
-                <ActiveIllust />
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 22 }}>
-              <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.16em', color: 'var(--electric-2)' }}>
-                {String(active + 1).padStart(2, '0')} / {String(problems.length).padStart(2, '0')}
-              </span>
-              <div style={{ flex: 1, height: 2, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 2, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${((active + 1) / problems.length) * 100}%`, backgroundColor: 'var(--electric-2)', transition: `width 0.5s ${EASE}` }} />
-              </div>
-            </div>
-            </div>
-          </div>
-
-          {/* RIGHT — список; переключение только по наведению / клику */}
-          <div>
-            {problems.map((p, i) => {
-              const on = active === i
-              return (
-                <button
-                  key={p.tag}
-                  type="button"
-                  onMouseEnter={() => setActive(i)}
-                  onFocus={() => setActive(i)}
-                  onClick={() => setActive(i)}
-                  aria-expanded={on}
-                  style={{
-                    display: 'block', width: '100%', textAlign: 'left',
-                    background: 'none', border: 'none', borderTop: '1px solid var(--line-dark)',
-                    padding: 'clamp(26px, 2.8vw, 40px) 0',
-                    fontFamily: 'inherit', cursor: 'pointer', color: 'inherit',
-                    opacity: on ? 1 : 0.32,
-                    transform: on ? 'translateX(10px)' : 'none',
-                    transition: `opacity 0.45s ease, transform 0.55s ${EASE}`,
-                  }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 14 }}>
-                    <span className="display" style={{ fontSize: 15, color: on ? 'var(--electric-2)' : 'rgba(255,255,255,0.35)', transition: 'color 0.45s ease', letterSpacing: '0.06em' }}>
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span className="eyebrow" style={{ color: 'rgba(255,255,255,0.45)', fontSize: 10.5 }}>{p.tag}</span>
-                  </span>
-                  <span className="display" style={{ display: 'block', fontSize: 'clamp(21px, 2.3vw, 32px)', lineHeight: 1.15, marginBottom: 14, color: '#fff' }}>
-                    {p.heading}
-                  </span>
-                  <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.85, color: 'rgba(255,255,255,0.55)', maxWidth: 560 }}>{p.body}</span>
-                </button>
-              )
-            })}
-            <div style={{ borderTop: '1px solid var(--line-dark)', paddingTop: 'clamp(32px, 4vw, 48px)' }}>
-              <a href="#audit-quiz" className="btn btn-lg btn-electric">Finden Sie die Ursache für meinen Kundenverlust <span className="arw">→</span></a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ABOUT RAG SECTION
-// ─────────────────────────────────────────────────────────────────────────────
-function SearchReality() {
-  const platforms = ['Google Maps', 'Google Search', 'ChatGPT', 'Perplexity', 'Bewertungen', 'Instagram']
-  return (
-    <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
+    <section id="markt" style={{ backgroundColor: 'var(--paper)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
       <div style={{ ...SHELL }}>
-        <Reveal><Kicker>Die neue Realität</Kicker></Reveal>
+        <Reveal><Kicker>Der Markt hat sich verändert</Kicker></Reveal>
 
         <div style={{ marginTop: 28, maxWidth: 1000 }}>
           <MaskHeading
@@ -1607,41 +1231,37 @@ function SearchReality() {
           />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'clamp(24px, 4vw, 72px)', marginTop: 'clamp(34px, 4vw, 56px)' }}>
-          <Reveal delay={0.08}>
-            <p className="lead" style={{ color: 'var(--muted)', margin: 0 }}>
-              Sie suchen bei Google Maps, fragen ChatGPT und Perplexity, lesen Bewertungen und prüfen Ihre Website und Ihre sozialen Netzwerke — meist innerhalb weniger Minuten.
-            </p>
-          </Reveal>
-          <Reveal delay={0.14}>
-            <p className="h-sm display" style={{ margin: 0 }}>
-              Wir sorgen dafür, dass überall ein klares, glaubwürdiges Bild Ihres Unternehmens entsteht.
-            </p>
-          </Reveal>
-        </div>
-
-        <Reveal delay={0.18}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(16px, 3vw, 34px)', alignItems: 'center', marginTop: 'clamp(40px, 5vw, 64px)', paddingTop: 26, borderTop: '1px solid var(--line)' }}>
-            {platforms.map(pl => (
-              <span key={pl} className="eyebrow" style={{ fontSize: 11, color: 'rgba(7,7,12,0.45)' }}>{pl}</span>
-            ))}
-          </div>
-        </Reveal>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'clamp(24px, 4vw, 72px)', marginTop: 'clamp(48px, 6vw, 88px)', paddingTop: 'clamp(34px, 4vw, 54px)', borderTop: '1px solid var(--line)' }}>
+        {/* früher / heute */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'clamp(16px, 2vw, 24px)', marginTop: 'clamp(44px, 5vw, 72px)' }}>
           <Reveal>
-            <h3 className="h-sm display" style={{ margin: 0, maxWidth: 420 }}>
-              Lokale Sichtbarkeit entsteht nicht an <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>einem einzigen Ort.</span>
-            </h3>
+            <div style={{ height: '100%', border: '1px solid var(--line)', borderRadius: 22, padding: 'clamp(26px, 3vw, 40px)' }}>
+              <p className="eyebrow" style={{ color: 'rgba(7,7,12,0.4)', marginBottom: 18 }}>Früher</p>
+              <p className="h-sm display" style={{ margin: '0 0 14px', color: 'rgba(7,7,12,0.45)' }}>Suchen, Links vergleichen, anrufen.</p>
+              <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: 0 }}>
+                Wer einen Handwerker oder eine Praxis suchte, tippte ein paar Wörter bei Google ein, öffnete zwei, drei Websites aus den ersten Ergebnissen — und rief an. Wer weit oben stand, bekam den Anruf.
+              </p>
+            </div>
           </Reveal>
-          <Reveal delay={0.1}>
-            <div>
-              <p style={{ fontSize: 15.5, lineHeight: 1.85, color: 'var(--muted)', margin: '0 0 16px', maxWidth: 520 }}>
-                Damit Ihr Unternehmen gefunden, verstanden und empfohlen wird, müssen mehrere Bereiche zusammenspielen: Ihr Google-Profil, Ihre Website, Bewertungen, Inhalte, Erwähnungen und Ihr gesamter digitaler Auftritt.
+          <Reveal delay={0.08}>
+            <div style={{ height: '100%', backgroundColor: 'var(--ink)', color: '#fff', borderRadius: 22, padding: 'clamp(26px, 3vw, 40px)' }}>
+              <p className="eyebrow" style={{ color: 'var(--electric-2)', marginBottom: 18 }}>Heute</p>
+              <p className="h-sm display" style={{ margin: '0 0 14px' }}>Die KI prüft Unternehmen — der Kunde wählt.</p>
+              <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.62)', margin: '0 0 24px' }}>
+                Immer mehr Kunden fragen direkt ChatGPT, Perplexity oder die KI-Übersicht bei Google und bekommen zwei, drei Namen statt einer Linkliste. Welche Unternehmen darauf stehen, entscheidet die KI anhand dessen, was sie findet: Google-Maps-Eintrag, Bewertungen, Website und Erwähnungen. Der Kunde wählt dann nur noch aus dieser kurzen Liste.
               </p>
-              <p style={{ fontSize: 15.5, lineHeight: 1.85, color: 'var(--ink)', margin: 0, maxWidth: 520, fontWeight: 600 }}>
-                Wir verbinden diese Elemente zu einem System, das Ihre lokale Präsenz Schritt für Schritt stärkt.
-              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+                {journey.map((j, i) => (
+                  <span key={j} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{
+                      fontSize: 12.5, fontWeight: 600, borderRadius: 999, padding: '6px 12px',
+                      border: i === journey.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.18)',
+                      backgroundColor: i === journey.length - 1 ? 'var(--electric)' : 'transparent',
+                      color: '#fff',
+                    }}>{j}</span>
+                    {i < journey.length - 1 && <span aria-hidden style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>→</span>}
+                  </span>
+                ))}
+              </div>
             </div>
           </Reveal>
         </div>
@@ -1650,76 +1270,278 @@ function SearchReality() {
   )
 }
 
-function AboutRAG() {
+// 2 — Woraus lokale Sichtbarkeit besteht: je Bereich die Veränderung und unsere Antwort, Google Maps im Zentrum.
+type PromoArea = {
+  id: string
+  label: string
+  claim: string
+  body: string
+  items: string[]
+  change?: string // what changed for customers in this area (pre-AI search vs. today)
+  links: { href: string; label: string }[]
+  accelerator?: boolean
+}
+
+const mapsArea: PromoArea = {
+  id: 'leistung-maps',
+  label: 'Google Maps & Google Business Profil',
+  claim: 'Dort sichtbar sein, wo lokale Entscheidungen fallen.',
+  body: 'Ein vollständiges und professionell gepflegtes Google-Unternehmensprofil hilft Kunden und Google zu verstehen, was Sie anbieten, wo Sie tätig sind und warum Ihr Unternehmen relevant ist.',
+  items: [
+    'Kategorie und Leistungen',
+    'Unternehmensbeschreibung',
+    'Region und Servicegebiet',
+    'Fotos und Videos',
+    'Öffnungszeiten und Kontaktdaten',
+    'Verbindung zur Website',
+    'Gewinnung und Beantwortung von Bewertungen',
+    'Regelmäßige Aktualisierung des Profils',
+  ],
+  change: 'Bei lokalen Suchen zeigt Google zuerst eine Karte mit drei Unternehmen — dort fällt oft schon die Entscheidung.',
+  links: [{ href: '/services/google-maps-business-profile', label: 'Mehr zu Google Maps' }],
+}
+
+const promoAreas: PromoArea[] = [
+  {
+    id: 'leistung-ki',
+    label: 'ChatGPT, Perplexity & KI-Suche',
+    claim: 'Auch KI-Systeme müssen Ihr Unternehmen finden und verstehen können.',
+    body: 'Immer mehr Menschen stellen ihre Fragen direkt an KI-Systeme. Dafür braucht Ihr Unternehmen klare, zugängliche und glaubwürdige Informationen im Web — keine geheime Zusatz-Optimierung.',
+    items: ['Inhalte für Suchsysteme abrufbar', 'Leistungen konkret beschrieben', 'Übereinstimmende Angaben auf allen Plattformen', 'Logische Seitenstruktur', 'Externe Erwähnungen und Bestätigungen'],
+    change: 'ChatGPT, Perplexity und die KI-Übersichten bei Google fassen zusammen und nennen nur wenige Anbieter.',
+    links: [{ href: '/services/ai-search-optimization', label: 'Mehr erfahren' }],
+  },
+  {
+    id: 'leistung-bewertungen',
+    label: 'Bewertungen & Reputation',
+    claim: 'Vertrauen entsteht, bevor der erste Kontakt stattfindet.',
+    body: 'Bewertungen beeinflussen, ob ein Kunde anruft oder sich für einen Mitbewerber entscheidet. Unser Ziel: mehr echte Bewertungen mit konkreten Erfahrungen.',
+    items: ['Wann und wie Sie um Bewertungen bitten', 'Ein kurzer Weg zur Abgabe', 'Antworten auf Lob und Kritik', 'Bewertungen auf Google, Trustpilot und der Website', 'Laufende Beobachtung Ihrer Reputation'],
+    change: 'Kunden vergleichen Sterne, Aktualität und die Antworten des Inhabers — bei Unternehmen, die sie noch nie erlebt haben.',
+    links: [{ href: '/services/reviews', label: 'Mehr erfahren' }],
+  },
+  {
+    id: 'leistung-website',
+    label: 'Website & Google Search',
+    claim: 'Ihre Website ist die Wissensbasis Ihres Unternehmens.',
+    body: 'Eine gute Website sieht nicht nur gut aus. Sie erklärt Menschen, Suchmaschinen und KI-Systemen, wer Sie sind, welche Leistungen Sie anbieten und warum man Ihnen vertrauen kann.',
+    items: ['Seiten für jede Leistung', 'Regionen und Servicegebiete', 'Unternehmen, Team und Referenzen', 'Ratgeber-Artikel und Glossar', 'Interne Verlinkung', 'Technische SEO-Struktur und Markup'],
+    change: 'Google und KI-Systeme lesen dort nach, was Sie anbieten, wo Sie arbeiten und warum man Ihnen vertrauen kann.',
+    links: [{ href: '/services/website-google-search', label: 'Mehr erfahren' }],
+  },
+  {
+    id: 'leistung-verzeichnisse',
+    label: 'Lokale Verzeichnisse & Erwähnungen',
+    claim: 'Einheitliche Informationen schaffen Klarheit.',
+    body: 'Name, Adresse, Telefon, Website, Leistungen und Beschreibung stimmen auf den wichtigen lokalen Plattformen und Branchenportalen überein — so entsteht ein widerspruchsfreies Bild Ihres Unternehmens.',
+    items: ['Bestehende Einträge erfassen', 'Falsche und doppelte Einträge bereinigen', 'Fehlende Portale gezielt ergänzen', 'Angaben regelmäßig kontrollieren'],
+    change: 'Name, Adresse und Telefonnummer werden zwischen Google, Website und Verzeichnissen verglichen. Widersprüche kosten Vertrauen.',
+    links: [{ href: '/services/local-citations', label: 'Mehr erfahren' }],
+  },
+  {
+    id: 'leistung-social',
+    label: 'Social Media',
+    claim: 'Sie müssen kein Influencer werden.',
+    body: 'Für ein lokales Unternehmen reichen oft wenige, gut geplante Inhalte: wer hinter dem Unternehmen steht, wie gearbeitet wird und welche Ergebnisse Kunden erwarten können.',
+    items: ['Das Team zeigen', 'Arbeitsweise und Ergebnisse sichtbar machen', 'Einheitlicher Auftritt', 'Aktivität und Echtheit belegen'],
+    change: 'Viele Kunden werfen kurz einen Blick auf Instagram oder Facebook, um zu sehen, ob das Unternehmen aktiv ist und wer dahintersteht.',
+    links: [{ href: '/services/social-media', label: 'Mehr erfahren' }],
+  },
+  {
+    id: 'leistung-anzeigen',
+    label: 'Anzeigen: Google, Meta & offline',
+    claim: 'Sichtbarkeit gezielt beschleunigen.',
+    body: 'Organische Sichtbarkeit braucht Zeit. Mit lokalen Kampagnen erreichen wir relevante Kunden früher und sehen nebenbei, welche Suchanfragen und Leistungen wirklich Anfragen bringen.',
+    items: ['Lokale Google-Ads- und Maps-Kampagnen', 'Meta-Anzeigen für Ihre Region', 'Plakate, Banner und Print — wo es passt', 'Messung über Anrufe und Anfragen'],
+    links: [
+      { href: '/services/google-meta-ads', label: 'Online-Anzeigen' },
+      { href: '/services/offline-advertising', label: 'Offline-Werbung' },
+    ],
+    accelerator: true,
+  },
+]
+
+function LocalPromotion() {
+  const summary = [
+    ['Ihre Website', 'erklärt Ihre Leistungen.'],
+    ['Google Maps', 'zeigt Ihre lokale Präsenz.'],
+    ['Bewertungen', 'schaffen Vertrauen.'],
+    ['Soziale Netzwerke', 'zeigen die Menschen hinter dem Unternehmen.'],
+    ['Suchmaschinen und KI-Systeme', 'verbinden diese Informationen.'],
+  ]
   return (
-    <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden' }}>
+    <section id="modules" style={{ backgroundColor: 'var(--paper)', padding: '0 clamp(20px, 4vw, 48px) clamp(80px, 10vw, 140px)', scrollMarginTop: 90 }}>
       <div style={{ ...SHELL }}>
-        <Reveal><Kicker>Wer wir sind</Kicker></Reveal>
-
-        <div className="about-top" style={{ marginTop: 28, maxWidth: 900 }}>
+        <Reveal><Kicker>Die neue Realität</Kicker></Reveal>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(24px, 4vw, 72px)', alignItems: 'end', marginTop: 26, marginBottom: 'clamp(40px, 5vw, 64px)' }}>
           <MaskHeading
-            className="h-md"
-            lines={[
-              <>Lokale Kunden zu gewinnen ist schwerer</>,
-              <>geworden. Wir sind seit über 10 Jahren</>,
-              <>immer <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>einen Schritt voraus.</span></>,
-            ]}
+            className="h-lg"
+            lines={[<>Woraus lokale</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Sichtbarkeit heute besteht</span></>]}
           />
-        </div>
-
-        {/* photo band + copy */}
-        <div className="about-band" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.9fr) minmax(0, 1.1fr)', gap: 'clamp(28px, 4vw, 64px)', alignItems: 'center', marginTop: 'clamp(48px, 6vw, 88px)' }}>
-          <Reveal>
-            <div style={{
-              position: 'relative', aspectRatio: '1/1', borderRadius: 4, overflow: 'hidden',
-              backgroundColor: '#E3E2DA', display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center', gap: 14,
-            }}>
-              <div className="grid-bg-light" style={{ position: 'absolute', inset: 0, opacity: 0.6 }} />
-              <svg width="64" height="64" viewBox="0 0 56 56" fill="none" aria-hidden style={{ position: 'relative', opacity: 0.45 }}>
-                <circle cx="28" cy="22" r="10" fill="#07070C" />
-                <path d="M8 50c0-11.05 8.95-20 20-20s20 8.95 20 20" fill="#07070C" />
-              </svg>
-              <span style={{ position: 'relative', fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(7,7,12,0.4)', textAlign: 'center', lineHeight: 1.8 }}>
-                Teamfoto<br />(durch echtes Foto ersetzen)
-              </span>
-              <span style={{ position: 'absolute', left: 18, bottom: 18, fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--electric)' }}>RAG · Team</span>
+          <Reveal delay={0.1}>
+            <div>
+              <p style={{ fontSize: 'clamp(17px, 1.5vw, 20px)', lineHeight: 1.55, fontWeight: 600, color: 'var(--ink)', margin: 0, maxWidth: 540 }}>
+                Wir helfen lokalen Unternehmen, überall dort sichtbar und vertrauenswürdig zu erscheinen, wo Kunden heute suchen und entscheiden.
+              </p>
             </div>
           </Reveal>
-
-          <div>
-            <Reveal delay={0.08}>
-              <p className="h-sm display" style={{ marginBottom: 22, maxWidth: 560 }}>
-                All das konkurriert um denselben Kunden — und all das ändert sich alle paar Monate.
-              </p>
-            </Reveal>
-            <Reveal delay={0.11}>
-              <p style={{ fontSize: 15.5, lineHeight: 1.85, color: 'var(--muted)', maxWidth: 560, margin: '0 0 18px' }}>
-                Lokale Suche bedeutete früher einen Eintrag und eine Website. Heute bedeutet sie Google Maps, KI-Antworten in ChatGPT und Gemini, Bewertungen auf drei Plattformen, Social Proof, bezahlte Anzeigen und den Flyer am Aushang um die Ecke.
-              </p>
-            </Reveal>
-            <Reveal delay={0.14}>
-              <p style={{ fontSize: 15.5, lineHeight: 1.85, color: 'var(--muted)', maxWidth: 560, margin: 0 }}>
-                RAG ist ein Team von Spezialisten für lokale Sichtbarkeit, das ausschließlich mit Unternehmen in Deutschland, Österreich und der Schweiz arbeitet. Seit über 10 Jahren verfolgen wir, wie lokale Kunden wirklich suchen und kaufen, und haben ein System entwickelt, das jeden Kanal als ein zusammenhängendes Problem behandelt — nicht als ein halbes Dutzend separater Dienstleister, die es zu koordinieren gilt.
-              </p>
-            </Reveal>
-
-          </div>
         </div>
 
-        {/* stat strip — hairlines, no boxes */}
-        <div className="about-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', marginTop: 'clamp(48px, 6vw, 84px)', borderTop: '1px solid var(--line)' }}>
-          {[
-            { big: <><Counter to={500} />+</>, label: 'lokale Unternehmen in der DACH-Region' },
-            { big: <><Counter to={10} />+ Jahre</>, label: 'ausschließlich auf lokale Sichtbarkeit fokussiert' },
-            { big: <>Nur DACH</>, label: 'Spezialisten statt Generalisten-Agentur' },
-          ].map((s, i) => (
-            <Reveal key={i} delay={0.1 + i * 0.08} style={{ padding: '30px 24px 0 0', borderRight: i < 2 ? '1px solid var(--line)' : 'none', paddingLeft: i > 0 ? 24 : 0 }}>
-              <div className="display" style={{ fontSize: 'clamp(34px, 4vw, 58px)', color: 'var(--electric)', marginBottom: 10 }}>{s.big}</div>
-              <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.55, maxWidth: 240 }}>{s.label}</div>
+        {/* centerpiece — Google Maps */}
+        <Reveal>
+          <article id={mapsArea.id} style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'var(--ink)', color: '#fff', borderRadius: 28, padding: 'clamp(28px, 4vw, 60px)', scrollMarginTop: 90 }}>
+            <div className="maps-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'clamp(28px, 5vw, 80px)', alignItems: 'start' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 22 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#fff', backgroundColor: 'var(--electric)', borderRadius: 999, padding: '6px 12px', textTransform: 'uppercase' }}>01 · Zentraler Kanal</span>
+                </div>
+                <h3 className="display" style={{ fontSize: 'clamp(30px, 3.8vw, 54px)', lineHeight: 1.02, margin: '0 0 18px' }}>{mapsArea.label}</h3>
+                <p className="serif italic-serif" style={{ fontSize: 'clamp(22px, 2.2vw, 30px)', lineHeight: 1.2, color: 'var(--electric-2)', margin: '0 0 18px' }}>{mapsArea.claim}</p>
+                <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.6)', margin: '0 0 30px', maxWidth: 480 }}>{mapsArea.body}</p>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  <a href={mapsArea.links[0].href} className="btn btn-md btn-paper">{mapsArea.links[0].label} <span className="arw">→</span></a>
+                  <a href="#start" className="btn btn-md btn-outline-dark">Profil ab 149 €</a>
+                </div>
+              </div>
+              <div>
+                <p className="eyebrow" style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', marginBottom: 10 }}>Was sich verändert hat</p>
+                <p style={{ fontSize: 16, lineHeight: 1.65, color: '#fff', margin: '0 0 34px', paddingLeft: 16, borderLeft: '2px solid var(--electric-2)' }}>{mapsArea.change}</p>
+                <p className="eyebrow" style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', marginBottom: 6 }}>Was wir tun · Wir optimieren</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', columnGap: 24 }}>
+                  {mapsArea.items.map((it, i) => (
+                    <div key={it} style={{ display: 'flex', gap: 12, padding: '13px 0', borderTop: '1px solid var(--line-dark)' }}>
+                      <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--electric-2)', letterSpacing: '0.1em', paddingTop: 3 }}>{String(i + 1).padStart(2, '0')}</span>
+                      <span style={{ fontSize: 14.5, lineHeight: 1.5, color: 'rgba(255,255,255,0.85)' }}>{it}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </article>
+        </Reveal>
+
+        {/* the other areas around it */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(14px, 1.6vw, 20px)', marginTop: 'clamp(14px, 1.6vw, 20px)' }}>
+          {promoAreas.map((a, i) => (
+            <Reveal key={a.id} delay={Math.min(i * 0.05, 0.25)} style={{ height: '100%' }}>
+              <article id={a.id} style={{
+                height: '100%', display: 'flex', flexDirection: 'column', borderRadius: 22,
+                padding: 'clamp(24px, 2.6vw, 34px)', scrollMarginTop: 90,
+                backgroundColor: a.accelerator ? 'var(--bone)' : 'var(--paper)',
+                border: a.accelerator ? '1px dashed rgba(7,7,12,0.22)' : '1px solid var(--line)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 18, minHeight: 22 }}>
+                  <span className="display" style={{ fontSize: 13, color: 'var(--electric)', letterSpacing: '0.08em' }}>{String(i + 2).padStart(2, '0')}</span>
+                  {a.accelerator && <span className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)' }}>Beschleuniger</span>}
+                </div>
+                <h3 className="display" style={{ fontSize: 'clamp(20px, 1.9vw, 26px)', lineHeight: 1.18, margin: '0 0 16px' }}>{a.label}</h3>
+                {a.change ? (
+                  <div style={{ borderLeft: '2px solid var(--electric)', paddingLeft: 14, margin: '0 0 20px' }}>
+                    <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(7,7,12,0.4)', marginBottom: 6 }}>Was sich verändert hat</p>
+                    <p style={{ fontSize: 14.5, lineHeight: 1.6, color: 'var(--ink)', margin: 0 }}>{a.change}</p>
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 20px' }}>{a.body}</p>
+                )}
+                <p className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)', marginBottom: 8 }}>Was wir tun</p>
+                <p style={{ fontSize: 15, lineHeight: 1.5, fontWeight: 600, color: 'var(--ink)', margin: '0 0 10px' }}>{a.claim}</p>
+                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 22px' }}>
+                  {a.items.map(it => (
+                    <li key={it} style={{ display: 'flex', gap: 10, fontSize: 14, lineHeight: 1.5, color: 'var(--ink)', padding: '8px 0', borderTop: '1px solid var(--line-soft)' }}>
+                      <span aria-hidden style={{ color: 'var(--electric)', fontWeight: 700 }}>·</span>{it}
+                    </li>
+                  ))}
+                </ul>
+                {a.accelerator && (
+                  <p style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 18px' }}>
+                    Organische Sichtbarkeit schafft die Grundlage — Anzeigen beschleunigen sie.
+                  </p>
+                )}
+                <div style={{ marginTop: 'auto', display: 'flex', gap: 18, flexWrap: 'wrap' }}>
+                  {a.links.map(l => (
+                    <a key={l.href} href={l.href} className="ul" style={{ fontSize: 13, fontWeight: 600, color: 'var(--electric)', width: 'fit-content' }}>{l.label} →</a>
+                  ))}
+                </div>
+              </article>
             </Reveal>
           ))}
         </div>
+
+        {/* how it adds up */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(28px, 4vw, 72px)', alignItems: 'start', marginTop: 'clamp(64px, 8vw, 110px)', paddingTop: 'clamp(34px, 4vw, 54px)', borderTop: '1px solid var(--line)' }}>
+          <div>
+            <Reveal><Kicker>Das Zusammenspiel</Kicker></Reveal>
+            <MaskHeading
+              className="h-md"
+              style={{ marginTop: 22 }}
+              lines={[<>Aus einzelnen Kanälen</>, <>wird ein <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>klares Bild</span></>, <>Ihres Unternehmens.</>]}
+            />
+            <Reveal delay={0.12}>
+              <a href="/services" className="btn btn-lg btn-ink" style={{ marginTop: 32 }}>
+                Alle Leistungen ansehen <span className="arw">→</span>
+              </a>
+            </Reveal>
+          </div>
+          <div>
+            {summary.map(([a, b], i) => (
+              <Reveal key={a} delay={0.06 * i}>
+                <p style={{ fontSize: 'clamp(16px, 1.5vw, 19px)', lineHeight: 1.6, margin: 0, padding: '16px 0', borderTop: '1px solid var(--line)', color: 'var(--muted)' }}>
+                  <strong style={{ color: 'var(--ink)', fontWeight: 600 }}>{a}</strong> {b}
+                </p>
+              </Reveal>
+            ))}
+            <Reveal delay={0.34}>
+              <p className="h-sm display" style={{ margin: '34px 0 0', maxWidth: 560 }}>
+                So entsteht eine digitale Präsenz, die gefunden wird, Vertrauen aufbaut und neue Anfragen erzeugt.
+              </p>
+            </Reveal>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// 7 — Ratgeber: kurz einordnen, dann in die drei Artikel verweisen.
+function RatgeberTeaser() {
+  return (
+    <section id="ratgeber" style={{ backgroundColor: 'var(--paper)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
+      <div style={{ ...SHELL }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(24px, 4vw, 72px)', alignItems: 'end', marginBottom: 'clamp(40px, 5vw, 64px)' }}>
+          <div>
+            <Reveal><Kicker>Ratgeber</Kicker></Reveal>
+            <MaskHeading
+              className="h-md"
+              style={{ marginTop: 22 }}
+              lines={[<>Was lokale Sichtbarkeit</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>heute wirklich bedeutet</span></>]}
+            />
+          </div>
+          <Reveal delay={0.1}>
+            <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: 0, maxWidth: 540 }}>
+              Lokale Sichtbarkeit ist kein einzelner Kanal und kein Trick. Sie entsteht, wenn Google-Profil, Website, Bewertungen und Erwähnungen dasselbe klare Bild Ihres Unternehmens zeigen.
+            </p>
+          </Reveal>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'clamp(14px, 1.6vw, 20px)' }}>
+          {ratgeberArticles.map((a, i) => (
+            <Reveal key={a.slug} delay={Math.min(i * 0.06, 0.2)} style={{ height: '100%' }}>
+              <a href={`/ratgeber/${a.slug}`} style={{ height: '100%', display: 'flex', flexDirection: 'column', textDecoration: 'none', color: 'inherit', backgroundColor: 'var(--bone)', borderRadius: 22, padding: 'clamp(24px, 2.6vw, 34px)' }}>
+                <span className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)' }}>{String(i + 1).padStart(2, '0')} · {a.minutes} Min. Lesezeit</span>
+                <h3 className="display" style={{ fontSize: 'clamp(20px, 1.9vw, 26px)', lineHeight: 1.2, margin: '16px 0 12px' }}>{a.title}</h3>
+                <p style={{ fontSize: 14, lineHeight: 1.75, color: 'var(--muted)', margin: '0 0 20px' }}>{a.teaser}</p>
+                <span style={{ marginTop: 'auto', fontSize: 13, fontWeight: 600, color: 'var(--electric)' }}>Artikel lesen →</span>
+              </a>
+            </Reveal>
+          ))}
+        </div>
+
+        <Reveal delay={0.12}>
+          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginTop: 'clamp(26px, 3vw, 40px)' }}>
+            <a href="/ratgeber" className="ul" style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>Zum Ratgeber →</a>
+            <a href="/glossar" className="ul" style={{ fontSize: 14, fontWeight: 600, color: 'var(--electric)' }}>Alle Begriffe im Glossar →</a>
+          </div>
+        </Reveal>
       </div>
     </section>
   )
@@ -1858,72 +1680,6 @@ function QuoteModal({ selected, onClose }: { selected: string[]; onClose: () => 
         )}
       </div>
     </div>
-  )
-}
-
-function SolutionSection() {
-  return (
-    <section id="modules" style={{ backgroundColor: 'var(--paper)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
-      <div style={{ ...SHELL }}>
-        <Reveal><Kicker>Das System</Kicker></Reveal>
-        <div className="sol-head" style={{ marginTop: 26, marginBottom: 'clamp(36px, 4vw, 60px)' }}>
-          <MaskHeading
-            className="h-lg"
-            style={{ maxWidth: 1080 }}
-            lines={[
-              <>Woraus lokale</>,
-              <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Sichtbarkeit besteht</span></>,
-            ]}
-          />
-          <Reveal delay={0.12}>
-            <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '26px 0 0', maxWidth: 560 }}>
-              Acht Bereiche, ein System. Google Maps ist der zentrale Kanal — alles andere zahlt darauf ein.
-            </p>
-          </Reveal>
-        </div>
-
-        <div style={{ borderTop: '1px solid var(--line)' }}>
-          {modules.map((m, i) => (
-            <Reveal key={m.slug} delay={Math.min(i * 0.04, 0.24)}>
-              <a href={`/services/${m.slug}`} className="row" style={{
-                display: 'flex', alignItems: 'baseline', gap: 'clamp(14px, 2vw, 30px)',
-                padding: 'clamp(16px, 1.8vw, 24px) 0', borderBottom: '1px solid var(--line)',
-                textDecoration: 'none', color: 'inherit',
-              }}>
-                <span className="row-idx display" style={{ fontSize: 13, color: 'rgba(7,7,12,0.3)', letterSpacing: '0.08em', flexShrink: 0 }}>
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <h3 className="row-title display" style={{
-                  fontSize: i === 0 ? 'clamp(24px, 2.8vw, 40px)' : 'clamp(20px, 2.1vw, 30px)',
-                  lineHeight: 1.15, margin: 0, flex: 1,
-                }}>
-                  {m.label}
-                  {i === 0 && (
-                    <span className="eyebrow hidden-mobile" style={{ fontSize: 9.5, color: 'var(--electric)', marginLeft: 16, verticalAlign: 'middle' }}>
-                      Zentraler Kanal
-                    </span>
-                  )}
-                </h3>
-                <span className="ul" style={{ fontSize: 13, fontWeight: 600, color: 'var(--electric)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                  Mehr erfahren →
-                </span>
-              </a>
-            </Reveal>
-          ))}
-        </div>
-
-        <Reveal delay={0.12}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap', marginTop: 'clamp(34px, 4vw, 54px)' }}>
-            <p style={{ fontSize: 14.5, lineHeight: 1.75, color: 'var(--muted)', margin: 0, maxWidth: 460 }}>
-              Alle Bereiche im Detail — mit Beschreibung, Beispielen und der Möglichkeit, sich daraus ein Paket zusammenzustellen.
-            </p>
-            <a href="/services" className="btn btn-lg btn-ink" style={{ flexShrink: 0 }}>
-              Alle Leistungen ansehen <span className="arw">→</span>
-            </a>
-          </div>
-        </Reveal>
-      </div>
-    </section>
   )
 }
 
@@ -2119,7 +1875,7 @@ function ServiceSelector() {
               <div style={{ position: 'relative', maxWidth: 560 }}>
                 <h3 className="display" style={{ fontSize: 'clamp(22px, 2.6vw, 34px)', marginBottom: 12 }}>Nicht sicher, wo Sie anfangen sollen?</h3>
                 <p style={{ fontSize: 14.5, lineHeight: 1.7, color: 'rgba(255,255,255,0.55)', margin: 0 }}>
-                  Machen Sie den kostenlosen 2-Minuten-Sichtbarkeits-Check. Wir sagen Ihnen genau, welche Bereiche Ihr Unternehmen zuerst braucht.
+                  Fordern Sie den kostenlosen Sichtbarkeits-Check an. Wir sagen Ihnen genau, welche Bereiche Ihr Unternehmen zuerst braucht.
                 </p>
               </div>
               <a href="/#audit-quiz" className="btn btn-lg btn-paper" style={{ position: 'relative', flexShrink: 0 }}>
@@ -2253,7 +2009,7 @@ function TwoRoutes() {
 // PROCESS
 // ─────────────────────────────────────────────────────────────────────────────
 const steps = [
-  { num: '01', title: 'Analysieren — wir prüfen Ihre aktuelle Sichtbarkeit', desc: 'Wir erfassen Ihr Google-Maps-Ranking, Ihre Website, Ihre KI-Suchpräsenz, Bewertungen und Verzeichniseinträge — und vergleichen sie mit Ihren wichtigsten lokalen Mitbewerbern.', cta: true },
+  { num: '01', title: 'Analysieren — wir prüfen Ihre aktuelle Sichtbarkeit', desc: 'Wir erfassen Ihr Google-Maps-Ranking, Ihre Website, Ihre KI-Suchpräsenz, Bewertungen und Verzeichniseinträge — und vergleichen sie mit Ihren wichtigsten lokalen Mitbewerbern.' },
   { num: '02', title: 'Priorisieren — Sie erhalten einen Plan, keine Verkaufsshow', desc: "Sie bekommen einen konkreten Plan: Was bringt jetzt den größten Effekt? Ein persönlicher Berater bespricht die Ergebnisse mit Ihnen, und Sie entscheiden, was aktiviert wird. Kein Paket, das Sie nicht brauchen." },
   { num: '03', title: 'Optimieren — wir bringen die Grundlagen in Ordnung', desc: 'Wir verbessern Google-Unternehmensprofil, Website, Inhalte, Bewertungen und die relevanten Plattformen. Unser Team übernimmt die Umsetzung, nichts landet wieder auf Ihrem Schreibtisch.' },
   { num: '04', title: 'Ausbauen — wir erweitern Ihre lokale Präsenz', desc: 'Wir veröffentlichen neue Inhalte, stärken Ihre Reputation und erweitern Ihre Sichtbarkeit Schritt für Schritt auf weitere Kanäle.' },
@@ -2270,7 +2026,7 @@ function Process() {
         <MaskHeading
           className="h-lg"
           style={{ marginTop: 26, marginBottom: 'clamp(48px, 6vw, 80px)', maxWidth: 900 }}
-          lines={[<>Fünf Schritte zu</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>planbaren</span> lokalen Leads</>]}
+          lines={[<>So bauen wir Ihre</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>lokale Sichtbarkeit</span> auf</>]}
         />
 
         <div className="process-wrap" style={{ display: 'grid', gridTemplateColumns: '80px minmax(0,1fr)', gap: 'clamp(16px, 3vw, 48px)' }}>
@@ -2301,11 +2057,6 @@ function Process() {
                   </div>
                   <div style={{ paddingTop: 'clamp(0px, 6vw, 88px)' }}>
                     <p style={{ fontSize: 15, lineHeight: 1.85, color: 'var(--muted)', margin: 0, maxWidth: 460 }}>{s.desc}</p>
-                    {'cta' in s && s.cta && (
-                      <a href="#audit-quiz" className="btn btn-md btn-ink" style={{ marginTop: 22 }}>
-                        Sichtbarkeits-Check starten <span className="arw">→</span>
-                      </a>
-                    )}
                   </div>
                 </div>
               </Reveal>
@@ -2486,76 +2237,29 @@ function ChevronIcon({ flip }: { flip?: boolean }) {
   )
 }
 
-function SystemSummary() {
-  const lines = [
-    ['Ihre Website', 'erklärt Ihre Leistungen.'],
-    ['Google Maps', 'zeigt Ihre lokale Präsenz.'],
-    ['Bewertungen', 'schaffen Vertrauen.'],
-    ['Soziale Netzwerke', 'zeigen die Menschen hinter dem Unternehmen.'],
-    ['Suchmaschinen und KI-Systeme', 'verbinden diese Informationen.'],
-  ]
-  return (
-    <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
-      <div style={{ ...SHELL }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(28px, 4vw, 72px)', alignItems: 'start' }}>
-          <div>
-            <Reveal><Kicker>Das Zusammenspiel</Kicker></Reveal>
-            <MaskHeading
-              className="h-md"
-              style={{ marginTop: 22 }}
-              lines={[<>Aus einzelnen Kanälen wird</>, <>ein <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>klares Bild</span> Ihres</>, <>Unternehmens.</>]}
-            />
-          </div>
-          <div>
-            {lines.map(([a, b], i) => (
-              <Reveal key={a} delay={0.06 * i}>
-                <p style={{ fontSize: 'clamp(16px, 1.5vw, 19px)', lineHeight: 1.6, margin: 0, padding: '16px 0', borderTop: '1px solid var(--line)', color: 'var(--muted)' }}>
-                  <strong style={{ color: 'var(--ink)', fontWeight: 600 }}>{a}</strong> {b}
-                </p>
-              </Reveal>
-            ))}
-            <Reveal delay={0.34}>
-              <p className="h-sm display" style={{ margin: '34px 0 0', maxWidth: 560 }}>
-                So entsteht eine digitale Präsenz, die gefunden wird, Vertrauen aufbaut und neue Anfragen erzeugt.
-              </p>
-            </Reveal>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
 function RealResults() {
+  // No autoplay: the case only changes when the visitor picks it, so nothing moves while reading.
   const [active, setActive] = useState(0)
-  const [paused, setPaused] = useState(false)
   const total = caseStudies.length
   const touchX = useRef<number | null>(null)
 
-  useEffect(() => {
-    if (paused) return
-    const id = setInterval(() => setActive(a => (a + 1) % total), 6000)
-    return () => clearInterval(id)
-  }, [active, paused, total])
-
-  const onTouchStart = (e: React.TouchEvent) => { touchX.current = e.touches[0].clientX; setPaused(true) }
+  const onTouchStart = (e: React.TouchEvent) => { touchX.current = e.touches[0].clientX }
   const onTouchEnd = (e: React.TouchEvent) => {
     if (touchX.current === null) return
     const d = e.changedTouches[0].clientX - touchX.current
     if (d > 50) setActive(a => (a - 1 + total) % total)
     else if (d < -50) setActive(a => (a + 1) % total)
     touchX.current = null
-    setPaused(false)
   }
 
-  const c = caseStudies[active]
-
   return (
-    <section id="results" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden' }}>
-      <GrowthBackdrop />
+    <section id="results" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px) clamp(170px, 18vw, 250px)', position: 'relative', overflow: 'hidden' }}>
+      {/* growth graph lives in its own strip under the content, so its line never crosses text */}
+      <div aria-hidden style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 'clamp(220px, 24vw, 320px)', pointerEvents: 'none' }}>
+        <GrowthBackdrop />
+      </div>
 
       <div style={{ ...SHELL, position: 'relative' }}
-        onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
         onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
 
         <Reveal><Kicker tone="light">Ergebnisse</Kicker></Reveal>
@@ -2563,11 +2267,6 @@ function RealResults() {
         <div className="res-head" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap', marginTop: 26, marginBottom: 'clamp(40px, 5vw, 64px)' }}>
           <div>
             <MaskHeading className="h-lg" lines={[<>Echte Ergebnisse,</>, <><span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>echte Unternehmen</span></>]} />
-            <Reveal delay={0.12}>
-              <p style={{ fontSize: 15, lineHeight: 1.75, color: 'rgba(255,255,255,0.5)', margin: '18px 0 0', maxWidth: 480 }}>
-                Was sich für drei Unternehmen verändert hat, die genau dort gestartet sind, wo Sie jetzt stehen.
-              </p>
-            </Reveal>
           </div>
           {/* tabs */}
           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
@@ -2591,71 +2290,51 @@ function RealResults() {
           </div>
         </div>
 
-        <div key={active} className="res-body" style={{
-          display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
-          gap: 'clamp(32px, 5vw, 72px)', alignItems: 'start',
-          animation: `fadeSwap 0.6s ${EASE} both`,
-        }}>
-          <div>
-            <p className="serif" style={{ fontSize: 'clamp(28px, 3.6vw, 52px)', lineHeight: 1.15, letterSpacing: '-0.02em', color: '#fff', margin: '0 0 28px' }}>
-              {c.quote}
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 34 }}>
-              <div style={{ width: 44, height: 44, borderRadius: '50%', backgroundColor: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13.5 }}>{c.initials}</div>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 14.5 }}>{c.name}</div>
-                <div style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.45)' }}>{c.role}</div>
+        {/* all cases share one grid cell: the block keeps the height of the longest case and never jumps */}
+        <div style={{ display: 'grid' }}>
+          {caseStudies.map((c, i) => {
+            const on = i === active
+            return (
+              <div key={c.name} className="res-body" aria-hidden={!on} style={{
+                gridArea: '1 / 1',
+                display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+                gap: 'clamp(32px, 5vw, 72px)', alignItems: 'start',
+                opacity: on ? 1 : 0, visibility: on ? 'visible' : 'hidden',
+                transition: 'opacity 0.45s ease, visibility 0.45s',
+              }}>
+                <div>
+                  <p className="serif" style={{ fontSize: 'clamp(22px, 2.3vw, 32px)', lineHeight: 1.25, letterSpacing: '-0.01em', color: '#fff', margin: '0 0 24px', maxWidth: 560 }}>
+                    {c.quote}
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 30 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: '50%', backgroundColor: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13.5 }}>{c.initials}</div>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14.5 }}>{c.name}</div>
+                      <div style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.45)' }}>{c.role}</div>
+                    </div>
+                  </div>
+                  <div>
+                    {[
+                      { label: 'Ausgangslage', value: c.startingPoint },
+                      { label: 'Unser Ansatz', value: c.approach },
+                      { label: 'Das Ergebnis', value: c.result, accent: true },
+                    ].map(row => (
+                      <div key={row.label} className="res-row" style={{ display: 'grid', gridTemplateColumns: '132px minmax(0,1fr)', gap: 18, padding: '16px 0', borderTop: '1px solid var(--line-dark)' }}>
+                        <span className="eyebrow" style={{ fontSize: 9.5, color: row.accent ? 'var(--electric-2)' : 'rgba(255,255,255,0.35)', paddingTop: 3 }}>{row.label}</span>
+                        <span style={{ fontSize: 14.5, lineHeight: 1.7, color: row.accent ? '#fff' : 'rgba(255,255,255,0.7)', fontWeight: row.accent ? 600 : 400 }}>{row.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ position: 'relative' }}>
+                  <div style={{ position: 'relative', backgroundColor: '#fff', borderRadius: 22, padding: 12, boxShadow: '0 40px 80px rgba(0,0,0,0.45)' }}>
+                    <c.Illust />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div>
-              {[
-                { label: 'Ausgangslage', value: c.startingPoint },
-                { label: 'Unser Ansatz', value: c.approach },
-                { label: 'Das Ergebnis', value: c.result, accent: true },
-              ].map(row => (
-                <div key={row.label} className="res-row" style={{ display: 'grid', gridTemplateColumns: '132px minmax(0,1fr)', gap: 18, padding: '16px 0', borderTop: '1px solid var(--line-dark)' }}>
-                  <span className="eyebrow" style={{ fontSize: 9.5, color: row.accent ? 'var(--electric-2)' : 'rgba(255,255,255,0.35)', paddingTop: 3 }}>{row.label}</span>
-                  <span style={{ fontSize: 14, lineHeight: 1.7, color: row.accent ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: row.accent ? 600 : 400 }}>{row.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ position: 'relative' }}>
-            <div style={{ position: 'relative', backgroundColor: '#fff', borderRadius: 22, padding: 12, boxShadow: '0 40px 80px rgba(0,0,0,0.45)' }}>
-              <c.Illust />
-            </div>
-          </div>
-        </div>
-
-        {/* what we make measurable */}
-        <div style={{ position: 'relative', marginTop: 'clamp(48px, 6vw, 88px)', paddingTop: 'clamp(30px, 4vw, 48px)', borderTop: '1px solid var(--line-dark)', backgroundColor: 'var(--ink)' }}>
-          <Reveal>
-            <h3 className="display" style={{ fontSize: 'clamp(20px, 2.1vw, 30px)', margin: '0 0 8px' }}>Was wir sichtbar machen</h3>
-          </Reveal>
-          <Reveal delay={0.06}>
-            <p style={{ fontSize: 14.5, lineHeight: 1.75, color: 'rgba(255,255,255,0.5)', margin: '0 0 26px', maxWidth: 520 }}>
-              Diese Kennzahlen berichten wir regelmäßig — damit Sichtbarkeit nachvollziehbar bleibt und nicht Gefühlssache ist.
-            </p>
-          </Reveal>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '0 clamp(20px, 3vw, 48px)' }}>
-            {[
-              'Aufrufe und Impressionen bei Google Maps',
-              'Anrufe und Klicks aus dem Unternehmensprofil',
-              'Positionen bei lokalen Suchanfragen',
-              'Anzahl und Qualität der Bewertungen',
-              'Organische Besuche auf der Website',
-              'Eingehende Anfragen',
-              'Erwähnungen und Zitate in der KI-Suche',
-            ].map((m, i) => (
-              <Reveal key={m} delay={Math.min(i * 0.04, 0.2)}>
-                <div style={{ display: 'flex', gap: 12, padding: '13px 0', borderTop: '1px solid var(--line-dark)' }}>
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--electric-2)', letterSpacing: '0.1em', paddingTop: 3 }}>{String(i + 1).padStart(2, '0')}</span>
-                  <span style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(255,255,255,0.75)' }}>{m}</span>
-                </div>
-              </Reveal>
-            ))}
-          </div>
+            )
+          })}
         </div>
 
         {/* progress dots */}
@@ -2674,35 +2353,54 @@ function RealResults() {
 // AUDIT QUIZ
 // ─────────────────────────────────────────────────────────────────────────────
 function AuditQuiz() {
+  // Lead form in five short steps. It collects what we need for the analysis and
+  // for the first call; the analysis itself is done by a person afterwards.
+  const [modal, setModal] = useState(false)
   const [step, setStep] = useState(1)
-  const [answers, setAnswers] = useState<Record<string, string>>({})
-  const [companyName, setCompanyName] = useState('')
+  const [concern, setConcern] = useState('')
+  const [presence, setPresence] = useState<string[]>([])
   const [industry, setIndustry] = useState('')
+  const [region, setRegion] = useState('')
+  const [budget, setBudget] = useState('')
   const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
-  const [email, setEmail] = useState('')
-  const [bookedQuizDay, setBookedQuizDay] = useState<{ label: string; date: string } | null>(null)
-  const [bookedQuizSlot, setBookedQuizSlot] = useState<string | null>(null)
-  // TOTAL covers steps 1–9; step 10 is the final confirmation (no bar)
-  const TOTAL = 9
+  const [company, setCompany] = useState('')
+  const [contact, setContact] = useState('')
+  const TOTAL = 5
+  const DONE = TOTAL + 1
 
-  const pick = (key: string, val: string) => { setAnswers(a => ({ ...a, [key]: val })); setStep(s => s + 1) }
-  const pct = Math.min((step / TOTAL) * 100, 100)
+  const next = () => setStep(s => Math.min(s + 1, DONE))
+  const back = () => setStep(s => Math.max(s - 1, 1))
+  const reset = () => { setStep(1); setConcern(''); setPresence([]); setIndustry(''); setRegion(''); setBudget(''); setName(''); setCompany(''); setContact('') }
+  const togglePresence = (v: string) => setPresence(p => {
+    if (v === 'Noch nichts davon') return p.includes(v) ? [] : [v]
+    const without = p.filter(x => x !== 'Noch nichts davon')
+    return without.includes(v) ? without.filter(x => x !== v) : [...without, v]
+  })
 
+  const h3: React.CSSProperties = { fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '0 0 6px', lineHeight: 1.3 }
+  const hint: React.CSSProperties = { fontSize: 13, color: 'var(--muted)', margin: '0 0 16px', lineHeight: 1.6 }
+  const input: React.CSSProperties = { width: '100%', padding: '12px 14px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', marginBottom: 10, color: 'var(--ink)', backgroundColor: '#fff' }
+  const primary = (disabled: boolean): React.CSSProperties => ({ backgroundColor: disabled ? '#e5e7eb' : '#2600FF', color: disabled ? '#9ca3af' : '#fff', fontWeight: 600, fontSize: 14, padding: '13px 20px', borderRadius: 999, border: 'none', cursor: disabled ? 'default' : 'pointer', width: '100%', fontFamily: 'inherit', transition: 'background-color 0.2s' })
 
-  const Btn = ({ label, onClick }: { label: string; onClick: () => void }) => (
-    <button onClick={onClick}
-      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, width: '100%', padding: '13px 16px', textAlign: 'left', backgroundColor: '#fff', border: '1px solid var(--line)', borderRadius: 14, fontWeight: 500, fontSize: 14, color: 'var(--ink)', cursor: 'pointer', marginBottom: 8, transition: 'all 0.25s ease', fontFamily: 'inherit' }}
-      onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = '#2600FF'; b.style.backgroundColor = '#F4F2FF'; b.style.transform = 'translateX(4px)' }}
-      onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = 'rgba(7,7,12,0.12)'; b.style.backgroundColor = '#fff'; b.style.transform = 'none' }}>
+  const Option = ({ label, selected, onClick, multi }: { label: string; selected: boolean; onClick: () => void; multi?: boolean }) => (
+    <button type="button" onClick={onClick} aria-pressed={selected}
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, width: '100%', padding: '12px 16px', textAlign: 'left', backgroundColor: selected ? '#F4F2FF' : '#fff', border: `1px solid ${selected ? '#2600FF' : 'rgba(7,7,12,0.12)'}`, borderRadius: 14, fontWeight: 500, fontSize: 14, color: 'var(--ink)', cursor: 'pointer', marginBottom: 8, transition: 'all 0.2s ease', fontFamily: 'inherit' }}>
       {label}
-      <span style={{ color: '#2600FF', fontSize: 13 }}>→</span>
+      <span aria-hidden style={{
+        flexShrink: 0, width: 18, height: 18, borderRadius: multi ? 5 : '50%',
+        border: `1.5px solid ${selected ? '#2600FF' : 'rgba(7,7,12,0.25)'}`,
+        backgroundColor: selected ? '#2600FF' : 'transparent', color: '#fff', fontSize: 11, lineHeight: '15px', textAlign: 'center',
+      }}>{selected ? '✓' : ''}</span>
     </button>
   )
 
-  const reset = () => { setStep(1); setAnswers({}); setName(''); setPhone(''); setEmail(''); setCompanyName(''); setIndustry(''); setBookedQuizDay(null); setBookedQuizSlot(null) }
+  const BackLink = () => (
+    <button type="button" onClick={back} style={{ background: 'none', border: 'none', padding: 0, marginTop: 12, fontSize: 13, color: 'var(--muted)', cursor: 'pointer', fontFamily: 'inherit' }}>← Zurück</button>
+  )
 
   return (
+    <>
+    {modal && <BookCallModal onClose={() => setModal(false)} />}
     <section id="audit-quiz" style={{ backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(80px, 10vw, 130px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden' }}>
       <ScanBackdrop />
       <div className="audit-grid" style={{ ...SHELL, position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0, 500px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
@@ -2710,21 +2408,21 @@ function AuditQuiz() {
           <Reveal>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
               <span style={{ width: 28, height: 1, backgroundColor: 'rgba(255,255,255,0.6)' }} />
-              <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.7)' }}>Kostenlos · 2 Minuten</p>
+              <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.7)' }}>Kostenlos · unverbindlich</p>
             </div>
           </Reveal>
           <MaskHeading
             className="h-md"
             style={{ marginBottom: 24, color: '#fff' }}
-            lines={[<>Kostenloses <span className="serif italic-serif">2-Minuten-</span></>, <><span className="serif italic-serif">Sichtbarkeits-Check</span></>]}
+            lines={[<>Finden wir heraus, wo Ihr</>, <><span className="serif italic-serif">Unternehmen heute steht.</span></>]}
           />
           <Reveal delay={0.12}>
             <p style={{ fontSize: 16, lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', marginBottom: 34, maxWidth: 460 }}>
-              5 Fragen zu Ihrem Unternehmen + Kontaktdaten · Google- &amp; KI-Präsenz-Check · Persönlicher Wachstumsplan
+              Wir analysieren Ihre aktuelle Präsenz und zeigen Ihnen konkret, welche Schritte Ihre lokale Sichtbarkeit verbessern. Beantworten Sie fünf kurze Fragen und hinterlassen Sie Ihre Kontaktdaten — wir melden uns persönlich bei Ihnen.
             </p>
           </Reveal>
           <div className="audit-bullets" style={{ display: 'flex', flexDirection: 'column' }}>
-            {['Kein Verkaufsgespräch, nur Ihre Ergebnisse', 'Fertig in unter 2 Minuten', 'Persönlicher Plan innerhalb von 24 Stunden'].map((b, i) => (
+            {['Fünf kurze Fragen, keine Vorbereitung nötig', 'Ein Berater meldet sich innerhalb eines Werktags', 'Ehrliche Einschätzung statt Verkaufsgespräch'].map((b, i) => (
               <Reveal key={b} delay={0.16 + i * 0.07}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
                   <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em' }}>{String(i + 1).padStart(2, '0')}</span>
@@ -2733,102 +2431,111 @@ function AuditQuiz() {
               </Reveal>
             ))}
           </div>
+          <Reveal delay={0.4}>
+            <div style={{ marginTop: 34, paddingTop: 26, borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+              <p style={{ fontSize: 17, fontWeight: 700, color: '#fff', margin: '0 0 6px' }}>Noch keine digitale Präsenz?</p>
+              <p style={{ fontSize: 14, lineHeight: 1.7, color: 'rgba(255,255,255,0.7)', margin: '0 0 16px', maxWidth: 440 }}>Kein Check nötig. Wir sprechen kurz über Ihr Unternehmen und legen los.</p>
+              <button onClick={() => setModal(true)} className="btn btn-md btn-paper">Google Business Profil ab 149 € starten <span className="arw">→</span></button>
+            </div>
+          </Reveal>
         </div>
+
         <div style={{ backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 26, padding: 'clamp(26px, 3vw, 38px)', boxShadow: '0 40px 80px rgba(7,7,12,0.28)' }}>
-          {step > 0 && step <= TOTAL && (
+          {step <= TOTAL && (
             <div style={{ marginBottom: 22 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                <span style={{ fontSize: 11, fontWeight: 500, color: '#4b5563' }}>Schritt {step} von {TOTAL}</span>
-                <span style={{ fontSize: 11, fontWeight: 500, color: '#2600FF' }}>{Math.round(pct)}%</span>
+                <span style={{ fontSize: 11, fontWeight: 500, color: '#4b5563' }}>Frage {step} von {TOTAL}</span>
               </div>
-              <div style={{ height: 4, backgroundColor: '#e5e7eb', borderRadius: 2 }}>
-                <div style={{ height: '100%', width: `${pct}%`, backgroundColor: '#2600FF', borderRadius: 2, transition: 'width 0.3s' }} />
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${TOTAL}, 1fr)`, gap: 4 }}>
+                {Array.from({ length: TOTAL }, (_, i) => (
+                  <div key={i} style={{ height: 4, borderRadius: 2, backgroundColor: i < step ? '#2600FF' : '#e5e7eb', transition: 'background-color 0.3s' }} />
+                ))}
               </div>
             </div>
           )}
 
-          {/* Скрытый якорь: кнопка «Anruf buchen» в hero может открыть шаг брони напрямую */}
-          <button id="quiz-book-direct" onClick={() => setStep(9)} style={{ display: 'none' }}>Direkt zur Buchung</button>
-          {step === 1 && <><h3 style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 18 }}>In welcher Stadt sind Sie ansässig?</h3>{['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Sonstige'].map(c => <Btn key={c} label={c} onClick={() => pick('city', c)} />)}</>}
-          {step === 2 && <><h3 style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 18 }}>Wie viele neue Kunden pro Monat?</h3>{['Weniger als 10', '10–30', '30–60', 'Mehr als 60'].map(c => <Btn key={c} label={c} onClick={() => pick('clients', c)} />)}</>}
-          {step === 3 && <><h3 style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 18 }}>Wie erreichen Sie die meisten Kunden?</h3>{['Mundpropaganda', 'Google-Suche', 'Social Media', 'Bezahlte Anzeigen', "Ich bin mir nicht sicher"].map(c => <Btn key={c} label={c} onClick={() => pick('channel', c)} />)}</>}
+          {step === 1 && (
+            <div>
+              <h3 style={h3}>Was beschäftigt Sie gerade am meisten?</h3>
+              <p style={hint}>Wählen Sie das, was am ehesten zutrifft.</p>
+              {['Zu wenige Anfragen', 'Mitbewerber werden eher gefunden', 'Bei Google Maps oder in der KI-Suche kaum sichtbar', 'Zu wenige oder veraltete Bewertungen', 'Ich starte gerade erst', 'Etwas anderes'].map(o => (
+                <Option key={o} label={o} selected={concern === o} onClick={() => { setConcern(o); next() }} />
+              ))}
+            </div>
+          )}
+
+          {step === 2 && (
+            <div>
+              <h3 style={h3}>Was gibt es bereits?</h3>
+              <p style={hint}>Mehrfachauswahl möglich.</p>
+              {['Google-Unternehmensprofil', 'Eigene Website', 'Bewertungen bei Google', 'Social-Media-Profile', 'Noch nichts davon'].map(o => (
+                <Option key={o} multi label={o} selected={presence.includes(o)} onClick={() => togglePresence(o)} />
+              ))}
+              <button type="button" disabled={!presence.length} onClick={next} style={{ ...primary(!presence.length), marginTop: 6 }}>Weiter</button>
+              <BackLink />
+            </div>
+          )}
+
+          {step === 3 && (
+            <div>
+              <h3 style={h3}>Womit und wo sind Sie tätig?</h3>
+              <p style={hint}>So vergleichen wir Sie mit den richtigen Mitbewerbern.</p>
+              <input style={input} value={industry} onChange={e => setIndustry(e.target.value)} placeholder="Branche, z. B. Heizungsbau, Zahnarztpraxis, Autowerkstatt" />
+              <input style={input} value={region} onChange={e => setRegion(e.target.value)} placeholder="Stadt oder Region, z. B. Siegen und Umgebung" />
+              <button type="button" disabled={!industry.trim() || !region.trim()} onClick={next} style={{ ...primary(!industry.trim() || !region.trim()), marginTop: 6 }}>Weiter</button>
+              <BackLink />
+            </div>
+          )}
+
           {step === 4 && (
             <div>
-              <h3 style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 18 }}>In welcher Branche sind Sie tätig?</h3>
-              <input value={industry} onChange={e => setIndustry(e.target.value)} placeholder="z. B. Autowerkstatt, Zahnmedizin, Heizungstechnik…" style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', marginBottom: 10 }} />
-              <button onClick={() => pick('industry', industry || 'Nicht angegeben')} style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 13, padding: '13px 20px', borderRadius: 999, border: 'none', cursor: 'pointer', width: '100%', fontFamily: 'inherit' }}>Weiter</button>
+              <h3 style={h3}>Welches monatliche Budget ist für Sichtbarkeit denkbar?</h3>
+              <p style={hint}>Nur zur Orientierung — damit wir passende Schritte vorschlagen.</p>
+              {['Bis 300 €', '300–800 €', '800–1.500 €', 'Mehr als 1.500 €', 'Noch unklar'].map(o => (
+                <Option key={o} label={o} selected={budget === o} onClick={() => { setBudget(o); next() }} />
+              ))}
+              <BackLink />
             </div>
           )}
+
           {step === 5 && (
             <div>
-              <h3 style={{ fontWeight: 600, fontSize: 14, color: '#030712', marginBottom: 4 }}>Wir prüfen jetzt Ihre Sichtbarkeit in der KI-Suche</h3>
-              <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 14 }}>Illustratives Beispiel, keine Live-Abfrage</p>
-              <input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Name Ihres Unternehmens" style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 13, fontFamily: 'inherit', outline: 'none', marginBottom: 12, boxSizing: 'border-box' }} />
-              <div style={{ backgroundColor: '#f2f2ff', border: '1px solid #ddd6fe', borderRadius: 10, padding: 14, marginBottom: 12 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: '#2600FF', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>KI-Sichtbarkeits-Check: {answers.city || 'Ihre Region'}</div>
-                <p style={{ fontSize: 12, color: '#374151', lineHeight: 1.75, margin: '0 0 10px' }}>
-                  <strong>{companyName || 'Ihr Unternehmen'}</strong> steht aktuell nicht unter den Top-3-KI-Empfehlungen in Ihrer Region, da das Unternehmensprofil nicht indexiert ist.
-                </p>
-                <p style={{ fontSize: 12, color: '#374151', lineHeight: 1.75, margin: '0 0 10px' }}>
-                  Algorithmen empfehlen 3 andere Unternehmen in Ihrer Kategorie:{' '}
-                  <span style={{ display: 'inline-block', backgroundColor: '#e5e7eb', borderRadius: 4, padding: '1px 7px', filter: 'blur(3.5px)', userSelect: 'none', fontSize: 11 }}>Müller &amp; Partner</span>{' '}
-                  <span style={{ display: 'inline-block', backgroundColor: '#e5e7eb', borderRadius: 4, padding: '1px 7px', filter: 'blur(3.5px)', userSelect: 'none', fontSize: 11 }}>Schmidt Services GmbH</span>{' '}
-                  <span style={{ display: 'inline-block', backgroundColor: '#e5e7eb', borderRadius: 4, padding: '1px 7px', filter: 'blur(3.5px)', userSelect: 'none', fontSize: 11 }}>Becker Pro</span>
-                </p>
-                <p style={{ fontSize: 12, color: '#4b5563', lineHeight: 1.75, margin: 0, borderTop: '1px solid #ddd6fe', paddingTop: 8 }}>
-                  Ein vollständiges Sichtbarkeits-Check und ein Schritt-für-Schritt-Optimierungsplan werden nach Abschluss der Umfrage erstellt und zugesendet.
-                </p>
-              </div>
-              <button onClick={() => setStep(6)} style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 500, fontSize: 13, padding: '13px 20px', borderRadius: 999, border: 'none', cursor: 'pointer', width: '100%', fontFamily: 'inherit' }}>So ändern Sie das</button>
-            </div>
-          )}
-          {step === 6 && <><h3 style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 18 }}>Was ist Ihre größte Sorge?</h3>{['Ein Mitbewerber ist mir voraus', 'Zu wenig Leads', 'Leads passen nicht', "Ich bin bei Google & KI unsichtbar", "Ich habe es satt, Dienstleister zu koordinieren", 'Sonstiges'].map(c => <Btn key={c} label={c} onClick={() => pick('concern', c)} />)}</>}
-          {step === 7 && <><h3 style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 18 }}>Monatliches Marketingbudget?</h3>{['Bis 500 €', '500–1.500 €', '1.500–3.000 €', 'Über 3.000 €', "Ich bin noch nicht investitionsbereit"].map(c => <Btn key={c} label={c} onClick={() => pick('budget', c)} />)}</>}
-          {step === 8 && (
-            <div>
-              <h3 style={{ fontWeight: 600, fontSize: 15, color: '#030712', marginBottom: 5 }}>Erhalten Sie Ihre Analyse &amp; Ihren Aktionsplan</h3>
-              <p style={{ fontSize: 12, color: '#4b5563', marginBottom: 16 }}>Ein Berater sendet Ihnen innerhalb von 24 Stunden Ihren persönlichen Plan.</p>
-              <input value={name} onChange={e => setName(e.target.value)} placeholder="Vollständiger Name" style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 13, fontFamily: 'inherit', outline: 'none', marginBottom: 8, boxSizing: 'border-box' }} />
-              <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="Telefonnummer" style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 13, fontFamily: 'inherit', outline: 'none', marginBottom: 8, boxSizing: 'border-box' }} />
-              <input value={email} onChange={e => setEmail(e.target.value)} placeholder="E-Mail-Adresse" style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 13, fontFamily: 'inherit', outline: 'none', marginBottom: 14, boxSizing: 'border-box' }} />
-              <button onClick={() => setStep(9)} style={{ backgroundColor: '#2600FF', color: '#fff', fontWeight: 600, fontSize: 14, padding: '13px 22px', borderRadius: 999, border: 'none', cursor: 'pointer', width: '100%', boxShadow: '0 1px 2px rgba(0,0,0,0.12)', fontFamily: 'inherit' }}>Analyse und Aktionsplan erhalten</button>
-            </div>
-          )}
-
-          {/* ── Step 9: Book a consultation call ── */}
-          {step === 9 && (
-            <div>
-              <h3 style={{ fontWeight: 700, fontSize: 16, color: '#030712', marginBottom: 4 }}>Wählen Sie einen Termin für Ihren Anruf</h3>
-              <p style={{ fontSize: 12, color: '#4b5563', marginBottom: 18, lineHeight: 1.6 }}>
-                Wählen Sie einen passenden Termin, ein Berater bespricht live mit Ihnen die Ergebnisse Ihres Sichtbarkeits-Checks
+              <h3 style={h3}>Wohin dürfen wir uns melden?</h3>
+              <p style={hint}>Ein Berater sieht sich Ihre Präsenz an und meldet sich innerhalb eines Werktags mit einer ersten Einschätzung.</p>
+              <input style={input} value={name} onChange={e => setName(e.target.value)} placeholder="Ihr Name" autoComplete="name" />
+              <input style={input} value={company} onChange={e => setCompany(e.target.value)} placeholder="Name Ihres Unternehmens" autoComplete="organization" />
+              <input style={input} value={contact} onChange={e => setContact(e.target.value)} placeholder="Telefon oder E-Mail" autoComplete="email" />
+              <button type="button" disabled={!name.trim() || !contact.trim()} onClick={next} style={{ ...primary(!name.trim() || !contact.trim()), marginTop: 6 }}>Analyse anfragen</button>
+              <p style={{ fontSize: 11.5, color: '#9ca3af', lineHeight: 1.6, margin: '12px 0 0' }}>
+                Mit dem Absenden stimmen Sie zu, dass wir Sie zu Ihrer Anfrage kontaktieren. Keine Werbung, keine Weitergabe an Dritte.
               </p>
-              <SlotPicker onConfirm={(day, slot) => { setBookedQuizDay(day); setBookedQuizSlot(slot); setStep(10) }} />
+              <BackLink />
             </div>
           )}
 
-          {/* ── Step 10: Booking confirmed ── */}
-          {step === 10 && (
+          {step === DONE && (
             <div style={{ textAlign: 'center', padding: '12px 0' }}>
-              <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: '#d1fae5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 24 }}>✅</div>
-              <h3 style={{ fontWeight: 700, fontSize: 18, color: '#030712', marginBottom: 10 }}>Ihr Termin ist gebucht!</h3>
-              <div style={{ backgroundColor: '#f2f2ff', border: '1px solid #ddd6fe', borderRadius: 12, padding: '14px 16px', marginBottom: 14, textAlign: 'left' }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#2600FF', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Ihr Termin</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#030712', marginBottom: 3 }}>
-                  {bookedQuizDay?.date ?? ''} um {bookedQuizSlot} Uhr
-                </div>
-                <div style={{ fontSize: 12, color: '#4b5563' }}>
-                  Eine Kalendereinladung und Ihre Check-Ergebnisse werden an <strong>{email || 'Ihre E-Mail-Adresse'}</strong> gesendet
-                </div>
-              </div>
-              <p style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.6, marginBottom: 16 }}>
-                Ihr Berater sichtet Ihre Ergebnisse vor dem Anruf, damit Sie eine persönliche Beratung erhalten – keine Standard-Präsentation.
+              <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: '#EEEBFF', color: '#2600FF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 24, fontWeight: 700 }}>✓</div>
+              <h3 style={{ ...h3, fontSize: 20, marginBottom: 10 }}>Danke, {name.trim()}!</h3>
+              <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.7, margin: '0 0 18px' }}>
+                Wir sehen uns Ihre Präsenz an und melden uns innerhalb eines Werktags unter <strong style={{ color: 'var(--ink)' }}>{contact}</strong>.
               </p>
-              <button onClick={reset} style={{ backgroundColor: '#f2f2ff', color: '#2600FF', fontWeight: 500, fontSize: 13, padding: '9px 20px', borderRadius: 10, border: '1px solid #ddd6fe', cursor: 'pointer', fontFamily: 'inherit' }}>Neu starten</button>
+              <div style={{ textAlign: 'left', backgroundColor: '#F7F6FF', border: '1px solid #E4DFFF', borderRadius: 14, padding: '14px 16px', marginBottom: 18 }}>
+                <p className="eyebrow" style={{ fontSize: 9.5, color: '#2600FF', marginBottom: 8 }}>Ihre Angaben</p>
+                <p style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--ink)', margin: 0 }}>
+                  {concern}<br />
+                  {industry} · {region}<br />
+                  {presence.map((x, i) => <span key={x}>{i > 0 && ', '}{x}</span>)}<br />
+                  {budget}
+                </p>
+              </div>
+              <button type="button" onClick={reset} style={{ backgroundColor: '#F4F2FF', color: '#2600FF', fontWeight: 500, fontSize: 13, padding: '9px 20px', borderRadius: 10, border: '1px solid #ddd6fe', cursor: 'pointer', fontFamily: 'inherit' }}>Neue Anfrage</button>
             </div>
           )}
         </div>
       </div>
     </section>
+    </>
   )
 }
 
@@ -2836,80 +2543,15 @@ function AuditQuiz() {
 // FAQ
 // ─────────────────────────────────────────────────────────────────────────────
 const faqs = [
+  { q: 'Wie schnell verbessert sich meine lokale Sichtbarkeit?', a: 'Nach der Arbeit an Profil und Verzeichnissen zeigen sich erste Veränderungen bei Aufrufen und Anrufen häufig innerhalb weniger Wochen. Bewertungen, Website-Inhalte und KI-Sichtbarkeit bauen sich über Monate auf. Wir messen von Anfang an, damit Sie sehen, was sich bewegt.' },
   { q: 'Können Sie Platz 1 bei Google garantieren?', a: "Nein — und niemand kann das seriös versprechen. Google bewertet lokale Ergebnisse unter anderem nach Relevanz, Entfernung zum Suchenden und Bekanntheit des Unternehmens. Auf einen Teil davon haben wir direkten Einfluss, auf anderes nicht. Was wir zusagen: Wir bringen alle beeinflussbaren Faktoren in Ordnung, arbeiten kontinuierlich daran und zeigen Ihnen an konkreten Zahlen, was sich bewegt." },
   { q: 'Brauche ich unbedingt eine Website?', a: "Für den Start nicht zwingend. Ein vollständig gepflegtes Google-Unternehmensprofil kann die erste Grundlage sein. Sobald Sie mehrere Leistungen, mehrere Regionen oder erklärungsbedürftige Angebote haben, wird die Website aber zur Wissensbasis, aus der Google und KI-Systeme ihre Antworten über Sie ziehen." },
+  { q: 'Können Sie meine bestehende Website optimieren?', a: 'In den meisten Fällen ja. Wir prüfen Struktur, Inhalte und Technik Ihrer bestehenden Website und verbessern gezielt das, was Sichtbarkeit und Anfragen blockiert. Nur wenn die technische Basis eine sinnvolle Weiterentwicklung nicht zulässt, empfehlen wir einen Neuaufbau.' },
+  { q: 'Wie bekomme ich mehr Google-Bewertungen?', a: 'Indem Sie zu einem festen Zeitpunkt fragen — am besten direkt nach einem gelungenen Auftrag —, den Weg zur Abgabe so kurz wie möglich machen und auf Bewertungen antworten. Gekaufte oder erfundene Bewertungen verstoßen gegen die Google-Richtlinien und können zur Sperrung des Profils führen. Wir richten einen Ablauf ein, der echte Bewertungen mit konkreten Erfahrungen bringt.' },
   { q: 'Wie kann mein Unternehmen in ChatGPT erscheinen?', a: "Indem die Informationen über Ihr Unternehmen im Web klar, zugänglich und widerspruchsfrei sind: verständlich beschriebene Leistungen, eine logisch strukturierte Website, übereinstimmende Angaben auf allen Plattformen, externe Erwähnungen und Inhalte, die für Suchsysteme abrufbar sind. Eine separate \"KI-Optimierung\" jenseits sauberer Grundlagen gibt es nicht — wir sorgen dafür, dass diese Grundlagen stimmen." },
-  { q: 'Wie wird RAG abgerechnet?', a: "RAG ist als monatliches Retainer-Modell aufgebaut, mit dem Preis abhängig von den aktivierten Modulen. Nach dem kostenlosen Sichtbarkeits-Check wählen Sie ein Paket, das zu Ihrem Budget passt. Es gibt keine versteckten Gebühren oder langfristige Bindung. Die meisten Kunden starten mit dem Kern-Sichtbarkeitspaket (Maps, Bewertungen, KI) und ergänzen Anzeigen oder Offline-Werbung, sobald sie skalieren wollen." },
-  { q: 'Wie schnell sehe ich Ergebnisse?', a: 'Die meisten Kunden sehen innerhalb der ersten 2–4 Wochen messbare Verbesserungen bei Anrufvolumen und Ranking-Position. Bewertungsdynamik und KI-Sichtbarkeit bauen sich in der Regel über 6–8 Wochen auf. Wir verfolgen alles und teilen wöchentliche Fortschrittsberichte, damit Sie immer wissen, was sich bewegt hat.' },
-  { q: "Ich habe es schon mit anderen Agenturen versucht, ohne Erfolg. Was ist hier anders?", a: "Die meisten Agenturen konzentrieren sich auf einen einzigen Kanal, meist SEO oder Anzeigen, und optimieren isoliert. Es bewegt sich nichts, weil Kunden mehrere Signale nutzen, bevor sie jemanden kontaktieren. RAG behandelt alle Kanäle als ein System. Der Sichtbarkeits-Check zeigt Ihnen zudem genau, welche Lücke Sie am meisten kostet, sodass Sie nicht raten müssen." },
-  { q: 'Wie viel von meiner Zeit kostet das?', a: "Nach dem ersten Onboarding-Gespräch (ca. 45 Minuten) fast keine. Wir übernehmen Einrichtung, Optimierung und laufende Betreuung. Sie sichten einen kurzen Wochenbericht und beantworten Bewertungen, die wir Ihnen markieren. Die meisten Kunden wenden weniger als 30 Minuten pro Woche auf." },
+  { q: 'Was kostet die laufende Betreuung?', a: 'Die laufende Betreuung wird monatlich abgerechnet; der Preis hängt davon ab, welche Bereiche aktiv sind. Der Einstieg mit dem Google-Unternehmensprofil beginnt ab 149 €. Nach dem kostenlosen Sichtbarkeits-Check erhalten Sie ein Angebot, das zu Ihrer Situation und Ihrem Budget passt — ohne versteckte Gebühren und ohne langfristige Bindung.' },
+  { q: 'Für welche Unternehmen eignet sich lokale Optimierung?', a: 'Für alle, deren Kunden aus der Umgebung kommen: Handwerksbetriebe, Werkstätten, Praxen, Kanzleien, Restaurants, Salons und Dienstleister mit Servicegebiet. Entscheidend ist nicht die Branche, sondern dass Kunden lokal suchen — ob Sie ein Ladengeschäft haben oder zu Ihren Kunden fahren.' },
 ]
-
-// ─────────────────────────────────────────────────────────────────────────────
-// LOCAL VISIBILITY EXPLAINED
-// ─────────────────────────────────────────────────────────────────────────────
-const explainedItems = [
-  { q: 'Was ist lokales Marketing?', a: "Lokales Marketing ist alles, was Ihr Unternehmen zur naheliegenden Wahl für Kunden in der Umgebung macht: Ihr Google-Maps-Ranking, was KI-Tools über Sie sagen, Ihre Bewertungen, Ihre Social-Media-Präsenz und jede bezahlte oder Offline-Werbung in Ihrer Region. Es ist nicht ein Kanal. Es ist, wie sichtbar Sie überall dort sind, wo ein Kunde in dem Moment nachschaut, in dem er kaufbereit ist." },
-  { q: 'Warum braucht es einen umfassenden Ansatz?', a: 'Ein Kunde findet Sie vielleicht auf Google Maps, checkt Ihr Instagram, liest Ihre Bewertungen und fragt ChatGPT, ob Sie gut sind – alles innerhalb von fünf Minuten. Scheitert nur einer dieser Checks, geht er zum nächsten Ergebnis. Einen Kanal zu reparieren und die anderen zu ignorieren, kostet Sie trotzdem den Verkauf.' },
-  { q: 'Wie wird ein lokales Unternehmen bei Google gefunden?', a: "Google rankt lokale Ergebnisse vor allem nach drei Dingen: wie vollständig und aktiv Ihr Unternehmensprofil ist, wie viele aktuelle Top-Bewertungen Sie haben, und wie relevant Ihr Eintrag für die Suche ist. Die meisten Unternehmen verlieren bei allen drei Punkten, einfach weil niemand dafür zuständig ist, sie aktuell zu halten." },
-  { q: 'Warum sind Bewertungen so wichtig?', a: "Bewertungen sind das schnellste Vertrauenssignal, das ein Fremder prüfen kann. 85 % der Kunden behandeln sie wie eine persönliche Empfehlung – aber nur, wenn sie aktuell sind. Ein 4,9-Sterne-Schnitt von vor zwei Jahren wirkt inaktiv. Ein stetiger Strom frischer Bewertungen wirkt wie ein Unternehmen, das gerade jetzt floriert." },
-  { q: 'Wie funktioniert lokales SEO?', a: "Lokales SEO sorgt dafür, dass Ihr Unternehmen bei Suchanfragen mit örtlichem Bezug erscheint. Dafür zählen vor allem drei Dinge: ein vollständiges, aktives Google-Unternehmensprofil, eine Website, die Ihre Leistungen und Ihr Einzugsgebiet klar beschreibt, und einheitliche Angaben zu Name, Adresse und Telefonnummer über alle Plattformen und Verzeichnisse hinweg." },
-  { q: 'Wie wird ein Unternehmen in ChatGPT und Perplexity gefunden?', a: "KI-Systeme geben wieder, was sie im Web verlässlich über Sie finden. Sie brauchen also klare Leistungsbeschreibungen, eine logisch strukturierte Website, übereinstimmende Informationen auf allen Plattformen und externe Erwähnungen, die das bestätigen. Gute Grundlagen in Suche und Profil wirken direkt auch hier — eine getrennte Zauberformel für KI gibt es nicht." },
-]
-
-function LocalVisibilityExplained() {
-  return (
-    <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
-      <div style={{ ...SHELL }}>
-        <div className="expl-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.4fr) minmax(0, 1fr)', gap: 'clamp(32px, 5vw, 80px)', alignItems: 'start' }}>
-          <div className="expl-sticky" style={{ position: 'sticky', top: 120 }}>
-            <Reveal><Kicker>Grundlagen</Kicker></Reveal>
-            <MaskHeading
-              className="h-md"
-              style={{ marginTop: 22, marginBottom: 20 }}
-              lines={[<>Lokale Sichtbarkeit,</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>einfach erklärt</span></>]}
-            />
-            <Reveal delay={0.12}>
-              <p style={{ fontSize: 14.5, lineHeight: 1.8, color: 'var(--muted)', margin: '0 0 26px', maxWidth: 320 }}>
-                Die kurzen Antworten auf die Fragen, die uns in fast jedem Erstgespräch gestellt werden.
-              </p>
-            </Reveal>
-            <Reveal delay={0.18}>
-              <div style={{ borderTop: '1px solid var(--line)', paddingTop: 20, maxWidth: 320 }}>
-                <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(7,7,12,0.35)', marginBottom: 14 }}>Ausführlich im Ratgeber</p>
-                {ratgeberArticles.map(a => (
-                  <a key={a.slug} href={`/ratgeber/${a.slug}`} className="ul" style={{ display: 'block', width: 'fit-content', fontSize: 14, fontWeight: 600, color: 'var(--ink)', marginBottom: 10, lineHeight: 1.5 }}>
-                    {a.title}
-                  </a>
-                ))}
-                <a href="/glossar" className="ul" style={{ display: 'inline-block', marginTop: 8, fontSize: 13, fontWeight: 600, color: 'var(--electric)' }}>
-                  Alle Begriffe im Glossar →
-                </a>
-              </div>
-            </Reveal>
-          </div>
-
-          <div>
-            {explainedItems.map((item, i) => (
-              <Reveal key={i} delay={Math.min(i * 0.06, 0.24)}>
-                <div className="expl-row" style={{
-                  display: 'grid', gridTemplateColumns: '46px minmax(0, 0.9fr) minmax(0, 1.1fr)',
-                  gap: 'clamp(14px, 2vw, 32px)',
-                  padding: 'clamp(26px, 3vw, 40px) 0',
-                  borderTop: '1px solid var(--line)',
-                }}>
-                  <span className="display" style={{ fontSize: 13, color: 'var(--electric)', letterSpacing: '0.08em', paddingTop: 6 }}>{String(i + 1).padStart(2, '0')}</span>
-                  <h3 className="display" style={{ fontSize: 'clamp(18px, 1.7vw, 24px)', lineHeight: 1.2, margin: 0 }}>{item.q}</h3>
-                  <p style={{ fontSize: 14, lineHeight: 1.85, color: 'var(--muted)', margin: 0 }}>{item.a}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
 
 function FAQ() {
   const [open, setOpen] = useState<number | null>(0)
@@ -2968,78 +2610,6 @@ function FAQ() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CLOSING CTA (audit + new-business, side by side on desktop)
-// ─────────────────────────────────────────────────────────────────────────────
-function DualCTA() {
-  const [modal, setModal] = useState(false)
-  const [hover, setHover] = useState<0 | 1 | null>(null)
-
-  return (
-    <>
-      {modal && <BookCallModal onClose={() => setModal(false)} />}
-      <section className="dual-cta-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '68vh' }}>
-        {/* left — light */}
-        <div
-          onMouseEnter={() => setHover(0)} onMouseLeave={() => setHover(null)}
-          style={{
-            backgroundColor: 'var(--paper)', padding: 'clamp(56px, 7vw, 110px) clamp(24px, 5vw, 80px)',
-            display: 'flex', flexDirection: 'column', justifyContent: 'center',
-            position: 'relative', overflow: 'hidden',
-            transition: 'background-color 0.6s ease',
-          }}>
-          <div style={{ position: 'absolute', inset: 0, opacity: hover === 0 ? 1 : 0.8, transition: 'opacity 0.7s ease' }}><ForkBackdrop tone="light" dir="down" /></div>
-          <div style={{ position: 'relative', maxWidth: 620 }}>
-            <Reveal><Kicker>Schritt eins</Kicker></Reveal>
-            <MaskHeading
-              className="h-md"
-              style={{ marginTop: 22, marginBottom: 18 }}
-              lines={[<>Machen Sie das kostenlose</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>2-Minuten-</span></>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Sichtbarkeits-Check</span></>]}
-            />
-            <Reveal delay={0.1}>
-              <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', marginBottom: 30 }}>
-                Beantworten Sie in 2 Minuten 5 Fragen, um Ihren aktuellen Status bei Google und KI zu erfahren, und erhalten Sie einen Schritt-für-Schritt-Wachstumsplan
-              </p>
-            </Reveal>
-            <Reveal delay={0.16}>
-              <a href="#audit-quiz" className="btn btn-lg btn-electric">Sichtbarkeits-Check starten <span className="arw">→</span></a>
-            </Reveal>
-          </div>
-        </div>
-
-        {/* right — dark */}
-        <div
-          onMouseEnter={() => setHover(1)} onMouseLeave={() => setHover(null)}
-          style={{
-            backgroundColor: 'var(--ink)', color: '#fff',
-            padding: 'clamp(56px, 7vw, 110px) clamp(24px, 5vw, 80px)',
-            display: 'flex', flexDirection: 'column', justifyContent: 'center',
-            position: 'relative', overflow: 'hidden',
-          }}>
-          <div style={{ position: 'absolute', inset: 0, opacity: hover === 1 ? 1 : 0.8, transition: 'opacity 0.7s ease' }}><ForkBackdrop tone="dark" dir="up" /></div>
-          <div style={{ position: 'relative', maxWidth: 620 }}>
-            <Reveal><Kicker tone="light">Neugründung</Kicker></Reveal>
-            <MaskHeading
-              className="h-md"
-              style={{ marginTop: 22, marginBottom: 18 }}
-              lines={[<>Noch keine</>, <><span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>digitale Präsenz?</span></>, <>Starten Sie mit Google Maps.</>]}
-            />
-            <Reveal delay={0.1}>
-              <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.55)', marginBottom: 30 }}>
-                Keine Bewertungen, kein Google-Profil, keine Social-Media-Follower. Kein Problem. Wir erstellen und optimieren Ihr Google-Unternehmensprofil ab 149 € — die professionelle Grundlage, auf der alles Weitere aufbaut.
-              </p>
-            </Reveal>
-            <Reveal delay={0.16}>
-              <button onClick={() => setModal(true)} className="btn btn-lg btn-paper">Google Business Profil ab 149 € starten <span className="arw">→</span></button>
-              <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.35)', marginTop: 14 }}>Kein Check nötig. Wir sprechen kurz über Ihr Unternehmen und legen los.</p>
-            </Reveal>
-          </div>
-        </div>
-      </section>
-    </>
-  )
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // FOOTER
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -3055,7 +2625,7 @@ function Footer() {
             <a href={homeHref('audit-quiz')} className="btn btn-md btn-outline-dark">Sichtbarkeits-Check starten <span className="arw">→</span></a>
           </div>
           {[
-            { title: 'Navigation', items: [['Sichtbarkeit', 'audit'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], ['Ergebnisse', 'results'], ['FAQ', 'faq']] as [string, string][] },
+            { title: 'Navigation', items: [['Sichtbarkeit', 'modules'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], ['Ergebnisse', 'results'], ['FAQ', 'faq']] as [string, string][] },
           ].map(col => (
             <div key={col.title}>
               <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>{col.title}</p>
@@ -4222,6 +3792,10 @@ const responsiveCSS = `
   .nav-links { gap: 20px !important; }
 }
 
+@media (max-width: 900px) {
+  .maps-grid { grid-template-columns: 1fr !important; }
+}
+
 @media (max-width: 768px) {
   .hidden-mobile { display: none !important; }
   .show-mobile { display: flex !important; }
@@ -4358,18 +3932,14 @@ function LandingPage() {
       <main id="inhalt">
       <Hero />
       <div ref={widgetSentinel} style={{ height: 1, pointerEvents: 'none' }} />
-      <SearchReality />
-      <AboutRAG />
-      <ProblemSection />
-      <SolutionSection />
+      <MarketShift />
+      <LocalPromotion />
       <TwoRoutes />
       <Process />
-      <SystemSummary />
       <RealResults />
-      <AuditQuiz />
-      <LocalVisibilityExplained />
+      <RatgeberTeaser />
       <FAQ />
-      <DualCTA />
+      <AuditQuiz />
       </main>
       <Footer />
     </>
