@@ -1181,7 +1181,7 @@ function Hero() {
               <div className="mask-line" style={{ marginBottom: 34 }}>
                 <span style={{ ['--d' as any]: '0.42s' }}>
                   <p className="lead" style={{ color: 'rgba(255,255,255,0.62)', maxWidth: 480, margin: 0 }}>
-                    Wir machen Ihr Unternehmen dort sichtbar, wo Kunden heute suchen und entscheiden: bei Google Maps, Google, ChatGPT, Perplexity und in sozialen Netzwerken.
+                    Wir machen Ihr Unternehmen dort sichtbar, wo Kunden heute nach Ihnen suchen: bei Google Maps, Google, ChatGPT, Perplexity und in sozialen Netzwerken.
                   </p>
                 </span>
               </div>
@@ -1233,7 +1233,7 @@ function Hero() {
 function MarketShift() {
   const journey = ['Google Maps', 'Bewertungen', 'Website', 'KI-Antwort', 'Auswahl', 'Anruf']
   return (
-    <section id="markt" style={{ backgroundColor: 'var(--paper)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
+    <section id="markt" style={{ backgroundColor: 'var(--paper)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)' }}>
       <div style={{ ...SHELL }}>
         <Reveal><Kicker>Der Markt hat sich verändert</Kicker></Reveal>
 
@@ -1260,7 +1260,7 @@ function MarketShift() {
               <p className="eyebrow" style={{ color: 'var(--electric-2)', marginBottom: 18 }}>Heute</p>
               <p className="h-sm display" style={{ margin: '0 0 14px' }}>Die KI prüft Unternehmen — der Kunde wählt.</p>
               <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.62)', margin: '0 0 24px' }}>
-                Immer mehr Kunden fragen direkt ChatGPT, Perplexity oder die KI-Übersicht bei Google und bekommen zwei, drei Namen statt einer Linkliste. Welche Unternehmen darauf stehen, entscheidet die KI anhand dessen, was sie findet: Google-Maps-Eintrag, Bewertungen, Website und Erwähnungen. Der Kunde wählt dann nur noch aus dieser kurzen Liste.
+                Auf die Anfrage eines Kunden antwortet immer öfter direkt eine KI — mit zwei, drei Namen statt einer Linkliste. Welche Unternehmen darauf stehen, entscheidet die KI anhand dessen, was sie findet: Google-Maps-Eintrag, Bewertungen, Website und Erwähnungen. Der Kunde wählt dann nur noch aus dieser kurzen Liste.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
                 {journey.map((j, i) => (
@@ -1374,6 +1374,60 @@ const promoAreas: PromoArea[] = [
   },
 ]
 
+function PromoAreaRow({ area: a, n }: { area: PromoArea; n: number }) {
+  const [open, setOpen] = useState(false)
+  const panelId = `${a.id}-details`
+  return (
+    <article id={a.id} className={`promo-row${open ? ' is-open' : ''}`} style={{ borderBottom: '1px solid var(--line)', scrollMarginTop: 90 }}>
+      <button
+        type="button"
+        className="promo-row-head"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen(o => !o)}
+      >
+        <span className="display promo-row-num">{String(n).padStart(2, '0')}</span>
+        <span className="promo-row-title">
+          <span className="display" style={{ fontSize: 'clamp(19px, 1.8vw, 24px)', lineHeight: 1.2, color: 'var(--ink)' }}>{a.label}</span>
+          {a.accelerator && <span className="eyebrow" style={{ display: 'block', fontSize: 9.5, color: 'var(--electric)', marginTop: 8 }}>Beschleuniger</span>}
+        </span>
+        <span className="promo-row-change">{a.change ?? a.body}</span>
+        <span className="promo-row-toggle">
+          <span className="promo-row-more">{open ? 'Weniger' : 'Was wir tun'}</span>
+          <span className="promo-row-icon" aria-hidden>+</span>
+        </span>
+      </button>
+      <div id={panelId} className="promo-row-panel" role="region" aria-hidden={!open}>
+        <div style={{ overflow: 'hidden', minHeight: 0 }}>
+          <div className="promo-row-body">
+            <div>
+              <p className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)', marginBottom: 8 }}>Was wir tun</p>
+              <p style={{ fontSize: 16, lineHeight: 1.5, fontWeight: 600, color: 'var(--ink)', margin: '0 0 10px' }}>{a.claim}</p>
+              {a.accelerator && (
+                <p style={{ fontSize: 13.5, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 6px' }}>
+                  Organische Sichtbarkeit schafft die Grundlage — Anzeigen beschleunigen sie.
+                </p>
+              )}
+              <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 16 }}>
+                {a.links.map(l => (
+                  <a key={l.href} href={l.href} tabIndex={open ? 0 : -1} className="ul" style={{ fontSize: 13, fontWeight: 600, color: 'var(--electric)', width: 'fit-content' }}>{l.label} →</a>
+                ))}
+              </div>
+            </div>
+            <ul className="promo-row-items">
+              {a.items.map(it => (
+                <li key={it}>
+                  <span aria-hidden style={{ color: 'var(--electric)', fontWeight: 700 }}>·</span>{it}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </article>
+  )
+}
+
 function LocalPromotion() {
   const summary = [
     ['Ihre Website', 'erklärt Ihre Leistungen.'],
@@ -1383,7 +1437,7 @@ function LocalPromotion() {
     ['Suchmaschinen und KI-Systeme', 'verbinden diese Informationen.'],
   ]
   return (
-    <section id="modules" style={{ backgroundColor: 'var(--paper)', padding: '0 clamp(20px, 4vw, 48px) clamp(80px, 10vw, 140px)', scrollMarginTop: 90 }}>
+    <section id="modules" style={{ backgroundColor: 'var(--paper)', padding: '0 clamp(20px, 4vw, 48px) var(--sec-y)', scrollMarginTop: 90 }}>
       <div style={{ ...SHELL }}>
         <Reveal><Kicker>Die neue Realität</Kicker></Reveal>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(24px, 4vw, 72px)', alignItems: 'end', marginTop: 26, marginBottom: 'clamp(40px, 5vw, 64px)' }}>
@@ -1393,8 +1447,8 @@ function LocalPromotion() {
           />
           <Reveal delay={0.1}>
             <div>
-              <p style={{ fontSize: 'clamp(17px, 1.5vw, 20px)', lineHeight: 1.55, fontWeight: 600, color: 'var(--ink)', margin: 0, maxWidth: 540 }}>
-                Wir helfen lokalen Unternehmen, überall dort sichtbar und vertrauenswürdig zu erscheinen, wo Kunden heute suchen und entscheiden.
+              <p style={{ fontSize: 'clamp(17px, 1.5vw, 20px)', lineHeight: 1.6, fontWeight: 500, color: 'var(--ink)', margin: 0, maxWidth: 540 }}>
+                Lokale Sichtbarkeit ist kein einzelner Kanal und kein Trick. Sie entsteht, wenn Google-Profil, Website, Bewertungen und Erwähnungen dasselbe klare Bild Ihres Unternehmens zeigen.
               </p>
             </div>
           </Reveal>
@@ -1433,55 +1487,15 @@ function LocalPromotion() {
           </article>
         </Reveal>
 
-        {/* the other areas around it */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(14px, 1.6vw, 20px)', marginTop: 'clamp(14px, 1.6vw, 20px)' }}>
+        {/* the other areas — collapsed rows, open for details */}
+        <div style={{ marginTop: 'clamp(14px, 1.6vw, 20px)', borderTop: '1px solid var(--line)' }}>
           {promoAreas.map((a, i) => (
-            <Reveal key={a.id} delay={Math.min(i * 0.05, 0.25)} style={{ height: '100%' }}>
-              <article id={a.id} style={{
-                height: '100%', display: 'flex', flexDirection: 'column', borderRadius: 22,
-                padding: 'clamp(24px, 2.6vw, 34px)', scrollMarginTop: 90,
-                backgroundColor: a.accelerator ? 'var(--bone)' : 'var(--paper)',
-                border: a.accelerator ? '1px dashed rgba(7,7,12,0.22)' : '1px solid var(--line)',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 18, minHeight: 22 }}>
-                  <span className="display" style={{ fontSize: 13, color: 'var(--electric)', letterSpacing: '0.08em' }}>{String(i + 2).padStart(2, '0')}</span>
-                  {a.accelerator && <span className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)' }}>Beschleuniger</span>}
-                </div>
-                <h3 className="display" style={{ fontSize: 'clamp(20px, 1.9vw, 26px)', lineHeight: 1.18, margin: '0 0 16px' }}>{a.label}</h3>
-                {a.change ? (
-                  <div style={{ borderLeft: '2px solid var(--electric)', paddingLeft: 14, margin: '0 0 20px' }}>
-                    <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(7,7,12,0.4)', marginBottom: 6 }}>Was sich verändert hat</p>
-                    <p style={{ fontSize: 14.5, lineHeight: 1.6, color: 'var(--ink)', margin: 0 }}>{a.change}</p>
-                  </div>
-                ) : (
-                  <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 20px' }}>{a.body}</p>
-                )}
-                <p className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)', marginBottom: 8 }}>Was wir tun</p>
-                <p style={{ fontSize: 15, lineHeight: 1.5, fontWeight: 600, color: 'var(--ink)', margin: '0 0 10px' }}>{a.claim}</p>
-                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 22px' }}>
-                  {a.items.map(it => (
-                    <li key={it} style={{ display: 'flex', gap: 10, fontSize: 14, lineHeight: 1.5, color: 'var(--ink)', padding: '8px 0', borderTop: '1px solid var(--line-soft)' }}>
-                      <span aria-hidden style={{ color: 'var(--electric)', fontWeight: 700 }}>·</span>{it}
-                    </li>
-                  ))}
-                </ul>
-                {a.accelerator && (
-                  <p style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 18px' }}>
-                    Organische Sichtbarkeit schafft die Grundlage — Anzeigen beschleunigen sie.
-                  </p>
-                )}
-                <div style={{ marginTop: 'auto', display: 'flex', gap: 18, flexWrap: 'wrap' }}>
-                  {a.links.map(l => (
-                    <a key={l.href} href={l.href} className="ul" style={{ fontSize: 13, fontWeight: 600, color: 'var(--electric)', width: 'fit-content' }}>{l.label} →</a>
-                  ))}
-                </div>
-              </article>
-            </Reveal>
+            <PromoAreaRow key={a.id} area={a} n={i + 2} />
           ))}
         </div>
 
         {/* how it adds up */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(28px, 4vw, 72px)', alignItems: 'start', marginTop: 'clamp(64px, 8vw, 110px)', paddingTop: 'clamp(34px, 4vw, 54px)', borderTop: '1px solid var(--line)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(28px, 4vw, 72px)', alignItems: 'start', marginTop: 'clamp(64px, 8vw, 110px)' }}>
           <div>
             <Reveal><Kicker>Das Zusammenspiel</Kicker></Reveal>
             <MaskHeading
@@ -1518,43 +1532,31 @@ function LocalPromotion() {
 // 7 — Ratgeber: kurz einordnen, dann in die drei Artikel verweisen.
 function RatgeberTeaser() {
   return (
-    <section id="ratgeber" style={{ backgroundColor: 'var(--paper)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
-      <div style={{ ...SHELL }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(24px, 4vw, 72px)', alignItems: 'end', marginBottom: 'clamp(40px, 5vw, 64px)' }}>
+    <section id="ratgeber" style={{ backgroundColor: 'var(--paper)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)' }}>
+      <div className="ratgeber-row" style={{ ...SHELL, display: 'grid', gridTemplateColumns: 'minmax(0, 0.8fr) minmax(0, 2.2fr)', gap: 'clamp(24px, 4vw, 64px)', alignItems: 'stretch' }}>
+        <Reveal>
           <div>
-            <Reveal><Kicker>Ratgeber</Kicker></Reveal>
-            <MaskHeading
-              className="h-md"
-              style={{ marginTop: 22 }}
-              lines={[<>Was lokale Sichtbarkeit</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>heute wirklich bedeutet</span></>]}
-            />
-          </div>
-          <Reveal delay={0.1}>
-            <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: 0, maxWidth: 540 }}>
-              Lokale Sichtbarkeit ist kein einzelner Kanal und kein Trick. Sie entsteht, wenn Google-Profil, Website, Bewertungen und Erwähnungen dasselbe klare Bild Ihres Unternehmens zeigen.
+            <Kicker>Ratgeber</Kicker>
+            <p className="display" style={{ fontSize: 'clamp(20px, 1.9vw, 26px)', lineHeight: 1.2, margin: '18px 0 18px' }}>
+              Was lokale Sichtbarkeit <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>heute wirklich bedeutet</span>
             </p>
-          </Reveal>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'clamp(14px, 1.6vw, 20px)' }}>
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+              <a href="/ratgeber" className="ul" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--ink)' }}>Zum Ratgeber →</a>
+              <a href="/glossar" className="ul" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--electric)' }}>Glossar →</a>
+            </div>
+          </div>
+        </Reveal>
+        <div className="ratgeber-links" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 'clamp(16px, 2vw, 32px)' }}>
           {ratgeberArticles.map((a, i) => (
-            <Reveal key={a.slug} delay={Math.min(i * 0.06, 0.2)} style={{ height: '100%' }}>
-              <a href={`/ratgeber/${a.slug}`} style={{ height: '100%', display: 'flex', flexDirection: 'column', textDecoration: 'none', color: 'inherit', backgroundColor: 'var(--bone)', borderRadius: 22, padding: 'clamp(24px, 2.6vw, 34px)' }}>
+            <Reveal key={a.slug} delay={Math.min(0.06 + i * 0.06, 0.24)} style={{ height: '100%' }}>
+              <a href={`/ratgeber/${a.slug}`} className="ratgeber-link" style={{ height: '100%', display: 'flex', flexDirection: 'column', textDecoration: 'none', color: 'var(--ink)', borderTop: '2px solid var(--ink)', paddingTop: 18 }}>
                 <span className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)' }}>{String(i + 1).padStart(2, '0')} · {a.minutes} Min. Lesezeit</span>
-                <h3 className="display" style={{ fontSize: 'clamp(20px, 1.9vw, 26px)', lineHeight: 1.2, margin: '16px 0 12px' }}>{a.title}</h3>
-                <p style={{ fontSize: 14, lineHeight: 1.75, color: 'var(--muted)', margin: '0 0 20px' }}>{a.teaser}</p>
-                <span style={{ marginTop: 'auto', fontSize: 13, fontWeight: 600, color: 'var(--electric)' }}>Artikel lesen →</span>
+                <span className="display" style={{ fontSize: 'clamp(17px, 1.5vw, 20px)', lineHeight: 1.25, margin: '12px 0 14px' }}>{a.title}</span>
+                <span className="ratgeber-arrow" style={{ marginTop: 'auto', fontSize: 13, fontWeight: 600, color: 'var(--electric)' }}>Artikel lesen →</span>
               </a>
             </Reveal>
           ))}
         </div>
-
-        <Reveal delay={0.12}>
-          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginTop: 'clamp(26px, 3vw, 40px)' }}>
-            <a href="/ratgeber" className="ul" style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>Zum Ratgeber →</a>
-            <a href="/glossar" className="ul" style={{ fontSize: 14, fontWeight: 600, color: 'var(--electric)' }}>Alle Begriffe im Glossar →</a>
-          </div>
-        </Reveal>
       </div>
     </section>
   )
@@ -1948,30 +1950,30 @@ function TwoRoutes() {
   return (
     <>
       {modal && <BookCallModal onClose={() => setModal(false)} />}
-      <section id="start" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'clip' }}>
+      <section id="start" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'clip' }}>
         <div aria-hidden style={{ position: 'absolute', inset: 0, opacity: 0.55 }}><CrossBackdrop tone="dark" /></div>
         <div style={{ ...SHELL, position: 'relative' }}>
           <Reveal><Kicker tone="light">Zwei Wege</Kicker></Reveal>
-          <div style={{ marginTop: 26, marginBottom: 'clamp(44px, 5vw, 72px)', maxWidth: 900 }}>
+          <div style={{ marginTop: 20, marginBottom: 'clamp(28px, 3vw, 44px)', maxWidth: 900 }}>
             <MaskHeading
-              className="h-lg"
+              className="h-md"
               lines={[<>Wo steht Ihr</>, <><span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>Unternehmen heute?</span></>]}
             />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(28px, 4vw, 64px)' }}>
             <Reveal>
-              <div style={{ borderTop: '1px solid var(--line-dark)', paddingTop: 30, height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ borderTop: '1px solid var(--line-dark)', paddingTop: 24, height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <span className="eyebrow" style={{ fontSize: 10, color: 'var(--electric-2)' }}>Variante 01</span>
-                <h3 className="display" style={{ fontSize: 'clamp(21px, 2.2vw, 30px)', lineHeight: 1.2, margin: '16px 0 14px' }}>
+                <h3 className="display" style={{ fontSize: 'clamp(20px, 1.8vw, 26px)', lineHeight: 1.2, margin: '12px 0 10px' }}>
                   Sie sind bereits online — werden aber nicht ausreichend gefunden?
                 </h3>
-                <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.55)', margin: '0 0 24px' }}>
+                <p style={{ fontSize: 15, lineHeight: 1.65, color: 'rgba(255,255,255,0.55)', margin: '0 0 16px' }}>
                   Wir analysieren kostenlos, wie Ihr Unternehmen aktuell bei Google Maps, in der Google-Suche und in der KI-Suche dargestellt wird.
                 </p>
-                <div style={{ marginBottom: 28 }}>
+                <div style={{ marginBottom: 24 }}>
                   {routeA.map((r, i) => (
-                    <div key={r} style={{ display: 'flex', gap: 14, padding: '11px 0', borderTop: i === 0 ? 'none' : '1px solid var(--line-dark)' }}>
+                    <div key={r} style={{ display: 'flex', gap: 14, padding: '8px 0', borderTop: i === 0 ? 'none' : '1px solid var(--line-dark)' }}>
                       <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', paddingTop: 2 }}>{String(i + 1).padStart(2, '0')}</span>
                       <span style={{ fontSize: 14.5, color: 'rgba(255,255,255,0.8)' }}>{r}</span>
                     </div>
@@ -1984,30 +1986,30 @@ function TwoRoutes() {
             </Reveal>
 
             <Reveal delay={0.1}>
-              <div style={{ borderTop: '1px solid var(--line-dark)', paddingTop: 30, height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ borderTop: '1px solid var(--line-dark)', paddingTop: 24, height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <span className="eyebrow" style={{ fontSize: 10, color: 'var(--electric-2)' }}>Variante 02</span>
-                <h3 className="display" style={{ fontSize: 'clamp(21px, 2.2vw, 30px)', lineHeight: 1.2, margin: '16px 0 14px' }}>
+                <h3 className="display" style={{ fontSize: 'clamp(20px, 1.8vw, 26px)', lineHeight: 1.2, margin: '12px 0 10px' }}>
                   Sie starten gerade? Beginnen Sie mit Google Maps.
                 </h3>
-                <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.55)', margin: '0 0 18px' }}>
+                <p style={{ fontSize: 15, lineHeight: 1.65, color: 'rgba(255,255,255,0.55)', margin: '0 0 16px' }}>
                   Wir erstellen und optimieren Ihr Google-Unternehmensprofil — die professionelle Grundlage für Ihre lokale Sichtbarkeit.
                 </p>
-                <p className="display" style={{ fontSize: 'clamp(28px, 3vw, 42px)', color: 'var(--electric-2)', margin: '0 0 22px' }}>ab 149 €</p>
-                <div style={{ marginBottom: 28 }}>
+                <div style={{ marginBottom: 24 }}>
                   {routeB.map((r, i) => (
-                    <div key={r} style={{ display: 'flex', gap: 14, padding: '11px 0', borderTop: i === 0 ? 'none' : '1px solid var(--line-dark)' }}>
+                    <div key={r} style={{ display: 'flex', gap: 14, padding: '8px 0', borderTop: i === 0 ? 'none' : '1px solid var(--line-dark)' }}>
                       <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', paddingTop: 2 }}>{String(i + 1).padStart(2, '0')}</span>
                       <span style={{ fontSize: 14.5, color: 'rgba(255,255,255,0.8)' }}>{r}</span>
                     </div>
                   ))}
                 </div>
-                <div style={{ marginTop: 'auto' }}>
+                <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '12px 22px', flexWrap: 'wrap' }}>
                   <button onClick={() => setModal(true)} className="btn btn-lg btn-electric">
                     Google-Profil starten <span className="arw">→</span>
                   </button>
-                  <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.35)', margin: '14px 0 0' }}>
-                    Hinweis: Die Verifizierung des Profils muss Google teilweise direkt mit dem Inhaber durchführen.
-                  </p>
+                  <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6, whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>ab</span>
+                    <span className="display" style={{ fontSize: 24, color: '#fff' }}>149 €</span>
+                  </span>
                 </div>
               </div>
             </Reveal>
@@ -2033,12 +2035,12 @@ function Process() {
   const { ref, p } = useScrollProgress()
 
   return (
-    <section ref={ref} style={{ backgroundColor: 'var(--bone)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
+    <section ref={ref} style={{ backgroundColor: 'var(--bone)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)' }}>
       <div style={{ ...SHELL }}>
         <Reveal><Kicker>Der Ablauf</Kicker></Reveal>
         <MaskHeading
           className="h-lg"
-          style={{ marginTop: 26, marginBottom: 'clamp(48px, 6vw, 80px)', maxWidth: 900 }}
+          style={{ marginTop: 26, marginBottom: 'clamp(36px, 4vw, 56px)', maxWidth: 900 }}
           lines={[<>So bauen wir Ihre</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>lokale Sichtbarkeit</span> auf</>]}
         />
 
@@ -2058,18 +2060,18 @@ function Process() {
             {steps.map((s, i) => (
               <Reveal key={s.num} threshold={0.3}>
                 <div className="step-row" style={{
-                  display: 'grid', gridTemplateColumns: 'minmax(0, 0.42fr) minmax(0, 0.58fr)',
-                  gap: 'clamp(20px, 3vw, 48px)',
-                  padding: 'clamp(34px, 4vw, 56px) 0',
+                  display: 'grid', gridTemplateColumns: 'minmax(0, 0.5fr) minmax(0, 0.5fr)',
+                  gap: 'clamp(20px, 3vw, 48px)', alignItems: 'center',
+                  padding: 'clamp(22px, 2.4vw, 32px) 0',
                   borderTop: '1px solid var(--line)',
                   marginLeft: i % 2 === 1 ? 'clamp(0px, 4vw, 56px)' : 0,
                 }}>
-                  <div>
-                    <div className="display" style={{ fontSize: 'clamp(54px, 8vw, 104px)', lineHeight: 0.9, marginBottom: 18, color: 'transparent', WebkitTextStroke: '1.6px #2600FF' }}>{s.num}</div>
-                    <h3 className="display" style={{ fontSize: 'clamp(19px, 2vw, 28px)', lineHeight: 1.18, margin: 0 }}>{s.title}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(16px, 2vw, 28px)' }}>
+                    <div className="display" style={{ flex: '0 0 auto', minWidth: '1.25em', fontSize: 'clamp(44px, 5vw, 72px)', lineHeight: 0.9, color: 'transparent', WebkitTextStroke: '1.4px #2600FF' }}>{s.num}</div>
+                    <h3 className="display" style={{ fontSize: 'clamp(18px, 1.7vw, 24px)', lineHeight: 1.2, margin: 0 }}>{s.title}</h3>
                   </div>
-                  <div style={{ paddingTop: 'clamp(0px, 6vw, 88px)' }}>
-                    <p style={{ fontSize: 15, lineHeight: 1.85, color: 'var(--muted)', margin: 0, maxWidth: 460 }}>{s.desc}</p>
+                  <div>
+                    <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: 0, maxWidth: 500 }}>{s.desc}</p>
                   </div>
                 </div>
               </Reveal>
@@ -2237,7 +2239,7 @@ const caseStudies = [
     Illust: IllustCaseAI,
     startingPoint: 'Eine Stadt voller Anbieter. Einfaches SEO reichte nicht mehr aus.',
     approach: 'Kombination aus Google-Maps-Ranking und KI-Suchoptimierung für ChatGPT und Gemini.',
-    result: 'Top 3 bei Google Maps, dazu Empfehlungen in ChatGPT und Gemini. Jetzt gewinnt er Leads, von denen die Konkurrenz nicht einmal weiß, dass es sie gibt.',
+    result: 'Top 3 bei Google Maps, dazu Empfehlungen in ChatGPT und Gemini.',
     quote: "\"Wir gewinnen jetzt hochwertige Leads, von denen unsere Konkurrenz nicht einmal weiß, dass es sie gibt.\"",
   },
 ]
@@ -2266,9 +2268,9 @@ function RealResults() {
   }
 
   return (
-    <section id="results" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px) clamp(170px, 18vw, 250px)', position: 'relative', overflow: 'hidden' }}>
+    <section id="results" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'var(--sec-y) clamp(20px, 4vw, 48px) clamp(110px, 11vw, 160px)', position: 'relative', overflow: 'hidden' }}>
       {/* growth graph lives in its own strip under the content, so its line never crosses text */}
-      <div aria-hidden style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 'clamp(220px, 24vw, 320px)', pointerEvents: 'none' }}>
+      <div aria-hidden style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 'clamp(130px, 13vw, 190px)', pointerEvents: 'none' }}>
         <GrowthBackdrop />
       </div>
 
@@ -2316,10 +2318,10 @@ function RealResults() {
                 transition: 'opacity 0.45s ease, visibility 0.45s',
               }}>
                 <div>
-                  <p className="serif" style={{ fontSize: 'clamp(22px, 2.3vw, 32px)', lineHeight: 1.25, letterSpacing: '-0.01em', color: '#fff', margin: '0 0 24px', maxWidth: 560 }}>
+                  <p className="serif" style={{ fontSize: 'clamp(22px, 2.3vw, 32px)', lineHeight: 1.25, letterSpacing: '-0.01em', color: '#fff', margin: '0 0 20px', maxWidth: 560 }}>
                     {c.quote}
                   </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 30 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
                     <div style={{ width: 44, height: 44, borderRadius: '50%', backgroundColor: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13.5 }}>{c.initials}</div>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 14.5 }}>{c.name}</div>
@@ -2332,7 +2334,7 @@ function RealResults() {
                       { label: 'Unser Ansatz', value: c.approach },
                       { label: 'Das Ergebnis', value: c.result, accent: true },
                     ].map(row => (
-                      <div key={row.label} className="res-row" style={{ display: 'grid', gridTemplateColumns: '132px minmax(0,1fr)', gap: 18, padding: '16px 0', borderTop: '1px solid var(--line-dark)' }}>
+                      <div key={row.label} className="res-row" style={{ display: 'grid', gridTemplateColumns: '132px minmax(0,1fr)', gap: 18, padding: '12px 0', borderTop: '1px solid var(--line-dark)' }}>
                         <span className="eyebrow" style={{ fontSize: 9.5, color: row.accent ? 'var(--electric-2)' : 'rgba(255,255,255,0.35)', paddingTop: 3 }}>{row.label}</span>
                         <span style={{ fontSize: 14.5, lineHeight: 1.7, color: row.accent ? '#fff' : 'rgba(255,255,255,0.7)', fontWeight: row.accent ? 600 : 400 }}>{row.value}</span>
                       </div>
@@ -2350,8 +2352,8 @@ function RealResults() {
           })}
         </div>
 
-        {/* progress dots */}
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 'clamp(36px, 4vw, 56px)' }}>
+        {/* progress dots — mobile only (desktop has the tabs above) */}
+        <div className="res-dots" style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 32 }}>
           {caseStudies.map((_, i) => (
             <button key={i} aria-label={`Fallstudie ${i + 1}`} onClick={() => setActive(i)}
               style={{ width: active === i ? 32 : 8, height: 4, borderRadius: 4, border: 'none', padding: 0, cursor: 'pointer', backgroundColor: active === i ? 'var(--electric-2)' : 'rgba(255,255,255,0.2)', transition: `all 0.45s ${EASE}` }} />
@@ -2414,7 +2416,7 @@ function AuditQuiz() {
   return (
     <>
     {modal && <BookCallModal onClose={() => setModal(false)} />}
-    <section id="audit-quiz" style={{ backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(80px, 10vw, 130px) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden' }}>
+    <section id="audit-quiz" style={{ backgroundColor: 'var(--electric)', color: '#fff', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden' }}>
       <ScanBackdrop />
       <div className="audit-grid" style={{ ...SHELL, position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0, 500px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
         <div className="audit-copy">
@@ -2569,7 +2571,7 @@ const faqs = [
 function FAQ() {
   const [open, setOpen] = useState<number | null>(0)
   return (
-    <section id="faq" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
+    <section id="faq" style={{ backgroundColor: 'var(--bone)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)' }}>
       <JsonLd data={{
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
@@ -3805,9 +3807,60 @@ const responsiveCSS = `
   .nav-links { gap: 20px !important; }
 }
 
-@media (max-width: 900px) {
-  .maps-grid { grid-template-columns: 1fr !important; }
+:root { --sec-y: clamp(64px, 7vw, 96px); }
+
+.promo-row-head {
+  all: unset; box-sizing: border-box; cursor: pointer; width: 100%;
+  display: grid; grid-template-columns: 56px minmax(0, 0.85fr) minmax(0, 1.25fr) 170px;
+  column-gap: clamp(16px, 2.4vw, 40px); align-items: center;
+  padding: clamp(20px, 2.2vw, 28px) 0;
 }
+.promo-row-head:focus-visible { outline: 2px solid var(--electric); outline-offset: 4px; border-radius: 6px; }
+.promo-row-num { font-size: 13px; color: var(--electric); letter-spacing: 0.08em; align-self: start; padding-top: 6px; }
+.promo-row-title { align-self: start; }
+.promo-row-change { font-size: 14.5px; line-height: 1.6; color: var(--muted); }
+.promo-row-toggle { display: inline-flex; align-items: center; gap: 12px; justify-self: end; }
+.promo-row-more { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; }
+.promo-row-icon {
+  width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 20px; line-height: 1; color: var(--ink);
+  transition: transform 0.35s ease, background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.promo-row-head:hover .promo-row-icon { border-color: var(--electric); color: var(--electric); }
+.promo-row.is-open .promo-row-icon { transform: rotate(45deg); background-color: var(--electric); border-color: var(--electric); color: #fff; }
+.promo-row-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.4s ease; }
+.promo-row.is-open .promo-row-panel { grid-template-rows: 1fr; }
+.promo-row-body {
+  display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.25fr);
+  column-gap: clamp(16px, 2.4vw, 40px); row-gap: 18px;
+  padding: 0 calc(170px + clamp(16px, 2.4vw, 40px)) clamp(24px, 2.6vw, 34px) calc(56px + clamp(16px, 2.4vw, 40px));
+}
+.promo-row-items { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); column-gap: 24px; }
+.promo-row-items li { display: flex; gap: 10px; font-size: 14px; line-height: 1.5; color: var(--ink); padding: 8px 0; border-top: 1px solid var(--line-soft); }
+
+.ratgeber-link { transition: border-color 0.25s ease; }
+.ratgeber-link:hover { border-top-color: var(--electric) !important; }
+.ratgeber-link .ratgeber-arrow { transition: transform 0.25s ease; display: inline-block; }
+.ratgeber-link:hover .ratgeber-arrow { transform: translateX(4px); }
+
+@media (min-width: 769px) {
+  .res-dots { display: none !important; }
+}
+
+@media (max-width: 900px) {
+  .ratgeber-row { grid-template-columns: 1fr !important; }
+  .ratgeber-links { grid-template-columns: 1fr !important; gap: 0 !important; }
+  .ratgeber-link { padding: 16px 0 !important; border-top-width: 1px !important; }
+  .ratgeber-link .ratgeber-arrow { display: none; }
+  .maps-grid { grid-template-columns: 1fr !important; }
+  .promo-row-head { grid-template-columns: 36px minmax(0, 1fr) auto; column-gap: 16px; row-gap: 10px; }
+  .promo-row-change { grid-column: 2 / 4; grid-row: 2; font-size: 14px; }
+  .promo-row-toggle { grid-column: 3; grid-row: 1; align-self: start; }
+  .promo-row-more { display: none; }
+  .promo-row-body { grid-template-columns: 1fr; padding: 0 0 24px 52px; }
+}
+
 
 @media (max-width: 768px) {
   .hidden-mobile { display: none !important; }
