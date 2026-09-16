@@ -905,6 +905,117 @@ function BookCallModal({ onClose }: { onClose: () => void }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// PROFILE ORDER — Google-Unternehmensprofil (einmalig) + optional a monthly website package
+// ─────────────────────────────────────────────────────────────────────────────
+type WebsiteAddon = '' | 'onepager' | 'live'
+
+const PROFILE_PRICE = '149 €'
+const websiteAddons: { id: Exclude<WebsiteAddon, ''>; title: string; price: string; items: string[] }[] = [
+  { id: 'onepager', title: 'Onepager-Website', price: '29 €', items: ['Ihre Website auf einer Seite'] },
+  { id: 'live', title: 'Lebendige Website', price: '199 €', items: ['Website mit SEO', '5 Artikel pro Monat', 'Social-Media-Betreuung: 5 Posts und 10 Reels pro Monat'] },
+]
+
+function ProfileOrderModal({ onClose, initialAddon = '' }: { onClose: () => void; initialAddon?: WebsiteAddon }) {
+  const [addon, setAddon] = useState<WebsiteAddon>(initialAddon)
+  const [name, setName] = useState('')
+  const [company, setCompany] = useState('')
+  const [contact, setContact] = useState('')
+  const [done, setDone] = useState(false)
+  const chosen = websiteAddons.find(w => w.id === addon)
+  const canSend = name.trim() !== '' && contact.trim() !== ''
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  const input: React.CSSProperties = { width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 8, boxSizing: 'border-box', color: 'var(--ink)', backgroundColor: '#fff' }
+
+  const Summary = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, backgroundColor: '#F7F6FF', border: '1px solid #E4DFFF', borderRadius: 14, padding: '12px 16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 13.5 }}>
+        <span>Google-Unternehmensprofil</span>
+        <strong style={{ whiteSpace: 'nowrap' }}>{PROFILE_PRICE} <span style={{ fontWeight: 500, color: 'var(--muted)' }}>einmalig</span></strong>
+      </div>
+      {chosen && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 13.5 }}>
+          <span>{chosen.title}</span>
+          <strong style={{ whiteSpace: 'nowrap' }}>{chosen.price} <span style={{ fontWeight: 500, color: 'var(--muted)' }}>pro Monat</span></strong>
+        </div>
+      )}
+    </div>
+  )
+
+  return (
+    <div onClick={onClose} className="order-overlay"
+      style={{ position: 'fixed', inset: 0, zIndex: 200, backgroundColor: 'rgba(7,7,12,0.55)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
+      <div role="dialog" aria-modal="true" aria-labelledby="order-title" onClick={e => e.stopPropagation()}
+        style={{ backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 24, boxShadow: '0 40px 90px rgba(7,7,12,0.35)', maxWidth: 520, width: '100%', padding: 'clamp(22px, 4vw, 34px)', position: 'relative', margin: 'auto' }}>
+        <button onClick={onClose} aria-label="Schließen" style={{ position: 'absolute', top: 14, right: 14, background: 'none', border: 'none', cursor: 'pointer', color: '#5c5c5c', lineHeight: 1, padding: 4 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg>
+        </button>
+
+        {!done ? (
+          <>
+            <p className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)', marginBottom: 10 }}>Einmalige Einrichtung</p>
+            <h2 id="order-title" style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-0.02em', margin: '0 0 6px', paddingRight: 28 }}>Google-Unternehmensprofil einrichten</h2>
+            <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: '0 0 18px' }}>
+              <strong style={{ color: 'var(--ink)' }}>{PROFILE_PRICE} einmalig</strong> — wir erstellen oder optimieren Ihr Profil. Hinterlassen Sie Ihre Kontaktdaten, wir melden uns zur Abstimmung.
+            </p>
+
+            <input style={input} value={name} onChange={e => setName(e.target.value)} placeholder="Ihr Name" autoComplete="name" />
+            <input style={input} value={company} onChange={e => setCompany(e.target.value)} placeholder="Name Ihres Unternehmens" autoComplete="organization" />
+            <input style={{ ...input, marginBottom: 18 }} value={contact} onChange={e => setContact(e.target.value)} placeholder="Telefon oder E-Mail" autoComplete="email" />
+
+            <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(7,7,12,0.45)', marginBottom: 8 }}>Optional dazu · monatlich</p>
+            <div style={{ display: 'grid', gap: 8, marginBottom: 16 }}>
+              {websiteAddons.map(w => {
+                const on = addon === w.id
+                return (
+                  <label key={w.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', cursor: 'pointer', padding: '12px 14px', borderRadius: 14, border: `1px solid ${on ? '#2600FF' : 'rgba(7,7,12,0.12)'}`, backgroundColor: on ? '#F4F2FF' : '#fff', transition: 'all 0.2s ease' }}>
+                    <input type="checkbox" checked={on} onChange={() => setAddon(on ? '' : w.id)} style={{ width: 18, height: 18, marginTop: 1, accentColor: '#2600FF', flexShrink: 0 }} />
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 600, fontSize: 14.5 }}>{w.title}</span>
+                        <span style={{ fontWeight: 700, fontSize: 14.5, whiteSpace: 'nowrap' }}>{w.price} <span style={{ fontWeight: 500, fontSize: 12.5, color: 'var(--muted)' }}>pro Monat</span></span>
+                      </span>
+                      <span style={{ display: 'block', fontSize: 12.5, lineHeight: 1.55, color: 'var(--muted)', marginTop: 4 }}>
+                        {w.items.map((it, i) => <span key={it} style={{ display: 'block' }}>{i === 0 && w.items.length === 1 ? '' : '· '}{it}</span>)}
+                      </span>
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+
+            <Summary />
+
+            <button type="button" disabled={!canSend} onClick={() => canSend && setDone(true)}
+              style={{ width: '100%', marginTop: 16, padding: '13px 20px', borderRadius: 999, border: 'none', backgroundColor: canSend ? '#2600FF' : '#e5e7eb', color: canSend ? '#fff' : '#9ca3af', fontWeight: 600, fontSize: 14.5, cursor: canSend ? 'pointer' : 'default', fontFamily: 'inherit' }}>
+              Anfrage senden
+            </button>
+            <p style={{ fontSize: 11.5, color: '#9ca3af', lineHeight: 1.6, margin: '10px 0 0' }}>
+              Die Anfrage ist noch keine Bestellung. Wir klären alles persönlich mit Ihnen, bevor Kosten entstehen.
+            </p>
+          </>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '8px 0' }}>
+            <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: '#EEEBFF', color: '#2600FF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 24, fontWeight: 700 }}>✓</div>
+            <h2 id="order-title" style={{ fontWeight: 700, fontSize: 21, margin: '0 0 10px' }}>Danke, {name.trim()}!</h2>
+            <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.7, margin: '0 0 16px' }}>
+              Wir melden uns unter <strong style={{ color: 'var(--ink)' }}>{contact}</strong> und besprechen die Einrichtung mit Ihnen.
+            </p>
+            <div style={{ textAlign: 'left', marginBottom: 18 }}><Summary /></div>
+            <button type="button" onClick={onClose} style={{ padding: '10px 26px', borderRadius: 999, border: '1px solid rgba(7,7,12,0.15)', backgroundColor: '#fff', fontWeight: 500, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>Schließen</button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // ROUTING HELPERS — plain-anchor navigation, no router lib. A link to a page
 // anchor needs "/#anchor" from a standalone service page, but "#anchor" when
 // already on the homepage.
@@ -1192,7 +1303,7 @@ function Hero() {
                 <span style={{ ['--d' as any]: '0.5s' }}>
                   <span style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                     <a href="#audit-quiz" className="btn btn-lg btn-paper">Kostenlosen Sichtbarkeits-Check starten <span className="arw">→</span></a>
-                    <a href="#start" className="btn btn-lg btn-outline-dark">Google Business Profil ab 149 €</a>
+                    <a href="#start" className="btn btn-lg btn-outline-dark">Google-Profil · 149 € einmalig</a>
                   </span>
                 </span>
               </div>
@@ -1469,7 +1580,7 @@ function LocalPromotion() {
                 <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.6)', margin: '0 0 30px', maxWidth: 480 }}>{mapsArea.body}</p>
                 <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                   <a href={mapsArea.links[0].href} className="btn btn-md btn-paper">{mapsArea.links[0].label} <span className="arw">→</span></a>
-                  <a href="#start" className="btn btn-md btn-outline-dark">Profil ab 149 €</a>
+                  <a href="#start" className="btn btn-md btn-outline-dark">Profil · 149 € einmalig</a>
                 </div>
               </div>
               <div>
@@ -1932,7 +2043,7 @@ function ServiceSelector() {
 // PROCESS
 // ─────────────────────────────────────────────────────────────────────────────
 function TwoRoutes() {
-  const [modal, setModal] = useState(false)
+  const [order, setOrder] = useState<null | WebsiteAddon>(null)
   const routeA = [
     'Analyse Ihrer aktuellen Sichtbarkeit',
     'Stärken und Schwachstellen',
@@ -1951,7 +2062,7 @@ function TwoRoutes() {
 
   return (
     <>
-      {modal && <BookCallModal onClose={() => setModal(false)} />}
+      {order !== null && <ProfileOrderModal initialAddon={order} onClose={() => setOrder(null)} />}
       <section id="start" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'clip' }}>
         <div aria-hidden style={{ position: 'absolute', inset: 0, opacity: 0.55 }}><CrossBackdrop tone="dark" /></div>
         <div style={{ ...SHELL, position: 'relative' }}>
@@ -1975,7 +2086,7 @@ function TwoRoutes() {
                 </p>
                 <div style={{ marginBottom: 24 }}>
                   {routeA.map((r, i) => (
-                    <div key={r} style={{ display: 'flex', gap: 14, padding: '8px 0', borderTop: i === 0 ? 'none' : '1px solid var(--line-dark)' }}>
+                    <div key={r} style={{ display: 'flex', gap: 14, padding: '7px 0', borderTop: i === 0 ? 'none' : '1px solid var(--line-dark)' }}>
                       <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', paddingTop: 2 }}>{String(i + 1).padStart(2, '0')}</span>
                       <span style={{ fontSize: 14.5, color: 'rgba(255,255,255,0.8)' }}>{r}</span>
                     </div>
@@ -1996,21 +2107,30 @@ function TwoRoutes() {
                 <p style={{ fontSize: 15, lineHeight: 1.65, color: 'rgba(255,255,255,0.55)', margin: '0 0 16px' }}>
                   Wir erstellen und optimieren Ihr Google-Unternehmensprofil — die professionelle Grundlage für Ihre lokale Sichtbarkeit.
                 </p>
-                <div style={{ marginBottom: 24 }}>
+                <div style={{ marginBottom: 20 }}>
                   {routeB.map((r, i) => (
-                    <div key={r} style={{ display: 'flex', gap: 14, padding: '8px 0', borderTop: i === 0 ? 'none' : '1px solid var(--line-dark)' }}>
+                    <div key={r} style={{ display: 'flex', gap: 14, padding: '7px 0', borderTop: i === 0 ? 'none' : '1px solid var(--line-dark)' }}>
                       <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', paddingTop: 2 }}>{String(i + 1).padStart(2, '0')}</span>
                       <span style={{ fontSize: 14.5, color: 'rgba(255,255,255,0.8)' }}>{r}</span>
                     </div>
                   ))}
                 </div>
+                <div className="route-addons" style={{ display: 'flex', alignItems: 'center', gap: '8px 10px', flexWrap: 'wrap', margin: '-4px 0 20px' }}>
+                  <span style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.5)' }}>Optional dazu:</span>
+                  {websiteAddons.map(w => (
+                    <button key={w.id} type="button" onClick={() => setOrder(w.id)} className="route-addon"
+                      style={{ fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,0.85)', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 999, padding: '6px 12px', cursor: 'pointer' }}>
+                      {w.title} · {w.price}/Monat
+                    </button>
+                  ))}
+                </div>
                 <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '12px 22px', flexWrap: 'wrap' }}>
-                  <button onClick={() => setModal(true)} className="btn btn-lg btn-electric">
+                  <button onClick={() => setOrder('')} className="btn btn-lg btn-electric">
                     Google-Profil starten <span className="arw">→</span>
                   </button>
                   <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6, whiteSpace: 'nowrap' }}>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>ab</span>
                     <span className="display" style={{ fontSize: 24, color: '#fff' }}>149 €</span>
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>einmalig</span>
                   </span>
                 </div>
               </div>
@@ -2370,41 +2490,47 @@ function RealResults() {
 // AUDIT QUIZ
 // ─────────────────────────────────────────────────────────────────────────────
 function AuditQuiz() {
-  // Lead form in five short steps. It collects what we need for the analysis and
-  // for the first call; the analysis itself is done by a person afterwards.
-  const [modal, setModal] = useState(false)
+  // Three short steps: what exists → links → contact. A person reviews the links
+  // afterwards and sends back concrete next steps.
+  const [order, setOrder] = useState(false)
   const [step, setStep] = useState(1)
-  const [concern, setConcern] = useState('')
   const [presence, setPresence] = useState<string[]>([])
+  const [link, setLink] = useState('')
   const [industry, setIndustry] = useState('')
-  const [region, setRegion] = useState('')
-  const [budget, setBudget] = useState('')
+  const [city, setCity] = useState('')
   const [name, setName] = useState('')
   const [company, setCompany] = useState('')
   const [contact, setContact] = useState('')
-  const TOTAL = 5
+  const TOTAL = 3
   const DONE = TOTAL + 1
+  const NONE = 'Noch nichts davon'
+  const P_MAPS = 'Google-Unternehmensprofil'
+  const P_SITE = 'Eigene Website'
+  const P_SOCIAL = 'Social-Media-Profile'
 
   const next = () => setStep(s => Math.min(s + 1, DONE))
   const back = () => setStep(s => Math.max(s - 1, 1))
-  const reset = () => { setStep(1); setConcern(''); setPresence([]); setIndustry(''); setRegion(''); setBudget(''); setName(''); setCompany(''); setContact('') }
+  const reset = () => { setStep(1); setPresence([]); setLink(''); setIndustry(''); setCity(''); setName(''); setCompany(''); setContact('') }
   const togglePresence = (v: string) => setPresence(p => {
-    if (v === 'Noch nichts davon') return p.includes(v) ? [] : [v]
-    const without = p.filter(x => x !== 'Noch nichts davon')
+    if (v === NONE) return p.includes(v) ? [] : [v]
+    const without = p.filter(x => x !== NONE)
     return without.includes(v) ? without.filter(x => x !== v) : [...without, v]
   })
+  const has = (v: string) => presence.includes(v)
+  const canStep2 = industry.trim() !== '' && city.trim() !== ''
 
   const h3: React.CSSProperties = { fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '0 0 6px', lineHeight: 1.3 }
   const hint: React.CSSProperties = { fontSize: 13, color: 'var(--muted)', margin: '0 0 16px', lineHeight: 1.6 }
-  const input: React.CSSProperties = { width: '100%', padding: '12px 14px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', marginBottom: 10, color: 'var(--ink)', backgroundColor: '#fff' }
+  const label: React.CSSProperties = { display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--ink)', margin: '0 0 6px' }
+  const input: React.CSSProperties = { width: '100%', padding: '12px 14px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', marginBottom: 12, color: 'var(--ink)', backgroundColor: '#fff' }
   const primary = (disabled: boolean): React.CSSProperties => ({ backgroundColor: disabled ? '#e5e7eb' : '#2600FF', color: disabled ? '#9ca3af' : '#fff', fontWeight: 600, fontSize: 14, padding: '13px 20px', borderRadius: 999, border: 'none', cursor: disabled ? 'default' : 'pointer', width: '100%', fontFamily: 'inherit', transition: 'background-color 0.2s' })
 
-  const Option = ({ label, selected, onClick, multi }: { label: string; selected: boolean; onClick: () => void; multi?: boolean }) => (
+  const Option = ({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) => (
     <button type="button" onClick={onClick} aria-pressed={selected}
       style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, width: '100%', padding: '12px 16px', textAlign: 'left', backgroundColor: selected ? '#F4F2FF' : '#fff', border: `1px solid ${selected ? '#2600FF' : 'rgba(7,7,12,0.12)'}`, borderRadius: 14, fontWeight: 500, fontSize: 14, color: 'var(--ink)', cursor: 'pointer', marginBottom: 8, transition: 'all 0.2s ease', fontFamily: 'inherit' }}>
       {label}
       <span aria-hidden style={{
-        flexShrink: 0, width: 18, height: 18, borderRadius: multi ? 5 : '50%',
+        flexShrink: 0, width: 18, height: 18, borderRadius: 5,
         border: `1.5px solid ${selected ? '#2600FF' : 'rgba(7,7,12,0.25)'}`,
         backgroundColor: selected ? '#2600FF' : 'transparent', color: '#fff', fontSize: 11, lineHeight: '15px', textAlign: 'center',
       }}>{selected ? '✓' : ''}</span>
@@ -2417,7 +2543,7 @@ function AuditQuiz() {
 
   return (
     <>
-    {modal && <BookCallModal onClose={() => setModal(false)} />}
+    {order && <ProfileOrderModal onClose={() => setOrder(false)} />}
     <section id="audit-quiz" style={{ backgroundColor: 'var(--electric)', color: '#fff', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden' }}>
       <ScanBackdrop />
       <div className="audit-grid" style={{ ...SHELL, position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0, 500px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
@@ -2431,15 +2557,15 @@ function AuditQuiz() {
           <MaskHeading
             className="h-md"
             style={{ marginBottom: 24, color: '#fff' }}
-            lines={[<>Finden wir heraus, wo Ihr</>, <><span className="serif italic-serif">Unternehmen heute steht.</span></>]}
+            lines={[<>Wir sagen Ihnen,</>, <><span className="serif italic-serif">was jetzt zu tun ist.</span></>]}
           />
           <Reveal delay={0.12}>
             <p style={{ fontSize: 16, lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', marginBottom: 34, maxWidth: 460 }}>
-              Wir analysieren Ihre aktuelle Präsenz und zeigen Ihnen konkret, welche Schritte Ihre lokale Sichtbarkeit verbessern. Beantworten Sie fünf kurze Fragen und hinterlassen Sie Ihre Kontaktdaten — wir melden uns persönlich bei Ihnen.
+              Zeigen Sie uns, was es von Ihrem Unternehmen schon gibt: Google-Maps-Eintrag, Website, Social Media. Wir sehen uns alles an und schicken Ihnen eine klare Anleitung — was Sie zuerst verbessern sollten und welche Schritte danach kommen.
             </p>
           </Reveal>
           <div className="audit-bullets" style={{ display: 'flex', flexDirection: 'column' }}>
-            {['Fünf kurze Fragen, keine Vorbereitung nötig', 'Ein Berater meldet sich innerhalb eines Werktags', 'Ehrliche Einschätzung statt Verkaufsgespräch'].map((b, i) => (
+            {['Drei kurze Schritte — Ihre Links genügen', 'Konkrete Anleitung statt allgemeiner Tipps', 'Ehrlich: auch was Sie selbst erledigen können'].map((b, i) => (
               <Reveal key={b} delay={0.16 + i * 0.07}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
                   <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em' }}>{String(i + 1).padStart(2, '0')}</span>
@@ -2451,8 +2577,8 @@ function AuditQuiz() {
           <Reveal delay={0.4}>
             <div style={{ marginTop: 34, paddingTop: 26, borderTop: '1px solid rgba(255,255,255,0.2)' }}>
               <p style={{ fontSize: 17, fontWeight: 700, color: '#fff', margin: '0 0 6px' }}>Noch keine digitale Präsenz?</p>
-              <p style={{ fontSize: 14, lineHeight: 1.7, color: 'rgba(255,255,255,0.7)', margin: '0 0 16px', maxWidth: 440 }}>Kein Check nötig. Wir sprechen kurz über Ihr Unternehmen und legen los.</p>
-              <button onClick={() => setModal(true)} className="btn btn-md btn-paper">Google Business Profil ab 149 € starten <span className="arw">→</span></button>
+              <p style={{ fontSize: 14, lineHeight: 1.7, color: 'rgba(255,255,255,0.7)', margin: '0 0 16px', maxWidth: 440 }}>Dann starten Sie direkt mit dem Google-Unternehmensprofil — auf Wunsch mit Website.</p>
+              <button onClick={() => setOrder(true)} className="btn btn-md btn-paper">Google-Profil · 149 € einmalig <span className="arw">→</span></button>
             </div>
           </Reveal>
         </div>
@@ -2461,7 +2587,7 @@ function AuditQuiz() {
           {step <= TOTAL && (
             <div style={{ marginBottom: 22 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                <span style={{ fontSize: 11, fontWeight: 500, color: '#4b5563' }}>Frage {step} von {TOTAL}</span>
+                <span style={{ fontSize: 11, fontWeight: 500, color: '#4b5563' }}>Schritt {step} von {TOTAL}</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: `repeat(${TOTAL}, 1fr)`, gap: 4 }}>
                 {Array.from({ length: TOTAL }, (_, i) => (
@@ -2473,56 +2599,40 @@ function AuditQuiz() {
 
           {step === 1 && (
             <div>
-              <h3 style={h3}>Was beschäftigt Sie gerade am meisten?</h3>
-              <p style={hint}>Wählen Sie das, was am ehesten zutrifft.</p>
-              {['Zu wenige Anfragen', 'Mitbewerber werden eher gefunden', 'Bei Google Maps oder in der KI-Suche kaum sichtbar', 'Zu wenige oder veraltete Bewertungen', 'Ich starte gerade erst', 'Etwas anderes'].map(o => (
-                <Option key={o} label={o} selected={concern === o} onClick={() => { setConcern(o); next() }} />
+              <h3 style={h3}>Was gibt es von Ihrem Unternehmen bereits?</h3>
+              <p style={hint}>Mehrfachauswahl möglich.</p>
+              {[P_MAPS, P_SITE, P_SOCIAL, NONE].map(o => (
+                <Option key={o} label={o} selected={has(o)} onClick={() => togglePresence(o)} />
               ))}
+              <button type="button" disabled={!presence.length} onClick={next} style={{ ...primary(!presence.length), marginTop: 6 }}>Weiter</button>
             </div>
           )}
 
           {step === 2 && (
             <div>
-              <h3 style={h3}>Was gibt es bereits?</h3>
-              <p style={hint}>Mehrfachauswahl möglich.</p>
-              {['Google-Unternehmensprofil', 'Eigene Website', 'Bewertungen bei Google', 'Social-Media-Profile', 'Noch nichts davon'].map(o => (
-                <Option key={o} multi label={o} selected={presence.includes(o)} onClick={() => togglePresence(o)} />
-              ))}
-              <button type="button" disabled={!presence.length} onClick={next} style={{ ...primary(!presence.length), marginTop: 6 }}>Weiter</button>
+              <h3 style={h3}>{has(NONE) ? 'Womit und wo sind Sie tätig?' : 'Wo finden wir Sie online?'}</h3>
+              <p style={hint}>{has(NONE) ? 'Dann starten wir bei null — so wissen wir, womit wir anfangen.' : 'Ein Link genügt — den Rest sehen wir uns selbst an.'}</p>
+              {!has(NONE) && (<>
+                <label style={label} htmlFor="q-link">Link</label>
+                <input id="q-link" style={input} value={link} onChange={e => setLink(e.target.value)} placeholder="Google Maps, Website oder Social Media" inputMode="url" />
+              </>)}
+              <label style={label} htmlFor="q-industry">Branche</label>
+              <input id="q-industry" style={input} value={industry} onChange={e => setIndustry(e.target.value)} placeholder="z. B. Heizungsbau, Zahnarztpraxis, Autowerkstatt" />
+              <label style={label} htmlFor="q-city">Stadt</label>
+              <input id="q-city" style={input} value={city} onChange={e => setCity(e.target.value)} placeholder="z. B. Dortmund" autoComplete="address-level2" />
+              <button type="button" disabled={!canStep2} onClick={next} style={{ ...primary(!canStep2), marginTop: 2 }}>Weiter</button>
               <BackLink />
             </div>
           )}
 
           {step === 3 && (
             <div>
-              <h3 style={h3}>Womit und wo sind Sie tätig?</h3>
-              <p style={hint}>So vergleichen wir Sie mit den richtigen Mitbewerbern.</p>
-              <input style={input} value={industry} onChange={e => setIndustry(e.target.value)} placeholder="Branche, z. B. Heizungsbau, Zahnarztpraxis, Autowerkstatt" />
-              <input style={input} value={region} onChange={e => setRegion(e.target.value)} placeholder="Stadt oder Region, z. B. Siegen und Umgebung" />
-              <button type="button" disabled={!industry.trim() || !region.trim()} onClick={next} style={{ ...primary(!industry.trim() || !region.trim()), marginTop: 6 }}>Weiter</button>
-              <BackLink />
-            </div>
-          )}
-
-          {step === 4 && (
-            <div>
-              <h3 style={h3}>Welches monatliche Budget ist für Sichtbarkeit denkbar?</h3>
-              <p style={hint}>Nur zur Orientierung — damit wir passende Schritte vorschlagen.</p>
-              {['Bis 300 €', '300–800 €', '800–1.500 €', 'Mehr als 1.500 €', 'Noch unklar'].map(o => (
-                <Option key={o} label={o} selected={budget === o} onClick={() => { setBudget(o); next() }} />
-              ))}
-              <BackLink />
-            </div>
-          )}
-
-          {step === 5 && (
-            <div>
-              <h3 style={h3}>Wohin dürfen wir uns melden?</h3>
-              <p style={hint}>Ein Berater sieht sich Ihre Präsenz an und meldet sich innerhalb eines Werktags mit einer ersten Einschätzung.</p>
+              <h3 style={h3}>Wohin dürfen wir Ihre Anleitung schicken?</h3>
+              <p style={hint}>Wir prüfen Ihre Angaben und melden uns persönlich mit den nächsten Schritten.</p>
               <input style={input} value={name} onChange={e => setName(e.target.value)} placeholder="Ihr Name" autoComplete="name" />
               <input style={input} value={company} onChange={e => setCompany(e.target.value)} placeholder="Name Ihres Unternehmens" autoComplete="organization" />
               <input style={input} value={contact} onChange={e => setContact(e.target.value)} placeholder="Telefon oder E-Mail" autoComplete="email" />
-              <button type="button" disabled={!name.trim() || !contact.trim()} onClick={next} style={{ ...primary(!name.trim() || !contact.trim()), marginTop: 6 }}>Analyse anfragen</button>
+              <button type="button" disabled={!name.trim() || !contact.trim()} onClick={next} style={{ ...primary(!name.trim() || !contact.trim()), marginTop: 2 }}>Anleitung anfordern</button>
               <p style={{ fontSize: 11.5, color: '#9ca3af', lineHeight: 1.6, margin: '12px 0 0' }}>
                 Mit dem Absenden stimmen Sie zu, dass wir Sie zu Ihrer Anfrage kontaktieren. Keine Werbung, keine Weitergabe an Dritte.
               </p>
@@ -2535,15 +2645,14 @@ function AuditQuiz() {
               <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: '#EEEBFF', color: '#2600FF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 24, fontWeight: 700 }}>✓</div>
               <h3 style={{ ...h3, fontSize: 20, marginBottom: 10 }}>Danke, {name.trim()}!</h3>
               <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.7, margin: '0 0 18px' }}>
-                Wir sehen uns Ihre Präsenz an und melden uns innerhalb eines Werktags unter <strong style={{ color: 'var(--ink)' }}>{contact}</strong>.
+                Wir sehen uns Ihre Angaben an und melden uns mit Ihrer Anleitung unter <strong style={{ color: 'var(--ink)' }}>{contact}</strong>.
               </p>
               <div style={{ textAlign: 'left', backgroundColor: '#F7F6FF', border: '1px solid #E4DFFF', borderRadius: 14, padding: '14px 16px', marginBottom: 18 }}>
                 <p className="eyebrow" style={{ fontSize: 9.5, color: '#2600FF', marginBottom: 8 }}>Ihre Angaben</p>
-                <p style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--ink)', margin: 0 }}>
-                  {concern}<br />
-                  {industry} · {region}<br />
-                  {presence.map((x, i) => <span key={x}>{i > 0 && ', '}{x}</span>)}<br />
-                  {budget}
+                <p style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--ink)', margin: 0, overflowWrap: 'anywhere' }}>
+                  <span>{industry}</span> · <span>{city}</span><br />
+                  {presence.map((x, i) => <span key={x}>{i > 0 && ', '}{x}</span>)}
+                  {link.trim() && <><br /><span>{link.trim()}</span></>}
                 </p>
               </div>
               <button type="button" onClick={reset} style={{ backgroundColor: '#F4F2FF', color: '#2600FF', fontWeight: 500, fontSize: 13, padding: '9px 20px', borderRadius: 10, border: '1px solid #ddd6fe', cursor: 'pointer', fontFamily: 'inherit' }}>Neue Anfrage</button>
@@ -2566,7 +2675,7 @@ const faqs = [
   { q: 'Können Sie meine bestehende Website optimieren?', a: 'In den meisten Fällen ja. Wir prüfen Struktur, Inhalte und Technik Ihrer bestehenden Website und verbessern gezielt das, was Sichtbarkeit und Anfragen blockiert. Nur wenn die technische Basis eine sinnvolle Weiterentwicklung nicht zulässt, empfehlen wir einen Neuaufbau.' },
   { q: 'Wie bekomme ich mehr Google-Bewertungen?', a: 'Indem Sie zu einem festen Zeitpunkt fragen — am besten direkt nach einem gelungenen Auftrag —, den Weg zur Abgabe so kurz wie möglich machen und auf Bewertungen antworten. Gekaufte oder erfundene Bewertungen verstoßen gegen die Google-Richtlinien und können zur Sperrung des Profils führen. Wir richten einen Ablauf ein, der echte Bewertungen mit konkreten Erfahrungen bringt.' },
   { q: 'Wie kann mein Unternehmen in ChatGPT erscheinen?', a: "Indem die Informationen über Ihr Unternehmen im Web klar, zugänglich und widerspruchsfrei sind: verständlich beschriebene Leistungen, eine logisch strukturierte Website, übereinstimmende Angaben auf allen Plattformen, externe Erwähnungen und Inhalte, die für Suchsysteme abrufbar sind. Eine separate \"KI-Optimierung\" jenseits sauberer Grundlagen gibt es nicht — wir sorgen dafür, dass diese Grundlagen stimmen." },
-  { q: 'Was kostet die laufende Betreuung?', a: 'Die laufende Betreuung wird monatlich abgerechnet; der Preis hängt davon ab, welche Bereiche aktiv sind. Der Einstieg mit dem Google-Unternehmensprofil beginnt ab 149 €. Nach dem kostenlosen Sichtbarkeits-Check erhalten Sie ein Angebot, das zu Ihrer Situation und Ihrem Budget passt — ohne versteckte Gebühren und ohne langfristige Bindung.' },
+  { q: 'Was kostet die laufende Betreuung?', a: 'Die laufende Betreuung wird monatlich abgerechnet; der Preis hängt davon ab, welche Bereiche aktiv sind. Die Einrichtung des Google-Unternehmensprofils kostet einmalig 149 €. Eine Onepager-Website gibt es für 29 € im Monat, die lebendige Website mit SEO, Artikeln und Social Media für 199 € im Monat. Nach dem kostenlosen Sichtbarkeits-Check erhalten Sie ein Angebot, das zu Ihrer Situation und Ihrem Budget passt — ohne versteckte Gebühren und ohne langfristige Bindung.' },
   { q: 'Für welche Unternehmen eignet sich lokale Optimierung?', a: 'Für alle, deren Kunden aus der Umgebung kommen: Handwerksbetriebe, Werkstätten, Praxen, Kanzleien, Restaurants, Salons und Dienstleister mit Servicegebiet. Entscheidend ist nicht die Branche, sondern dass Kunden lokal suchen — ob Sie ein Ladengeschäft haben oder zu Ihren Kunden fahren.' },
 ]
 
