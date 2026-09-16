@@ -1032,7 +1032,8 @@ function Nav() {
         <div className="hidden-mobile nav-links" style={{ display: 'flex', gap: 30, alignItems: 'center' }}>
           <a href={homeHref('modules')} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>Sichtbarkeit</a>
           <ServicesNavDropdown fg={fg} />
-          {[['Ergebnisse', 'results'], ['Ratgeber', '/ratgeber'], ['FAQ', 'faq']].map(([l, target]) => (
+          {/* FAQ removed from the header; 'Ergebnisse' hidden while the results block is off: ['Ergebnisse', 'results'], ['FAQ', 'faq'] */}
+          {[['Ratgeber', '/ratgeber']].map(([l, target]) => (
             <a key={l} href={linkHref(target)} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>{l}</a>
           ))}
           <LangSwitch fg={fg} border={solid ? 'var(--line)' : 'rgba(255,255,255,0.25)'} />
@@ -1056,7 +1057,8 @@ function Nav() {
 
       {open && (
         <nav aria-label="Mobile Navigation" className="show-mobile" style={{ display: 'none', flexDirection: 'column', gap: 2, padding: '10px 24px 26px', backgroundColor: '#fff', borderTop: '1px solid var(--line)' }}>
-          {[['Sichtbarkeit', 'modules'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], ['Ergebnisse', 'results'], ['FAQ', 'faq']].map(([l, target]) => (
+          {/* FAQ removed from the header; 'Ergebnisse' hidden while the results block is off: ['Ergebnisse', 'results'], ['FAQ', 'faq'] */}
+          {[['Sichtbarkeit', 'modules'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar']].map(([l, target]) => (
             <a key={l} href={linkHref(target)} style={{ fontWeight: 600, fontSize: 22, letterSpacing: '-0.03em', color: '#07070C', textDecoration: 'none', padding: '10px 0', borderBottom: '1px solid var(--line-soft)' }} onClick={() => setOpen(false)}>{l}</a>
           ))}
           <span style={{ fontWeight: 500, fontSize: 14, color: 'var(--muted)', padding: '14px 0 10px' }}>+49 30 12345678</span>
@@ -2640,7 +2642,7 @@ function Footer() {
             <a href={homeHref('audit-quiz')} className="btn btn-md btn-outline-dark">Sichtbarkeits-Check starten <span className="arw">→</span></a>
           </div>
           {[
-            { title: 'Navigation', items: [['Sichtbarkeit', 'modules'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], ['Ergebnisse', 'results'], ['FAQ', 'faq']] as [string, string][] },
+            { title: 'Navigation', items: [['Sichtbarkeit', 'modules'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], /* ['Ergebnisse', 'results'] — hidden with the results block */ ['FAQ', 'faq']] as [string, string][] },
           ].map(col => (
             <div key={col.title}>
               <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>{col.title}</p>
@@ -3537,7 +3539,6 @@ function GlossarPage() {
         <div style={{ ...SHELL }}>
           <div style={{ borderTop: '1px solid var(--line)' }}>
             {glossarEntries.map((g, i) => {
-              const article = g.ratgeber ? ratgeberArticles.find(a => a.slug === g.ratgeber) : undefined
               const service = g.service ? modules.find(m => m.slug === g.service) : undefined
               return (
                 <div key={g.term} style={{
@@ -3551,11 +3552,9 @@ function GlossarPage() {
                   </div>
                   <div>
                     <p style={{ fontSize: 15, lineHeight: 1.85, color: 'var(--muted)', margin: 0 }}>{g.body}</p>
-                    {(article || service) && (
+                    {service && (
                       <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginTop: 16 }}>
-                        {article && (
-                          <a href={`/ratgeber/${article.slug}`} className="ul" style={{ fontSize: 13, fontWeight: 600, color: 'var(--electric)' }}>Im Ratgeber →</a>
-                        )}
+                        {/* links to the Ratgeber removed from the glossary (16.09) */}
                         {service && (
                           <a href={`/services/${service.slug}`} className="ul" style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>Passende Leistung →</a>
                         )}
@@ -4002,7 +4001,7 @@ function LandingPage() {
       <LocalPromotion />
       <TwoRoutes />
       <Process />
-      <RealResults />
+      {/* Ergebnisse vorerst ausgeblendet (16.09) — zum Einblenden wieder aktivieren: <RealResults /> */}
       <RatgeberTeaser />
       <FAQ />
       <AuditQuiz />
