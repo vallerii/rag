@@ -1141,7 +1141,7 @@ function Nav() {
         </a>
 
         <div className="hidden-mobile nav-links" style={{ display: 'flex', gap: 30, alignItems: 'center' }}>
-          <a href={homeHref('modules')} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>Sichtbarkeit</a>
+          <a href={homeHref('kanaele')} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>Sichtbarkeit</a>
           <ServicesNavDropdown fg={fg} />
           {/* FAQ removed from the header; 'Ergebnisse' hidden while the results block is off: ['Ergebnisse', 'results'], ['FAQ', 'faq'] */}
           {[['Ratgeber', '/ratgeber']].map(([l, target]) => (
@@ -1169,7 +1169,7 @@ function Nav() {
       {open && (
         <nav aria-label="Mobile Navigation" className="show-mobile" style={{ display: 'none', flexDirection: 'column', gap: 2, padding: '10px 24px 26px', backgroundColor: '#fff', borderTop: '1px solid var(--line)' }}>
           {/* FAQ removed from the header; 'Ergebnisse' hidden while the results block is off: ['Ergebnisse', 'results'], ['FAQ', 'faq'] */}
-          {[['Sichtbarkeit', 'modules'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar']].map(([l, target]) => (
+          {[['Sichtbarkeit', 'kanaele'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar']].map(([l, target]) => (
             <a key={l} href={linkHref(target)} style={{ fontWeight: 600, fontSize: 22, letterSpacing: '-0.03em', color: '#07070C', textDecoration: 'none', padding: '10px 0', borderBottom: '1px solid var(--line-soft)' }} onClick={() => setOpen(false)}>{l}</a>
           ))}
           <span style={{ fontWeight: 500, fontSize: 14, color: 'var(--muted)', padding: '14px 0 10px' }}>+49 30 12345678</span>
@@ -1274,52 +1274,47 @@ function Hero() {
         <MapBackdrop tone="dark" />
 
         <div style={{ ...SHELL, position: 'relative' }}>
-          <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.35fr) minmax(320px, 0.65fr)', gap: 'clamp(36px, 4vw, 64px)', alignItems: 'center', paddingBottom: 'clamp(56px, 7vw, 90px)' }}>
-            <div>
-              <div className="mask-line" style={{ marginBottom: 26 }}>
-                <span style={{ ['--d' as any]: '0s' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, border: '1px solid rgba(255,255,255,0.18)', borderRadius: 999, padding: '7px 16px' }}>
-                    {/* Google-Maps-Stil: Bewertung + fünf Sterne (statt „Für lokale Unternehmen in DACH“, 21.09) */}
-                    <span role="img" aria-label="Bewertung 5,0 von 5 Sternen" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                      <span aria-hidden style={{ fontSize: 14, fontWeight: 700, color: '#fff', lineHeight: 1 }}>5,0</span>
-                      <span aria-hidden style={{ display: 'inline-flex', gap: 1 }}>
-                        {[0, 1, 2, 3, 4].map(i => (
-                          <svg key={i} width="14" height="14" viewBox="0 0 24 24"><path fill="#FBBC04" d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" /></svg>
-                        ))}
-                      </span>
-                    </span>
+          {/* zentriert, ohne Animation rechts (21.09) */}
+          <div className="hero-center" style={{ textAlign: 'center', maxWidth: 900, margin: '0 auto', paddingBottom: 'clamp(56px, 7vw, 96px)' }}>
+            <div className="mask-line" style={{ marginBottom: 26 }}>
+              <span style={{ ['--d' as any]: '0s' }}>
+                {/* Bewertungsplakette wie in der Kundenvorlage: Google-Logo · 5,0 · Sterne · bei Google (21.09) */}
+                <span role="img" aria-label="Bewertung 5,0 von 5 Sternen bei Google" style={{ display: 'inline-flex', alignItems: 'center', gap: 14, border: '1px solid rgba(255,255,255,0.16)', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 999, padding: '8px 22px 8px 8px' }}>
+                  <span aria-hidden style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: '#fff', display: 'grid', placeItems: 'center', flexShrink: 0 }}><GLogo /></span>
+                  <span aria-hidden className="display" style={{ fontSize: 22, color: '#fff', lineHeight: 1 }}>5,0</span>
+                  <span aria-hidden style={{ display: 'inline-flex', gap: 2 }}>
+                    {[0, 1, 2, 3, 4].map(i => (
+                      <svg key={i} width="17" height="17" viewBox="0 0 24 24"><path fill="#fff" d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" /></svg>
+                    ))}
                   </span>
+                  <span aria-hidden style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>bei Google</span>
                 </span>
-              </div>
-
-              <h1 className="display" style={{ fontSize: 'clamp(34px, 4vw, 58px)', marginBottom: 26 }}>
-                <span className="mask-line"><span style={{ ['--d' as any]: '0.08s' }}>Werden Sie zur</span></span>
-                <span className="mask-line"><span style={{ ['--d' as any]: '0.16s' }}><span style={{ color: 'var(--electric-2)' }}>ersten Wahl</span></span></span>
-                <span className="mask-line"><span style={{ ['--d' as any]: '0.24s' }}>in Ihrer Region.</span></span>
-              </h1>
-
-              <div className="mask-line" style={{ marginBottom: 34 }}>
-                <span style={{ ['--d' as any]: '0.42s' }}>
-                  <p className="lead" style={{ color: 'rgba(255,255,255,0.62)', maxWidth: 540, margin: 0 }}>
-                    Kunden rufen den Betrieb an, den sie zuerst finden — nicht unbedingt den besten. Wir verbinden Google-Profil, Website, Bewertungen und KI-Suche zu einem System aus einer Hand, damit diese Anrufe bei Ihnen landen statt bei der Konkurrenz.
-                  </p>
-                </span>
-              </div>
-
-              <div className="mask-line">
-                <span style={{ ['--d' as any]: '0.5s' }}>
-                  <span style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                    <a href="#audit-quiz" className="btn btn-lg btn-paper">Kostenlosen Sichtbarkeits-Check starten <span className="arw">→</span></a>
-                    <a href="#start" className="btn btn-lg btn-outline-dark">Google-Profil · 149 € einmalig</a>
-                  </span>
-                </span>
-              </div>
-
+              </span>
             </div>
 
-            <div className="hero-visual" style={{ display: 'flex', justifyContent: 'flex-end', opacity: seen ? 1 : 0, transform: seen ? 'none' : 'translateY(40px)', transition: `opacity 1s ease 0.35s, transform 1.1s ${EASE} 0.35s` }}>
-              <RankPanel />
+            <h1 className="display" style={{ fontSize: 'clamp(40px, 5.8vw, 86px)', marginBottom: 28 }}>
+              <span className="mask-line"><span style={{ ['--d' as any]: '0.08s' }}>Werden Sie zur</span></span>
+              <span className="mask-line"><span style={{ ['--d' as any]: '0.16s' }}><span style={{ color: 'var(--electric-2)' }}>ersten Wahl</span></span></span>
+              <span className="mask-line"><span style={{ ['--d' as any]: '0.24s' }}>in Ihrer Region.</span></span>
+            </h1>
+
+            <div className="mask-line" style={{ marginBottom: 34 }}>
+              <span style={{ ['--d' as any]: '0.42s' }}>
+                <p className="lead" style={{ color: 'rgba(255,255,255,0.62)', maxWidth: 640, margin: '0 auto' }}>
+                  Kunden rufen den Betrieb an, den sie zuerst finden — nicht unbedingt den besten. Wir verbinden Google-Profil, Website, Bewertungen und KI-Suche zu einem System aus einer Hand, damit diese Anrufe bei Ihnen landen statt bei der Konkurrenz.
+                </p>
+              </span>
             </div>
+
+            <div className="mask-line">
+              <span style={{ ['--d' as any]: '0.5s' }}>
+                <span style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <a href="#audit-quiz" className="btn btn-lg btn-paper">Kostenlosen Sichtbarkeits-Check starten <span className="arw">→</span></a>
+                  <a href="#maps" className="btn btn-lg btn-outline-dark">Google-Profil · 149 € einmalig</a>
+                </span>
+              </span>
+            </div>
+
           </div>
         </div>
 
@@ -1331,6 +1326,380 @@ function Hero() {
   )
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// HOMEPAGE STORY (21.09.2026, Struktur nach Kundenvorlage, unser Design):
+// Hero (zentriert) → Kanäle (4 Karten) → 01 KI-Suche → 02 Google Maps →
+// 03 Google Search → 04 Social Media → Zusammenspiel → Unternehmen finden → FAQ.
+// Jeder Kanalblock endet mit dem passenden Ratgeber-Artikel.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const channels = [
+  { id: 'ki', label: 'KI-Suche', text: 'ChatGPT, Perplexity und andere KI-Dienste empfehlen lokale Unternehmen immer öfter direkt in der Antwort.' },
+  { id: 'maps', label: 'Google Maps', text: 'Einer der gewohntesten Wege, ein Unternehmen in der Nähe zu finden, Bewertungen zu lesen und sofort Kontakt aufzunehmen.' },
+  { id: 'search', label: 'Google Search', text: 'Hier entscheidet die Website: Versteht Google Ihre Leistungen, Ihre Region und Ihre Erfahrung?' },
+  { id: 'social', label: 'Social Media', text: 'Hier lernen Kunden ein Unternehmen über Menschen, echte Arbeiten und lebendige Inhalte kennen.' },
+]
+
+// 1 — Die Suche hat sich verändert: vier Kanäle, jede Karte springt zu ihrem Block.
+function ChannelOverview() {
+  return (
+    <section id="kanaele" style={{ backgroundColor: 'var(--paper)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', scrollMarginTop: 90 }}>
+      <div style={{ ...SHELL }}>
+        <Reveal><Kicker>Die Suche hat sich verändert</Kicker></Reveal>
+        <div className="chan-head" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 0.9fr)', gap: 'clamp(24px, 4vw, 72px)', alignItems: 'end', marginTop: 26 }}>
+          <MaskHeading
+            className="h-lg"
+            lines={[<>Ihre Kunden suchen Sie</>, <>nicht mehr <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>an einem Ort.</span></>]}
+          />
+          <Reveal delay={0.1}>
+            <p className="lead" style={{ color: 'var(--muted)', maxWidth: 520, margin: 0 }}>
+              Heute suchen sie bei Google Maps, Google, ChatGPT, Perplexity und in sozialen Netzwerken. Wir machen Ihr Unternehmen überall dort sichtbar — gleichzeitig.
+            </p>
+          </Reveal>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'clamp(12px, 1.4vw, 18px)', marginTop: 'clamp(36px, 4vw, 56px)' }}>
+          {channels.map((c, i) => (
+            <Reveal key={c.id} delay={0.06 * i}>
+              <a href={`#${c.id}`} className="chan-card">
+                <span className="chan-num display">{String(i + 1).padStart(2, '0')}</span>
+                <span className="display" style={{ fontSize: 'clamp(20px, 1.7vw, 24px)', lineHeight: 1.2, color: 'var(--ink)' }}>{c.label}</span>
+                <span style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--muted)', flex: 1 }}>{c.text}</span>
+                <span className="chan-more">Mehr erfahren <span aria-hidden className="chan-arrow">↓</span></span>
+              </a>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// Rahmen eines Kanalblocks: Kontur-Nummer wie früher im Ablauf, Titel, Text,
+// rechts der Inhalt, unten der passende Ratgeber-Artikel.
+function ChannelBlock({ id, n, label, title, body, actions, aside, article, tone = 'light' }: {
+  id: string; n: number; label: string; title: React.ReactNode; body: string
+  actions: React.ReactNode; aside: React.ReactNode
+  article: { href: string; title: string }; tone?: 'light' | 'bone' | 'dark'
+}) {
+  const dark = tone === 'dark'
+  const bg = dark ? 'var(--ink)' : tone === 'bone' ? 'var(--bone)' : 'var(--paper)'
+  return (
+    <section id={id} style={{ backgroundColor: bg, color: dark ? '#fff' : 'var(--ink)', padding: 'clamp(56px, 6vw, 88px) clamp(20px, 4vw, 48px)', scrollMarginTop: 70, position: 'relative', overflow: 'clip' }}>
+      {dark && <div aria-hidden style={{ position: 'absolute', inset: 0, opacity: 0.5 }}><CrossBackdrop tone="dark" /></div>}
+      <div style={{ ...SHELL, position: 'relative' }}>
+        <div className="chan-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'clamp(32px, 5vw, 88px)', alignItems: 'center' }}>
+          <div>
+            <Reveal>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(16px, 2vw, 24px)', marginBottom: 22 }}>
+                <span className="display" style={{ fontSize: 'clamp(44px, 5vw, 72px)', lineHeight: 0.9, color: 'transparent', WebkitTextStroke: `1.4px ${dark ? '#6B4BFF' : '#2600FF'}` }}>{String(n).padStart(2, '0')}</span>
+                <span className="eyebrow" style={{ color: dark ? 'var(--electric-2)' : 'var(--electric)' }}>{label}</span>
+              </div>
+            </Reveal>
+            <Reveal delay={0.05}>
+              <h2 className="display h-md" style={{ margin: '0 0 18px', maxWidth: 560 }}>{title}</h2>
+            </Reveal>
+            <Reveal delay={0.1}>
+              <p style={{ fontSize: 'clamp(15.5px, 1.3vw, 17px)', lineHeight: 1.75, color: dark ? 'rgba(255,255,255,0.62)' : 'var(--muted)', margin: '0 0 28px', maxWidth: 520 }}>{body}</p>
+            </Reveal>
+            <Reveal delay={0.14}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px 24px', flexWrap: 'wrap' }}>
+                {actions}
+                {/* passender Ratgeber-Artikel direkt neben dem Button (21.09) */}
+                <a href={article.href} className="ul chan-article" style={{ fontSize: 14, fontWeight: 600, color: dark ? '#fff' : 'var(--ink)' }}>
+                  {article.title} <span aria-hidden className="chan-arrow" style={{ color: dark ? 'var(--electric-2)' : 'var(--electric)' }}>→</span>
+                </a>
+              </div>
+            </Reveal>
+          </div>
+          <Reveal delay={0.1}>{aside}</Reveal>
+        </div>
+
+      </div>
+    </section>
+  )
+}
+
+const checkIcon = (dark = false) => (
+  <span aria-hidden style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', display: 'inline-grid', placeItems: 'center', backgroundColor: dark ? 'rgba(107,75,255,0.22)' : '#EEEBFF', color: dark ? '#fff' : 'var(--electric)', fontSize: 11, fontWeight: 700 }}>✓</span>
+)
+
+function articleTitle(slug: string) {
+  return ratgeberArticles.find(a => a.slug === slug)?.title ?? 'Ratgeber'
+}
+
+// 01 — KI-Suche
+function ChannelAI() {
+  const signals = ['Was Sie anbieten', 'Wo Sie tätig sind', 'Was Kunden über Sie sagen', 'Ob Ihre Angaben auf Website, Karten, Verzeichnissen und Social Media übereinstimmen']
+  return (
+    <ChannelBlock
+      id="ki" n={1} label="KI-Suche"
+      title={<>Lokale Suche beginnt immer öfter mit einer <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Frage an die KI.</span></>}
+      body="ChatGPT, Perplexity und die KI-Übersichten bei Google nennen nur wenige Anbieter — und zwar die, die sie eindeutig verstehen und für vertrauenswürdig halten."
+      actions={<>
+        <a href="#audit-quiz" className="btn btn-md btn-electric">Prüfen, wie die KI mich sieht <span className="arw">→</span></a>
+      </>}
+      aside={
+        <div style={{ backgroundColor: 'var(--ink)', color: '#fff', borderRadius: 24, padding: 'clamp(24px, 3vw, 36px)' }}>
+          <p className="eyebrow" style={{ fontSize: 10, color: 'var(--electric-2)', marginBottom: 14 }}>Sichtbarkeit in der KI ist ein System</p>
+          <p className="display" style={{ fontSize: 'clamp(19px, 1.7vw, 23px)', lineHeight: 1.3, margin: '0 0 22px' }}>Die KI muss schnell verstehen, was Sie tun, wo Sie arbeiten und ob man Ihnen vertrauen kann.</p>
+          {signals.map(s => (
+            <div key={s} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 0', borderTop: '1px solid var(--line-dark)' }}>
+              {checkIcon(true)}<span style={{ fontSize: 14.5, lineHeight: 1.5, color: 'rgba(255,255,255,0.85)' }}>{s}</span>
+            </div>
+          ))}
+        </div>
+      }
+      article={{ href: '/ratgeber/in-chatgpt-und-perplexity-gefunden-werden', title: articleTitle('in-chatgpt-und-perplexity-gefunden-werden') }}
+    />
+  )
+}
+
+// 02 — Google Maps: hier sitzt das Einstiegsangebot (149 € einmalig).
+function ChannelMaps() {
+  const [order, setOrder] = useState<null | WebsiteAddon>(null)
+  const included = [
+    'Erstellung oder Einrichtung des Profils',
+    'Auswahl der Hauptkategorie',
+    'Unternehmensbeschreibung und Leistungen',
+    'Kontaktdaten, Öffnungszeiten, Verbindung zur Website',
+    'Link und Vorlage für die ersten Bewertungen',
+  ]
+  return (
+    <>
+      {order !== null && <ProfileOrderModal initialAddon={order} onClose={() => setOrder(null)} />}
+      <ChannelBlock
+        id="maps" n={2} label="Google Maps" tone="dark"
+        title={<>Google Maps ist <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>Pflicht</span> für lokale Unternehmen.</>}
+        body="Menschen suchen in der Nähe, lesen Bewertungen und rufen direkt an. Für ein lokales Unternehmen ist das einer der kürzesten Wege von der Suche zur Anfrage."
+        actions={<>
+          <a href="/services/google-maps-business-profile" className="btn btn-md btn-outline-dark">Mehr zu Google Maps <span className="arw">→</span></a>
+        </>}
+        aside={
+          <div style={{ backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 24, padding: 'clamp(24px, 3vw, 36px)', boxShadow: '0 40px 90px rgba(0,0,0,0.35)' }}>
+            <p className="eyebrow" style={{ fontSize: 10, color: 'var(--electric)', marginBottom: 12 }}>Selbst machen — oder wir übernehmen das</p>
+            <p className="display" style={{ fontSize: 'clamp(22px, 2vw, 28px)', lineHeight: 1.2, margin: '0 0 10px' }}>Google-Profil, fertig eingerichtet.</p>
+            <p style={{ fontSize: 14.5, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 16px' }}>Wir erstellen oder überarbeiten Ihr Profil, pflegen Leistungen und Angaben ein und bereiten alles für die ersten Bewertungen vor.</p>
+            {included.map(s => (
+              <div key={s} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '9px 0', borderTop: '1px solid var(--line)' }}>
+                {checkIcon()}<span style={{ fontSize: 14, lineHeight: 1.5 }}>{s}</span>
+              </div>
+            ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px 20px', flexWrap: 'wrap', marginTop: 20 }}>
+              <button type="button" onClick={() => setOrder('')} className="btn btn-md btn-electric">Google-Profil starten <span className="arw">→</span></button>
+              <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6, whiteSpace: 'nowrap' }}>
+                <span className="display" style={{ fontSize: 24 }}>149 €</span>
+                <span style={{ fontSize: 13, color: 'var(--muted)' }}>einmalig · ohne Abo</span>
+              </span>
+            </div>
+          </div>
+        }
+        article={{ href: '/ratgeber/google-maps-ranking-verbessern', title: articleTitle('google-maps-ranking-verbessern') }}
+      />
+    </>
+  )
+}
+
+// 03 — Google Search: die Website.
+function ChannelSearch() {
+  const [order, setOrder] = useState<null | WebsiteAddon>(null)
+  const parts = [
+    ['Leistungen', 'Eine eigene Seite pro Leistung'],
+    ['Region', 'Wo Sie arbeiten, Stadt für Stadt'],
+    ['Referenzen', 'Echte Arbeiten und Kundenstimmen'],
+  ]
+  return (
+    <>
+      {order !== null && <ProfileOrderModal initialAddon={order} onClose={() => setOrder(null)} />}
+      <ChannelBlock
+        id="search" n={3} label="Google Search" tone="bone"
+        title={<>Google Search schaut auf <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Ihre Website.</span></>}
+        body="Ihre Website muss in einfachen Worten erklären, was Sie tun, wo Sie arbeiten und warum man Ihnen vertrauen kann — für Menschen und für Google."
+        actions={<>
+          <a href="/services/website-google-search" className="btn btn-md btn-ink">Mehr zu Website & Google Search <span className="arw">→</span></a>
+        </>}
+        aside={
+          <div style={{ backgroundColor: '#fff', borderRadius: 24, padding: 'clamp(24px, 3vw, 36px)', border: '1px solid var(--line)' }}>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 18 }}>
+              {[0, 1, 2].map(i => <span key={i} style={{ width: 9, height: 9, borderRadius: '50%', backgroundColor: 'rgba(7,7,12,0.12)' }} />)}
+            </div>
+            <p className="eyebrow" style={{ fontSize: 10, color: 'var(--electric)', marginBottom: 10 }}>Ihr Unternehmen</p>
+            <p className="display" style={{ fontSize: 'clamp(20px, 1.8vw, 25px)', lineHeight: 1.25, margin: '0 0 18px' }}>Eine verständliche Website für Menschen und Google.</p>
+            {parts.map(([t, d]) => (
+              <div key={t} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, padding: '12px 0', borderTop: '1px solid var(--line)' }}>
+                <span style={{ fontSize: 14.5, fontWeight: 600 }}>{t}</span>
+                <span style={{ fontSize: 13.5, color: 'var(--muted)', textAlign: 'right' }}>{d}</span>
+              </div>
+            ))}
+            <div style={{ marginTop: 18, padding: '14px 16px', borderRadius: 14, backgroundColor: 'var(--bone)', fontSize: 14, lineHeight: 1.6 }}>
+              Noch keine Website? Wir starten mit einem Onepager —{' '}
+              <button type="button" onClick={() => setOrder('onepager')} className="ul" style={{ background: 'none', border: 0, padding: 0, font: 'inherit', fontWeight: 600, color: 'var(--electric)', cursor: 'pointer' }}>ab 29 €/Monat →</button>
+            </div>
+          </div>
+        }
+        article={{ href: '/ratgeber/wie-funktioniert-lokales-seo', title: articleTitle('wie-funktioniert-lokales-seo') }}
+      />
+    </>
+  )
+}
+
+// 04 — Social Media
+function ChannelSocial() {
+  const pillars = [
+    ['Menschen', 'Zeigen Sie sich und Ihr Team. So bekommt das Unternehmen ein Gesicht.'],
+    ['Arbeitsweise', 'Zeigen Sie, wie Sie arbeiten — ohne Inszenierung und Marketing-Floskeln.'],
+    ['Ergebnisse', 'Echte Arbeiten, Projekte und Kunden erklären Qualität besser als jedes Werbeversprechen.'],
+  ]
+  return (
+    <ChannelBlock
+      id="social" n={4} label="Social Media"
+      title={<>In sozialen Netzwerken sehen Kunden <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Menschen.</span></>}
+      body="Team, Arbeitsweise und echte Ergebnisse machen Ihr Unternehmen vertraut — schon vor dem ersten Anruf. Dafür müssen Sie kein Influencer werden."
+      actions={<>
+        <a href="/services/social-media" className="btn btn-md btn-ink">Mehr zu Social Media <span className="arw">→</span></a>
+      </>}
+      aside={
+        <div>
+          {pillars.map(([t, d], i) => (
+            <div key={t} style={{ display: 'grid', gridTemplateColumns: '44px minmax(0, 1fr)', gap: 16, padding: '18px 0', borderTop: '1px solid var(--line)' }}>
+              <span className="display" style={{ fontSize: 13, color: 'var(--electric)', letterSpacing: '0.08em', paddingTop: 4 }}>{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <p className="display" style={{ fontSize: 'clamp(18px, 1.6vw, 22px)', margin: '0 0 6px' }}>{t}</p>
+                <p style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>{d}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      }
+      article={{ href: '/ratgeber', title: 'Alle Artikel im Ratgeber' }}
+    />
+  )
+}
+
+// Zusammenspiel — alle Kanäle erzählen dieselbe Geschichte.
+// Überschrift zentriert, darunter vier Karten im Stil der Kanal-Übersicht (21.09).
+function ChannelSummary() {
+  const rows = [
+    ['KI-Suche', 'Damit man Sie empfehlen kann.'],
+    ['Google Maps', 'Damit man Sie in der Nähe findet.'],
+    ['Google Search', 'Damit Google Ihre Leistungen versteht.'],
+    ['Social Media', 'Damit Kunden die Menschen dahinter sehen.'],
+  ]
+  return (
+    <section style={{ backgroundColor: 'var(--paper)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', borderTop: '1px solid var(--line)' }}>
+      <div style={{ ...SHELL }}>
+        <div style={{ textAlign: 'center', maxWidth: 820, margin: '0 auto' }}>
+          <Reveal>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+              <span style={{ width: 28, height: 1, backgroundColor: 'var(--electric)' }} />
+              <p className="eyebrow" style={{ color: 'var(--ink)', opacity: 0.55 }}>Das Zusammenspiel</p>
+              <span style={{ width: 28, height: 1, backgroundColor: 'var(--electric)' }} />
+            </div>
+          </Reveal>
+          <MaskHeading
+            className="h-md"
+            style={{ marginTop: 22 }}
+            lines={[<>Alle Kanäle sollten eine</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>klare Geschichte</span></>, <>über Ihr Unternehmen erzählen.</>]}
+          />
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 'clamp(12px, 1.4vw, 18px)', marginTop: 'clamp(36px, 4vw, 56px)' }}>
+          {rows.map(([a, b], i) => (
+            <Reveal key={a} delay={0.06 * i}>
+              <div style={{ height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12, padding: 'clamp(22px, 2.2vw, 30px)', borderRadius: 22, backgroundColor: 'var(--bone)' }}>
+                <span className="chan-num display">{String(i + 1).padStart(2, '0')}</span>
+                <span className="display" style={{ fontSize: 'clamp(20px, 1.7vw, 24px)', lineHeight: 1.2 }}>{a}</span>
+                <span style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)' }}>{b}</span>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        <Reveal delay={0.2}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'clamp(32px, 3.5vw, 48px)' }}>
+            <a href="/services" className="btn btn-lg btn-ink">Alle Leistungen ansehen <span className="arw">→</span></a>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+
+// Unternehmen finden — ersetzt das Quiz. Die Suche (Google Places) folgt später,
+// Eingabe und Button haben vorerst keine Logik. Anker bleibt #audit-quiz,
+// damit alle bestehenden Links auf der Website weiter funktionieren.
+function BusinessCheck() {
+  const [order, setOrder] = useState(false)
+  const [query, setQuery] = useState('')
+  const scores = [['Google Maps', 72], ['Google Search', 64], ['KI-Suche', 44], ['Social Media', 67]] as const
+  return (
+    <>
+      {order && <ProfileOrderModal onClose={() => setOrder(false)} />}
+      <section id="audit-quiz" style={{ backgroundColor: 'var(--electric)', color: '#fff', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden', scrollMarginTop: 70 }}>
+        <ScanBackdrop />
+        <div className="audit-grid" style={{ ...SHELL, position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 440px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
+          <div>
+            <Reveal>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+                <span style={{ width: 28, height: 1, backgroundColor: 'rgba(255,255,255,0.6)' }} />
+                <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.7)' }}>Kostenloser Sichtbarkeits-Check</p>
+              </div>
+            </Reveal>
+            <MaskHeading
+              className="h-md"
+              style={{ marginBottom: 20, color: '#fff' }}
+              lines={[<>Finden Sie Ihr Unternehmen —</>, <><span className="serif italic-serif">wir zeigen, wie Google und KI Sie sehen.</span></>]}
+            />
+            <Reveal delay={0.1}>
+              <p style={{ fontSize: 16, lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', margin: '0 0 28px', maxWidth: 520 }}>
+                Starten Sie mit dem Namen oder der Adresse Ihres Unternehmens. Wir prüfen die wichtigsten Signale bei Google Maps, in der Google-Suche und in der KI-Suche und zeigen, wo schon alles stimmt und wo Potenzial liegt.
+              </p>
+            </Reveal>
+            <Reveal delay={0.16}>
+              <form onSubmit={e => e.preventDefault()} className="bc-form" style={{ display: 'flex', gap: 8, maxWidth: 560, backgroundColor: '#fff', borderRadius: 999, padding: 6 }}>
+                <label htmlFor="bc-search" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>Unternehmen in Google finden</label>
+                <input id="bc-search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Unternehmen in Google finden" autoComplete="organization"
+                  style={{ flex: 1, minWidth: 0, border: 0, outline: 'none', background: 'transparent', fontSize: 15, fontFamily: 'inherit', color: 'var(--ink)', padding: '0 18px' }} />
+                <button type="submit" className="btn btn-md btn-ink" style={{ flexShrink: 0 }}>Mein Unternehmen finden</button>
+              </form>
+            </Reveal>
+            <Reveal delay={0.22}>
+              <div style={{ marginTop: 30, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', gap: '12px 20px', flexWrap: 'wrap' }}>
+                <p style={{ fontSize: 15, lineHeight: 1.6, color: 'rgba(255,255,255,0.85)', margin: 0, maxWidth: 340 }}>Ihr Unternehmen ist noch nicht bei Google? Wir erstellen Ihr Google-Profil.</p>
+                <button type="button" onClick={() => setOrder(true)} className="btn btn-md btn-paper">Google-Profil · 149 € einmalig <span className="arw">→</span></button>
+              </div>
+            </Reveal>
+          </div>
+
+          <Reveal delay={0.1}>
+            <div style={{ backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 26, padding: 'clamp(24px, 3vw, 34px)', boxShadow: '0 40px 80px rgba(7,7,12,0.28)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, marginBottom: 22 }}>
+                <div>
+                  <p className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)', marginBottom: 8 }}>Beispielbericht</p>
+                  <p className="display" style={{ fontSize: 19, lineHeight: 1.3, margin: 0 }}>Lokale Sichtbarkeit</p>
+                </div>
+                <span className="display" style={{ fontSize: 46, lineHeight: 1, color: 'var(--electric)' }}>62</span>
+              </div>
+              {scores.map(([l, v]) => (
+                <div key={l} style={{ padding: '10px 0', borderTop: '1px solid var(--line)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 8 }}>
+                    <span style={{ fontWeight: 600 }}>{l}</span><span style={{ color: 'var(--muted)' }}>{v}</span>
+                  </div>
+                  <div style={{ height: 6, borderRadius: 3, backgroundColor: '#EEEBFF' }}>
+                    <div style={{ width: `${v}%`, height: '100%', borderRadius: 3, backgroundColor: 'var(--electric)' }} />
+                  </div>
+                </div>
+              ))}
+              <p style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--muted)', margin: '14px 0 0' }}>Die Zahlen sind nur ein Beispiel für den späteren Bericht.</p>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+    </>
+  )
+}
+
+// ── Frühere Startseiten-Blöcke (bis 21.09) — nicht mehr eingebunden, bleiben als Vorlage ──
 // ─────────────────────────────────────────────────────────────────────────────
 // HOMEPAGE STORY (Sept 2026): Hero → der Markt hat sich verändert → woraus lokale
 // Sichtbarkeit besteht (je Bereich: was sich verändert hat + was wir tun)
@@ -2751,7 +3120,7 @@ function Footer() {
             <a href={homeHref('audit-quiz')} className="btn btn-md btn-outline-dark">Sichtbarkeits-Check starten <span className="arw">→</span></a>
           </div>
           {[
-            { title: 'Navigation', items: [['Sichtbarkeit', 'modules'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], /* ['Ergebnisse', 'results'] — hidden with the results block */ ['FAQ', 'faq']] as [string, string][] },
+            { title: 'Navigation', items: [['Sichtbarkeit', 'kanaele'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], /* ['Ergebnisse', 'results'] — hidden with the results block */ ['FAQ', 'faq']] as [string, string][] },
           ].map(col => (
             <div key={col.title}>
               <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>{col.title}</p>
@@ -4363,6 +4732,27 @@ const responsiveCSS = `
 
 :root { --sec-y: clamp(64px, 7vw, 96px); }
 
+/* Startseite: Kanal-Karten und Kanalblöcke (21.09) */
+.chan-card {
+  display: flex; flex-direction: column; gap: 12px; height: 100%; box-sizing: border-box;
+  padding: clamp(22px, 2.2vw, 30px); border: 1px solid var(--line); border-radius: 22px;
+  background: var(--paper); color: inherit; text-decoration: none;
+  transition: border-color .25s ease, transform .3s ease, box-shadow .3s ease;
+}
+.chan-card:hover { border-color: var(--electric); transform: translateY(-3px); box-shadow: 0 20px 40px rgba(38,0,255,0.08); }
+.chan-num { font-size: 13px; color: var(--electric); letter-spacing: .08em; }
+.chan-more { font-size: 13.5px; font-weight: 600; color: var(--electric); margin-top: 6px; }
+.chan-arrow { display: inline-block; transition: transform .25s ease; }
+.chan-card:hover .chan-arrow { transform: translateY(3px); }
+.chan-article:hover .chan-arrow { transform: translateX(4px); }
+@media (max-width: 900px) {
+  .chan-grid, .chan-head { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 560px) {
+  .bc-form { flex-direction: column; border-radius: 22px !important; }
+  .bc-form input { padding: 12px 14px !important; }
+}
+
 .promo-row-head {
   all: unset; box-sizing: border-box; cursor: pointer; width: 100%;
   display: grid; grid-template-columns: 56px minmax(0, 0.85fr) minmax(0, 1.25fr) 170px;
@@ -4552,14 +4942,15 @@ function LandingPage() {
       <main id="inhalt">
       <Hero />
       <div ref={widgetSentinel} style={{ height: 1, pointerEvents: 'none' }} />
-      <MarketShift />
-      <LocalPromotion />
-      <TwoRoutes />
-      <Process />
+      <ChannelOverview />
+      <ChannelAI />
+      <ChannelMaps />
+      <ChannelSearch />
+      <ChannelSocial />
+      <ChannelSummary />
+      <BusinessCheck />
       {/* Ergebnisse vorerst ausgeblendet (16.09) — zum Einblenden wieder aktivieren: <RealResults /> */}
-      <RatgeberTeaser />
       <FAQ />
-      <AuditQuiz />
       </main>
       <Footer />
     </>
