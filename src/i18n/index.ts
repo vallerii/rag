@@ -66,6 +66,7 @@ function lookup(key: string): string | undefined {
 
 // Strings assembled at runtime from template literals.
 const patterns: [RegExp, (m: RegExpMatchArray) => string | undefined][] = [
+  [/^(.+) — einfach erklärt \| RAG Glossar$/, m => { const t = dict.get(m[1]); return t === undefined ? undefined : `${t} — простыми словами | RAG Глоссарий` }],
   [/^(.+) \| RAG Ratgeber$/, m => { const t = dict.get(m[1]); return t === undefined ? undefined : `${t} | RAG Гид` }],
   [/^(.+) \| RAG$/, m => { const t = dict.get(m[1]); return t === undefined ? undefined : `${t} | RAG` }],
   [/^(\d+) Minuten Lesezeit$/, m => `${m[1]} мин. чтения`],

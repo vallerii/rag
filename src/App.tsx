@@ -1204,7 +1204,7 @@ function RankPanel() {
   ]
 
   return (
-    <div className="floaty" style={{ position: 'relative', width: '100%', maxWidth: 420 }}>
+    <div className="floaty" style={{ position: 'relative', width: '100%', maxWidth: 370 }}>
       <div style={{
         position: 'relative', backgroundColor: '#fff', borderRadius: 24, padding: 16,
         boxShadow: '0 40px 90px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)',
@@ -1274,13 +1274,20 @@ function Hero() {
         <MapBackdrop tone="dark" />
 
         <div style={{ ...SHELL, position: 'relative' }}>
-          <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(360px, 0.8fr)', gap: 'clamp(36px, 4vw, 64px)', alignItems: 'center', paddingBottom: 'clamp(56px, 7vw, 90px)' }}>
+          <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.35fr) minmax(320px, 0.65fr)', gap: 'clamp(36px, 4vw, 64px)', alignItems: 'center', paddingBottom: 'clamp(56px, 7vw, 90px)' }}>
             <div>
               <div className="mask-line" style={{ marginBottom: 26 }}>
                 <span style={{ ['--d' as any]: '0s' }}>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, border: '1px solid rgba(255,255,255,0.18)', borderRadius: 999, padding: '7px 16px' }}>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#4ADE80' }} />
-                    <span className="eyebrow" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10 }}>Für lokale Unternehmen in Deutschland, Österreich &amp; der Schweiz</span>
+                    {/* Google-Maps-Stil: Bewertung + fünf Sterne (statt „Für lokale Unternehmen in DACH“, 21.09) */}
+                    <span role="img" aria-label="Bewertung 5,0 von 5 Sternen" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                      <span aria-hidden style={{ fontSize: 14, fontWeight: 700, color: '#fff', lineHeight: 1 }}>5,0</span>
+                      <span aria-hidden style={{ display: 'inline-flex', gap: 1 }}>
+                        {[0, 1, 2, 3, 4].map(i => (
+                          <svg key={i} width="14" height="14" viewBox="0 0 24 24"><path fill="#FBBC04" d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" /></svg>
+                        ))}
+                      </span>
+                    </span>
                   </span>
                 </span>
               </div>
@@ -1293,13 +1300,13 @@ function Hero() {
 
               <div className="mask-line" style={{ marginBottom: 34 }}>
                 <span style={{ ['--d' as any]: '0.42s' }}>
-                  <p className="lead" style={{ color: 'rgba(255,255,255,0.62)', maxWidth: 480, margin: 0 }}>
-                    Wir machen Ihr Unternehmen dort sichtbar, wo Kunden heute nach Ihnen suchen: bei Google Maps, Google, ChatGPT, Perplexity und in sozialen Netzwerken.
+                  <p className="lead" style={{ color: 'rgba(255,255,255,0.62)', maxWidth: 540, margin: 0 }}>
+                    Kunden rufen den Betrieb an, den sie zuerst finden — nicht unbedingt den besten. Wir verbinden Google-Profil, Website, Bewertungen und KI-Suche zu einem System aus einer Hand, damit diese Anrufe bei Ihnen landen statt bei der Konkurrenz.
                   </p>
                 </span>
               </div>
 
-              <div className="mask-line" style={{ marginBottom: 30 }}>
+              <div className="mask-line">
                 <span style={{ ['--d' as any]: '0.5s' }}>
                   <span style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                     <a href="#audit-quiz" className="btn btn-lg btn-paper">Kostenlosen Sichtbarkeits-Check starten <span className="arw">→</span></a>
@@ -1308,18 +1315,6 @@ function Hero() {
                 </span>
               </div>
 
-              <div className="mask-line">
-                <span style={{ ['--d' as any]: '0.58s' }}>
-                  <span style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                    {['Mehr lokale Sichtbarkeit', 'Mehr Vertrauen', 'Mehr qualifizierte Anfragen'].map(b => (
-                      <span key={b} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 999, padding: '7px 15px' }}>
-                        <span style={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: 'var(--electric-2)' }} />
-                        {b}
-                      </span>
-                    ))}
-                  </span>
-                </span>
-              </div>
             </div>
 
             <div className="hero-visual" style={{ display: 'flex', justifyContent: 'flex-end', opacity: seen ? 1 : 0, transform: seen ? 'none' : 'translateY(40px)', transition: `opacity 1s ease 0.35s, transform 1.1s ${EASE} 0.35s` }}>
@@ -1355,6 +1350,11 @@ function MarketShift() {
             className="h-lg"
             lines={[<>Ihre Kunden suchen nicht</>, <>mehr <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>nur bei Google.</span></>]}
           />
+          <Reveal delay={0.1}>
+            <p className="lead" style={{ color: 'var(--muted)', maxWidth: 620, margin: '22px 0 0' }}>
+              Heute suchen sie bei Google Maps, Google, ChatGPT, Perplexity und in sozialen Netzwerken. Wir machen Ihr Unternehmen überall dort sichtbar — gleichzeitig.
+            </p>
+          </Reveal>
         </div>
 
         {/* früher / heute */}
@@ -3095,92 +3095,312 @@ function ServiceLeadForm({ serviceLabel }: { serviceLabel: string }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 type GlossarEntry = {
+  slug: string
   term: string
   short: string
   body: string
+  sections: { h: string; p: string[] }[]
+  faq: { q: string; a: string }[]
+  related: string[]
   ratgeber?: string
   service?: string
 }
 
 const glossarEntries: GlossarEntry[] = [
   {
-    term: 'Lokale Sichtbarkeit',
-    short: 'Wie gut Ihr Unternehmen dort auffindbar ist, wo Kunden in Ihrer Region suchen.',
-    body: 'Lokale Sichtbarkeit ist kein einzelner Kanal, sondern die Summe aus Google-Unternehmensprofil, Website, Bewertungen, Verzeichniseinträgen, sozialen Netzwerken und dem, was KI-Systeme über Sie wiedergeben. Sie entscheidet darüber, ob ein kaufbereiter Kunde Sie überhaupt zu Gesicht bekommt.',
-    ratgeber: 'wie-funktioniert-lokales-seo',
+    slug: "lokale-sichtbarkeit",
+    term: "Lokale Sichtbarkeit",
+    short: "Wie gut Ihr Unternehmen dort auffindbar ist, wo Kunden in Ihrer Region suchen.",
+    body: "Lokale Sichtbarkeit ist kein einzelner Kanal, sondern die Summe aus Google-Unternehmensprofil, Website, Bewertungen, Verzeichniseinträgen, sozialen Netzwerken und dem, was KI-Systeme über Sie wiedergeben. Sie entscheidet darüber, ob ein kaufbereiter Kunde Sie überhaupt zu Gesicht bekommt.",
+    sections: [
+      { h: "Was ist lokale Sichtbarkeit?", p: [
+        "Lokale Sichtbarkeit ist kein einzelner Kanal, sondern die Summe aus Google-Unternehmensprofil, Website, Bewertungen, Verzeichniseinträgen, sozialen Netzwerken und dem, was KI-Systeme über Sie wiedergeben. Sie entscheidet darüber, ob ein kaufbereiter Kunde Sie überhaupt zu Gesicht bekommt.",
+        "Gemessen wird sie nicht an einer einzigen Position, sondern daran, wie oft und wie überzeugend Ihr Unternehmen bei den Suchanfragen erscheint, die in Ihrem Einzugsgebiet tatsächlich gestellt werden — „Elektriker Siegen“, „Zahnarzt in der Nähe“, „wer repariert Rollläden“.",
+      ] },
+      { h: "Woraus lokale Sichtbarkeit besteht", p: [
+        "Die wichtigsten Bausteine sind das Google-Unternehmensprofil, eine Website mit einer eigenen Seite je Leistung und Region, aktuelle Bewertungen, einheitliche Einträge in Verzeichnissen sowie Inhalte, die KI-Systeme verlässlich auslesen können.",
+        "Keiner dieser Bausteine wirkt allein. Ein starkes Profil mit widersprüchlichen Adressdaten oder eine gute Website ohne Bewertungen verschenkt einen großen Teil ihrer Wirkung.",
+      ] },
+      { h: "Warum sie für lokale Unternehmen entscheidend ist", p: [
+        "Wer einen Handwerker, eine Praxis oder einen Dienstleister vor Ort sucht, entscheidet meist schnell und zwischen wenigen Optionen. Unternehmen, die in diesem Moment nicht erscheinen, werden nicht abgelehnt — sie werden gar nicht erst in Betracht gezogen.",
+      ] },
+    ],
+    faq: [
+      { q: "Ist lokale Sichtbarkeit dasselbe wie lokales SEO?", a: "Lokales SEO ist ein Teil davon. Zur lokalen Sichtbarkeit gehören zusätzlich Bewertungen, Verzeichnisse, soziale Netzwerke, KI-Suche und auch Offline-Kontaktpunkte." },
+      { q: "Wie lässt sich lokale Sichtbarkeit messen?", a: "Über Aufrufe und Aktionen im Google-Unternehmensprofil, Platzierungen für lokale Suchbegriffe an mehreren Punkten im Einzugsgebiet, Anfragen über die Website und die Frage, ob KI-Assistenten Ihr Unternehmen nennen." },
+      { q: "Wie schnell verbessert sie sich?", a: "Erste Effekte, etwa durch ein vollständiges Profil, zeigen sich oft nach einigen Wochen. Stabile Positionen entstehen über Monate. Eine bestimmte Platzierung kann niemand seriös garantieren." },
+    ],
+    related: ["google-unternehmensprofil", "local-pack", "sichtbarkeits-check"],
+    ratgeber: "wie-funktioniert-lokales-seo",
   },
   {
-    term: 'Google-Unternehmensprofil',
-    short: 'Ihr kostenloser Eintrag bei Google, der in Maps und in der Suche erscheint.',
-    body: 'Das Google-Unternehmensprofil (früher Google My Business) enthält Name, Adresse, Öffnungszeiten, Leistungen, Fotos und Bewertungen. Es ist die Grundlage für jede lokale Platzierung: Ohne vollständiges, gepflegtes Profil erscheint ein Unternehmen bei lokalen Suchanfragen faktisch nicht.',
-    ratgeber: 'google-maps-ranking-verbessern',
-    service: 'google-maps-business-profile',
+    slug: "google-unternehmensprofil",
+    term: "Google-Unternehmensprofil",
+    short: "Ihr kostenloser Eintrag bei Google, der in Maps und in der Suche erscheint.",
+    body: "Das Google-Unternehmensprofil (früher Google My Business) enthält Name, Adresse, Öffnungszeiten, Leistungen, Fotos und Bewertungen. Es ist die Grundlage für jede lokale Platzierung: Ohne vollständiges, gepflegtes Profil erscheint ein Unternehmen bei lokalen Suchanfragen faktisch nicht.",
+    sections: [
+      { h: "Was ist das Google-Unternehmensprofil?", p: [
+        "Das Google-Unternehmensprofil (früher Google My Business) enthält Name, Adresse, Öffnungszeiten, Leistungen, Fotos und Bewertungen. Es ist die Grundlage für jede lokale Platzierung: Ohne vollständiges, gepflegtes Profil erscheint ein Unternehmen bei lokalen Suchanfragen faktisch nicht.",
+        "Das Profil erscheint neben den Suchergebnissen, im Local Pack und direkt in Google Maps. Viele Kunden rufen von dort aus an, lassen sich die Route anzeigen oder lesen Bewertungen, ohne jemals Ihre Website zu öffnen.",
+      ] },
+      { h: "Was ein gutes Profil ausmacht", p: [
+        "Die richtige Hauptkategorie, vollständige Leistungen, aktuelle Öffnungszeiten, echte Fotos von Team, Betrieb und Arbeit, regelmäßige Beiträge und beantwortete Bewertungen. Jede Angabe muss mit Website und Verzeichnissen übereinstimmen.",
+        "Die Hauptkategorie hat besonders großes Gewicht: Sie legt fest, bei welchen Suchanfragen Google Ihr Profil überhaupt in Betracht zieht.",
+      ] },
+      { h: "Häufige Fehler", p: [
+        "Kategorien, die nicht zum Kerngeschäft passen, Suchbegriffe im Firmennamen, veraltete Öffnungszeiten und doppelte Profile. Suchbegriffe im Namen verstoßen gegen die Google-Richtlinien und können zur Sperrung des Profils führen.",
+      ] },
+    ],
+    faq: [
+      { q: "Was kostet ein Google-Unternehmensprofil?", a: "Der Eintrag selbst ist kostenlos. Aufwand entsteht für Einrichtung, Verifizierung und laufende Pflege." },
+      { q: "Wer muss das Profil verifizieren?", a: "Die Verifizierung erfolgt durch den Inhaber oder eine berechtigte Person des Unternehmens, meist per Video, Telefon oder Post. Wir bereiten alles vor und begleiten den Schritt." },
+      { q: "Brauche ich eine Adresse, um ein Profil zu haben?", a: "Nein. Betriebe ohne Kundenverkehr vor Ort können statt der Adresse ein Servicegebiet angeben." },
+    ],
+    related: ["local-pack", "nap-konsistenz", "bewertungen", "servicegebiet"],
+    ratgeber: "google-maps-ranking-verbessern",
+    service: "google-maps-business-profile",
   },
   {
-    term: 'Local Pack',
-    short: 'Der Kartenblock mit drei Einträgen ganz oben in den Google-Ergebnissen.',
-    body: 'Bei Suchanfragen mit örtlichem Bezug zeigt Google eine Karte mit drei Unternehmen an. Dieser Block bekommt einen sehr großen Teil aller Klicks und Anrufe. Wer dort nicht auftaucht, konkurriert nur noch um die Aufmerksamkeit, die darunter übrig bleibt.',
-    ratgeber: 'google-maps-ranking-verbessern',
-    service: 'google-maps-business-profile',
+    slug: "local-pack",
+    term: "Local Pack",
+    short: "Der Kartenblock mit drei Einträgen ganz oben in den Google-Ergebnissen.",
+    body: "Bei Suchanfragen mit örtlichem Bezug zeigt Google eine Karte mit drei Unternehmen an. Dieser Block bekommt einen sehr großen Teil aller Klicks und Anrufe. Wer dort nicht auftaucht, konkurriert nur noch um die Aufmerksamkeit, die darunter übrig bleibt.",
+    sections: [
+      { h: "Was ist das Local Pack?", p: [
+        "Bei Suchanfragen mit örtlichem Bezug zeigt Google eine Karte mit drei Unternehmen an. Dieser Block bekommt einen sehr großen Teil aller Klicks und Anrufe. Wer dort nicht auftaucht, konkurriert nur noch um die Aufmerksamkeit, die darunter übrig bleibt.",
+        "Neben Name und Sternebewertung zeigt jeder Eintrag Kategorie, Öffnungszeiten und oft Schaltflächen für Anruf, Route oder Website. Über „Weitere Orte“ gelangt man zur vollständigen Kartenliste.",
+      ] },
+      { h: "Wie Google die drei Plätze vergibt", p: [
+        "Google nennt drei Hauptfaktoren: Relevanz (passt das Profil zur Suche?), Entfernung (wie nah ist das Unternehmen am Suchenden oder am genannten Ort?) und Bekanntheit (Bewertungen, Erwähnungen, Links, Qualität der Website).",
+        "Die Entfernung lässt sich nicht beeinflussen. Deshalb sieht das Local Pack je nach Standort des Suchenden unterschiedlich aus — und deshalb ist eine feste Platzierung nicht garantierbar.",
+      ] },
+      { h: "Wie Sie Ihre Chancen verbessern", p: [
+        "Ein vollständiges Profil mit passender Kategorie, kontinuierlich neue Bewertungen, einheitliche Angaben in Verzeichnissen und eine Website, die jede Leistung und jede Region klar beschreibt.",
+      ] },
+    ],
+    faq: [
+      { q: "Kann ich mich ins Local Pack einkaufen?", a: "Es gibt Anzeigen, die über oder im Kartenblock erscheinen. Die drei organischen Plätze lassen sich nicht kaufen." },
+      { q: "Warum sehe ich mein Unternehmen, meine Kunden aber nicht?", a: "Die Ergebnisse hängen vom Standort, vom Suchverlauf und vom genauen Suchbegriff ab. Aussagekräftig sind nur Messungen an mehreren Punkten im Einzugsgebiet." },
+    ],
+    related: ["google-unternehmensprofil", "bewertungen", "lokale-sichtbarkeit"],
+    ratgeber: "google-maps-ranking-verbessern",
+    service: "google-maps-business-profile",
   },
   {
-    term: 'NAP-Konsistenz',
-    short: 'Name, Adresse und Telefonnummer müssen überall identisch geschrieben sein.',
-    body: 'NAP steht für Name, Address, Phone. Weichen diese Angaben zwischen Google, Website, Branchenverzeichnissen und sozialen Profilen voneinander ab, entstehen widersprüchliche Signale — für Suchmaschinen ebenso wie für Kunden. Konsistenz ist unspektakulär, aber eine der zuverlässigsten Grundlagen lokaler Sichtbarkeit.',
-    ratgeber: 'google-maps-ranking-verbessern',
-    service: 'local-citations',
+    slug: "nap-konsistenz",
+    term: "NAP-Konsistenz",
+    short: "Name, Adresse und Telefonnummer müssen überall identisch geschrieben sein.",
+    body: "NAP steht für Name, Address, Phone. Weichen diese Angaben zwischen Google, Website, Branchenverzeichnissen und sozialen Profilen voneinander ab, entstehen widersprüchliche Signale — für Suchmaschinen ebenso wie für Kunden. Konsistenz ist unspektakulär, aber eine der zuverlässigsten Grundlagen lokaler Sichtbarkeit.",
+    sections: [
+      { h: "Was bedeutet NAP-Konsistenz?", p: [
+        "NAP steht für Name, Address, Phone. Weichen diese Angaben zwischen Google, Website, Branchenverzeichnissen und sozialen Profilen voneinander ab, entstehen widersprüchliche Signale — für Suchmaschinen ebenso wie für Kunden. Konsistenz ist unspektakulär, aber eine der zuverlässigsten Grundlagen lokaler Sichtbarkeit.",
+      ] },
+      { h: "Wo die Angaben stimmen müssen", p: [
+        "Im Google-Unternehmensprofil, im Impressum und Footer der Website, in Branchenverzeichnissen, bei Apple Maps und Bing, in sozialen Profilen, auf Bewertungsportalen und in Kammer- oder Verbandsverzeichnissen.",
+        "Schon Kleinigkeiten zählen: alte Telefonnummern, ein früherer Firmenname oder eine Adresse, die nach einem Umzug nicht überall geändert wurde.",
+      ] },
+      { h: "So stellen Sie Konsistenz her", p: [
+        "Zuerst wird eine verbindliche Schreibweise festgelegt. Dann werden alle bestehenden Einträge gesucht, korrigiert oder zusammengeführt und Dubletten entfernt. Danach reicht eine regelmäßige Kontrolle.",
+      ] },
+    ],
+    faq: [
+      { q: "Wie schlimm sind kleine Abweichungen?", a: "Eine einzelne Abkürzung wie „Str.“ statt „Straße“ ist kein Problem. Kritisch sind unterschiedliche Telefonnummern, alte Adressen und doppelte Einträge, weil sie Kunden und Suchmaschinen in die Irre führen." },
+      { q: "Was ist nach einem Umzug zu tun?", a: "Zuerst das Google-Profil und die Website aktualisieren, dann die wichtigsten Verzeichnisse. Alte Einträge sollten korrigiert und nicht nur durch neue ergänzt werden." },
+    ],
+    related: ["lokale-verzeichnisse", "google-unternehmensprofil", "schema-markup"],
+    ratgeber: "google-maps-ranking-verbessern",
+    service: "local-citations",
   },
   {
-    term: 'Lokale Verzeichnisse & Erwähnungen',
-    short: 'Einträge und Nennungen Ihres Unternehmens auf Portalen außerhalb Ihrer eigenen Kanäle.',
-    body: 'Branchenportale, Kammer- und Verbandsverzeichnisse, Kartendienste, lokale Presse: Jede korrekte Nennung bestätigt, dass es Ihr Unternehmen gibt und dass die Angaben stimmen. Solche Erwähnungen sind auch die Quellen, aus denen KI-Systeme ihr Bild von einem Unternehmen zusammensetzen.',
-    ratgeber: 'in-chatgpt-und-perplexity-gefunden-werden',
-    service: 'local-citations',
+    slug: "lokale-verzeichnisse",
+    term: "Lokale Verzeichnisse & Erwähnungen",
+    short: "Einträge und Nennungen Ihres Unternehmens auf Portalen außerhalb Ihrer eigenen Kanäle.",
+    body: "Branchenportale, Kammer- und Verbandsverzeichnisse, Kartendienste, lokale Presse: Jede korrekte Nennung bestätigt, dass es Ihr Unternehmen gibt und dass die Angaben stimmen. Solche Erwähnungen sind auch die Quellen, aus denen KI-Systeme ihr Bild von einem Unternehmen zusammensetzen.",
+    sections: [
+      { h: "Was sind lokale Verzeichnisse und Erwähnungen?", p: [
+        "Branchenportale, Kammer- und Verbandsverzeichnisse, Kartendienste, lokale Presse: Jede korrekte Nennung bestätigt, dass es Ihr Unternehmen gibt und dass die Angaben stimmen. Solche Erwähnungen sind auch die Quellen, aus denen KI-Systeme ihr Bild von einem Unternehmen zusammensetzen.",
+      ] },
+      { h: "Welche Verzeichnisse zählen", p: [
+        "Wichtiger als die Menge ist die Relevanz: große allgemeine Verzeichnisse, Kartendienste wie Apple Maps und Bing Places, Branchenportale Ihres Gewerks, Kammern und Verbände sowie regionale Portale und Medien.",
+        "Hunderte automatisch erzeugte Einträge auf unbekannten Seiten bringen dagegen wenig und erzeugen schnell veraltete Daten.",
+      ] },
+      { h: "Die Rolle für die KI-Suche", p: [
+        "Sprachmodelle stützen ihre Antworten auf Quellen, die sie im Netz finden. Je häufiger ein Unternehmen an vertrauenswürdigen Stellen mit denselben Angaben genannt wird, desto sicherer kann ein KI-Assistent es empfehlen.",
+      ] },
+    ],
+    faq: [
+      { q: "Wie viele Einträge braucht ein lokales Unternehmen?", a: "Es gibt keine feste Zahl. Meist genügt eine überschaubare Liste relevanter Verzeichnisse, die vollständig und korrekt gepflegt ist." },
+      { q: "Sind kostenpflichtige Einträge nötig?", a: "In der Regel nicht. Die meisten wichtigen Verzeichnisse bieten kostenlose Basiseinträge." },
+    ],
+    related: ["nap-konsistenz", "ki-suche-ai-overviews", "geo"],
+    ratgeber: "in-chatgpt-und-perplexity-gefunden-werden",
+    service: "local-citations",
   },
   {
-    term: 'Bewertungen',
-    short: 'Öffentliches Kundenfeedback auf Google, Trustpilot und Branchenportalen.',
-    body: 'Bewertungen wirken doppelt: Sie beeinflussen, ob ein Interessent anruft, und sie gehören zu den Signalen, die Google für die Einordnung lokaler Ergebnisse heranzieht. Entscheidend ist nicht nur die Sternebewertung, sondern Aktualität, Anzahl, Inhalt und ob auf Bewertungen geantwortet wird.',
-    service: 'reviews',
+    slug: "bewertungen",
+    term: "Bewertungen",
+    short: "Öffentliches Kundenfeedback auf Google, Trustpilot und Branchenportalen.",
+    body: "Bewertungen wirken doppelt: Sie beeinflussen, ob ein Interessent anruft, und sie gehören zu den Signalen, die Google für die Einordnung lokaler Ergebnisse heranzieht. Entscheidend ist nicht nur die Sternebewertung, sondern Aktualität, Anzahl, Inhalt und ob auf Bewertungen geantwortet wird.",
+    sections: [
+      { h: "Was bei Bewertungen zählt", p: [
+        "Bewertungen wirken doppelt: Sie beeinflussen, ob ein Interessent anruft, und sie gehören zu den Signalen, die Google für die Einordnung lokaler Ergebnisse heranzieht. Entscheidend ist nicht nur die Sternebewertung, sondern Aktualität, Anzahl, Inhalt und ob auf Bewertungen geantwortet wird.",
+      ] },
+      { h: "Wie Sie mehr echte Bewertungen erhalten", p: [
+        "Der wirksamste Weg ist, zufriedene Kunden direkt nach dem Auftrag zu fragen — mit einem kurzen Link oder QR-Code, der ohne Umwege zur Bewertungsseite führt.",
+        "Gekaufte oder selbst geschriebene Bewertungen sind verboten. Google löscht sie und kann das Profil einschränken; in Deutschland drohen zusätzlich Abmahnungen.",
+      ] },
+      { h: "Richtig auf Bewertungen antworten", p: [
+        "Jede Bewertung verdient eine Antwort, auch die positiven. Auf Kritik antworten Sie sachlich, ohne Kundendaten preiszugeben, und bieten eine Lösung an. Viele Interessenten lesen gerade diese Antworten.",
+      ] },
+    ],
+    faq: [
+      { q: "Kann ich negative Bewertungen löschen lassen?", a: "Nur wenn sie gegen Richtlinien verstoßen oder rechtswidrig sind, etwa bei Beleidigungen oder wenn nie ein Kundenkontakt bestand. Unangenehme, aber berechtigte Kritik bleibt stehen." },
+      { q: "Wie viele Bewertungen sind genug?", a: "Maßgeblich ist der Vergleich mit Ihren direkten Mitbewerbern und ein stetiger Zufluss neuer Bewertungen, nicht eine absolute Zahl." },
+      { q: "Zählen Trustpilot-Bewertungen für Google?", a: "Im Local Pack zählen vor allem Google-Bewertungen. Andere Plattformen stärken das Vertrauen und werden von KI-Systemen als Quelle genutzt." },
+    ],
+    related: ["google-unternehmensprofil", "local-pack", "lokale-sichtbarkeit"],
+    service: "reviews",
   },
   {
-    term: 'Suchintention',
-    short: 'Die Absicht hinter einer Suchanfrage — Information, Vergleich oder Kauf.',
-    body: '„Was kostet eine Heizungswartung" und „Heizungsnotdienst in meiner Nähe" sind zwei völlig verschiedene Situationen. Inhalte funktionieren dann, wenn sie zur Absicht passen: Ratgeber und Glossar bedienen die Recherche, Leistungs- und Regionenseiten die Entscheidung.',
-    ratgeber: 'wie-funktioniert-lokales-seo',
-    service: 'website-google-search',
+    slug: "suchintention",
+    term: "Suchintention",
+    short: "Die Absicht hinter einer Suchanfrage — Information, Vergleich oder Kauf.",
+    body: "„Was kostet eine Heizungswartung\" und „Heizungsnotdienst in meiner Nähe\" sind zwei völlig verschiedene Situationen. Inhalte funktionieren dann, wenn sie zur Absicht passen: Ratgeber und Glossar bedienen die Recherche, Leistungs- und Regionenseiten die Entscheidung.",
+    sections: [
+      { h: "Was ist Suchintention?", p: [
+        "„Was kostet eine Heizungswartung\" und „Heizungsnotdienst in meiner Nähe\" sind zwei völlig verschiedene Situationen. Inhalte funktionieren dann, wenn sie zur Absicht passen: Ratgeber und Glossar bedienen die Recherche, Leistungs- und Regionenseiten die Entscheidung.",
+      ] },
+      { h: "Die drei typischen Absichten", p: [
+        "Informieren: Der Kunde will ein Problem verstehen („warum tropft der Heizkörper“). Vergleichen: Er sucht Optionen und Preise („Heizungswartung Kosten Siegen“). Handeln: Er will jetzt einen Anbieter („Heizungsnotdienst in meiner Nähe“).",
+      ] },
+      { h: "Was das für Ihre Website bedeutet", p: [
+        "Jede Absicht braucht eine passende Seite: Ratgeber-Inhalte für Fragen, Leistungs- und Preisseiten für den Vergleich und klare Regionen- und Kontaktseiten mit Telefonnummer für die Entscheidung.",
+      ] },
+    ],
+    faq: [
+      { q: "Woran erkenne ich die Suchintention?", a: "Am einfachsten an den Ergebnissen, die Google heute für den Begriff zeigt: Karten und Anbieter deuten auf eine Handlungsabsicht, Artikel und Fragen auf Informationsbedarf." },
+    ],
+    related: ["lokale-sichtbarkeit", "servicegebiet", "ki-suche-ai-overviews"],
+    ratgeber: "wie-funktioniert-lokales-seo",
+    service: "website-google-search",
   },
   {
-    term: 'Strukturierte Daten (Schema-Markup)',
-    short: 'Maschinenlesbare Zusatzangaben im Quelltext Ihrer Website.',
-    body: 'Mit Schema-Markup wird aus einer Textseite eine eindeutige Aussage: Das hier ist ein Unternehmen, das sind die Öffnungszeiten, das ist eine Leistung, das ist eine Bewertung. Suchmaschinen und KI-Systeme müssen dann nicht raten, was auf der Seite steht.',
-    ratgeber: 'in-chatgpt-und-perplexity-gefunden-werden',
-    service: 'website-google-search',
+    slug: "schema-markup",
+    term: "Strukturierte Daten (Schema-Markup)",
+    short: "Maschinenlesbare Zusatzangaben im Quelltext Ihrer Website.",
+    body: "Mit Schema-Markup wird aus einer Textseite eine eindeutige Aussage: Das hier ist ein Unternehmen, das sind die Öffnungszeiten, das ist eine Leistung, das ist eine Bewertung. Suchmaschinen und KI-Systeme müssen dann nicht raten, was auf der Seite steht.",
+    sections: [
+      { h: "Was sind strukturierte Daten?", p: [
+        "Mit Schema-Markup wird aus einer Textseite eine eindeutige Aussage: Das hier ist ein Unternehmen, das sind die Öffnungszeiten, das ist eine Leistung, das ist eine Bewertung. Suchmaschinen und KI-Systeme müssen dann nicht raten, was auf der Seite steht.",
+        "Technisch handelt es sich meist um einen JSON-LD-Block nach dem Standard von schema.org, der für Besucher unsichtbar im Quelltext steht.",
+      ] },
+      { h: "Welche Angaben für lokale Unternehmen wichtig sind", p: [
+        "LocalBusiness oder die passende Unterart mit Name, Adresse, Telefon, Öffnungszeiten und Servicegebiet, dazu Service für Leistungen, FAQPage für häufige Fragen und BreadcrumbList für die Seitenstruktur.",
+      ] },
+      { h: "Was strukturierte Daten bewirken — und was nicht", p: [
+        "Sie können zu erweiterten Suchergebnissen führen und helfen Suchmaschinen und KI-Systemen, Angaben eindeutig zuzuordnen. Eine Garantie für bessere Platzierungen sind sie nicht, und die Angaben müssen mit dem sichtbaren Seiteninhalt übereinstimmen.",
+      ] },
+    ],
+    faq: [
+      { q: "Wie prüfe ich, ob meine Website strukturierte Daten hat?", a: "Mit dem Test für Rich-Suchergebnisse von Google oder dem Schema Markup Validator von schema.org." },
+      { q: "Brauche ich dafür ein neues Website-System?", a: "Nein. Strukturierte Daten lassen sich in nahezu jede bestehende Website einbauen." },
+    ],
+    related: ["ki-suche-ai-overviews", "geo", "nap-konsistenz"],
+    ratgeber: "in-chatgpt-und-perplexity-gefunden-werden",
+    service: "website-google-search",
   },
   {
-    term: 'KI-Suche & AI Overviews',
-    short: 'Antworten, die ein KI-System zusammenfasst, statt eine Linkliste auszugeben.',
-    body: 'ChatGPT, Perplexity und die KI-Übersichten in der Google-Suche beantworten Fragen direkt und nennen dabei einige wenige Quellen und Unternehmen. Wer in diesen Antworten nicht vorkommt, ist für diesen Teil der Kundschaft nicht vorhanden — auch bei guter klassischer Platzierung.',
-    ratgeber: 'in-chatgpt-und-perplexity-gefunden-werden',
-    service: 'ai-search-optimization',
+    slug: "ki-suche-ai-overviews",
+    term: "KI-Suche & AI Overviews",
+    short: "Antworten, die ein KI-System zusammenfasst, statt eine Linkliste auszugeben.",
+    body: "ChatGPT, Perplexity und die KI-Übersichten in der Google-Suche beantworten Fragen direkt und nennen dabei einige wenige Quellen und Unternehmen. Wer in diesen Antworten nicht vorkommt, ist für diesen Teil der Kundschaft nicht vorhanden — auch bei guter klassischer Platzierung.",
+    sections: [
+      { h: "Was ist KI-Suche?", p: [
+        "ChatGPT, Perplexity und die KI-Übersichten in der Google-Suche beantworten Fragen direkt und nennen dabei einige wenige Quellen und Unternehmen. Wer in diesen Antworten nicht vorkommt, ist für diesen Teil der Kundschaft nicht vorhanden — auch bei guter klassischer Platzierung.",
+      ] },
+      { h: "Woher KI-Systeme ihre Informationen nehmen", p: [
+        "Aus Websites, Verzeichnissen, Bewertungsportalen, Presseberichten und Kartendiensten. Die KI fasst zusammen, was sie an mehreren Stellen übereinstimmend findet — widersprüchliche oder fehlende Angaben führen dazu, dass ein Unternehmen nicht genannt wird.",
+      ] },
+      { h: "Was lokale Unternehmen tun können", p: [
+        "Klare Seiten zu jeder Leistung und Region, strukturierte Daten, einheitliche Angaben im ganzen Netz, echte Bewertungen und Erwähnungen auf vertrauenswürdigen Seiten. Außerdem dürfen KI-Crawler in der robots.txt nicht ausgesperrt sein.",
+      ] },
+    ],
+    faq: [
+      { q: "Ersetzt die KI-Suche die Google-Suche?", a: "Nicht vollständig. Sie verändert aber, wie Menschen Fragen stellen, und ein wachsender Teil der Recherche beginnt in ChatGPT, Perplexity oder den AI Overviews." },
+      { q: "Kann ich festlegen, was ChatGPT über mein Unternehmen sagt?", a: "Nein. Sie können nur die Quellen verbessern, aus denen die Antworten entstehen." },
+    ],
+    related: ["geo", "schema-markup", "lokale-verzeichnisse"],
+    ratgeber: "in-chatgpt-und-perplexity-gefunden-werden",
+    service: "ai-search-optimization",
   },
   {
-    term: 'GEO (Generative Engine Optimization)',
-    short: 'Die Arbeit daran, in KI-generierten Antworten korrekt vorzukommen.',
-    body: 'GEO ist keine geheime zweite Disziplin neben SEO. Es geht um dieselben Grundlagen — klare Inhalte, saubere Technik, abrufbare Seiten, übereinstimmende Angaben, externe Bestätigung — nur konsequent auf die Frage ausgerichtet, ob ein Sprachmodell Ihr Unternehmen verlässlich wiedergeben kann.',
-    ratgeber: 'in-chatgpt-und-perplexity-gefunden-werden',
-    service: 'ai-search-optimization',
+    slug: "geo",
+    term: "GEO (Generative Engine Optimization)",
+    short: "Die Arbeit daran, in KI-generierten Antworten korrekt vorzukommen.",
+    body: "GEO ist keine geheime zweite Disziplin neben SEO. Es geht um dieselben Grundlagen — klare Inhalte, saubere Technik, abrufbare Seiten, übereinstimmende Angaben, externe Bestätigung — nur konsequent auf die Frage ausgerichtet, ob ein Sprachmodell Ihr Unternehmen verlässlich wiedergeben kann.",
+    sections: [
+      { h: "Was ist GEO?", p: [
+        "GEO ist keine geheime zweite Disziplin neben SEO. Es geht um dieselben Grundlagen — klare Inhalte, saubere Technik, abrufbare Seiten, übereinstimmende Angaben, externe Bestätigung — nur konsequent auf die Frage ausgerichtet, ob ein Sprachmodell Ihr Unternehmen verlässlich wiedergeben kann.",
+      ] },
+      { h: "Der Unterschied zwischen GEO und SEO", p: [
+        "SEO zielt auf Platzierungen in einer Ergebnisliste, GEO darauf, in einer zusammengefassten Antwort genannt und richtig beschrieben zu werden. Die Maßnahmen überschneiden sich stark; neu ist vor allem der Blick auf externe Quellen und eindeutige Formulierungen.",
+      ] },
+      { h: "Wie GEO in der Praxis aussieht", p: [
+        "Fragen, die Kunden stellen, werden auf der Website direkt beantwortet. Unternehmensangaben werden vereinheitlicht und strukturiert ausgezeichnet. Dann wird regelmäßig geprüft, ob und wie KI-Assistenten das Unternehmen bei typischen Anfragen nennen.",
+      ] },
+    ],
+    faq: [
+      { q: "Braucht ein lokales Unternehmen eine eigene GEO-Agentur?", a: "In der Regel nicht. GEO gehört zu einer sauberen Gesamtstrategie für lokale Sichtbarkeit und sollte nicht getrennt davon betrieben werden." },
+      { q: "Lässt sich GEO messen?", a: "Teilweise: durch regelmäßige Testanfragen in verschiedenen KI-Assistenten und durch Besucher, die von dort auf Ihre Website kommen." },
+    ],
+    related: ["ki-suche-ai-overviews", "schema-markup", "lokale-verzeichnisse"],
+    ratgeber: "in-chatgpt-und-perplexity-gefunden-werden",
+    service: "ai-search-optimization",
   },
   {
-    term: 'Servicegebiet',
-    short: 'Die Region, in der Sie arbeiten — auch ohne Ladengeschäft vor Ort.',
-    body: 'Betriebe, die zu ihren Kunden fahren, können im Google-Profil ein Servicegebiet hinterlegen, statt eine Adresse zu veröffentlichen. Auf der Website gehört dazu je eine eigene Seite pro Region, damit für jede Stadt nachvollziehbar ist, welche Leistung Sie dort anbieten.',
-    service: 'website-google-search',
+    slug: "servicegebiet",
+    term: "Servicegebiet",
+    short: "Die Region, in der Sie arbeiten — auch ohne Ladengeschäft vor Ort.",
+    body: "Betriebe, die zu ihren Kunden fahren, können im Google-Profil ein Servicegebiet hinterlegen, statt eine Adresse zu veröffentlichen. Auf der Website gehört dazu je eine eigene Seite pro Region, damit für jede Stadt nachvollziehbar ist, welche Leistung Sie dort anbieten.",
+    sections: [
+      { h: "Was ist ein Servicegebiet?", p: [
+        "Betriebe, die zu ihren Kunden fahren, können im Google-Profil ein Servicegebiet hinterlegen, statt eine Adresse zu veröffentlichen. Auf der Website gehört dazu je eine eigene Seite pro Region, damit für jede Stadt nachvollziehbar ist, welche Leistung Sie dort anbieten.",
+      ] },
+      { h: "Das Servicegebiet im Google-Unternehmensprofil", p: [
+        "Sie können Städte, Postleitzahlen oder Regionen angeben. Google empfiehlt, das Gebiet realistisch zu halten: ungefähr zwei Stunden Fahrzeit vom Betriebssitz.",
+        "Ein großes Servicegebiet verbessert nicht automatisch die Platzierung in weiter entfernten Orten — dort zählt vor allem, was Ihre Website über diese Orte aussagt.",
+      ] },
+      { h: "Regionenseiten auf der Website", p: [
+        "Für jede wichtige Stadt eine eigene Seite mit echten Informationen: welche Leistungen Sie dort anbieten, wie schnell Sie vor Ort sind, Referenzen aus dem Ort. Kopierte Seiten, in denen nur der Ortsname ausgetauscht ist, bringen wenig.",
+      ] },
+    ],
+    faq: [
+      { q: "Kann ich Adresse und Servicegebiet gleichzeitig angeben?", a: "Ja, wenn Kunden Sie auch vor Ort besuchen. Wenn nicht, sollte die Adresse ausgeblendet werden." },
+    ],
+    related: ["google-unternehmensprofil", "local-pack", "suchintention"],
+    service: "website-google-search",
   },
   {
-    term: 'Sichtbarkeits-Check',
-    short: 'Unsere kostenlose Bestandsaufnahme Ihrer aktuellen lokalen Präsenz.',
-    body: 'Wir sehen uns an, wie Ihr Unternehmen heute bei Google Maps, in der Google-Suche und in der KI-Suche dargestellt wird, vergleichen das mit Ihren lokalen Mitbewerbern und benennen die Maßnahmen, die in Ihrer Situation den größten Effekt haben. Ohne Verkaufsgespräch.',
+    slug: "sichtbarkeits-check",
+    term: "Sichtbarkeits-Check",
+    short: "Unsere kostenlose Bestandsaufnahme Ihrer aktuellen lokalen Präsenz.",
+    body: "Wir sehen uns an, wie Ihr Unternehmen heute bei Google Maps, in der Google-Suche und in der KI-Suche dargestellt wird, vergleichen das mit Ihren lokalen Mitbewerbern und benennen die Maßnahmen, die in Ihrer Situation den größten Effekt haben. Ohne Verkaufsgespräch.",
+    sections: [
+      { h: "Was ist der Sichtbarkeits-Check?", p: [
+        "Wir sehen uns an, wie Ihr Unternehmen heute bei Google Maps, in der Google-Suche und in der KI-Suche dargestellt wird, vergleichen das mit Ihren lokalen Mitbewerbern und benennen die Maßnahmen, die in Ihrer Situation den größten Effekt haben. Ohne Verkaufsgespräch.",
+      ] },
+      { h: "Was wir prüfen", p: [
+        "Ihr Google-Unternehmensprofil, die Platzierung bei wichtigen lokalen Suchbegriffen, Website und Technik, Bewertungen im Vergleich zu Mitbewerbern, Einträge in Verzeichnissen und ob KI-Assistenten Ihr Unternehmen nennen.",
+      ] },
+      { h: "Was Sie danach erhalten", p: [
+        "Eine verständliche Übersicht mit den wichtigsten Lücken und einer Reihenfolge der Maßnahmen — was zuerst, was später und was Sie selbst erledigen können. Ob Sie danach mit uns arbeiten, entscheiden Sie.",
+      ] },
+    ],
+    faq: [
+      { q: "Was kostet der Sichtbarkeits-Check?", a: "Nichts. Der Check ist kostenlos und unverbindlich." },
+      { q: "Wie lange dauert der Check?", a: "Die Anfrage dauert wenige Minuten. Die Auswertung erhalten Sie in der Regel innerhalb von 24 Stunden." },
+    ],
+    related: ["lokale-sichtbarkeit", "google-unternehmensprofil", "bewertungen"],
   },
 ]
 
@@ -3574,7 +3794,7 @@ function RatgeberArticlePage({ slug }: { slug: string }) {
           <Kicker>Begriffe aus diesem Artikel</Kicker>
           <div style={{ marginTop: 22, borderTop: '1px solid var(--line)' }}>
             {terms.map(t => (
-              <a key={t.term} href="/glossar" style={{
+              <a key={t.term} href={`/glossar/${t.slug}`} style={{
                 display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16,
                 padding: '16px 0', borderBottom: '1px solid var(--line)', textDecoration: 'none', color: 'inherit',
               }}>
@@ -3618,13 +3838,50 @@ function RatgeberArticlePage({ slug }: { slug: string }) {
   )
 }
 
+const GLOSSAR_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
+const glossarLetter = (term: string) => {
+  const c = term.charAt(0).toUpperCase()
+  return ({ 'Ä': 'A', 'Ö': 'O', 'Ü': 'U' } as Record<string, string>)[c] ?? c
+}
+const glossarOrigin = () => (typeof window !== 'undefined' ? window.location.origin : '')
+
+const glossarCSS = `
+.gl-az a{transition:background-color .2s,color .2s,border-color .2s}
+.gl-az a:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.gl-term{transition:color .2s}
+.gl-term:hover{color:var(--electric)}
+.gl-term .arw{transition:transform .25s}
+.gl-term:hover .arw{transform:translateX(4px)}
+.gl-search:focus{outline:none;border-color:var(--electric)}
+.gl-faq summary{list-style:none;cursor:pointer}
+.gl-faq summary::-webkit-details-marker{display:none}
+.gl-faq .gl-plus{transition:transform .25s}
+.gl-faq details[open] .gl-plus{transform:rotate(45deg)}
+.gl-card{transition:border-color .2s,transform .25s}
+.gl-card:hover{border-color:var(--ink);transform:translateY(-2px)}
+@media (min-width: 900px){.gl-aside{position:sticky;top:110px}}
+`
+
+// /glossar — A–Z-Index nach dem Vorbild agenturro.co/glossar:
+// Suche, Buchstabenleiste, Begriffe nach Anfangsbuchstaben, jeder Begriff verlinkt auf seine eigene Seite.
 function GlossarPage() {
   usePageMeta(
     'Glossar — Begriffe der lokalen Sichtbarkeit | RAG',
     'Local Pack, NAP-Konsistenz, GEO, strukturierte Daten: die wichtigsten Begriffe rund um Google Maps, lokale Suche und KI-Suche, kurz erklärt.',
   )
+  const [q, setQ] = useState('')
+  const query = q.trim().toLowerCase()
+  const sorted = [...glossarEntries].sort((a, b) => a.term.localeCompare(b.term, 'de'))
+  const visible = query ? sorted.filter(g => (g.term + ' ' + g.short).toLowerCase().includes(query)) : sorted
+  const groups = GLOSSAR_ALPHABET
+    .map(l => ({ l, items: visible.filter(g => glossarLetter(g.term) === l) }))
+    .filter(x => x.items.length > 0)
+  const active = new Set(groups.map(g => g.l))
+  const origin = glossarOrigin()
+
   return (
     <>
+      <style>{glossarCSS}</style>
       <Nav />
       <main id="inhalt">
       <JsonLd data={{
@@ -3632,50 +3889,239 @@ function GlossarPage() {
         '@type': 'DefinedTermSet',
         name: 'Glossar der lokalen Sichtbarkeit',
         inLanguage: 'de',
+        url: origin + '/glossar',
         hasDefinedTerm: glossarEntries.map(g => ({
           '@type': 'DefinedTerm',
           name: g.term,
-          description: g.body,
+          description: g.short,
+          url: origin + '/glossar/' + g.slug,
         })),
       }} />
       <ContentHero
         crumbs={[{ label: 'Start', href: '/' }, { label: 'Glossar' }]}
         kicker="GLOSSAR"
         title={<>Die Begriffe, <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>kurz erklärt</span></>}
-        sub="Von Local Pack bis GEO: was hinter den Wörtern steckt, die in Angeboten und Berichten zur lokalen Sichtbarkeit auftauchen."
+        sub="Alle Begriffe von A bis Z — mit Suche. Jeder Begriff hat eine eigene Seite mit Erklärung, Praxis-Tipps und häufigen Fragen."
       />
-      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(56px, 7vw, 90px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)' }}>
+      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(48px, 6vw, 80px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)' }}>
         <div style={{ ...SHELL }}>
-          <div style={{ borderTop: '1px solid var(--line)' }}>
-            {glossarEntries.map((g, i) => {
-              const service = g.service ? modules.find(m => m.slug === g.service) : undefined
-              return (
-                <div key={g.term} style={{
-                  display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                  gap: 'clamp(14px, 2vw, 48px)', padding: 'clamp(26px, 3vw, 40px) 0', borderBottom: '1px solid var(--line)',
-                }}>
-                  <div>
-                    <span className="display" style={{ fontSize: 13, color: 'var(--electric)', letterSpacing: '0.08em' }}>{String(i + 1).padStart(2, '0')}</span>
-                    <h2 className="display" style={{ fontSize: 'clamp(19px, 1.9vw, 26px)', lineHeight: 1.2, margin: '10px 0 8px' }}>{g.term}</h2>
-                    <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--ink)', fontWeight: 600, margin: 0, maxWidth: 360 }}>{g.short}</p>
-                  </div>
-                  <div>
-                    <p style={{ fontSize: 15, lineHeight: 1.85, color: 'var(--muted)', margin: 0 }}>{g.body}</p>
-                    {service && (
-                      <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginTop: 16 }}>
-                        {/* links to the Ratgeber removed from the glossary (16.09) */}
-                        {service && (
-                          <a href={`/services/${service.slug}`} className="ul" style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>Passende Leistung →</a>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
+          {/* Suche */}
+          <label htmlFor="glossar-suche" className="display" style={{ display: 'block', fontSize: 'clamp(18px, 1.8vw, 24px)', marginBottom: 14 }}>
+            Für welchen Begriff interessieren Sie sich?
+          </label>
+          <input
+            id="glossar-suche"
+            type="search"
+            className="gl-search"
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            placeholder="Begriff suchen …"
+            autoComplete="off"
+            style={{
+              width: '100%', maxWidth: 560, height: 54, padding: '0 20px', fontSize: 16,
+              border: '1px solid var(--line)', borderRadius: 999, background: 'var(--bone)', color: 'var(--ink)',
+            }}
+          />
+
+          {/* Buchstabenleiste */}
+          <nav aria-label="Alphabet" className="gl-az" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: 'clamp(28px, 3vw, 40px) 0 clamp(20px, 3vw, 36px)' }}>
+            {GLOSSAR_ALPHABET.map(l => active.has(l)
+              ? <a key={l} href={`#buchstabe-${l.toLowerCase()}`} className="display" style={{
+                  width: 40, height: 40, display: 'grid', placeItems: 'center', fontSize: 15,
+                  border: '1px solid var(--line)', borderRadius: 10, color: 'var(--ink)', textDecoration: 'none',
+                }}>{l}</a>
+              : <span key={l} aria-disabled="true" className="display" style={{
+                  width: 40, height: 40, display: 'grid', placeItems: 'center', fontSize: 15,
+                  borderRadius: 10, color: 'var(--ink)', opacity: 0.2,
+                }}>{l}</span>)}
+          </nav>
+
+          {/* Begriffe nach Buchstaben — zwei Spalten mit Buchstabengruppen, Begriffe untereinander */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 440px), 1fr))', columnGap: 'clamp(32px, 5vw, 80px)', alignItems: 'start', borderBottom: '1px solid var(--line)' }}>
+            {groups.map(({ l, items }) => (
+              <section key={l} id={`buchstabe-${l.toLowerCase()}`} aria-label={l} style={{
+                display: 'grid', gridTemplateColumns: 'clamp(52px, 5vw, 80px) minmax(0, 1fr)', gap: 'clamp(12px, 2vw, 28px)',
+                padding: 'clamp(22px, 2.6vw, 32px) 0', borderTop: '1px solid var(--line)', scrollMarginTop: 100,
+              }}>
+                <h2 className="display" style={{ fontSize: 'clamp(30px, 3vw, 44px)', lineHeight: 1, margin: '4px 0 0', color: 'var(--electric)' }}>{l}</h2>
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                  {items.map(g => (
+                    <li key={g.slug}>
+                      <a href={`/glossar/${g.slug}`} className="gl-term display" style={{
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12,
+                        padding: '9px 0', fontSize: 'clamp(16px, 1.4vw, 19px)', lineHeight: 1.35, color: 'var(--ink)', textDecoration: 'none',
+                      }}>
+                        <span>{g.term}</span>
+                        <span className="arw" aria-hidden style={{ color: 'var(--electric)', flexShrink: 0 }}>→</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+            {groups.length === 0 && (
+              <div style={{ padding: '40px 0', borderTop: '1px solid var(--line)' }}>
+                <p style={{ fontSize: 15.5, color: 'var(--muted)', margin: '0 0 14px' }}>Kein Begriff gefunden.</p>
+                <button type="button" onClick={() => setQ('')} className="ul" style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', fontSize: 14, fontWeight: 600, color: 'var(--electric)' }}>Suche zurücksetzen</button>
+              </div>
+            )}
           </div>
         </div>
       </section>
+      <ContentCTA />
+      </main>
+      <Footer />
+    </>
+  )
+}
+
+// /glossar/:slug — eigene Seite pro Begriff: Navigation, nummerierte Abschnitte, FAQ,
+// passende Leistung und verwandte Begriffe (wie agenturro.co/glossar/wordpress).
+function GlossarTermPage({ slug }: { slug: string }) {
+  const g = glossarEntries.find(x => x.slug === slug)
+  usePageMeta(
+    g ? `${g.term} — einfach erklärt | RAG Glossar` : 'Begriff nicht gefunden | RAG',
+    g ? g.short : 'Diesen Begriff gibt es im Glossar nicht.',
+    'article',
+  )
+  if (!g) {
+    return (
+      <>
+        <Nav />
+        <main id="inhalt" style={{ padding: '180px clamp(20px,4vw,48px) 120px' }}>
+          <div style={{ ...SHELL }}>
+            <h1 className="display" style={{ fontSize: 30, marginBottom: 14 }}>Begriff nicht gefunden</h1>
+            <a href="/glossar" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>← Zurück zum Glossar</a>
+          </div>
+        </main>
+        <Footer />
+      </>
+    )
+  }
+
+  const service = g.service ? modules.find(m => m.slug === g.service) : undefined
+  const related = g.related.map(s => glossarEntries.find(x => x.slug === s)).filter((x): x is GlossarEntry => !!x)
+  const origin = glossarOrigin()
+  const toc = [
+    ...g.sections.map((s, i) => ({ id: `abschnitt-${i + 1}`, n: `${i + 1}.`, label: s.h })),
+    ...(g.faq.length ? [{ id: 'fragen', n: '', label: 'Häufige Fragen' }] : []),
+    ...(service ? [{ id: 'leistung', n: '', label: 'Passende Leistung' }] : []),
+  ]
+
+  return (
+    <>
+      <style>{glossarCSS}</style>
+      <Nav />
+      <main id="inhalt">
+      <article>
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'DefinedTerm',
+        name: g.term,
+        description: g.body,
+        url: origin + '/glossar/' + g.slug,
+        inLanguage: 'de',
+        inDefinedTermSet: { '@type': 'DefinedTermSet', name: 'Glossar der lokalen Sichtbarkeit', url: origin + '/glossar' },
+      }} />
+      {g.faq.length > 0 && (
+        <JsonLd data={{
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: g.faq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+        }} />
+      )}
+      <ContentHero
+        crumbs={[{ label: 'Start', href: '/' }, { label: 'Glossar', href: '/glossar' }, { label: g.term }]}
+        kicker="GLOSSAR"
+        title={g.term}
+        sub={g.short}
+      />
+
+      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(48px, 6vw, 84px) clamp(20px,4vw,48px)' }}>
+        <div style={{ ...SHELL, display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 'clamp(32px, 5vw, 80px)' }}>
+          {/* Navigation */}
+          <aside className="gl-aside" style={{ flex: '1 1 220px', maxWidth: 300 }}>
+            <Kicker>Navigation</Kicker>
+            <ol style={{ listStyle: 'none', margin: '18px 0 26px', padding: 0 }}>
+              {toc.map(t => (
+                <li key={t.id} style={{ borderBottom: '1px solid var(--line)' }}>
+                  <a href={`#${t.id}`} className="gl-term" style={{ display: 'flex', gap: 10, padding: '11px 0', fontSize: 14, lineHeight: 1.45, color: 'var(--ink)', textDecoration: 'none' }}>
+                    <span style={{ color: 'var(--electric)', minWidth: 18 }}>{t.n}</span>
+                    <span>{t.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+            <a href="/glossar" className="ul" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--ink)' }}>← Alle Begriffe im Glossar</a>
+          </aside>
+
+          {/* Inhalt */}
+          <div style={{ flex: '999 1 480px', maxWidth: 760, minWidth: 0 }}>
+            {g.sections.map((s, i) => (
+              <section key={s.h} id={`abschnitt-${i + 1}`} style={{ marginBottom: 'clamp(34px, 4vw, 52px)', scrollMarginTop: 100 }}>
+                <h2 className="display" style={{ fontSize: 'clamp(21px, 2.1vw, 29px)', lineHeight: 1.22, margin: '0 0 14px' }}>
+                  <span style={{ color: 'var(--electric)', marginRight: 10 }}>{i + 1}.</span><span>{s.h}</span>
+                </h2>
+                {s.p.map((t, j) => (
+                  <p key={j} style={{ fontSize: 15.5, lineHeight: 1.85, color: 'var(--muted)', margin: '0 0 14px' }}>{t}</p>
+                ))}
+              </section>
+            ))}
+
+            {g.faq.length > 0 && (
+              <section id="fragen" className="gl-faq" style={{ marginBottom: 'clamp(34px, 4vw, 52px)', scrollMarginTop: 100 }}>
+                <h2 className="display" style={{ fontSize: 'clamp(21px, 2.1vw, 29px)', lineHeight: 1.22, margin: '0 0 18px' }}>Häufige Fragen</h2>
+                <div style={{ borderTop: '1px solid var(--line)' }}>
+                  {g.faq.map(f => (
+                    <details key={f.q} style={{ borderBottom: '1px solid var(--line)' }}>
+                      <summary style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, padding: '18px 0' }}>
+                        <span className="display" style={{ fontSize: 16.5, lineHeight: 1.4 }}>{f.q}</span>
+                        <span className="gl-plus" aria-hidden style={{ fontSize: 22, lineHeight: 1, color: 'var(--electric)', flexShrink: 0 }}>+</span>
+                      </summary>
+                      <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '0 0 20px', maxWidth: 680 }}>{f.a}</p>
+                    </details>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {service && (
+              <section id="leistung" style={{ scrollMarginTop: 100 }}>
+                <Kicker>Passende Leistung</Kicker>
+                <div style={{ marginTop: 18, border: '1px solid var(--line)', borderRadius: 20, padding: 'clamp(24px, 3vw, 36px)' }}>
+                  <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 28px)', margin: '0 0 10px' }}>{service.label}</h2>
+                  <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '0 0 8px' }}>{service.sentence}</p>
+                  <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 22px' }}>Wie wir das für Ihr Unternehmen umsetzen, lesen Sie auf der Leistungsseite.</p>
+                  <a href={`/services/${service.slug}`} className="btn btn-md btn-ink">Zur Leistungsseite <span className="arw">→</span></a>
+                </div>
+              </section>
+            )}
+          </div>
+        </div>
+      </section>
+      </article>
+
+      {/* Verwandte Begriffe */}
+      {related.length > 0 && (
+        <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(50px, 6vw, 84px) clamp(20px,4vw,48px)' }}>
+          <div style={{ ...SHELL }}>
+            <Kicker>Das könnte Sie auch interessieren</Kicker>
+            <div style={{ marginTop: 22, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
+              {related.map(r => (
+                <a key={r.slug} href={`/glossar/${r.slug}`} className="gl-card" style={{
+                  display: 'flex', flexDirection: 'column', gap: 10, padding: 'clamp(20px, 2.4vw, 28px)',
+                  background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 18, textDecoration: 'none', color: 'inherit',
+                }}>
+                  <span className="display" style={{ fontSize: 18, lineHeight: 1.3 }}>{r.term}</span>
+                  <span style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--muted)', flex: 1 }}>{r.short}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--electric)' }}>Begriff ansehen →</span>
+                </a>
+              ))}
+            </div>
+            <a href="/glossar" className="ul" style={{ display: 'inline-block', marginTop: 28, fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>← Alle Begriffe im Glossar</a>
+          </div>
+        </section>
+      )}
       <ContentCTA />
       </main>
       <Footer />
@@ -4140,6 +4586,10 @@ export default function App() {
   }
   if (/^\/ratgeber\/?$/.test(path)) {
     return <RatgeberIndex />
+  }
+  const glossarMatch = path.match(/^\/glossar\/([a-z0-9-]+)\/?$/)
+  if (glossarMatch) {
+    return <GlossarTermPage slug={glossarMatch[1]} />
   }
   if (/^\/glossar\/?$/.test(path)) {
     return <GlossarPage />

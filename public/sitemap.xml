@@ -21,6 +21,66 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://rag-agentur.de/glossar/lokale-sichtbarkeit</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://rag-agentur.de/glossar/google-unternehmensprofil</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://rag-agentur.de/glossar/local-pack</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://rag-agentur.de/glossar/nap-konsistenz</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://rag-agentur.de/glossar/lokale-verzeichnisse</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://rag-agentur.de/glossar/bewertungen</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://rag-agentur.de/glossar/suchintention</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://rag-agentur.de/glossar/schema-markup</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://rag-agentur.de/glossar/ki-suche-ai-overviews</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://rag-agentur.de/glossar/geo</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://rag-agentur.de/glossar/servicegebiet</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://rag-agentur.de/glossar/sichtbarkeits-check</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://rag-agentur.de/services/google-maps-business-profile</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
