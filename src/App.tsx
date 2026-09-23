@@ -400,7 +400,7 @@ function PerplexityLogo() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SHARED: booking days + SlotPicker (reused in nav modal and audit quiz)
-// ─────────────────────────────────────────────────────────────────────────────
+// ──────────────────��──────────────────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────────────────────
 // MOTION / LAYOUT HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1129,10 +1129,10 @@ function Nav() {
   return (
     <header style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 90,
-      backgroundColor: solid ? 'rgba(255,255,255,0.82)' : open ? '#ffffff' : 'transparent',
-      backdropFilter: solid ? 'saturate(180%) blur(18px)' : 'none',
-      WebkitBackdropFilter: solid ? 'saturate(180%) blur(18px)' : 'none',
-      borderBottom: `1px solid ${solid ? 'var(--line)' : 'transparent'}`,
+      backgroundColor: solid ? '#ffffff' : open ? '#ffffff' : 'transparent',
+      backdropFilter: 'none',
+      WebkitBackdropFilter: 'none',
+      borderBottom: `${solid ? '2px' : '0px'} solid ${solid ? 'var(--ink)' : 'transparent'}`,
       transition: 'background-color 0.5s ease, border-color 0.5s ease, backdrop-filter 0.5s ease',
     }}>
       <nav aria-label="Hauptnavigation" style={{ ...SHELL, padding: '0 clamp(20px, 4vw, 48px)', height: solid ? 66 : 82, display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'height 0.5s ' + EASE }}>
@@ -1206,8 +1206,8 @@ function RankPanel() {
   return (
     <div className="floaty" style={{ position: 'relative', width: '100%', maxWidth: 370 }}>
       <div style={{
-        position: 'relative', backgroundColor: '#fff', borderRadius: 24, padding: 16,
-        boxShadow: '0 40px 90px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)',
+        position: 'relative', backgroundColor: '#fff', borderRadius: 0, padding: 16,
+        border: '2px solid #07070C', boxShadow: '8px 8px 0 var(--electric)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 999, backgroundColor: '#F2F2F5', marginBottom: 14 }}>
           <GMapsLogo />
@@ -1279,7 +1279,7 @@ function Hero() {
             <div className="mask-line" style={{ marginBottom: 26 }}>
               <span style={{ ['--d' as any]: '0s' }}>
                 {/* Bewertungsplakette wie in der Kundenvorlage: Google-Logo · 5,0 · Sterne · bei Google (21.09) */}
-                <span role="img" aria-label="Bewertung 5,0 von 5 Sternen bei Google" style={{ display: 'inline-flex', alignItems: 'center', gap: 14, border: '1px solid rgba(255,255,255,0.16)', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 999, padding: '8px 22px 8px 8px' }}>
+                <span role="img" aria-label="Bewertung 5,0 von 5 Sternen bei Google" style={{ display: 'inline-flex', alignItems: 'center', gap: 14, border: '2px solid #fff', backgroundColor: 'transparent', borderRadius: 0, padding: '8px 22px 8px 8px', boxShadow: '4px 4px 0 var(--electric)' }}>
                   <span aria-hidden style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: '#fff', display: 'grid', placeItems: 'center', flexShrink: 0 }}><GLogo /></span>
                   <span aria-hidden className="display" style={{ fontSize: 22, color: '#fff', lineHeight: 1 }}>5,0</span>
                   <span aria-hidden style={{ display: 'inline-flex', gap: 2 }}>
@@ -2410,7 +2410,7 @@ function ServiceSelector() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PROCESS
-// ─────────────────────────────────────────────────────────────────────────────
+// ���────────────────────────────────────────────────────────────────────────────
 function TwoRoutes() {
   const [order, setOrder] = useState<null | WebsiteAddon>(null)
   const routeA = [
@@ -4735,11 +4735,12 @@ const responsiveCSS = `
 /* Startseite: Kanal-Karten und Kanalblöcke (21.09) */
 .chan-card {
   display: flex; flex-direction: column; gap: 12px; height: 100%; box-sizing: border-box;
-  padding: clamp(22px, 2.2vw, 30px); border: 1px solid var(--line); border-radius: 22px;
+  padding: clamp(22px, 2.2vw, 30px); border: var(--border-w) solid var(--ink); border-radius: 0;
   background: var(--paper); color: inherit; text-decoration: none;
-  transition: border-color .25s ease, transform .3s ease, box-shadow .3s ease;
+  box-shadow: var(--shadow);
+  transition: transform .12s var(--ease), box-shadow .12s var(--ease);
 }
-.chan-card:hover { border-color: var(--electric); transform: translateY(-3px); box-shadow: 0 20px 40px rgba(38,0,255,0.08); }
+.chan-card:hover { transform: translate(-3px, -3px); box-shadow: var(--shadow-lg); }
 .chan-num { font-size: 13px; color: var(--electric); letter-spacing: .08em; }
 .chan-more { font-size: 13.5px; font-weight: 600; color: var(--electric); margin-top: 6px; }
 .chan-arrow { display: inline-block; transition: transform .25s ease; }
@@ -4766,7 +4767,7 @@ const responsiveCSS = `
 .promo-row-toggle { display: inline-flex; align-items: center; gap: 12px; justify-self: end; }
 .promo-row-more { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; }
 .promo-row-icon {
-  width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line);
+  width: 38px; height: 38px; border-radius: 0; border: var(--border-w) solid var(--ink);
   display: inline-flex; align-items: center; justify-content: center;
   font-size: 20px; line-height: 1; color: var(--ink);
   transition: transform 0.35s ease, background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
