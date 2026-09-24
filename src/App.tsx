@@ -905,113 +905,354 @@ function BookCallModal({ onClose }: { onClose: () => void }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PROFILE ORDER — Google-Unternehmensprofil (einmalig) + optional a monthly website package
+// PREISE (25.09.2026) — Die Website ist ein eigenes Produkt: drei Pakete pro Monat.
+// Social-Media-Betreuung ist das Add-on: zu jedem Paket dazu — oder ganz allein.
+// Das Google-Unternehmensprofil (149 € einmalig) bleibt als separater Einstieg.
+// Quelle: Produktkatalog «RAG · Каталог продуктов» vom 24.09.2026.
 // ─────────────────────────────────────────────────────────────────────────────
-type WebsiteAddon = '' | 'onepager' | 'live'
+type PackageId = 'onepager' | 'local' | 'aiplus'
+type PackageOrder = { pkg: PackageId | null; social: boolean }
 
 const PROFILE_PRICE = '149 €'
-const websiteAddons: { id: Exclude<WebsiteAddon, ''>; title: string; price: string; items: string[] }[] = [
-  { id: 'onepager', title: 'Onepager-Website', price: '29 €', items: ['Ihre Website auf einer Seite'] },
-  { id: 'live', title: 'Lebendige Website', price: '199 €', items: ['Website mit SEO', '5 Artikel pro Monat', 'Social-Media-Betreuung: 5 Posts und 10 Reels pro Monat'] },
+
+const WEBSITE_PACKAGES: { id: PackageId; tag: string; name: string; price: number; thesis: string; includes: string[] }[] = [
+  {
+    id: 'onepager', tag: 'Einstieg', name: 'One Pager', price: 30,
+    thesis: 'Ein professioneller Auftritt im Netz — schnell und günstig.',
+    includes: ['Website auf einer Seite', 'Leistungen und Kontakt klar aufgebaut', 'Optimiert für das Smartphone', 'Hosting und technische Betreuung'],
+  },
+  {
+    id: 'local', tag: 'Standard', name: 'Local Website', price: 299,
+    thesis: 'Ihre Website bringt Anfragen aus Ihrer Stadt und Region.',
+    includes: ['Mehrseitige lokale Website', 'Seiten für Leistungen und Orte', 'Google-Unternehmensprofil', 'Lokales SEO (Grundlagen)', 'Regelmäßige Updates und Betreuung'],
+  },
+  {
+    id: 'aiplus', tag: 'Premium', name: 'AI Plus', price: 499,
+    thesis: 'Maximale Sichtbarkeit — bei Google, in Karten, Verzeichnissen und der KI-Suche.',
+    includes: ['Alles aus Local Website', 'Erweiterte Optimierung des Google-Profils', 'Verzeichnisse und einheitliche Unternehmensdaten', 'Inhalte für Google und die KI-Suche', 'Monitoring und Empfehlungen'],
+  },
 ]
 
-function ProfileOrderModal({ onClose, initialAddon = '' }: { onClose: () => void; initialAddon?: WebsiteAddon }) {
-  const [addon, setAddon] = useState<WebsiteAddon>(initialAddon)
-  const [name, setName] = useState('')
-  const [company, setCompany] = useState('')
-  const [contact, setContact] = useState('')
-  const [done, setDone] = useState(false)
-  const chosen = websiteAddons.find(w => w.id === addon)
-  const canSend = name.trim() !== '' && contact.trim() !== ''
+const SOCIAL_ADDON = {
+  name: 'Social-Media-Betreuung', price: 199,
+  thesis: 'Regelmäßig präsent in sozialen Netzwerken — ohne selbst planen und posten zu müssen.',
+  includes: ['Redaktionsplan', 'Vorbereitung der Beiträge', 'Regelmäßiges Posten', 'Themen passend zu Ihren Leistungen und Ihrer Region'],
+}
 
+function useEscape(onClose: () => void) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
+}
 
-  const input: React.CSSProperties = { width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 8, boxSizing: 'border-box', color: 'var(--ink)', backgroundColor: '#fff' }
+const orderInput: React.CSSProperties = { width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 8, boxSizing: 'border-box', color: 'var(--ink)', backgroundColor: '#fff' }
 
-  const Summary = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, backgroundColor: '#F7F6FF', border: '1px solid #E4DFFF', borderRadius: 14, padding: '12px 16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 13.5 }}>
-        <span>Google-Unternehmensprofil</span>
-        <strong style={{ whiteSpace: 'nowrap' }}>{PROFILE_PRICE} <span style={{ fontWeight: 500, color: 'var(--muted)' }}>einmalig</span></strong>
-      </div>
-      {chosen && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 13.5 }}>
-          <span>{chosen.title}</span>
-          <strong style={{ whiteSpace: 'nowrap' }}>{chosen.price} <span style={{ fontWeight: 500, color: 'var(--muted)' }}>pro Monat</span></strong>
-        </div>
-      )}
-    </div>
-  )
-
+function OrderShell({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+  useEscape(onClose)
   return (
     <div onClick={onClose} className="order-overlay"
       style={{ position: 'fixed', inset: 0, zIndex: 200, backgroundColor: 'rgba(7,7,12,0.55)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
       <div role="dialog" aria-modal="true" aria-labelledby="order-title" onClick={e => e.stopPropagation()}
-        style={{ backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 24, boxShadow: '0 40px 90px rgba(7,7,12,0.35)', maxWidth: 520, width: '100%', padding: 'clamp(22px, 4vw, 34px)', position: 'relative', margin: 'auto' }}>
+        style={{ backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 24, boxShadow: '0 40px 90px rgba(7,7,12,0.35)', maxWidth: 540, width: '100%', padding: 'clamp(22px, 4vw, 34px)', position: 'relative', margin: 'auto' }}>
         <button onClick={onClose} aria-label="Schließen" style={{ position: 'absolute', top: 14, right: 14, background: 'none', border: 'none', cursor: 'pointer', color: '#5c5c5c', lineHeight: 1, padding: 4 }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg>
         </button>
-
-        {!done ? (
-          <>
-            <p className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)', marginBottom: 10 }}>Einmalige Einrichtung</p>
-            <h2 id="order-title" style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-0.02em', margin: '0 0 6px', paddingRight: 28 }}>Google-Unternehmensprofil einrichten</h2>
-            <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: '0 0 18px' }}>
-              <strong style={{ color: 'var(--ink)' }}>{PROFILE_PRICE} einmalig</strong> — wir erstellen oder optimieren Ihr Profil. Hinterlassen Sie Ihre Kontaktdaten, wir melden uns zur Abstimmung.
-            </p>
-
-            <input style={input} value={name} onChange={e => setName(e.target.value)} placeholder="Ihr Name" autoComplete="name" />
-            <input style={input} value={company} onChange={e => setCompany(e.target.value)} placeholder="Name Ihres Unternehmens" autoComplete="organization" />
-            <input style={{ ...input, marginBottom: 18 }} value={contact} onChange={e => setContact(e.target.value)} placeholder="Telefon oder E-Mail" autoComplete="email" />
-
-            <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(7,7,12,0.45)', marginBottom: 8 }}>Optional dazu · monatlich</p>
-            <div style={{ display: 'grid', gap: 8, marginBottom: 16 }}>
-              {websiteAddons.map(w => {
-                const on = addon === w.id
-                return (
-                  <label key={w.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', cursor: 'pointer', padding: '12px 14px', borderRadius: 14, border: `1px solid ${on ? '#2600FF' : 'rgba(7,7,12,0.12)'}`, backgroundColor: on ? '#F4F2FF' : '#fff', transition: 'all 0.2s ease' }}>
-                    <input type="checkbox" checked={on} onChange={() => setAddon(on ? '' : w.id)} style={{ width: 18, height: 18, marginTop: 1, accentColor: '#2600FF', flexShrink: 0 }} />
-                    <span style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-                        <span style={{ fontWeight: 600, fontSize: 14.5 }}>{w.title}</span>
-                        <span style={{ fontWeight: 700, fontSize: 14.5, whiteSpace: 'nowrap' }}>{w.price} <span style={{ fontWeight: 500, fontSize: 12.5, color: 'var(--muted)' }}>pro Monat</span></span>
-                      </span>
-                      <span style={{ display: 'block', fontSize: 12.5, lineHeight: 1.55, color: 'var(--muted)', marginTop: 4 }}>
-                        {w.items.map((it, i) => <span key={it} style={{ display: 'block' }}>{i === 0 && w.items.length === 1 ? '' : '· '}{it}</span>)}
-                      </span>
-                    </span>
-                  </label>
-                )
-              })}
-            </div>
-
-            <Summary />
-
-            <button type="button" disabled={!canSend} onClick={() => canSend && setDone(true)}
-              style={{ width: '100%', marginTop: 16, padding: '13px 20px', borderRadius: 999, border: 'none', backgroundColor: canSend ? '#2600FF' : '#e5e7eb', color: canSend ? '#fff' : '#9ca3af', fontWeight: 600, fontSize: 14.5, cursor: canSend ? 'pointer' : 'default', fontFamily: 'inherit' }}>
-              Anfrage senden
-            </button>
-            <p style={{ fontSize: 11.5, color: '#9ca3af', lineHeight: 1.6, margin: '10px 0 0' }}>
-              Die Anfrage ist noch keine Bestellung. Wir klären alles persönlich mit Ihnen, bevor Kosten entstehen.
-            </p>
-          </>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '8px 0' }}>
-            <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: '#EEEBFF', color: '#2600FF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 24, fontWeight: 700 }}>✓</div>
-            <h2 id="order-title" style={{ fontWeight: 700, fontSize: 21, margin: '0 0 10px' }}>Danke, {name.trim()}!</h2>
-            <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.7, margin: '0 0 16px' }}>
-              Wir melden uns unter <strong style={{ color: 'var(--ink)' }}>{contact}</strong> und besprechen die Einrichtung mit Ihnen.
-            </p>
-            <div style={{ textAlign: 'left', marginBottom: 18 }}><Summary /></div>
-            <button type="button" onClick={onClose} style={{ padding: '10px 26px', borderRadius: 999, border: '1px solid rgba(7,7,12,0.15)', backgroundColor: '#fff', fontWeight: 500, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>Schließen</button>
-          </div>
-        )}
+        {children}
       </div>
     </div>
+  )
+}
+
+function OrderRow({ label, value, unit }: { label: string; value: string; unit: string }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 13.5 }}>
+      <span>{label}</span>
+      <strong style={{ whiteSpace: 'nowrap' }}>{value} <span style={{ fontWeight: 500, color: 'var(--muted)' }}>{unit}</span></strong>
+    </div>
+  )
+}
+
+function OrderDone({ name, contact, summary, onClose }: { name: string; contact: string; summary: React.ReactNode; onClose: () => void }) {
+  return (
+    <div style={{ textAlign: 'center', padding: '8px 0' }}>
+      <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: '#EEEBFF', color: '#2600FF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 24, fontWeight: 700 }}>✓</div>
+      <h2 id="order-title" style={{ fontWeight: 700, fontSize: 21, margin: '0 0 10px' }}>Danke, {name.trim()}!</h2>
+      <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.7, margin: '0 0 16px' }}>
+        Wir melden uns unter <strong style={{ color: 'var(--ink)' }}>{contact}</strong> und besprechen alles Weitere mit Ihnen.
+      </p>
+      <div style={{ textAlign: 'left', marginBottom: 18 }}>{summary}</div>
+      <button type="button" onClick={onClose} style={{ padding: '10px 26px', borderRadius: 999, border: '1px solid rgba(7,7,12,0.15)', backgroundColor: '#fff', fontWeight: 500, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>Schließen</button>
+    </div>
+  )
+}
+
+function SendButton({ enabled, onSend, label = 'Anfrage senden' }: { enabled: boolean; onSend: () => void; label?: string }) {
+  return (
+    <>
+      <button type="button" disabled={!enabled} onClick={() => enabled && onSend()}
+        style={{ width: '100%', marginTop: 16, padding: '13px 20px', borderRadius: 999, border: 'none', backgroundColor: enabled ? '#2600FF' : '#e5e7eb', color: enabled ? '#fff' : '#9ca3af', fontWeight: 600, fontSize: 14.5, cursor: enabled ? 'pointer' : 'default', fontFamily: 'inherit' }}>
+        {label}
+      </button>
+      <p style={{ fontSize: 11.5, color: '#9ca3af', lineHeight: 1.6, margin: '10px 0 0' }}>
+        Die Anfrage ist noch keine Bestellung. Wir klären alles persönlich mit Ihnen, bevor Kosten entstehen.
+      </p>
+    </>
+  )
+}
+
+// Google-Unternehmensprofil — einmalige Einrichtung, ohne Website-Kopplung.
+function ProfileOrderModal({ onClose }: { onClose: () => void }) {
+  const [name, setName] = useState('')
+  const [company, setCompany] = useState('')
+  const [contact, setContact] = useState('')
+  const [done, setDone] = useState(false)
+  const canSend = name.trim() !== '' && contact.trim() !== ''
+  const summary = (
+    <div style={{ backgroundColor: '#F7F6FF', border: '1px solid #E4DFFF', borderRadius: 14, padding: '12px 16px' }}>
+      <OrderRow label="Google-Unternehmensprofil" value={PROFILE_PRICE} unit="einmalig" />
+    </div>
+  )
+  return (
+    <OrderShell onClose={onClose}>
+      {!done ? (
+        <>
+          <p className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)', marginBottom: 10 }}>Einmalige Einrichtung</p>
+          <h2 id="order-title" style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-0.02em', margin: '0 0 6px', paddingRight: 28 }}>Google-Unternehmensprofil einrichten</h2>
+          <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: '0 0 18px' }}>
+            <strong style={{ color: 'var(--ink)' }}>{PROFILE_PRICE} einmalig</strong> — wir erstellen oder optimieren Ihr Profil. Hinterlassen Sie Ihre Kontaktdaten, wir melden uns zur Abstimmung.
+          </p>
+          <input style={orderInput} value={name} onChange={e => setName(e.target.value)} placeholder="Ihr Name" autoComplete="name" />
+          <input style={orderInput} value={company} onChange={e => setCompany(e.target.value)} placeholder="Name Ihres Unternehmens" autoComplete="organization" />
+          <input style={{ ...orderInput, marginBottom: 16 }} value={contact} onChange={e => setContact(e.target.value)} placeholder="Telefon oder E-Mail" autoComplete="email" />
+          {summary}
+          <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: '12px 0 0' }}>
+            Tipp: In den Website-Paketen Local Website und AI Plus ist das Google-Profil bereits enthalten.{' '}
+            <a href={'/preise'} onClick={onClose} className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>Pakete ansehen →</a>
+          </p>
+          <SendButton enabled={canSend} onSend={() => setDone(true)} />
+        </>
+      ) : <OrderDone name={name} contact={contact} summary={summary} onClose={onClose} />}
+    </OrderShell>
+  )
+}
+
+// Website-Paket und/oder Social Media. Ein Paket (oder keins) + Social Media als Häkchen.
+function PackageOrderModal({ initial, onClose }: { initial: PackageOrder; onClose: () => void }) {
+  const [pkg, setPkg] = useState<PackageId | null>(initial.pkg)
+  const [social, setSocial] = useState(initial.social)
+  const [name, setName] = useState('')
+  const [company, setCompany] = useState('')
+  const [contact, setContact] = useState('')
+  const [done, setDone] = useState(false)
+  const chosen = WEBSITE_PACKAGES.find(p => p.id === pkg)
+  const total = (chosen?.price ?? 0) + (social ? SOCIAL_ADDON.price : 0)
+  const canSend = name.trim() !== '' && contact.trim() !== '' && total > 0
+
+  const option = (on: boolean, onToggle: () => void, title: string, price: number, note: string, type: 'radio' | 'checkbox') => (
+    <label key={title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', cursor: 'pointer', padding: '11px 14px', borderRadius: 14, border: `1px solid ${on ? '#2600FF' : 'rgba(7,7,12,0.12)'}`, backgroundColor: on ? '#F4F2FF' : '#fff', transition: 'all 0.2s ease' }}>
+      <input type={type} name={type === 'radio' ? 'rag-package' : undefined} checked={on} onChange={onToggle} onClick={type === 'radio' && on ? onToggle : undefined}
+        style={{ width: 18, height: 18, marginTop: 1, accentColor: '#2600FF', flexShrink: 0 }} />
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+          <span style={{ fontWeight: 600, fontSize: 14.5 }}>{title}</span>
+          <span style={{ fontWeight: 700, fontSize: 14.5, whiteSpace: 'nowrap' }}>{price} € <span style={{ fontWeight: 500, fontSize: 12.5, color: 'var(--muted)' }}>pro Monat</span></span>
+        </span>
+        <span style={{ display: 'block', fontSize: 12.5, lineHeight: 1.55, color: 'var(--muted)', marginTop: 3 }}>{note}</span>
+      </span>
+    </label>
+  )
+
+  const summary = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, backgroundColor: '#F7F6FF', border: '1px solid #E4DFFF', borderRadius: 14, padding: '12px 16px' }}>
+      {chosen && <OrderRow label={chosen.name} value={`${chosen.price} €`} unit="pro Monat" />}
+      {social && <OrderRow label={SOCIAL_ADDON.name} value={`${SOCIAL_ADDON.price} €`} unit="pro Monat" />}
+      {total === 0
+        ? <span style={{ fontSize: 13, color: 'var(--muted)' }}>Wählen Sie ein Paket oder Social Media.</span>
+        : (chosen && social) && <div style={{ borderTop: '1px solid #E4DFFF', paddingTop: 6 }}><OrderRow label="Gesamt" value={`${total} €`} unit="pro Monat" /></div>}
+    </div>
+  )
+
+  return (
+    <OrderShell onClose={onClose}>
+      {!done ? (
+        <>
+          <p className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)', marginBottom: 10 }}>Monatliches Paket</p>
+          <h2 id="order-title" style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-0.02em', margin: '0 0 6px', paddingRight: 28 }}>Paket anfragen</h2>
+          <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: '0 0 16px' }}>
+            Wählen Sie eine Website — Social Media können Sie dazu nehmen oder allein buchen.
+          </p>
+
+          <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(7,7,12,0.45)', marginBottom: 8 }}>Website</p>
+          <div style={{ display: 'grid', gap: 8, marginBottom: 14 }}>
+            {WEBSITE_PACKAGES.map(p => option(pkg === p.id, () => setPkg(pkg === p.id ? null : p.id), p.name, p.price, p.thesis, 'radio'))}
+          </div>
+          <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(7,7,12,0.45)', marginBottom: 8 }}>{pkg ? 'Dazu' : 'Oder allein'}</p>
+          <div style={{ display: 'grid', gap: 8, marginBottom: 16 }}>
+            {option(social, () => setSocial(!social), SOCIAL_ADDON.name, SOCIAL_ADDON.price, SOCIAL_ADDON.thesis, 'checkbox')}
+          </div>
+
+          <input style={orderInput} value={name} onChange={e => setName(e.target.value)} placeholder="Ihr Name" autoComplete="name" />
+          <input style={orderInput} value={company} onChange={e => setCompany(e.target.value)} placeholder="Name Ihres Unternehmens" autoComplete="organization" />
+          <input style={{ ...orderInput, marginBottom: 16 }} value={contact} onChange={e => setContact(e.target.value)} placeholder="Telefon oder E-Mail" autoComplete="email" />
+
+          {summary}
+          <SendButton enabled={canSend} onSend={() => setDone(true)} />
+        </>
+      ) : <OrderDone name={name} contact={contact} summary={summary} onClose={onClose} />}
+    </OrderShell>
+  )
+}
+
+// Google-Profil als eigenes Einmal-Paket in der Preisliste.
+const PROFILE_PACKAGE = {
+  tag: 'Einmalig', name: 'Google-Profil schlüsselfertig', price: 149,
+  thesis: 'Ihr Google-Unternehmensprofil — fertig eingerichtet, ohne Abo.',
+  includes: ['Erstellung oder Einrichtung des Profils', 'Auswahl der Hauptkategorie', 'Unternehmensbeschreibung und Leistungen', 'Kontaktdaten, Öffnungszeiten, Verbindung zur Website', 'Link und Vorlage für die ersten Bewertungen'],
+}
+
+// Kontur-Nummer wie in den Kanalblöcken der Startseite (01 KI-Suche … 04 Social Media).
+function OutlineNum({ n, dark = false, size = 'clamp(40px, 4vw, 56px)' }: { n: number | string; dark?: boolean; size?: string }) {
+  return (
+    <span className="display" style={{ fontSize: size, lineHeight: 0.9, color: 'transparent', WebkitTextStroke: `1.4px ${dark ? '#6B4BFF' : '#2600FF'}` }}>
+      {typeof n === 'number' ? String(n).padStart(2, '0') : n}
+    </span>
+  )
+}
+
+function PriceTag({ children, dark = false }: { children: React.ReactNode; dark?: boolean }) {
+  return <span className="eyebrow" style={{ fontSize: 9.5, padding: '5px 10px', borderRadius: 999, backgroundColor: dark ? 'rgba(107,75,255,0.22)' : '#EEEBFF', color: dark ? '#fff' : 'var(--electric)' }}>{children}</span>
+}
+
+// Preisliste für die Seite /preise: oben das Google-Profil (einmalig) über die volle Breite,
+// darunter drei Website-Pakete (monatlich), dann Social Media als Add-on (auch einzeln).
+function Pricing() {
+  const [order, setOrder] = useState<PackageOrder | null>(null)
+  const [profile, setProfile] = useState(false)
+  return (
+    <>
+      {order && <PackageOrderModal initial={order} onClose={() => setOrder(null)} />}
+      {profile && <ProfileOrderModal onClose={() => setProfile(false)} />}
+      <style>{`@media (max-width: 900px) { .price-addon, .price-profile { grid-template-columns: 1fr !important; } }
+@media (max-width: 560px) { .price-profile-list { grid-template-columns: 1fr !important; } }`}</style>
+      <section id="pakete" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(56px, 6vw, 88px) clamp(20px, 4vw, 48px)' }}>
+        <div style={{ ...SHELL }}>
+
+          {/* 01 — Google-Profil schlüsselfertig, volle Breite */}
+          <Reveal>
+            <article className="price-profile" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.9fr) minmax(0, 1.1fr)', gap: 'clamp(24px, 4vw, 64px)', alignItems: 'center', padding: 'clamp(24px, 3.2vw, 44px)', borderRadius: 24, backgroundColor: '#fff', border: '1px solid var(--line)' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(14px, 1.6vw, 20px)', marginBottom: 20 }}>
+                  <OutlineNum n={1} />
+                  <PriceTag>{PROFILE_PACKAGE.tag}</PriceTag>
+                </div>
+                <h2 className="display" style={{ fontSize: 'clamp(24px, 2.4vw, 34px)', lineHeight: 1.15, margin: '0 0 12px' }}>{PROFILE_PACKAGE.name}</h2>
+                <p style={{ fontSize: 15.5, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 22px', maxWidth: 440 }}>{PROFILE_PACKAGE.thesis}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px 22px', flexWrap: 'wrap' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6 }}>
+                    <span className="display" style={{ fontSize: 'clamp(36px, 3.4vw, 46px)', lineHeight: 1 }}>{PROFILE_PACKAGE.price} €</span>
+                    <span style={{ fontSize: 14, color: 'var(--muted)' }}>einmalig</span>
+                  </span>
+                  <button type="button" onClick={() => setProfile(true)} className="btn btn-md btn-electric">Paket anfragen <span className="arw">→</span></button>
+                </div>
+              </div>
+              <div className="price-profile-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', columnGap: 'clamp(16px, 2vw, 32px)' }}>
+                {PROFILE_PACKAGE.includes.map(it => (
+                  <div key={it} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 0', borderTop: '1px solid var(--line)' }}>
+                    {checkIcon()}<span style={{ fontSize: 14.5, lineHeight: 1.5 }}>{it}</span>
+                  </div>
+                ))}
+              </div>
+            </article>
+          </Reveal>
+
+          {/* 02–04 — Website-Pakete */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: 'clamp(12px, 1.4vw, 18px)', marginTop: 'clamp(12px, 1.4vw, 18px)' }}>
+            {WEBSITE_PACKAGES.map((p, i) => {
+              const dark = p.id === 'aiplus'
+              return (
+                <Reveal key={p.id} delay={0.06 * i}>
+                  <article style={{ height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', padding: 'clamp(22px, 2.4vw, 32px)', borderRadius: 24, backgroundColor: dark ? 'var(--ink)' : '#fff', color: dark ? '#fff' : 'var(--ink)', border: dark ? 'none' : '1px solid var(--line)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+                      <OutlineNum n={i + 2} dark={dark} />
+                      <PriceTag dark={dark}>{p.tag}</PriceTag>
+                    </div>
+                    <h2 className="display" style={{ fontSize: 'clamp(21px, 1.9vw, 27px)', lineHeight: 1.15, margin: '0 0 10px' }}>{p.name}</h2>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 14 }}>
+                      <span className="display" style={{ fontSize: 'clamp(34px, 3.2vw, 44px)', lineHeight: 1 }}>{p.price} €</span>
+                      <span style={{ fontSize: 14, color: dark ? 'rgba(255,255,255,0.55)' : 'var(--muted)' }}>/ Monat</span>
+                    </div>
+                    <p style={{ fontSize: 15, lineHeight: 1.6, color: dark ? 'rgba(255,255,255,0.7)' : 'var(--muted)', margin: '0 0 18px' }}>{p.thesis}</p>
+                    <div style={{ marginBottom: 22 }}>
+                      {p.includes.map(it => (
+                        <div key={it} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '9px 0', borderTop: `1px solid ${dark ? 'var(--line-dark)' : 'var(--line)'}` }}>
+                          {checkIcon(dark)}<span style={{ fontSize: 14, lineHeight: 1.5 }}>{it}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => setOrder({ pkg: p.id, social: false })} className={`btn btn-md ${dark ? 'btn-electric' : 'btn-ink'}`} style={{ marginTop: 'auto', alignSelf: 'flex-start' }}>
+                      Paket anfragen <span className="arw">→</span>
+                    </button>
+                  </article>
+                </Reveal>
+              )
+            })}
+          </div>
+
+          {/* + — Social Media, Add-on oder einzeln */}
+          <Reveal delay={0.1}>
+            <div className="price-addon" style={{ marginTop: 'clamp(12px, 1.4vw, 18px)', display: 'grid', gridTemplateColumns: 'minmax(0, 0.9fr) minmax(0, 1.1fr) auto', gap: 'clamp(20px, 3vw, 48px)', alignItems: 'center', padding: 'clamp(24px, 2.4vw, 32px)', borderRadius: 24, backgroundColor: '#fff', border: '1px dashed rgba(38,0,255,0.35)' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(14px, 1.6vw, 20px)', marginBottom: 16 }}>
+                  <OutlineNum n="+" />
+                  <PriceTag>Add-on · auch einzeln</PriceTag>
+                </div>
+                <h2 className="display" style={{ fontSize: 'clamp(20px, 1.8vw, 25px)', lineHeight: 1.2, margin: '0 0 8px' }}>{SOCIAL_ADDON.name}</h2>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                  <span className="display" style={{ fontSize: 30, lineHeight: 1 }}>{SOCIAL_ADDON.price} €</span>
+                  <span style={{ fontSize: 14, color: 'var(--muted)' }}>/ Monat</span>
+                </div>
+              </div>
+              <div>
+                <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)', margin: '0 0 12px' }}>{SOCIAL_ADDON.thesis} Zu jedem Website-Paket dazu — oder ganz ohne Website.</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {SOCIAL_ADDON.includes.map(it => (
+                    <span key={it} style={{ fontSize: 12.5, padding: '6px 11px', borderRadius: 999, backgroundColor: 'var(--bone)' }}>{it}</span>
+                  ))}
+                </div>
+              </div>
+              <button type="button" onClick={() => setOrder({ pkg: null, social: true })} className="btn btn-md btn-outline-light" style={{ whiteSpace: 'nowrap' }}>
+                Social Media anfragen <span className="arw">→</span>
+              </button>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+    </>
+  )
+}
+
+function PreisePage() {
+  usePageMeta(
+    'Preise — Google-Profil, Website-Pakete und Social Media | RAG',
+    'Google-Profil schlüsselfertig für 149 € einmalig. Websites als Monatspaket: One Pager 30 €, Local Website 299 €, AI Plus 499 €. Social-Media-Betreuung 199 € im Monat — dazu oder einzeln.',
+  )
+  return (
+    <>
+      <Nav />
+      <main id="inhalt">
+      <ContentHero
+        crumbs={[{ label: 'Start', href: '/' }, { label: 'Preise' }]}
+        kicker="PREISE"
+        title={<>Klare Preise für Ihre <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>lokale Sichtbarkeit</span></>}
+        sub="Starten Sie mit dem Google-Profil, wählen Sie eine Website als Monatspaket — und nehmen Sie Social Media dazu oder einzeln."
+      />
+      <Pricing />
+      <ContentCTA />
+      </main>
+      <Footer />
+    </>
   )
 }
 
@@ -1144,7 +1385,7 @@ function Nav() {
           <a href={homeHref('kanaele')} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>Sichtbarkeit</a>
           <ServicesNavDropdown fg={fg} />
           {/* FAQ removed from the header; 'Ergebnisse' hidden while the results block is off: ['Ergebnisse', 'results'], ['FAQ', 'faq'] */}
-          {[['Ratgeber', '/ratgeber']].map(([l, target]) => (
+          {[['Preise', '/preise'], ['Ratgeber', '/ratgeber']].map(([l, target]) => (
             <a key={l} href={linkHref(target)} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>{l}</a>
           ))}
           <LangSwitch fg={fg} border={solid ? 'var(--line)' : 'rgba(255,255,255,0.25)'} />
@@ -1169,7 +1410,7 @@ function Nav() {
       {open && (
         <nav aria-label="Mobile Navigation" className="show-mobile" style={{ display: 'none', flexDirection: 'column', gap: 2, padding: '10px 24px 26px', backgroundColor: '#fff', borderTop: '1px solid var(--line)' }}>
           {/* FAQ removed from the header; 'Ergebnisse' hidden while the results block is off: ['Ergebnisse', 'results'], ['FAQ', 'faq'] */}
-          {[['Sichtbarkeit', 'kanaele'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar']].map(([l, target]) => (
+          {[['Sichtbarkeit', 'kanaele'], ['Leistungen', '/services'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar']].map(([l, target]) => (
             <a key={l} href={linkHref(target)} style={{ fontWeight: 600, fontSize: 22, letterSpacing: '-0.03em', color: '#07070C', textDecoration: 'none', padding: '10px 0', borderBottom: '1px solid var(--line-soft)' }} onClick={() => setOpen(false)}>{l}</a>
           ))}
           <span style={{ fontWeight: 500, fontSize: 14, color: 'var(--muted)', padding: '14px 0 10px' }}>+49 30 12345678</span>
@@ -1377,10 +1618,12 @@ function ChannelOverview() {
 
 // Rahmen eines Kanalblocks: Kontur-Nummer wie früher im Ablauf, Titel, Text,
 // rechts der Inhalt, unten der passende Ratgeber-Artikel.
-function ChannelBlock({ id, n, label, title, body, actions, aside, article, tone = 'light' }: {
+function ChannelBlock({ id, n, label, title, body, actions, aside, article, tone = 'light', stacked = false, reverse = false }: {
   id: string; n: number; label: string; title: React.ReactNode; body: string
   actions: React.ReactNode; aside: React.ReactNode
-  article: { href: string; title: string }; tone?: 'light' | 'bone' | 'dark'
+  article?: { href: string; title: string }; tone?: 'light' | 'bone' | 'dark'
+  stacked?: boolean // Inhalt unter dem Text statt daneben
+  reverse?: boolean // Inhalt links, Text rechts (nur Desktop)
 }) {
   const dark = tone === 'dark'
   const bg = dark ? 'var(--ink)' : tone === 'bone' ? 'var(--bone)' : 'var(--paper)'
@@ -1388,8 +1631,8 @@ function ChannelBlock({ id, n, label, title, body, actions, aside, article, tone
     <section id={id} style={{ backgroundColor: bg, color: dark ? '#fff' : 'var(--ink)', padding: 'clamp(56px, 6vw, 88px) clamp(20px, 4vw, 48px)', scrollMarginTop: 70, position: 'relative', overflow: 'clip' }}>
       {dark && <div aria-hidden style={{ position: 'absolute', inset: 0, opacity: 0.5 }}><CrossBackdrop tone="dark" /></div>}
       <div style={{ ...SHELL, position: 'relative' }}>
-        <div className="chan-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'clamp(32px, 5vw, 88px)', alignItems: 'center' }}>
-          <div>
+        <div className={`chan-grid${reverse ? ' chan-rev' : ''}`} style={{ display: 'grid', gridTemplateColumns: stacked ? 'minmax(0, 1fr)' : 'minmax(0, 1fr) minmax(0, 1fr)', gap: stacked ? 'clamp(36px, 4vw, 56px)' : 'clamp(32px, 5vw, 88px)', alignItems: 'center' }}>
+          <div style={reverse ? { order: 2 } : undefined}>
             <Reveal>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(16px, 2vw, 24px)', marginBottom: 22 }}>
                 <span className="display" style={{ fontSize: 'clamp(44px, 5vw, 72px)', lineHeight: 0.9, color: 'transparent', WebkitTextStroke: `1.4px ${dark ? '#6B4BFF' : '#2600FF'}` }}>{String(n).padStart(2, '0')}</span>
@@ -1397,18 +1640,18 @@ function ChannelBlock({ id, n, label, title, body, actions, aside, article, tone
               </div>
             </Reveal>
             <Reveal delay={0.05}>
-              <h2 className="display h-md" style={{ margin: '0 0 18px', maxWidth: 560 }}>{title}</h2>
+              <h2 className="display h-md" style={{ margin: '0 0 18px', maxWidth: stacked ? 'none' : 560 }}>{title}</h2>
             </Reveal>
             <Reveal delay={0.1}>
-              <p style={{ fontSize: 'clamp(15.5px, 1.3vw, 17px)', lineHeight: 1.75, color: dark ? 'rgba(255,255,255,0.62)' : 'var(--muted)', margin: '0 0 28px', maxWidth: 520 }}>{body}</p>
+              <p style={{ fontSize: 'clamp(15.5px, 1.3vw, 17px)', lineHeight: 1.75, color: dark ? 'rgba(255,255,255,0.62)' : 'var(--muted)', margin: '0 0 28px', maxWidth: stacked ? 'none' : 520 }}>{body}</p>
             </Reveal>
             <Reveal delay={0.14}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px 24px', flexWrap: 'wrap' }}>
                 {actions}
                 {/* passender Ratgeber-Artikel direkt neben dem Button (21.09) */}
-                <a href={article.href} className="ul chan-article" style={{ fontSize: 14, fontWeight: 600, color: dark ? '#fff' : 'var(--ink)' }}>
+                {article && <a href={article.href} className="ul chan-article" style={{ fontSize: 14, fontWeight: 600, color: dark ? '#fff' : 'var(--ink)' }}>
                   {article.title} <span aria-hidden className="chan-arrow" style={{ color: dark ? 'var(--electric-2)' : 'var(--electric)' }}>→</span>
-                </a>
+                </a>}
               </div>
             </Reveal>
           </div>
@@ -1457,7 +1700,7 @@ function ChannelAI() {
 
 // 02 — Google Maps: hier sitzt das Einstiegsangebot (149 € einmalig).
 function ChannelMaps() {
-  const [order, setOrder] = useState<null | WebsiteAddon>(null)
+  const [order, setOrder] = useState(false)
   const included = [
     'Erstellung oder Einrichtung des Profils',
     'Auswahl der Hauptkategorie',
@@ -1467,7 +1710,7 @@ function ChannelMaps() {
   ]
   return (
     <>
-      {order !== null && <ProfileOrderModal initialAddon={order} onClose={() => setOrder(null)} />}
+      {order && <ProfileOrderModal onClose={() => setOrder(false)} />}
       <ChannelBlock
         id="maps" n={2} label="Google Maps" tone="dark"
         title={<>Google Maps ist <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>Pflicht</span> für lokale Unternehmen.</>}
@@ -1475,22 +1718,27 @@ function ChannelMaps() {
         actions={<>
           <a href="/services/google-maps-business-profile" className="btn btn-md btn-outline-dark">Mehr zu Google Maps <span className="arw">→</span></a>
         </>}
+        stacked
         aside={
-          <div style={{ backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 24, padding: 'clamp(24px, 3vw, 36px)', boxShadow: '0 40px 90px rgba(0,0,0,0.35)' }}>
-            <p className="eyebrow" style={{ fontSize: 10, color: 'var(--electric)', marginBottom: 12 }}>Selbst machen — oder wir übernehmen das</p>
-            <p className="display" style={{ fontSize: 'clamp(22px, 2vw, 28px)', lineHeight: 1.2, margin: '0 0 10px' }}>Google-Profil, fertig eingerichtet.</p>
-            <p style={{ fontSize: 14.5, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 16px' }}>Wir erstellen oder überarbeiten Ihr Profil, pflegen Leistungen und Angaben ein und bereiten alles für die ersten Bewertungen vor.</p>
-            {included.map(s => (
-              <div key={s} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '9px 0', borderTop: '1px solid var(--line)' }}>
-                {checkIcon()}<span style={{ fontSize: 14, lineHeight: 1.5 }}>{s}</span>
+          <div className="chan-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.15fr)', gap: 'clamp(24px, 4vw, 64px)', alignItems: 'center', backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 24, padding: 'clamp(24px, 3.4vw, 48px)', boxShadow: '0 40px 90px rgba(0,0,0,0.35)' }}>
+            <div>
+              <p className="eyebrow" style={{ fontSize: 10, color: 'var(--electric)', marginBottom: 12 }}>Selbst machen — oder wir übernehmen das</p>
+              <p className="display" style={{ fontSize: 'clamp(24px, 2.4vw, 34px)', lineHeight: 1.15, margin: '0 0 12px' }}>Google-Profil, fertig eingerichtet.</p>
+              <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 24px', maxWidth: 440 }}>Wir erstellen oder überarbeiten Ihr Profil, pflegen Leistungen und Angaben ein und bereiten alles für die ersten Bewertungen vor.</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px 20px', flexWrap: 'wrap' }}>
+                <button type="button" onClick={() => setOrder(true)} className="btn btn-md btn-electric">Google-Profil starten <span className="arw">→</span></button>
+                <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6, whiteSpace: 'nowrap' }}>
+                  <span className="display" style={{ fontSize: 26 }}>149 €</span>
+                  <span style={{ fontSize: 13, color: 'var(--muted)' }}>einmalig · ohne Abo</span>
+                </span>
               </div>
-            ))}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px 20px', flexWrap: 'wrap', marginTop: 20 }}>
-              <button type="button" onClick={() => setOrder('')} className="btn btn-md btn-electric">Google-Profil starten <span className="arw">→</span></button>
-              <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6, whiteSpace: 'nowrap' }}>
-                <span className="display" style={{ fontSize: 24 }}>149 €</span>
-                <span style={{ fontSize: 13, color: 'var(--muted)' }}>einmalig · ohne Abo</span>
-              </span>
+            </div>
+            <div>
+              {included.map((s, i) => (
+                <div key={s} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 0', borderTop: i === 0 ? 'none' : '1px solid var(--line)' }}>
+                  {checkIcon()}<span style={{ fontSize: 14.5, lineHeight: 1.5 }}>{s}</span>
+                </div>
+              ))}
             </div>
           </div>
         }
@@ -1502,15 +1750,10 @@ function ChannelMaps() {
 
 // 03 — Google Search: die Website.
 function ChannelSearch() {
-  const [order, setOrder] = useState<null | WebsiteAddon>(null)
-  const parts = [
-    ['Leistungen', 'Eine eigene Seite pro Leistung'],
-    ['Region', 'Wo Sie arbeiten, Stadt für Stadt'],
-    ['Referenzen', 'Echte Arbeiten und Kundenstimmen'],
-  ]
+  const [order, setOrder] = useState<null | PackageOrder>(null)
   return (
     <>
-      {order !== null && <ProfileOrderModal initialAddon={order} onClose={() => setOrder(null)} />}
+      {order && <PackageOrderModal initial={order} onClose={() => setOrder(null)} />}
       <ChannelBlock
         id="search" n={3} label="Google Search" tone="bone"
         title={<>Google Search schaut auf <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Ihre Website.</span></>}
@@ -1518,22 +1761,55 @@ function ChannelSearch() {
         actions={<>
           <a href="/services/website-google-search" className="btn btn-md btn-ink">Mehr zu Website & Google Search <span className="arw">→</span></a>
         </>}
+        reverse
         aside={
-          <div style={{ backgroundColor: '#fff', borderRadius: 24, padding: 'clamp(24px, 3vw, 36px)', border: '1px solid var(--line)' }}>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 18 }}>
-              {[0, 1, 2].map(i => <span key={i} style={{ width: 9, height: 9, borderRadius: '50%', backgroundColor: 'rgba(7,7,12,0.12)' }} />)}
-            </div>
-            <p className="eyebrow" style={{ fontSize: 10, color: 'var(--electric)', marginBottom: 10 }}>Ihr Unternehmen</p>
-            <p className="display" style={{ fontSize: 'clamp(20px, 1.8vw, 25px)', lineHeight: 1.25, margin: '0 0 18px' }}>Eine verständliche Website für Menschen und Google.</p>
-            {parts.map(([t, d]) => (
-              <div key={t} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, padding: '12px 0', borderTop: '1px solid var(--line)' }}>
-                <span style={{ fontSize: 14.5, fontWeight: 600 }}>{t}</span>
-                <span style={{ fontSize: 13.5, color: 'var(--muted)', textAlign: 'right' }}>{d}</span>
+          // Suchergebnis-Mockup statt Liste: 03 soll sich optisch von 01 (dunkle Checkliste)
+          // und 04 (nummerierte Zeilen) unterscheiden (25.09).
+          <div style={{ position: 'relative' }}>
+            <div style={{ backgroundColor: '#fff', borderRadius: 24, boxShadow: '0 30px 70px rgba(7,7,12,0.10)', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 'clamp(16px, 2vw, 22px) clamp(18px, 2.4vw, 28px)', borderBottom: '1px solid var(--line)' }}>
+                <GLogo />
+                <span style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 16px', borderRadius: 999, border: '1px solid rgba(7,7,12,0.12)', fontSize: 14.5, color: 'var(--ink)' }}>
+                  Elektriker in Siegen
+                  <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2600FF" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+                </span>
               </div>
-            ))}
-            <div style={{ marginTop: 18, padding: '14px 16px', borderRadius: 14, backgroundColor: 'var(--bone)', fontSize: 14, lineHeight: 1.6 }}>
-              Noch keine Website? Wir starten mit einem Onepager —{' '}
-              <button type="button" onClick={() => setOrder('onepager')} className="ul" style={{ background: 'none', border: 0, padding: 0, font: 'inherit', fontWeight: 600, color: 'var(--electric)', cursor: 'pointer' }}>ab 29 €/Monat →</button>
+
+              <div style={{ padding: 'clamp(18px, 2.4vw, 28px)' }}>
+                <div style={{ position: 'relative', padding: '18px 18px 16px', borderRadius: 18, backgroundColor: '#F4F2FF', border: '1px solid #DCD5FF' }}>
+                  <span className="eyebrow" style={{ position: 'absolute', top: -10, right: 16, fontSize: 9, padding: '4px 9px', borderRadius: 999, backgroundColor: 'var(--electric)', color: '#fff' }}>Ihr Unternehmen</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <span aria-hidden style={{ width: 26, height: 26, borderRadius: '50%', backgroundColor: 'var(--ink)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 700 }}>M</span>
+                    <span style={{ fontSize: 12.5, lineHeight: 1.3, color: 'var(--muted)' }}>
+                      <span style={{ display: 'block', color: 'var(--ink)', fontWeight: 600 }}>Muster Elektrotechnik</span>
+                      muster-elektro.de › leistungen
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 'clamp(17px, 1.5vw, 20px)', lineHeight: 1.3, color: '#1A0DAB', margin: '0 0 6px', fontWeight: 500 }}>Elektriker in Siegen — Installation, Smart Home & Notdienst</p>
+                  <p style={{ fontSize: 13.5, lineHeight: 1.6, color: 'var(--muted)', margin: '0 0 14px' }}>Was wir tun, wo wir arbeiten und welche Projekte wir in der Region umgesetzt haben — klar erklärt.</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {['Leistungen', 'Region', 'Referenzen', 'Kontakt'].map(t => (
+                      <span key={t} style={{ fontSize: 12.5, fontWeight: 600, padding: '6px 12px', borderRadius: 999, backgroundColor: '#fff', border: '1px solid #DCD5FF', color: 'var(--electric)' }}>{t}</span>
+                    ))}
+                  </div>
+                </div>
+
+                {[0.62, 0.48].map((w, i) => (
+                  <div key={i} aria-hidden style={{ padding: '16px 4px 0', opacity: 0.55 - i * 0.2 }}>
+                    <div style={{ width: '38%', height: 8, borderRadius: 4, backgroundColor: 'rgba(7,7,12,0.10)', marginBottom: 8 }} />
+                    <div style={{ width: `${w * 100}%`, height: 11, borderRadius: 5, backgroundColor: 'rgba(26,13,171,0.18)', marginBottom: 8 }} />
+                    <div style={{ width: '88%', height: 7, borderRadius: 4, backgroundColor: 'rgba(7,7,12,0.07)' }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px 16px', flexWrap: 'wrap', fontSize: 14, lineHeight: 1.6 }}>
+              <span>
+                Noch keine Website? Wir starten mit einem One Pager —{' '}
+                <button type="button" onClick={() => setOrder({ pkg: 'onepager', social: false })} className="ul" style={{ background: 'none', border: 0, padding: 0, font: 'inherit', fontWeight: 600, color: 'var(--electric)', cursor: 'pointer' }}>ab 30 €/Monat →</button>
+              </span>
+              <a href={'/preise'} className="ul" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--ink)' }}>Alle Website-Pakete ansehen <span aria-hidden style={{ color: 'var(--electric)' }}>→</span></a>
             </div>
           </div>
         }
@@ -1545,12 +1821,15 @@ function ChannelSearch() {
 
 // 04 — Social Media
 function ChannelSocial() {
+  const [order, setOrder] = useState(false)
   const pillars = [
     ['Menschen', 'Zeigen Sie sich und Ihr Team. So bekommt das Unternehmen ein Gesicht.'],
     ['Arbeitsweise', 'Zeigen Sie, wie Sie arbeiten — ohne Inszenierung und Marketing-Floskeln.'],
     ['Ergebnisse', 'Echte Arbeiten, Projekte und Kunden erklären Qualität besser als jedes Werbeversprechen.'],
   ]
   return (
+    <>
+    {order && <PackageOrderModal initial={{ pkg: null, social: true }} onClose={() => setOrder(false)} />}
     <ChannelBlock
       id="social" n={4} label="Social Media"
       title={<>In sozialen Netzwerken sehen Kunden <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Menschen.</span></>}
@@ -1569,10 +1848,17 @@ function ChannelSocial() {
               </div>
             </div>
           ))}
+          <div style={{ marginTop: 8, padding: '16px 18px', borderRadius: 16, backgroundColor: 'var(--bone)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px 18px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 14, lineHeight: 1.55 }}>
+              <strong>Auch einzeln buchbar</strong> — ohne Website-Paket.<br />
+              <span style={{ color: 'var(--muted)' }}>Social-Media-Betreuung · {SOCIAL_ADDON.price} €/Monat</span>
+            </span>
+            <button type="button" onClick={() => setOrder(true)} className="btn btn-md btn-ink">Social Media anfragen <span className="arw">→</span></button>
+          </div>
         </div>
       }
-      article={{ href: '/ratgeber', title: 'Alle Artikel im Ratgeber' }}
     />
+    </>
   )
 }
 
@@ -2412,7 +2698,7 @@ function ServiceSelector() {
 // PROCESS
 // ─────────────────────────────────────────────────────────────────────────────
 function TwoRoutes() {
-  const [order, setOrder] = useState<null | WebsiteAddon>(null)
+  const [order, setOrder] = useState(false)
   const routeA = [
     'Analyse Ihrer aktuellen Sichtbarkeit',
     'Stärken und Schwachstellen',
@@ -2431,7 +2717,7 @@ function TwoRoutes() {
 
   return (
     <>
-      {order !== null && <ProfileOrderModal initialAddon={order} onClose={() => setOrder(null)} />}
+      {order && <ProfileOrderModal onClose={() => setOrder(false)} />}
       <section id="start" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'clip' }}>
         <div aria-hidden style={{ position: 'absolute', inset: 0, opacity: 0.55 }}><CrossBackdrop tone="dark" /></div>
         <div style={{ ...SHELL, position: 'relative' }}>
@@ -2486,15 +2772,15 @@ function TwoRoutes() {
                 </div>
                 <div className="route-addons" style={{ display: 'flex', alignItems: 'center', gap: '8px 10px', flexWrap: 'wrap', margin: '-4px 0 20px' }}>
                   <span style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.5)' }}>Optional dazu:</span>
-                  {websiteAddons.map(w => (
-                    <button key={w.id} type="button" onClick={() => setOrder(w.id)} className="route-addon"
-                      style={{ fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,0.85)', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 999, padding: '6px 12px', cursor: 'pointer' }}>
-                      {w.title} · {w.price}/Monat
-                    </button>
+                  {WEBSITE_PACKAGES.map(w => (
+                    <a key={w.id} href={'/preise'} className="route-addon"
+                      style={{ fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,0.85)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 999, padding: '6px 12px' }}>
+                      {w.name} · {w.price} €/Monat
+                    </a>
                   ))}
                 </div>
                 <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '12px 22px', flexWrap: 'wrap' }}>
-                  <button onClick={() => setOrder('')} className="btn btn-lg btn-electric">
+                  <button onClick={() => setOrder(true)} className="btn btn-lg btn-electric">
                     Google-Profil starten <span className="arw">→</span>
                   </button>
                   <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6, whiteSpace: 'nowrap' }}>
@@ -2946,7 +3232,7 @@ function AuditQuiz() {
           <Reveal delay={0.4}>
             <div style={{ marginTop: 34, paddingTop: 26, borderTop: '1px solid rgba(255,255,255,0.2)' }}>
               <p style={{ fontSize: 17, fontWeight: 700, color: '#fff', margin: '0 0 6px' }}>Noch keine digitale Präsenz?</p>
-              <p style={{ fontSize: 14, lineHeight: 1.7, color: 'rgba(255,255,255,0.7)', margin: '0 0 16px', maxWidth: 440 }}>Dann starten Sie direkt mit dem Google-Unternehmensprofil — auf Wunsch mit Website.</p>
+              <p style={{ fontSize: 14, lineHeight: 1.7, color: 'rgba(255,255,255,0.7)', margin: '0 0 16px', maxWidth: 440 }}>Dann starten Sie direkt mit dem Google-Unternehmensprofil.</p>
               <button onClick={() => setOrder(true)} className="btn btn-md btn-paper">Google-Profil · 149 € einmalig <span className="arw">→</span></button>
             </div>
           </Reveal>
@@ -3044,7 +3330,7 @@ const faqs = [
   { q: 'Können Sie meine bestehende Website optimieren?', a: 'In den meisten Fällen ja. Wir prüfen Struktur, Inhalte und Technik Ihrer bestehenden Website und verbessern gezielt das, was Sichtbarkeit und Anfragen blockiert. Nur wenn die technische Basis eine sinnvolle Weiterentwicklung nicht zulässt, empfehlen wir einen Neuaufbau.' },
   { q: 'Wie bekomme ich mehr Google-Bewertungen?', a: 'Indem Sie zu einem festen Zeitpunkt fragen — am besten direkt nach einem gelungenen Auftrag —, den Weg zur Abgabe so kurz wie möglich machen und auf Bewertungen antworten. Gekaufte oder erfundene Bewertungen verstoßen gegen die Google-Richtlinien und können zur Sperrung des Profils führen. Wir richten einen Ablauf ein, der echte Bewertungen mit konkreten Erfahrungen bringt.' },
   { q: 'Wie kann mein Unternehmen in ChatGPT erscheinen?', a: "Indem die Informationen über Ihr Unternehmen im Web klar, zugänglich und widerspruchsfrei sind: verständlich beschriebene Leistungen, eine logisch strukturierte Website, übereinstimmende Angaben auf allen Plattformen, externe Erwähnungen und Inhalte, die für Suchsysteme abrufbar sind. Eine separate \"KI-Optimierung\" jenseits sauberer Grundlagen gibt es nicht — wir sorgen dafür, dass diese Grundlagen stimmen." },
-  { q: 'Was kostet die laufende Betreuung?', a: 'Die laufende Betreuung wird monatlich abgerechnet; der Preis hängt davon ab, welche Bereiche aktiv sind. Die Einrichtung des Google-Unternehmensprofils kostet einmalig 149 €. Eine Onepager-Website gibt es für 29 € im Monat, die lebendige Website mit SEO, Artikeln und Social Media für 199 € im Monat. Nach dem kostenlosen Sichtbarkeits-Check erhalten Sie ein Angebot, das zu Ihrer Situation und Ihrem Budget passt — ohne versteckte Gebühren und ohne langfristige Bindung.' },
+  { q: 'Was kostet die laufende Betreuung?', a: 'Die Website gibt es als monatliches Paket: One Pager für 30 €, Local Website für 299 € und AI Plus für 499 € im Monat. Die Social-Media-Betreuung kostet 199 € im Monat — zusätzlich zu einem Paket oder ganz allein. Nur das Google-Unternehmensprofil einzurichten kostet einmalig 149 €. Nach dem kostenlosen Sichtbarkeits-Check erhalten Sie eine Empfehlung, die zu Ihrer Situation und Ihrem Budget passt — ohne versteckte Gebühren.' },
   { q: 'Für welche Unternehmen eignet sich lokale Optimierung?', a: 'Für alle, deren Kunden aus der Umgebung kommen: Handwerksbetriebe, Werkstätten, Praxen, Kanzleien, Restaurants, Salons und Dienstleister mit Servicegebiet. Entscheidend ist nicht die Branche, sondern dass Kunden lokal suchen — ob Sie ein Ladengeschäft haben oder zu Ihren Kunden fahren.' },
 ]
 
@@ -3120,7 +3406,7 @@ function Footer() {
             <a href={homeHref('audit-quiz')} className="btn btn-md btn-outline-dark">Sichtbarkeits-Check starten <span className="arw">→</span></a>
           </div>
           {[
-            { title: 'Navigation', items: [['Sichtbarkeit', 'kanaele'], ['Leistungen', '/services'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], /* ['Ergebnisse', 'results'] — hidden with the results block */ ['FAQ', 'faq']] as [string, string][] },
+            { title: 'Navigation', items: [['Sichtbarkeit', 'kanaele'], ['Leistungen', '/services'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], /* ['Ergebnisse', 'results'] — hidden with the results block */ ['FAQ', 'faq']] as [string, string][] },
           ].map(col => (
             <div key={col.title}>
               <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>{col.title}</p>
@@ -4747,6 +5033,7 @@ const responsiveCSS = `
 .chan-article:hover .chan-arrow { transform: translateX(4px); }
 @media (max-width: 900px) {
   .chan-grid, .chan-head { grid-template-columns: 1fr !important; }
+  .chan-rev > :first-child { order: 0 !important; }
 }
 @media (max-width: 560px) {
   .bc-form { flex-direction: column; border-radius: 22px !important; }
@@ -4981,6 +5268,9 @@ export default function App() {
   const glossarMatch = path.match(/^\/glossar\/([a-z0-9-]+)\/?$/)
   if (glossarMatch) {
     return <GlossarTermPage slug={glossarMatch[1]} />
+  }
+  if (/^\/preise\/?$/.test(path)) {
+    return <PreisePage />
   }
   if (/^\/glossar\/?$/.test(path)) {
     return <GlossarPage />
