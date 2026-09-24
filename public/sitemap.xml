@@ -101,27 +101,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://rag-agentur.de/services/reviews</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://rag-agentur.de/services/local-citations</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://rag-agentur.de/services/social-media</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://rag-agentur.de/services/google-meta-ads</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://rag-agentur.de/services/offline-advertising</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

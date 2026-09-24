@@ -797,14 +797,8 @@ function SlotPicker({ onConfirm }: { onConfirm: (day: { label: string; date: str
 // ─────────────────────────────────────────────────────────────────────────────
 // BOOK CALL MODAL
 // ─────────────────────────────────────────────────────────────────────────────
-const SERVICE_OPTIONS = [
-  'Google Maps & Unternehmensprofil',
-  'KI-Suchoptimierung',
-  'Google- & Trustpilot-Bewertungen',
-  'Social-Media-Präsenz',
-  'Google- & Meta-Anzeigen',
-  'Offline-Werbung',
-]
+// Dieselben vier Leistungen wie auf /services und der Startseite.
+const serviceOptions = () => modules.map(m => m.label)
 
 function BookCallModal({ onClose }: { onClose: () => void }) {
   const [modalStep, setModalStep] = useState<1 | 2 | 3>(1)
@@ -848,7 +842,7 @@ function BookCallModal({ onClose }: { onClose: () => void }) {
               value={bService} onChange={e => setBService(e.target.value)}
               style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 14, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 10, boxSizing: 'border-box', backgroundColor: '#fff', color: bService ? '#030712' : '#9ca3af', appearance: 'auto' }}>
               <option value="" disabled>Service auswählen</option>
-              {SERVICE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+              {serviceOptions().map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <input
               value={bEmail} onChange={e => setBEmail(e.target.value)}
@@ -1003,15 +997,17 @@ function SendButton({ enabled, onSend, label = 'Anfrage senden' }: { enabled: bo
 }
 
 // Google-Unternehmensprofil — einmalige Einrichtung, ohne Website-Kopplung.
-function ProfileOrderModal({ onClose }: { onClose: () => void }) {
+function ProfileOrderModal({ onClose, initialSocial = false }: { onClose: () => void; initialSocial?: boolean }) {
+  const [social, setSocial] = useState(initialSocial)
   const [name, setName] = useState('')
   const [company, setCompany] = useState('')
   const [contact, setContact] = useState('')
   const [done, setDone] = useState(false)
   const canSend = name.trim() !== '' && contact.trim() !== ''
   const summary = (
-    <div style={{ backgroundColor: '#F7F6FF', border: '1px solid #E4DFFF', borderRadius: 14, padding: '12px 16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, backgroundColor: '#F7F6FF', border: '1px solid #E4DFFF', borderRadius: 14, padding: '12px 16px' }}>
       <OrderRow label="Google-Unternehmensprofil" value={PROFILE_PRICE} unit="einmalig" />
+      {social && <OrderRow label={SOCIAL_ADDON.name} value={`${SOCIAL_ADDON.price} €`} unit="pro Monat" />}
     </div>
   )
   return (
@@ -1026,6 +1022,17 @@ function ProfileOrderModal({ onClose }: { onClose: () => void }) {
           <input style={orderInput} value={name} onChange={e => setName(e.target.value)} placeholder="Ihr Name" autoComplete="name" />
           <input style={orderInput} value={company} onChange={e => setCompany(e.target.value)} placeholder="Name Ihres Unternehmens" autoComplete="organization" />
           <input style={{ ...orderInput, marginBottom: 16 }} value={contact} onChange={e => setContact(e.target.value)} placeholder="Telefon oder E-Mail" autoComplete="email" />
+          <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(7,7,12,0.45)', marginBottom: 8 }}>Optional dazu · monatlich</p>
+          <label style={{ display: 'flex', gap: 12, alignItems: 'flex-start', cursor: 'pointer', padding: '11px 14px', borderRadius: 14, marginBottom: 14, border: `1px solid ${social ? '#2600FF' : 'rgba(7,7,12,0.12)'}`, backgroundColor: social ? '#F4F2FF' : '#fff', transition: 'all 0.2s ease' }}>
+            <input type="checkbox" checked={social} onChange={() => setSocial(!social)} style={{ width: 18, height: 18, marginTop: 1, accentColor: '#2600FF', flexShrink: 0 }} />
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+                <span style={{ fontWeight: 600, fontSize: 14.5 }}>{SOCIAL_ADDON.name}</span>
+                <span style={{ fontWeight: 700, fontSize: 14.5, whiteSpace: 'nowrap' }}>{SOCIAL_ADDON.price} € <span style={{ fontWeight: 500, fontSize: 12.5, color: 'var(--muted)' }}>pro Monat</span></span>
+              </span>
+              <span style={{ display: 'block', fontSize: 12.5, lineHeight: 1.55, color: 'var(--muted)', marginTop: 3 }}>{SOCIAL_ADDON.thesis}</span>
+            </span>
+          </label>
           {summary}
           <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: '12px 0 0' }}>
             Tipp: In den Website-Paketen Local Website und AI Plus ist das Google-Profil bereits enthalten.{' '}
@@ -1130,10 +1137,11 @@ function PriceTag({ children, dark = false }: { children: React.ReactNode; dark?
 function Pricing() {
   const [order, setOrder] = useState<PackageOrder | null>(null)
   const [profile, setProfile] = useState(false)
+  const [profileSocial, setProfileSocial] = useState(false)
   return (
     <>
       {order && <PackageOrderModal initial={order} onClose={() => setOrder(null)} />}
-      {profile && <ProfileOrderModal onClose={() => setProfile(false)} />}
+      {profile && <ProfileOrderModal initialSocial={profileSocial} onClose={() => setProfile(false)} />}
       <style>{`@media (max-width: 900px) { .price-addon, .price-profile { grid-template-columns: 1fr !important; } }
 @media (max-width: 560px) { .price-profile-list { grid-template-columns: 1fr !important; } }`}</style>
       <section id="pakete" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(56px, 6vw, 88px) clamp(20px, 4vw, 48px)' }}>
@@ -1148,7 +1156,12 @@ function Pricing() {
                   <PriceTag>{PROFILE_PACKAGE.tag}</PriceTag>
                 </div>
                 <h2 className="display" style={{ fontSize: 'clamp(24px, 2.4vw, 34px)', lineHeight: 1.15, margin: '0 0 12px' }}>{PROFILE_PACKAGE.name}</h2>
-                <p style={{ fontSize: 15.5, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 22px', maxWidth: 440 }}>{PROFILE_PACKAGE.thesis}</p>
+                <p style={{ fontSize: 15.5, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 18px', maxWidth: 440 }}>{PROFILE_PACKAGE.thesis}</p>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '9px 14px', borderRadius: 999, marginBottom: 22, border: `1px solid ${profileSocial ? '#2600FF' : 'rgba(7,7,12,0.14)'}`, backgroundColor: profileSocial ? '#F4F2FF' : '#fff', fontSize: 14, transition: 'all 0.2s ease' }}>
+                  <input type="checkbox" checked={profileSocial} onChange={() => setProfileSocial(!profileSocial)} style={{ width: 17, height: 17, margin: 0, accentColor: '#2600FF' }} />
+                  <span>+ {SOCIAL_ADDON.name}</span>
+                  <strong style={{ whiteSpace: 'nowrap' }}>{SOCIAL_ADDON.price} €/Monat</strong>
+                </label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px 22px', flexWrap: 'wrap' }}>
                   <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6 }}>
                     <span className="display" style={{ fontSize: 'clamp(36px, 3.4vw, 46px)', lineHeight: 1 }}>{PROFILE_PACKAGE.price} €</span>
@@ -2099,7 +2112,7 @@ const promoAreas: PromoArea[] = [
     body: 'Bewertungen beeinflussen, ob ein Kunde anruft oder sich für einen Mitbewerber entscheidet. Unser Ziel: mehr echte Bewertungen mit konkreten Erfahrungen.',
     items: ['Wann und wie Sie um Bewertungen bitten', 'Ein kurzer Weg zur Abgabe', 'Antworten auf Lob und Kritik', 'Bewertungen auf Google, Trustpilot und der Website', 'Laufende Beobachtung Ihrer Reputation'],
     change: 'Kunden vergleichen Sterne, Aktualität und die Antworten des Inhabers — bei Unternehmen, die sie noch nie erlebt haben.',
-    links: [{ href: '/services/reviews', label: 'Mehr erfahren' }],
+    links: [{ href: '/services/google-maps-business-profile', label: 'Mehr erfahren' }],
   },
   {
     id: 'leistung-website',
@@ -2117,7 +2130,7 @@ const promoAreas: PromoArea[] = [
     body: 'Name, Adresse, Telefon, Website, Leistungen und Beschreibung stimmen auf den wichtigen lokalen Plattformen und Branchenportalen überein — so entsteht ein widerspruchsfreies Bild Ihres Unternehmens.',
     items: ['Bestehende Einträge erfassen', 'Falsche und doppelte Einträge bereinigen', 'Fehlende Portale gezielt ergänzen', 'Angaben regelmäßig kontrollieren'],
     change: 'Name, Adresse und Telefonnummer werden zwischen Google, Website und Verzeichnissen verglichen. Widersprüche kosten Vertrauen.',
-    links: [{ href: '/services/local-citations', label: 'Mehr erfahren' }],
+    links: [{ href: '/services/ai-search-optimization', label: 'Mehr erfahren' }],
   },
   {
     id: 'leistung-social',
@@ -2333,33 +2346,33 @@ function RatgeberTeaser() {
 // ─────────────────────────────────────────────────────────────────────────────
 // SOLUTION SECTION — checkbox multi-select cards + sticky bar + quote modal
 // ─────────────────────────────────────────────────────────────────────────────
-const modules = [
+const allModules = [
   {
     Illust: IllustMapsProfile,
     label: 'Google Maps & Unternehmensprofil',
     slug: 'google-maps-business-profile',
-    sentence: 'In den lokalen Top-Ergebnissen platziert und für jede Suchabsicht optimiert.',
-    what: 'Ihr Unternehmenseintrag auf Google Maps und in den Suchergebnissen mit Adresse, Öffnungszeiten, Fotos und verifizierten Bewertungen.',
-    how: 'Wir bereinigen Ihre Profildaten, wählen ertragsstarke Kategorien aus, optimieren lokalisierte Inhalte und sorgen für einheitliche Firmendaten in lokalen Verzeichnissen und Branchenportalen (NAP-Konsistenz), um Ihren Eintrag in die Top 3 von Google Maps zu bringen.',
-    why: 'Über 70 % der Klicks und Anrufe bei lokalen Dienstleistungen gehen direkt an die Top-3-Positionen auf der Karte. Diese Positionen zu sichern, generiert sofort Anfragen von lokalen Kunden – ganz ohne Klickkosten.',
+    sentence: 'Gefunden werden, wo Menschen in der Nähe suchen.',
+    what: 'Ihr Eintrag bei Google Maps und in der Google-Suche mit Kategorie, Leistungen, Öffnungszeiten, Fotos und Bewertungen.',
+    how: 'Wir richten das Profil ein oder überarbeiten es, wählen die Hauptkategorie, beschreiben Ihre Leistungen und bereiten alles für die ersten Bewertungen vor.',
+    why: 'Menschen suchen in der Nähe, lesen Bewertungen und rufen direkt an — einer der kürzesten Wege von der Suche zur Anfrage.',
   },
   {
     Illust: IllustWebsiteSearch,
     label: 'Website & Google Search',
     slug: 'website-google-search',
     sentence: 'Eine Website, die Menschen, Suchmaschinen und KI-Systeme klar verstehen.',
-    what: 'Ihre Website ist die Wissensbasis Ihres Unternehmens. Sie erklärt Kunden, Suchmaschinen und KI-Systemen, wer Sie sind, welche Leistungen Sie anbieten, wo Sie tätig sind und warum man Ihnen vertrauen kann.',
-    how: 'Wir bauen eine klare Struktur: Leistungsseiten, Regionen- und Servicegebietsseiten, Unternehmens- und Teamseite, Referenzen, Ratgeber-Artikel und Glossar – dazu interne Verlinkung, saubere Technik und strukturierte Daten.',
-    why: 'Google und KI-Systeme können nur empfehlen, was sie verstehen. Ohne klare Struktur bleibt Ihre Website ein hübsches Bild – statt der Quelle, aus der Suchergebnisse und KI-Antworten über Sie entstehen.',
+    what: 'Ihre Website erklärt Kunden, Google und KI-Systemen, was Sie tun, wo Sie arbeiten und warum man Ihnen vertrauen kann.',
+    how: 'Vom One Pager bis zur mehrseitigen Website mit Seiten für jede Leistung und jeden Ort — mit sauberer Technik, strukturierten Daten und regelmäßigen Updates.',
+    why: 'Google-Profil, Bewertungen und Social Media verweisen alle auf Ihre Website. Fehlen dort klare Antworten, springen Interessenten ab.',
   },
   {
     Illust: IllustAIOptimization,
-    label: 'KI-Suchoptimierung',
+    label: 'KI-Suche',
     slug: 'ai-search-optimization',
-    sentence: 'Empfohlen von ChatGPT, Gemini und Perplexity – nicht nur von Google.',
-    what: 'Generative Engine Optimization (GEO) sorgt dafür, dass Ihr Unternehmen als vertrauenswürdige Antwort genannt wird, wenn Kunden KI-Plattformen um Empfehlungen bitten.',
-    how: 'Wir strukturieren Ihre Unternehmensdaten mit Schema-Markup, sichern autoritative Zitate und veröffentlichen semantische Inhalte, die Sprachmodelle verarbeiten und referenzieren.',
-    why: 'Käufer nutzen ChatGPT, Perplexity und Google AI Overviews für ihre Kaufentscheidungen. Fehlt Ihr Unternehmen in den Wissensdatenbanken der KI, entdecken potenzielle Kunden Ihre Marke nie.',
+    sentence: 'Genannt werden, wenn Kunden ChatGPT, Perplexity oder Google fragen.',
+    what: 'KI-Assistenten nennen nur wenige Anbieter — die, die sie eindeutig verstehen und für vertrauenswürdig halten.',
+    how: 'Wir sorgen für klare Inhalte, strukturierte Daten und einheitliche Einträge in Verzeichnissen und prüfen regelmäßig, wie die KI Sie darstellt.',
+    why: 'Immer mehr Menschen fragen zuerst eine KI. Wer in der Antwort fehlt, wird gar nicht erst verglichen.',
   },
   {
     Illust: IllustReviews,
@@ -2381,12 +2394,12 @@ const modules = [
   },
   {
     Illust: IllustSocial,
-    label: 'Social-Media-Präsenz',
+    label: 'Social Media',
     slug: 'social-media',
-    sentence: 'Aktive, markenkonforme Inhalte auf jeder Plattform, die Kunden checken.',
-    what: 'Professionelles Branding, Content-Erstellung und Profilverwaltung auf Instagram und Facebook.',
-    how: 'Wir erstellen strukturierte visuelle Inhalte, verfassen klare Texte, halten einen regelmäßigen Veröffentlichungsplan ein und optimieren Profile, damit Besuche zu Verkaufschancen werden.',
-    why: 'Interessenten prüfen Social-Media-Profile, um sich zu vergewissern, dass ein Unternehmen aktiv, seriös und bei bestehenden Kunden angesehen ist, bevor sie handeln.',
+    sentence: 'Kunden sehen die Menschen hinter Ihrem Unternehmen.',
+    what: 'Regelmäßige Beiträge auf Instagram und Facebook über Ihr Team, Ihre Arbeitsweise und echte Ergebnisse.',
+    how: 'Wir planen die Themen, bereiten die Beiträge vor und veröffentlichen regelmäßig — passend zu Ihren Leistungen und Ihrer Region.',
+    why: 'Viele Kunden sehen sich vor dem Anruf Ihr Profil an. Ein gepflegter Feed schafft Vertrauen, ein verwaistes wirft Fragen auf.',
   },
   {
     Illust: IllustAds,
@@ -2407,6 +2420,26 @@ const modules = [
     why: 'Offline-Medien schaffen breites regionales Vertrauen und stärken Ihre Online-Präsenz, indem sie Aufmerksamkeit abseits überfüllter digitaler Feeds gewinnen.',
   },
 ]
+
+// 25.09.2026: Leistungen = die vier Kanäle der Startseite, in derselben Reihenfolge.
+// Bewertungen gehören zu Google Maps, Verzeichnisse zur KI-Suche; Anzeigen und
+// Offline-Werbung werden nicht mehr angeboten. Die Daten bleiben für später erhalten.
+const SERVICE_ORDER = ['ai-search-optimization', 'google-maps-business-profile', 'website-google-search', 'social-media']
+const SERVICE_REDIRECTS: Record<string, string> = {
+  'reviews': '/services/google-maps-business-profile',
+  'local-citations': '/services/ai-search-optimization',
+  'google-meta-ads': '/services',
+  'offline-advertising': '/services',
+}
+const modules = SERVICE_ORDER.map(slug => allModules.find(m => m.slug === slug)!)
+
+// Was jede Leistung kostet und welches Formular sie öffnet (Preise wie auf /preise).
+const SERVICE_OFFER: Record<string, { price: string; note: string; order: 'profile' | PackageOrder }> = {
+  'ai-search-optimization': { price: '499 €/Monat', note: 'Im Paket AI Plus', order: { pkg: 'aiplus', social: false } },
+  'google-maps-business-profile': { price: '149 € einmalig', note: 'Google-Profil schlüsselfertig · auch in Local Website und AI Plus', order: 'profile' },
+  'website-google-search': { price: 'ab 30 €/Monat', note: 'One Pager, Local Website oder AI Plus', order: { pkg: 'onepager', social: false } },
+  'social-media': { price: '199 €/Monat', note: 'Zu jedem Paket dazu — oder einzeln', order: { pkg: null, social: true } },
+}
 
 function QuoteModal({ selected, onClose }: { selected: string[]; onClose: () => void }) {
   const [name, setName] = useState('')
@@ -2467,158 +2500,70 @@ function QuoteModal({ selected, onClose }: { selected: string[]; onClose: () => 
 }
 
 function ServiceSelector() {
-  const [selected, setSelected] = useState<string[]>([])
-  const [quoteOpen, setQuoteOpen] = useState(false)
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [pkgOrder, setPkgOrder] = useState<PackageOrder | null>(null)
+  const [profileOrder, setProfileOrder] = useState(false)
 
-  const toggle = (label: string) => setSelected(prev => prev.includes(label) ? prev.filter(x => x !== label) : [...prev, label])
+  const open = (slug: string) => {
+    const o = SERVICE_OFFER[slug]
+    if (!o) return
+    if (o.order === 'profile') setProfileOrder(true)
+    else setPkgOrder(o.order)
+  }
 
   return (
     <>
-      {quoteOpen && <QuoteModal selected={selected} onClose={() => setQuoteOpen(false)} />}
-      <section id="auswahl" style={{
-        backgroundColor: 'var(--paper)',
-        padding: `clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px) ${selected.length > 0 ? '160px' : 'clamp(80px, 10vw, 140px)'}`,
-        transition: 'padding-bottom 0.4s',
-      }}>
+      {pkgOrder && <PackageOrderModal initial={pkgOrder} onClose={() => setPkgOrder(null)} />}
+      {profileOrder && <ProfileOrderModal onClose={() => setProfileOrder(false)} />}
+      <section id="auswahl" style={{ backgroundColor: 'var(--paper)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
         <div style={{ ...SHELL }}>
-          <Reveal><Kicker>Ihr Plan</Kicker></Reveal>
-          <div className="sol-head" style={{ marginTop: 26, marginBottom: 'clamp(40px, 5vw, 68px)' }}>
+          <Reveal><Kicker>Leistungen & Pakete</Kicker></Reveal>
+          <div className="sol-head" style={{ marginTop: 26, marginBottom: 'clamp(40px, 5vw, 64px)' }}>
             <MaskHeading
               className="h-lg"
               style={{ maxWidth: 1080 }}
-              lines={[
-                <>Stellen Sie sich Ihr</>,
-                <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Paket zusammen</span></>,
-              ]}
+              lines={[<>Vier Kanäle —</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>ein System.</span></>]}
             />
             <Reveal delay={0.12}>
-              <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '26px 0 0', maxWidth: 560 }}>
-                Google Maps ist der zentrale Kanal — alles andere zahlt darauf ein. Wählen Sie die Bereiche aus, die Ihr Unternehmen braucht, und fordern Sie ein Angebot dafür an. Nicht sicher?{' '}
-                <a href="/#audit-quiz" className="ul" style={{ color: 'var(--ink)', fontWeight: 600 }}>Machen Sie den kostenlosen Sichtbarkeits-Check.</a>
+              <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '26px 0 0', maxWidth: 600 }}>
+                Zu jedem Kanal sehen Sie, in welchem Paket er steckt und was er kostet. Wählen Sie ein Paket — wir melden uns und klären alles, bevor Kosten entstehen.{' '}
+                <a href="/preise" className="ul" style={{ color: 'var(--ink)', fontWeight: 600 }}>Alle Preise ansehen →</a>
               </p>
             </Reveal>
           </div>
 
-          {/* zentraler Kanal — bewusst größer als alles andere */}
-          <Reveal>
-            <div style={{
-              border: '1px solid var(--line)', borderRadius: 26, overflow: 'hidden',
-              backgroundColor: selected.includes(modules[0].label) ? 'rgba(38,0,255,0.04)' : 'var(--bone)',
-              marginBottom: 'clamp(30px, 3.5vw, 52px)', transition: 'background-color 0.4s ease',
-            }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
-                <div style={{ padding: 'clamp(26px, 3vw, 46px)' }}>
-                  <span className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)' }}>01 · Zentraler Kanal</span>
-                  <h3 className="display" style={{ fontSize: 'clamp(27px, 3.4vw, 46px)', lineHeight: 1.08, margin: '16px 0 14px' }}>
-                    {modules[0].label}
-                  </h3>
-                  <p style={{ fontSize: 16, lineHeight: 1.7, color: 'var(--ink)', fontWeight: 600, margin: '0 0 14px', maxWidth: 460 }}>
-                    {modules[0].sentence}
-                  </p>
-                  <p style={{ fontSize: 14.5, lineHeight: 1.8, color: 'var(--muted)', margin: '0 0 26px', maxWidth: 460 }}>
-                    {modules[0].why}
-                  </p>
-                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                    <button onClick={() => toggle(modules[0].label)} className="btn btn-md btn-ink">
-                      {selected.includes(modules[0].label) ? '✓ Im Plan' : 'Zum Plan hinzufügen'}
-                    </button>
-                    <a href={`/services/${modules[0].slug}`} className="btn btn-md" style={{ border: '1px solid var(--line)', color: 'var(--ink)' }}>
-                      Zur Leistungsseite <span className="arw">→</span>
-                    </a>
-                  </div>
-                </div>
-
-                <div style={{ backgroundColor: 'var(--paper)', padding: 'clamp(26px, 3vw, 46px)', borderLeft: '1px solid var(--line)' }}>
-                  <p style={{ fontSize: 13.5, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 20px', maxWidth: 380 }}>
-                    Alle weiteren Bereiche zahlen auf diesen einen Punkt ein — auf das Bild, das ein Kunde von Ihnen bekommt, wenn er lokal sucht.
-                  </p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {modules.slice(1).map(m => (
-                      <a key={m.slug} href={`/services/${m.slug}`} style={{
-                        fontSize: 12.5, fontWeight: 500, color: 'var(--ink)', textDecoration: 'none',
-                        border: '1px solid var(--line)', borderRadius: 999, padding: '8px 15px',
-                        transition: 'border-color 0.25s, color 0.25s',
-                      }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--electric)'; e.currentTarget.style.color = 'var(--electric)' }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(7,7,12,0.12)'; e.currentTarget.style.color = 'var(--ink)' }}>
-                        {m.label}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-
-          {/* module rows */}
           <div style={{ borderTop: '1px solid var(--line)' }}>
-            {modules.slice(1).map((m, idx) => {
-              const i = idx + 1
-              const checked = selected.includes(m.label)
-              const isOpen = expanded === m.label
+            {modules.map((m, i) => {
+              const offer = SERVICE_OFFER[m.slug]
+              const isOpen = expanded === m.slug
               return (
-                <Reveal key={m.label} delay={Math.min(i * 0.05, 0.25)}>
-                  <div className="row" style={{
-                    borderBottom: '1px solid var(--line)',
-                    backgroundColor: checked ? 'rgba(38,0,255,0.035)' : 'transparent',
-                  }}>
-                    <div className="mod-row" style={{
-                      display: 'grid', gridTemplateColumns: '58px minmax(0,1fr) minmax(0,0.9fr) auto',
-                      alignItems: 'center', gap: 'clamp(14px, 2vw, 32px)',
-                      padding: 'clamp(22px, 2.4vw, 34px) 0',
-                    }}>
-                      <span className="row-idx display" style={{ fontSize: 14, color: 'rgba(7,7,12,0.3)', letterSpacing: '0.08em' }}>
-                        {String(i + 1).padStart(2, '0')}
-                      </span>
-
+                <Reveal key={m.slug} delay={Math.min(i * 0.05, 0.2)}>
+                  <div className="row" style={{ borderBottom: '1px solid var(--line)' }}>
+                    <div className="svc-row" style={{ display: 'grid', gridTemplateColumns: '84px minmax(0, 1.1fr) minmax(0, 0.9fr) auto', alignItems: 'center', gap: 'clamp(14px, 2vw, 32px)', padding: 'clamp(24px, 2.6vw, 36px) 0' }}>
+                      <OutlineNum n={i + 1} />
                       <div>
-                        <h3 className="row-title display" style={{ fontSize: i === 0 ? 'clamp(22px, 2.4vw, 34px)' : 'clamp(19px, 1.9vw, 27px)', lineHeight: 1.15, margin: 0, color: checked ? 'var(--electric)' : 'var(--ink)' }}>
-                          {m.label}
-                        </h3>
-                        {i === 0 && (
-                          <span className="eyebrow" style={{ display: 'inline-block', marginTop: 10, fontSize: 9.5, color: 'var(--electric)' }}>Zentraler Kanal</span>
-                        )}
+                        <h3 className="display" style={{ fontSize: 'clamp(20px, 2vw, 28px)', lineHeight: 1.15, margin: '0 0 8px' }}>{m.label}</h3>
+                        <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--muted)', margin: 0 }}>{m.sentence}</p>
                       </div>
-
-                      <p className="mod-sentence" style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>{m.sentence}</p>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end' }}>
-                        <button
-                          onClick={() => setExpanded(isOpen ? null : m.label)}
-                          aria-label="Details"
-                          style={{
-                            width: 40, height: 40, borderRadius: '50%', border: '1px solid var(--line)',
-                            background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            transition: `transform 0.5s ${EASE}, background-color 0.3s, border-color 0.3s`,
-                            transform: isOpen ? 'rotate(45deg)' : 'none',
-                          }}
-                          onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--bone)' }}
-                          onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}>
+                      <div className="svc-price">
+                        {offer && <>
+                          <span className="display" style={{ display: 'block', fontSize: 'clamp(20px, 1.8vw, 24px)', lineHeight: 1.1 }}>{offer.price}</span>
+                          <span style={{ display: 'block', fontSize: 13, lineHeight: 1.5, color: 'var(--muted)', marginTop: 4 }}>{offer.note}</span>
+                        </>}
+                      </div>
+                      <div className="svc-actions" style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end' }}>
+                        <button onClick={() => setExpanded(isOpen ? null : m.slug)} aria-label="Details"
+                          style={{ width: 40, height: 40, borderRadius: '50%', border: '1px solid var(--line)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: `transform 0.5s ${EASE}`, transform: isOpen ? 'rotate(45deg)' : 'none', flexShrink: 0 }}>
                           <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="#07070C" strokeWidth="1.5" strokeLinecap="round" /></svg>
                         </button>
-                        <button
-                          onClick={() => toggle(m.label)}
-                          className="btn btn-md"
-                          style={{
-                            fontSize: 12.5, padding: '10px 18px', whiteSpace: 'nowrap',
-                            backgroundColor: checked ? 'var(--electric)' : 'transparent',
-                            color: checked ? '#fff' : 'var(--ink)',
-                            border: checked ? '1px solid var(--electric)' : '1px solid var(--line)',
-                            ['--btn-fill' as any]: checked ? '#07070C' : 'var(--electric)',
-                            ['--btn-fill-text' as any]: '#fff',
-                          }}>
-                          {checked ? '✓ Im Plan' : 'Hinzufügen'}
+                        <button type="button" onClick={() => open(m.slug)} className="btn btn-md btn-ink" style={{ whiteSpace: 'nowrap' }}>
+                          Paket wählen <span className="arw">→</span>
                         </button>
                       </div>
                     </div>
 
-                    {/* expandable detail */}
-                    <div style={{ overflow: 'hidden', maxHeight: isOpen ? 620 : 0, transition: `max-height 0.7s ${EASE}` }}>
-                      <div className="mod-detail" style={{
-                        display: 'grid', gridTemplateColumns: '58px minmax(0,260px) minmax(0,1fr)',
-                        gap: 'clamp(14px, 2vw, 32px)', padding: '4px 0 clamp(28px, 3vw, 40px)',
-                      }}>
+                    <div style={{ overflow: 'hidden', maxHeight: isOpen ? 700 : 0, transition: `max-height 0.7s ${EASE}` }}>
+                      <div className="mod-detail" style={{ display: 'grid', gridTemplateColumns: '84px minmax(0,260px) minmax(0,1fr)', gap: 'clamp(14px, 2vw, 32px)', padding: '4px 0 clamp(28px, 3vw, 40px)' }}>
                         <span />
                         <div style={{ borderRadius: 14, overflow: 'hidden', backgroundColor: 'var(--bone)', alignSelf: 'start' }}>
                           <m.Illust />
@@ -2646,14 +2591,8 @@ function ServiceSelector() {
             })}
           </div>
 
-          {/* not-sure band */}
           <Reveal delay={0.1}>
-            <div className="notsure" style={{
-              marginTop: 'clamp(40px, 5vw, 64px)', backgroundColor: 'var(--ink)', color: '#fff',
-              borderRadius: 24, padding: 'clamp(32px, 4vw, 52px)',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap',
-              position: 'relative', overflow: 'hidden',
-            }}>
+            <div className="notsure" style={{ marginTop: 'clamp(40px, 5vw, 64px)', backgroundColor: 'var(--ink)', color: '#fff', borderRadius: 24, padding: 'clamp(32px, 4vw, 52px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap', position: 'relative', overflow: 'hidden' }}>
               <CrossBackdrop tone="dark" />
               <div style={{ position: 'relative', maxWidth: 560 }}>
                 <h3 className="display" style={{ fontSize: 'clamp(22px, 2.6vw, 34px)', marginBottom: 12 }}>Nicht sicher, wo Sie anfangen sollen?</h3>
@@ -2668,28 +2607,11 @@ function ServiceSelector() {
           </Reveal>
         </div>
       </section>
-
-      {/* Sticky selection bar */}
-      <div style={{
-        position: 'fixed', bottom: 20, left: 0, right: 0, zIndex: 100,
-        display: 'flex', justifyContent: 'center', padding: '0 20px',
-        transform: selected.length > 0 ? 'translateY(0)' : 'translateY(160%)',
-        transition: `transform 0.6s ${EASE}`, pointerEvents: selected.length > 0 ? 'auto' : 'none',
-      }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', justifyContent: 'center',
-          backgroundColor: 'rgba(7,7,12,0.92)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-          borderRadius: 999, padding: '10px 10px 10px 26px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
-          border: '1px solid rgba(255,255,255,0.1)',
-        }}>
-          <span style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.6)' }}>
-            Ihr Plan: <strong style={{ color: '#fff' }}>{selected.length} Leistung{selected.length !== 1 ? 'en' : ''}</strong>
-          </span>
-          <button onClick={() => setQuoteOpen(true)} className="btn btn-md btn-electric" style={{ ['--btn-fill' as any]: '#fff', ['--btn-fill-text' as any]: '#07070C' }}>
-            Individuelles Angebot <span className="arw">→</span>
-          </button>
-        </div>
-      </div>
+      <style>{`@media (max-width: 900px) {
+  .svc-row { grid-template-columns: 56px minmax(0, 1fr) !important; }
+  .svc-price, .svc-actions { grid-column: 2 / -1; }
+  .svc-actions { justify-content: flex-start !important; }
+}`}</style>
     </>
   )
 }
@@ -3476,56 +3398,59 @@ const servicePages: ServicePageData[] = [
     slug: 'google-maps-business-profile',
     Illust: IllustMapsProfile,
     kicker: 'GOOGLE MAPS & UNTERNEHMENSPROFIL',
-    heroTitle: 'Dominieren Sie die lokale Suche auf Google Maps',
-    heroSubtitle: 'Optimierung Ihres Google-Unternehmensprofils, damit Google Ihr Unternehmen als führende lokale Lösung für Ihre Leistungen einstuft.',
-    whatTitle: 'Was ist Google-Unternehmensprofil-Optimierung?',
-    whatBody: 'Die Optimierung des Google-Unternehmensprofils (GBP) strukturiert Ihre lokale digitale Präsenz so, dass Google Ihr Unternehmen als führende lokale Lösung für Ihre Leistungen einstuft.',
-    howTitle: 'Wie wir Ihre lokalen Rankings steigern',
+    heroTitle: 'Google Maps ist Pflicht für lokale Unternehmen',
+    heroSubtitle: 'Menschen suchen in der Nähe, lesen Bewertungen und rufen direkt an. Wir richten Ihr Google-Unternehmensprofil so ein, dass es vollständig, aktuell und vertrauenswürdig ist.',
+    whatTitle: 'Was ist das Google-Unternehmensprofil?',
+    whatBody: 'Ihr Eintrag bei Google Maps und in der Google-Suche: Name, Kategorie, Leistungen, Öffnungszeiten, Fotos und Bewertungen. Für viele Kunden ist er der kürzeste Weg von der Suche zum Anruf — oft noch bevor sie Ihre Website sehen.',
+    howTitle: 'Was wir für Ihr Profil tun',
     howItems: [
-      { title: 'Datenbereinigung', body: 'Wir prüfen und bereinigen doppelte Einträge sowie fehlerhafte NAP-Daten (Name, Adresse, Telefon) in allen Verzeichnissen.' },
-      { title: 'Kategorieauswahl', body: 'Wir identifizieren und konfigurieren reichweitenstarke Haupt- und Nebenkategorien passend zur lokalen Suchabsicht.' },
-      { title: 'Inhaltliche Anreicherung', body: 'Wir laden geotaggte Bilder, lokalisierte Produktlisten und klare Leistungsbeschreibungen hoch.' },
-      { title: 'Laufende Pflege', body: 'Wir pflegen Ihr Profil laufend und veröffentlichen Updates, damit Google-Algorithmen aktiven Betrieb erkennen.' },
+      { title: 'Einrichtung', body: 'Wir erstellen Ihr Profil oder übernehmen und überarbeiten ein bestehendes.' },
+      { title: 'Hauptkategorie und Leistungen', body: 'Die Hauptkategorie entscheidet, bei welchen Suchen Google Sie überhaupt zeigt. Wir wählen sie sorgfältig und beschreiben Ihre Leistungen klar.' },
+      { title: 'Angaben, die überall stimmen', body: 'Kontaktdaten, Öffnungszeiten, Servicegebiet und die Verbindung zur Website — einheitlich mit Ihren anderen Einträgen im Netz.' },
+      { title: 'Bewertungen', body: 'Sie bekommen einen Link und eine Vorlage, mit der Sie zufriedene Kunden einfach um eine Bewertung bitten.' },
     ],
     receiveTitle: 'Was Sie erhalten',
     receiveItems: [
-      'Hochsichtbare Platzierung im lokalen Top-3-Bereich von Google Maps bei kaufbezogenen Suchanfragen.',
-      'Direktes Wachstum bei eingehenden Anrufen, Routenanfragen und Website-Besuchen.',
-      'Regelmäßige Leistungsanalysen zu den Suchaktionen Ihrer Kunden.',
+      'Ein vollständig eingerichtetes Google-Profil — einmalig, ohne Abo.',
+      'Eine klare Kategorie und Leistungen, damit Google versteht, wofür Sie stehen.',
+      'Einheitliche Kontaktdaten, Öffnungszeiten und die Verbindung zur Website.',
+      'Link und Vorlage für echte Google-Bewertungen.',
     ],
-    whyTitle: 'Warum lokale Sichtbarkeit auf der Karte zählt',
-    whyBody: 'Interessenten, die lokale Anbieter suchen, schauen selten über die ersten drei Platzierungen auf der Karte hinaus. Ein nicht optimierter Eintrag überlässt kaufbereite Leads den Mitbewerbern auf diesen Top-Positionen.',
+    whyTitle: 'Warum Google Maps zuerst kommt',
+    whyBody: 'Wer einen Handwerker, eine Praxis oder einen Dienstleister in der Nähe sucht, entscheidet meist schnell und zwischen wenigen Anbietern auf der Karte. Ein unvollständiges Profil überlässt diese Anfragen den Mitbewerbern — auch wenn Ihre Arbeit besser ist.',
     faq: [
-      { q: 'Wie lange dauert es, bis ich Ergebnisse auf Google Maps sehe?', a: 'Erste Ranking-Verbesserungen und mehr Kundenaktionen zeigen sich in der Regel innerhalb von 30 bis 90 Tagen nach der Profiloptimierung und Bereinigung der Verzeichniseinträge.' },
+      { q: 'Können Sie Platz 1 auf Google Maps garantieren?', a: 'Nein, das kann niemand seriös versprechen. Google berücksichtigt unter anderem die Entfernung zum Suchenden und die Bekanntheit des Unternehmens. Wir bringen alles in Ordnung, was sich beeinflussen lässt.' },
       { q: 'Brauche ich ein physisches Ladengeschäft, um Google Business Profile zu nutzen?', a: 'Nein. Dienstleistungsunternehmen, die zu ihren Kunden fahren, können optimierte Profile mit festgelegten Servicegebieten betreiben, ohne die Privatadresse offenzulegen.' },
+      { q: 'Was kostet das Google-Profil?', a: 'Die Einrichtung kostet einmalig 149 € — ohne Abo. In den Website-Paketen Local Website (299 € im Monat) und AI Plus (499 € im Monat) ist das Google-Profil bereits enthalten, bei AI Plus mit erweiterter Optimierung.' },
     ],
-    ctaTitle: 'Kostenloser Sichtbarkeits-Check Ihres Google-Profils',
-    ctaBody: 'Wir prüfen Ihr Google-Unternehmensprofil, benennen die Blocker in Ihrer Platzierung und zeigen die lokalen Wachstumschancen, die Sie aktuell liegen lassen.',
+    ctaTitle: 'Kostenloser Check Ihres Google-Profils',
+    ctaBody: 'Wir prüfen Ihr Google-Unternehmensprofil und zeigen, was fehlt und was Sie zuerst verbessern sollten.',
   },
   {
     slug: 'website-google-search',
     Illust: IllustWebsiteSearch,
     kicker: 'WEBSITE & GOOGLE SEARCH',
-    heroTitle: 'Eine Website, die Menschen, Google und KI-Systeme verstehen',
-    heroSubtitle: 'Ihre Website ist die Wissensbasis Ihres Unternehmens. Wir strukturieren sie so, dass Kunden schnell finden, was sie suchen – und Suchmaschinen wie KI-Systeme Ihre Leistungen korrekt wiedergeben.',
-    whatTitle: 'Was bedeutet eine strukturierte Website?',
-    whatBody: 'Eine gute Website sieht nicht nur gut aus. Sie erklärt in klarer Struktur, wer Sie sind, welche Leistungen Sie anbieten, in welchen Regionen Sie arbeiten und warum man Ihnen vertrauen kann – für Menschen und für Maschinen gleichermaßen lesbar.',
-    howTitle: 'Wie wir Ihre Website aufbauen',
+    heroTitle: 'Google Search schaut auf Ihre Website',
+    heroSubtitle: 'Ihre Website muss in einfachen Worten erklären, was Sie tun, wo Sie arbeiten und warum man Ihnen vertrauen kann — für Menschen und für Google.',
+    whatTitle: 'Was eine gute lokale Website ausmacht',
+    whatBody: 'Eine gute Website sieht nicht nur gut aus. Sie beantwortet die Fragen Ihrer Kunden: Was bieten Sie an, wo sind Sie tätig, welche Arbeiten haben Sie schon gemacht und wie erreicht man Sie. Genau daraus lesen auch Google und KI-Systeme, wer Sie sind.',
+    howTitle: 'Drei Pakete — je nachdem, wo Sie stehen',
     howItems: [
-      { title: 'Klare Seitenstruktur', body: 'Eigene Seiten für jede Leistung, für Ihre Regionen und Servicegebiete, für Unternehmen und Team sowie für Referenzen und Kundenprojekte.' },
-      { title: 'Inhalte, die Fragen beantworten', body: 'Ratgeber-Artikel zu den Fragen Ihrer Kunden und ein Glossar, das Fachbegriffe verständlich erklärt – die Grundlage für Sichtbarkeit in Suche und KI.' },
-      { title: 'Interne Verlinkung', body: 'Glossar führt zum Ratgeber, Ratgeber zur passenden Leistung, Leistung zur Anfrage. So findet jeder Besucher den nächsten sinnvollen Schritt.' },
-      { title: 'Technik & strukturierte Daten', body: 'Ladezeiten, mobile Darstellung, Indexierbarkeit und Schema-Markup, damit Ihre Inhalte gefunden, verstanden und korrekt zitiert werden können.' },
+      { title: 'One Pager', body: 'Eine Seite mit Leistungen und Kontakt, optimiert für das Smartphone — Hosting und Technik inklusive. Der schnelle Einstieg.' },
+      { title: 'Local Website', body: 'Mehrere Seiten: eine pro Leistung und pro Ort, dazu Google-Unternehmensprofil, lokales SEO und regelmäßige Updates.' },
+      { title: 'AI Plus', body: 'Alles aus Local Website, dazu Verzeichnisse, Inhalte für Google und die KI-Suche sowie Monitoring und Empfehlungen.' },
+      { title: 'Technik in jedem Paket', body: 'Ladezeiten, mobile Darstellung und strukturierte Daten, damit Ihre Inhalte gefunden und richtig verstanden werden.' },
     ],
     receiveTitle: 'Was Sie erhalten',
     receiveItems: [
-      'Eine Website-Struktur, die jede Leistung und jede Region eigenständig sichtbar macht.',
-      'Inhalte, die Suchmaschinen und KI-Systeme als Quelle über Ihr Unternehmen nutzen können.',
-      'Einen klaren Weg vom ersten Besuch bis zur Anfrage – ohne Umwege.',
+      'Eine Website, die in einfachen Worten erklärt, was Sie tun und wo Sie arbeiten.',
+      'Eigene Seiten für Ihre Leistungen und Orte (ab Local Website).',
+      'Hosting und technische Betreuung in jedem Paket.',
     ],
     whyTitle: 'Warum die Website die Basis bleibt',
     whyBody: 'Google-Profil, Bewertungen und soziale Netzwerke verweisen alle auf einen Punkt: Ihre Website. Fehlen dort klare Antworten, brechen Interessenten genau in dem Moment ab, in dem sie sich entscheiden wollten – und KI-Systeme haben keine verlässliche Quelle über Sie.',
     faq: [
+      { q: 'Welches Paket passt zu mir?', a: 'One Pager, wenn Sie schnell einen professionellen Auftritt brauchen. Local Website, wenn Sie mehrere Leistungen oder Orte haben und Anfragen aus der Region bekommen wollen. AI Plus, wenn Sie zusätzlich in Verzeichnissen und in der KI-Suche sichtbar werden möchten.' },
       { q: 'Können Sie meine bestehende Website optimieren?', a: 'In den meisten Fällen ja. Wir prüfen Struktur, Inhalte und Technik Ihrer bestehenden Website und verbessern gezielt das, was Sichtbarkeit und Anfragen blockiert. Nur wenn die technische Basis eine sinnvolle Weiterentwicklung nicht zulässt, empfehlen wir einen Neuaufbau.' },
       { q: 'Brauche ich unbedingt eine Website?', a: 'Für den Start reicht ein gut gepflegtes Google-Unternehmensprofil oft aus. Sobald Sie aber mehrere Leistungen, mehrere Regionen oder erklärungsbedürftige Angebote haben, ist die Website der Ort, an dem all das verständlich zusammenkommt – auch für KI-Systeme.' },
     ],
@@ -3535,32 +3460,33 @@ const servicePages: ServicePageData[] = [
   {
     slug: 'ai-search-optimization',
     Illust: IllustAIOptimization,
-    kicker: 'KI-SUCHOPTIMIERUNG',
-    heroTitle: 'Werden Sie von ChatGPT, Perplexity & Google AI empfohlen',
-    heroSubtitle: 'Generative Engine Optimization (GEO) strukturiert Ihre Markeninformationen so, dass große Sprachmodelle Ihr Unternehmen bei KI-gestützten Suchanfragen erkennen, verarbeiten und empfehlen.',
-    whatTitle: 'Was ist KI-Optimierung (Generative Engine Optimization)?',
-    whatBody: 'KI-Optimierung strukturiert Ihre Markeninformationen so, dass große Sprachmodelle (LLMs) Ihr Unternehmen bei KI-gestützten Suchanfragen erkennen, verarbeiten und empfehlen.',
-    howTitle: 'Wie wir Ihre Marke in KI-Antworten platzieren',
+    kicker: 'KI-SUCHE',
+    heroTitle: 'Lokale Suche beginnt immer öfter mit einer Frage an die KI',
+    heroSubtitle: 'ChatGPT, Perplexity und die KI-Übersichten bei Google nennen nur wenige Anbieter — und zwar die, die sie eindeutig verstehen und für vertrauenswürdig halten.',
+    whatTitle: 'Was heißt „in der KI-Suche sichtbar“?',
+    whatBody: 'KI-Assistenten stellen ihre Antworten aus dem zusammen, was im Netz über Ihr Unternehmen steht: Website, Google-Profil, Verzeichnisse, Bewertungen und Social Media. Sichtbar wird, wer dort klar und widerspruchsfrei beschrieben ist. Einen Trick jenseits sauberer Grundlagen gibt es nicht.',
+    howTitle: 'Was die KI über Sie verstehen muss',
     howItems: [
-      { title: 'Entitätsstrukturierung', body: 'Wir implementieren präzises JSON-LD-Schema-Markup, damit KI-Algorithmen exakte Fakten zu Ihren Leistungen erfassen.' },
-      { title: 'Aufbau von Autorität', body: 'Wir schaffen Fremdzitate auf Plattformen, die KI-Modelle für Echtzeit-Webrecherche und Trainingsdaten nutzen.' },
-      { title: 'Semantische Content-Optimierung', body: 'Wir gestalten Online-Inhalte so, dass sie natürlichsprachliche Anfragen beantworten, wie sie ChatGPT, Perplexity und Google AI Overviews verarbeiten.' },
-      { title: 'KI-Abruf-Monitoring', body: 'Wir verfolgen Markenwahrnehmung, Zitierhäufigkeit und Platzierungsgenauigkeit auf den wichtigsten KI-Plattformen.' },
+      { title: 'Was Sie anbieten', body: 'Klare Beschreibungen Ihrer Leistungen auf der Website und im Google-Profil — mit strukturierten Daten, die Maschinen lesen können.' },
+      { title: 'Wo Sie tätig sind', body: 'Ort und Servicegebiet eindeutig und überall gleich angegeben.' },
+      { title: 'Was Kunden über Sie sagen', body: 'Echte Bewertungen und Erwähnungen, auf die sich KI-Systeme stützen können.' },
+      { title: 'Ob Ihre Angaben übereinstimmen', body: 'Einheitliche Daten auf Website, Karten, Verzeichnissen und Social Media — widersprüchliche Angaben machen die KI unsicher.' },
     ],
     receiveTitle: 'Was Sie erhalten',
     receiveItems: [
-      'Direkte Markenerwähnungen in KI-generierten Zusammenfassungen und Empfehlungen.',
-      'Frühzeitige Gewinnung von Käufern, die sich von klassischen Suchmaschinen abwenden.',
-      "Messbares Wachstum Ihrer Markenpräsenz in KI-Antwortsystemen.",
+      'Inhalte, die die Fragen Ihrer Kunden direkt beantworten — für Google und die KI-Suche.',
+      'Einheitliche Unternehmensdaten in Branchenverzeichnissen und auf Kartendiensten.',
+      'Regelmäßiges Monitoring, wie KI-Assistenten Ihr Unternehmen darstellen — mit Empfehlungen.',
     ],
-    whyTitle: 'Warum KI-Sichtbarkeit entscheidend ist',
-    whyBody: 'Suchgewohnheiten verändern sich. Verbraucher verlassen sich auf KI-Assistenten, um Optionen zu filtern und konkrete Empfehlungen zu erhalten. Unternehmen, die in KI-Abrufsystemen fehlen, verlieren Marktanteile, noch bevor klassische Suchergebnisse überhaupt betrachtet werden.',
+    whyTitle: 'Warum das jetzt wichtig wird',
+    whyBody: 'Immer mehr Menschen fragen einen KI-Assistenten, bevor sie Google öffnen. Die Antwort nennt nur wenige Anbieter. Wer dort fehlt, wird gar nicht erst verglichen.',
     faq: [
-      { q: 'Wie unterscheidet sich KI-Optimierung von klassischem SEO?', a: 'Klassisches SEO rankt einzelne Webseiten in den Suchergebnissen. KI-Optimierung sorgt dafür, dass generative KI-Modelle (wie ChatGPT und Perplexity) Ihre Marke in ihren Zusammenfassungen referenzieren und empfehlen.' },
-      { q: 'Können KI-Plattformen eine Empfehlung für mein Unternehmen garantieren?', a: 'Generative Modelle basieren auf probabilistischem Datenabruf. Durch strukturierte Entitätsautorität und klare semantische Signale maximieren wir die Wahrscheinlichkeit, dass Ihr Unternehmen als primäre Antwort ausgewählt wird.' },
+      { q: 'Wie unterscheidet sich das von klassischem SEO?', a: 'Die Grundlagen sind dieselben: klare Inhalte, saubere Technik, einheitliche Angaben. Der Unterschied: Eine KI zeigt keine Trefferliste, sondern nennt wenige Anbieter — deshalb zählt, wie eindeutig und vertrauenswürdig Ihr Unternehmen beschrieben ist.' },
+      { q: 'Können Sie eine Empfehlung durch ChatGPT garantieren?', a: 'Nein. Niemand kontrolliert, was eine KI antwortet. Wir sorgen dafür, dass alles, was sie über Sie finden kann, klar, aktuell und stimmig ist — und prüfen regelmäßig, wie Sie dargestellt werden.' },
+      { q: 'In welchem Paket ist das enthalten?', a: 'Im Paket AI Plus für 499 € im Monat: Website, erweiterte Optimierung des Google-Profils, Verzeichnisse, Inhalte für Google und die KI-Suche sowie Monitoring und Empfehlungen.' },
     ],
     ctaTitle: 'Kostenloser Check Ihrer KI-Sichtbarkeit',
-    ctaBody: 'Erfahren Sie, wie ChatGPT, Perplexity und Google AI Ihre Marke aktuell bewerten, und erhalten Sie einen Optimierungsfahrplan.',
+    ctaBody: 'Wir sehen nach, wie ChatGPT, Perplexity und Google Ihr Unternehmen aktuell darstellen, und zeigen, was Sie zuerst verbessern sollten.',
   },
   {
     slug: 'reviews',
@@ -3625,32 +3551,33 @@ const servicePages: ServicePageData[] = [
   {
     slug: 'social-media',
     Illust: IllustSocial,
-    kicker: 'SOCIAL-MEDIA-PRÄSENZ',
-    heroTitle: 'Social Proof, der wirklich konvertiert',
-    heroSubtitle: 'Professionelles Social-Media-Management macht aus passiven Profilen einen organisierten Kompetenznachweis, der Ihre Arbeit, Werte und Kundenzufriedenheit zeigt.',
-    whatTitle: 'Was ist professionelles Social-Media-Präsenzmanagement?',
-    whatBody: 'Social-Media-Management macht aus passiven Profilen einen organisierten Kompetenznachweis, der Ihre Arbeit, Werte und Kundenzufriedenheit zeigt.',
-    howTitle: 'Wie wir Ihre Social-Media-Kanäle betreuen',
+    kicker: 'SOCIAL MEDIA',
+    heroTitle: 'In sozialen Netzwerken sehen Kunden Menschen',
+    heroSubtitle: 'Team, Arbeitsweise und echte Ergebnisse machen Ihr Unternehmen vertraut — schon vor dem ersten Anruf. Dafür müssen Sie kein Influencer werden.',
+    whatTitle: 'Was wir unter Social-Media-Betreuung verstehen',
+    whatBody: 'Regelmäßige, ehrliche Beiträge auf Instagram und Facebook: wer Sie sind, wie Sie arbeiten und was dabei herauskommt. Wir planen, bereiten vor und veröffentlichen — Sie liefern Einblicke aus Ihrem Alltag.',
+    howTitle: 'So läuft die Betreuung',
     howItems: [
-      { title: 'Content-Strategie', body: 'Wir planen Redaktionspläne rund um echte Projekte, Kundenfeedback und Ihre Kompetenz.' },
-      { title: 'Content-Erstellung', body: 'Wir gestalten klare visuelle Inhalte mit informativen, nutzenorientierten Texten.' },
-      { title: 'Konsequente Veröffentlichung', body: 'Wir veröffentlichen regelmäßig auf Instagram und Facebook.' },
-      { title: 'Profiloptimierung', body: 'Wir strukturieren Profilbeschreibungen, Aktionsbuttons und Ziel-Links, um Besucher in den Verkaufsprozess zu führen.' },
+      { title: 'Redaktionsplan', body: 'Wir planen Themen rund um Ihre Leistungen, echte Projekte und Ihre Region.' },
+      { title: 'Vorbereitung der Beiträge', body: 'Wir gestalten die Beiträge und schreiben die Texte — Sie geben sie frei.' },
+      { title: 'Regelmäßiges Posten', body: 'Wir veröffentlichen nach Plan, damit Ihr Profil sichtbar aktiv bleibt.' },
+      { title: 'Verbindung zu Ihren Leistungen', body: 'Profil, Links und Beiträge führen zu Website, Google-Profil und Anfrage.' },
     ],
     receiveTitle: 'Was Sie erhalten',
     receiveItems: [
-      'Eine aktive, professionelle Markenpräsenz, die sofort Glaubwürdigkeit schafft.',
-      'Gezielten Traffic von sozialen Netzwerken zu Ihrer Unternehmenswebsite.',
-      'Einen wiederverwendbaren Fundus an visuellen Inhalten für künftige Kampagnen.',
+      'Ein aktives Profil, das zeigt: Hier arbeiten echte Menschen.',
+      'Beiträge, die zu Ihren Leistungen und Ihrer Region passen.',
+      'Kein eigener Aufwand für Planung und Veröffentlichung.',
     ],
-    whyTitle: 'Warum Social Proof Conversions antreibt',
-    whyBody: 'Inaktive Social-Media-Profile wecken Zweifel am Geschäftsbetrieb. Ein aktueller, gepflegter Feed ist der klare Beweis, dass Ihr Unternehmen aktiv, zuverlässig und bei Kunden geschätzt ist.',
+    whyTitle: 'Warum Social Media Vertrauen schafft',
+    whyBody: 'Viele Kunden sehen sich vor dem Anruf kurz Ihr Profil an. Ein gepflegter Feed zeigt, dass Ihr Unternehmen aktiv ist und dass hinter dem Namen Menschen stehen. Ein verwaistes Profil wirft dagegen Fragen auf.',
     faq: [
-      { q: 'Wie oft werden Inhalte auf meinen Kanälen veröffentlicht?', a: 'Die Veröffentlichungsfrequenz orientiert sich an den Standards der jeweiligen Plattform, typischerweise 3 bis 5 strukturierte Beiträge pro Woche zzgl. regelmäßiger Story-Updates.' },
-      { q: 'Übernehmen Sie sowohl die visuelle Produktion als auch das Texten?', a: 'Ja. Wir übernehmen die komplette Produktion – von Grafik-Layouts über Videoschnitt und Texterstellung bis zur Veröffentlichungsplanung.' },
+      { q: 'Wie oft wird gepostet?', a: 'Die Frequenz legen wir gemeinsam im Redaktionsplan fest — so, dass sie zu Ihrem Alltag und Ihren Themen passt.' },
+      { q: 'Kann ich Social Media ohne Website buchen?', a: 'Ja. Die Social-Media-Betreuung kostet 199 € im Monat und lässt sich zu jedem Paket dazu buchen — oder ganz allein.' },
+      { q: 'Muss ich selbst vor die Kamera?', a: 'Nein. Fotos von Projekten, dem Team oder der Werkstatt reichen oft völlig. Wer mag, zeigt sich — Pflicht ist das nicht.' },
     ],
     ctaTitle: 'Kostenloser Check Ihrer Social-Media-Präsenz',
-    ctaBody: 'Fordern Sie eine Bewertung Ihrer bestehenden Social-Media-Kanäle an, um Lücken in Präsentation und Engagement aufzudecken.',
+    ctaBody: 'Wir sehen uns Ihre Profile an und sagen Ihnen, was fehlt und womit Sie anfangen sollten.',
   },
   {
     slug: 'google-meta-ads',
@@ -4787,7 +4714,7 @@ function GlossarTermPage({ slug }: { slug: string }) {
 function ServicesIndex() {
   usePageMeta(
     'Leistungen — woraus lokale Sichtbarkeit besteht | RAG',
-    'Google Maps, Website & Google Search, KI-Suche, Bewertungen, lokale Verzeichnisse, Social Media, Anzeigen und Offline-Werbung: die acht Bereiche, die lokale Sichtbarkeit ausmachen — einzeln erklärt und als Paket zusammenstellbar.',
+    'KI-Suche, Google Maps, Website & Google Search und Social Media: die vier Kanäle lokaler Sichtbarkeit — einzeln erklärt, mit Preisen und Paketen.',
   )
   return (
     <>
@@ -4813,7 +4740,7 @@ function ServicesIndex() {
             Woraus lokale <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>Sichtbarkeit besteht</span>
           </h1>
           <p className="lead" style={{ color: 'rgba(255,255,255,0.6)', maxWidth: 620, margin: '0 0 34px' }}>
-            Acht Bereiche, die zusammen darüber entscheiden, ob lokale Kunden Sie finden, verstehen und Ihnen vertrauen. Google Maps ist der zentrale Kanal — alles andere zahlt darauf ein.
+            Vier Kanäle, die zusammen darüber entscheiden, ob lokale Kunden Sie finden, verstehen und Ihnen vertrauen: KI-Suche, Google Maps, Google Search und Social Media.
           </p>
           <a href="/#audit-quiz" className="btn btn-lg btn-paper">Kostenlosen Sichtbarkeits-Check starten <span className="arw">→</span></a>
         </div>
@@ -4822,6 +4749,87 @@ function ServicesIndex() {
       <ServiceSelector />
       </main>
       <Footer />
+    </>
+  )
+}
+
+// Pakete auf den Leistungsseiten — dieselben Preise wie auf /preise (25.09.2026).
+type PriceItemId = 'profile' | PackageId | 'social'
+const SERVICE_PACKAGES: Record<string, { intro: string; items: PriceItemId[]; highlight: PriceItemId; combo?: boolean }> = {
+  'google-maps-business-profile': { intro: 'Das Google-Profil gibt es einzeln für einmalig 149 € — oder inklusive in einem Website-Paket.', items: ['profile', 'local', 'aiplus'], highlight: 'profile' },
+  'website-google-search': { intro: 'Drei Website-Pakete, monatlich abgerechnet. Social Media können Sie zu jedem Paket dazu buchen.', items: ['onepager', 'local', 'aiplus'], highlight: 'local' },
+  'ai-search-optimization': { intro: 'Die Sichtbarkeit in der KI-Suche steckt im Paket AI Plus. Local Website legt die Grundlage dafür.', items: ['local', 'aiplus'], highlight: 'aiplus' },
+  'social-media': { intro: 'Social Media gibt es einzeln — oder zusammen mit dem Google-Profil oder einem Website-Paket.', items: ['social'], highlight: 'social', combo: true },
+}
+
+function priceItem(id: PriceItemId) {
+  if (id === 'profile') return { name: PROFILE_PACKAGE.name, tag: PROFILE_PACKAGE.tag, price: PROFILE_PACKAGE.price, unit: 'einmalig', thesis: PROFILE_PACKAGE.thesis, includes: PROFILE_PACKAGE.includes }
+  if (id === 'social') return { name: SOCIAL_ADDON.name, tag: 'Auch einzeln', price: SOCIAL_ADDON.price, unit: '/ Monat', thesis: SOCIAL_ADDON.thesis, includes: SOCIAL_ADDON.includes }
+  const p = WEBSITE_PACKAGES.find(w => w.id === id)!
+  return { name: p.name, tag: p.tag, price: p.price, unit: '/ Monat', thesis: p.thesis, includes: p.includes }
+}
+
+function ServicePackages({ slug }: { slug: string }) {
+  const cfg = SERVICE_PACKAGES[slug]
+  const [pkgOrder, setPkgOrder] = useState<PackageOrder | null>(null)
+  const [profileOrder, setProfileOrder] = useState<null | { social: boolean }>(null)
+  if (!cfg) return null
+  const order = (id: PriceItemId) => {
+    if (id === 'profile') setProfileOrder({ social: slug === 'social-media' })
+    else if (id === 'social') setPkgOrder({ pkg: null, social: true })
+    else setPkgOrder({ pkg: id, social: false })
+  }
+  const single = cfg.items.length === 1
+  return (
+    <>
+      {pkgOrder && <PackageOrderModal initial={pkgOrder} onClose={() => setPkgOrder(null)} />}
+      {profileOrder && <ProfileOrderModal initialSocial={profileOrder.social} onClose={() => setProfileOrder(null)} />}
+      <section id="pakete" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px)', scrollMarginTop: 80 }}>
+        <div style={{ ...SHELL }}>
+          <Kicker>Pakete & Preise</Kicker>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '12px 40px', flexWrap: 'wrap', margin: '20px 0 clamp(24px, 3vw, 40px)' }}>
+            <h2 className="display" style={{ fontSize: 'clamp(24px, 2.8vw, 38px)', lineHeight: 1.1, margin: 0 }}>Was es kostet</h2>
+            <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: 0, maxWidth: 520 }}>{cfg.intro}</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: single ? 'minmax(0, 1fr)' : 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(12px, 1.4vw, 18px)' }}>
+            {cfg.items.map(id => {
+              const it = priceItem(id)
+              const hi = id === cfg.highlight
+              const dark = hi && id === 'aiplus'
+              return (
+                <article key={id} style={{ display: 'flex', flexDirection: 'column', padding: 'clamp(22px, 2.4vw, 32px)', borderRadius: 24, backgroundColor: dark ? 'var(--ink)' : '#fff', color: dark ? '#fff' : 'var(--ink)', border: dark ? 'none' : `1px solid ${hi ? 'var(--electric)' : 'var(--line)'}` }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                    <PriceTag dark={dark}>{it.tag}</PriceTag>
+                    {hi && !single && <span className="eyebrow" style={{ fontSize: 9.5, color: dark ? 'var(--electric-2)' : 'var(--electric)' }}>Passt hierzu</span>}
+                  </div>
+                  <h3 className="display" style={{ fontSize: 'clamp(20px, 1.8vw, 25px)', lineHeight: 1.15, margin: '0 0 10px' }}>{it.name}</h3>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
+                    <span className="display" style={{ fontSize: 'clamp(30px, 2.8vw, 38px)', lineHeight: 1 }}>{it.price} €</span>
+                    <span style={{ fontSize: 14, color: dark ? 'rgba(255,255,255,0.55)' : 'var(--muted)' }}>{it.unit}</span>
+                  </div>
+                  <p style={{ fontSize: 14.5, lineHeight: 1.6, color: dark ? 'rgba(255,255,255,0.7)' : 'var(--muted)', margin: '0 0 16px' }}>{it.thesis}</p>
+                  <div style={{ marginBottom: 20, display: single ? 'grid' : 'block', gridTemplateColumns: single ? 'repeat(auto-fit, minmax(240px, 1fr))' : undefined, columnGap: 28 }}>
+                    {it.includes.map(x => (
+                      <div key={x} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '8px 0', borderTop: `1px solid ${dark ? 'var(--line-dark)' : 'var(--line)'}` }}>
+                        {checkIcon(dark)}<span style={{ fontSize: 14, lineHeight: 1.5 }}>{x}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <button type="button" onClick={() => order(id)} className={`btn btn-md ${hi ? 'btn-electric' : 'btn-ink'}`} style={{ marginTop: 'auto', alignSelf: 'flex-start' }}>
+                    Paket anfragen <span className="arw">→</span>
+                  </button>
+                </article>
+              )
+            })}
+          </div>
+          {cfg.combo && (
+            <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--muted)', margin: '18px 0 0' }}>
+              Kombinierbar mit: Google-Profil schlüsselfertig (149 € einmalig) · One Pager (30 €/Monat) · Local Website (299 €/Monat) · AI Plus (499 €/Monat).
+            </p>
+          )}
+          <a href="/preise" className="ul" style={{ display: 'inline-block', marginTop: 18, fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>Alle Pakete und Preise <span aria-hidden style={{ color: 'var(--electric)' }}>→</span></a>
+        </div>
+      </section>
     </>
   )
 }
@@ -4863,6 +4871,10 @@ function ServicePage({ slug }: { slug: string }) {
         serviceType: data.kicker,
         areaServed: ['Germany', 'Austria', 'Switzerland'],
         provider: { '@type': 'ProfessionalService', name: SITE_NAME },
+        offers: (SERVICE_PACKAGES[slug]?.items ?? []).map(id => {
+          const it = priceItem(id)
+          return { '@type': 'Offer', name: it.name, price: it.price, priceCurrency: 'EUR' }
+        }),
       }} />
       <JsonLd data={{
         '@context': 'https://schema.org',
@@ -4879,7 +4891,10 @@ function ServicePage({ slug }: { slug: string }) {
           <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Leistungen', href: '/services' }, { label: modules.find(m => m.slug === slug)?.label ?? data.heroTitle }]} />
           <h1 className="display h-lg" style={{ marginBottom: 22, maxWidth: 900 }}>{data.heroTitle}</h1>
           <p className="lead" style={{ color: 'rgba(255,255,255,0.6)', maxWidth: 620, margin: '0 0 34px' }}>{data.heroSubtitle}</p>
-          <a href="#get-audit" className="btn btn-lg btn-paper">{data.ctaTitle} <span className="arw">→</span></a>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <a href="#get-audit" className="btn btn-lg btn-paper">{data.ctaTitle} <span className="arw">→</span></a>
+            {SERVICE_PACKAGES[slug] && <a href="#pakete" className="btn btn-lg btn-outline-dark">Pakete & Preise <span className="arw">→</span></a>}
+          </div>
         </div>
       </section>
 
@@ -4940,7 +4955,9 @@ function ServicePage({ slug }: { slug: string }) {
         </div>
       </section>
 
-      <section id="get-audit" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px)' }}>
+      <ServicePackages slug={slug} />
+
+      <section id="get-audit" style={{ backgroundColor: 'var(--paper)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px)' }}>
         <div style={{ ...SHELL, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(28px, 4vw, 64px)', alignItems: 'center' }}>
           <div>
             <Kicker>Anfrage</Kicker>
@@ -5252,6 +5269,10 @@ function LandingPage() {
 export default function App() {
   const path = typeof window !== 'undefined' ? window.location.pathname : '/'
   const serviceMatch = path.match(/^\/services\/([a-z0-9-]+)\/?$/)
+  if (serviceMatch && SERVICE_REDIRECTS[serviceMatch[1]]) {
+    window.location.replace(SERVICE_REDIRECTS[serviceMatch[1]])
+    return null
+  }
   if (serviceMatch) {
     return <ServicePage slug={serviceMatch[1]} />
   }
