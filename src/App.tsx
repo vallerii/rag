@@ -1,5 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { getLang, setLang, dateLocale, type Lang } from './i18n'
+import CompanySearch from './check/CompanySearch'
+import CheckPage from './check/CheckPage'
+import CabinetPage from './check/CabinetPage'
+import { ForgotPasswordPage, LoginPage, ResetPasswordPage } from './check/AuthPages'
+import OrderPage from './check/OrderPage'
+import type { OrderItem } from './check/data'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SHARED ILLUSTRATION PRIMITIVES
@@ -996,14 +1002,30 @@ function SendButton({ enabled, onSend, label = 'Anfrage senden' }: { enabled: bo
   )
 }
 
+// Schritt 2 einer Paket-Anfrage: Konto anlegen/anmelden auf /anfrage (src/check/OrderPage.tsx).
+function goToOrder(pkg: PackageId | 'profile' | null, social: boolean) {
+  const sp = new URLSearchParams()
+  if (pkg) sp.set('pkg', pkg)
+  if (social) sp.set('social', '1')
+  sp.set('from', window.location.pathname)
+  window.location.href = `/anfrage?${sp.toString()}`
+}
+
+/** Positionen einer Anfrage aus den URL-Parametern — Preise immer aus dem Katalog, nie aus der URL. */
+function orderItemsFromUrl(): OrderItem[] {
+  const sp = new URLSearchParams(window.location.search)
+  const pkg = sp.get('pkg')
+  const items: OrderItem[] = []
+  if (pkg === 'profile') items.push({ id: 'profile', name: PROFILE_PACKAGE.name, price: PROFILE_PACKAGE.price, unit: 'einmalig' })
+  const web = WEBSITE_PACKAGES.find(p => p.id === pkg)
+  if (web) items.push({ id: web.id, name: web.name, price: web.price, unit: 'pro Monat' })
+  if (sp.get('social') === '1') items.push({ id: 'social', name: SOCIAL_ADDON.name, price: SOCIAL_ADDON.price, unit: 'pro Monat' })
+  return items
+}
+
 // Google-Unternehmensprofil — einmalige Einrichtung, ohne Website-Kopplung.
 function ProfileOrderModal({ onClose, initialSocial = false }: { onClose: () => void; initialSocial?: boolean }) {
   const [social, setSocial] = useState(initialSocial)
-  const [name, setName] = useState('')
-  const [company, setCompany] = useState('')
-  const [contact, setContact] = useState('')
-  const [done, setDone] = useState(false)
-  const canSend = name.trim() !== '' && contact.trim() !== ''
   const summary = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, backgroundColor: '#F7F6FF', border: '1px solid #E4DFFF', borderRadius: 14, padding: '12px 16px' }}>
       <OrderRow label="Google-Unternehmensprofil" value={PROFILE_PRICE} unit="einmalig" />
@@ -1012,16 +1034,12 @@ function ProfileOrderModal({ onClose, initialSocial = false }: { onClose: () => 
   )
   return (
     <OrderShell onClose={onClose}>
-      {!done ? (
         <>
           <p className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)', marginBottom: 10 }}>Einmalige Einrichtung</p>
           <h2 id="order-title" style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-0.02em', margin: '0 0 6px', paddingRight: 28 }}>Google-Unternehmensprofil einrichten</h2>
           <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: '0 0 18px' }}>
-            <strong style={{ color: 'var(--ink)' }}>{PROFILE_PRICE} einmalig</strong> — wir erstellen oder optimieren Ihr Profil. Hinterlassen Sie Ihre Kontaktdaten, wir melden uns zur Abstimmung.
+            <strong style={{ color: 'var(--ink)' }}>{PROFILE_PRICE} einmalig</strong> — wir erstellen oder optimieren Ihr Profil. Im nächsten Schritt legen Sie Ihren Kundenbereich an oder melden sich an.
           </p>
-          <input style={orderInput} value={name} onChange={e => setName(e.target.value)} placeholder="Ihr Name" autoComplete="name" />
-          <input style={orderInput} value={company} onChange={e => setCompany(e.target.value)} placeholder="Name Ihres Unternehmens" autoComplete="organization" />
-          <input style={{ ...orderInput, marginBottom: 16 }} value={contact} onChange={e => setContact(e.target.value)} placeholder="Telefon oder E-Mail" autoComplete="email" />
           <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(7,7,12,0.45)', marginBottom: 8 }}>Optional dazu · monatlich</p>
           <label style={{ display: 'flex', gap: 12, alignItems: 'flex-start', cursor: 'pointer', padding: '11px 14px', borderRadius: 14, marginBottom: 14, border: `1px solid ${social ? '#2600FF' : 'rgba(7,7,12,0.12)'}`, backgroundColor: social ? '#F4F2FF' : '#fff', transition: 'all 0.2s ease' }}>
             <input type="checkbox" checked={social} onChange={() => setSocial(!social)} style={{ width: 18, height: 18, marginTop: 1, accentColor: '#2600FF', flexShrink: 0 }} />
@@ -1038,9 +1056,8 @@ function ProfileOrderModal({ onClose, initialSocial = false }: { onClose: () => 
             Tipp: In den Website-Paketen Local Website und AI Plus ist das Google-Profil bereits enthalten.{' '}
             <a href={'/preise'} onClick={onClose} className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>Pakete ansehen →</a>
           </p>
-          <SendButton enabled={canSend} onSend={() => setDone(true)} />
+          <SendButton enabled label="Weiter" onSend={() => goToOrder('profile', social)} />
         </>
-      ) : <OrderDone name={name} contact={contact} summary={summary} onClose={onClose} />}
     </OrderShell>
   )
 }
@@ -1049,13 +1066,9 @@ function ProfileOrderModal({ onClose, initialSocial = false }: { onClose: () => 
 function PackageOrderModal({ initial, onClose }: { initial: PackageOrder; onClose: () => void }) {
   const [pkg, setPkg] = useState<PackageId | null>(initial.pkg)
   const [social, setSocial] = useState(initial.social)
-  const [name, setName] = useState('')
-  const [company, setCompany] = useState('')
-  const [contact, setContact] = useState('')
-  const [done, setDone] = useState(false)
   const chosen = WEBSITE_PACKAGES.find(p => p.id === pkg)
   const total = (chosen?.price ?? 0) + (social ? SOCIAL_ADDON.price : 0)
-  const canSend = name.trim() !== '' && contact.trim() !== '' && total > 0
+  const canSend = total > 0
 
   const option = (on: boolean, onToggle: () => void, title: string, price: number, note: string, type: 'radio' | 'checkbox') => (
     <label key={title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', cursor: 'pointer', padding: '11px 14px', borderRadius: 14, border: `1px solid ${on ? '#2600FF' : 'rgba(7,7,12,0.12)'}`, backgroundColor: on ? '#F4F2FF' : '#fff', transition: 'all 0.2s ease' }}>
@@ -1083,7 +1096,6 @@ function PackageOrderModal({ initial, onClose }: { initial: PackageOrder; onClos
 
   return (
     <OrderShell onClose={onClose}>
-      {!done ? (
         <>
           <p className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)', marginBottom: 10 }}>Monatliches Paket</p>
           <h2 id="order-title" style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-0.02em', margin: '0 0 6px', paddingRight: 28 }}>Paket anfragen</h2>
@@ -1100,14 +1112,9 @@ function PackageOrderModal({ initial, onClose }: { initial: PackageOrder; onClos
             {option(social, () => setSocial(!social), SOCIAL_ADDON.name, SOCIAL_ADDON.price, SOCIAL_ADDON.thesis, 'checkbox')}
           </div>
 
-          <input style={orderInput} value={name} onChange={e => setName(e.target.value)} placeholder="Ihr Name" autoComplete="name" />
-          <input style={orderInput} value={company} onChange={e => setCompany(e.target.value)} placeholder="Name Ihres Unternehmens" autoComplete="organization" />
-          <input style={{ ...orderInput, marginBottom: 16 }} value={contact} onChange={e => setContact(e.target.value)} placeholder="Telefon oder E-Mail" autoComplete="email" />
-
           {summary}
-          <SendButton enabled={canSend} onSend={() => setDone(true)} />
+          <SendButton enabled={canSend} label="Weiter" onSend={() => goToOrder(pkg, social)} />
         </>
-      ) : <OrderDone name={name} contact={contact} summary={summary} onClose={onClose} />}
     </OrderShell>
   )
 }
@@ -1395,7 +1402,6 @@ function Nav() {
         </a>
 
         <div className="hidden-mobile nav-links" style={{ display: 'flex', gap: 30, alignItems: 'center' }}>
-          <a href={homeHref('kanaele')} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>Sichtbarkeit</a>
           <ServicesNavDropdown fg={fg} />
           {/* FAQ removed from the header; 'Ergebnisse' hidden while the results block is off: ['Ergebnisse', 'results'], ['FAQ', 'faq'] */}
           {[['Preise', '/preise'], ['Ratgeber', '/ratgeber']].map(([l, target]) => (
@@ -1408,6 +1414,7 @@ function Nav() {
             Sichtbarkeits-Check starten
             <span className="arw">→</span>
           </a>
+          <a href="/kabinett" className={`btn btn-md ${solid ? 'btn-outline-light' : 'btn-outline-dark'}`} style={{ whiteSpace: 'nowrap', marginLeft: -20 }}>Login</a>
         </div>
 
         <div className="show-mobile" style={{ display: 'none', alignItems: 'center', gap: 12 }}>
@@ -1423,11 +1430,12 @@ function Nav() {
       {open && (
         <nav aria-label="Mobile Navigation" className="show-mobile" style={{ display: 'none', flexDirection: 'column', gap: 2, padding: '10px 24px 26px', backgroundColor: '#fff', borderTop: '1px solid var(--line)' }}>
           {/* FAQ removed from the header; 'Ergebnisse' hidden while the results block is off: ['Ergebnisse', 'results'], ['FAQ', 'faq'] */}
-          {[['Sichtbarkeit', 'kanaele'], ['Leistungen', '/services'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar']].map(([l, target]) => (
+          {[['Leistungen', '/services'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar']].map(([l, target]) => (
             <a key={l} href={linkHref(target)} style={{ fontWeight: 600, fontSize: 22, letterSpacing: '-0.03em', color: '#07070C', textDecoration: 'none', padding: '10px 0', borderBottom: '1px solid var(--line-soft)' }} onClick={() => setOpen(false)}>{l}</a>
           ))}
           <span style={{ fontWeight: 500, fontSize: 14, color: 'var(--muted)', padding: '14px 0 10px' }}>+49 30 12345678</span>
           <a href={homeHref('audit-quiz')} className="btn btn-lg btn-electric" style={{ width: '100%' }} onClick={() => setOpen(false)}>Sichtbarkeits-Check starten</a>
+          <a href="/kabinett" className="btn btn-lg btn-outline-light" style={{ width: '100%', marginTop: 10 }} onClick={() => setOpen(false)}>Login</a>
         </nav>
       )}
     </header>
@@ -1929,7 +1937,6 @@ function ChannelSummary() {
 // damit alle bestehenden Links auf der Website weiter funktionieren.
 function BusinessCheck() {
   const [order, setOrder] = useState(false)
-  const [query, setQuery] = useState('')
   const scores = [['Google Maps', 72], ['Google Search', 64], ['KI-Suche', 44], ['Social Media', 67]] as const
   return (
     <>
@@ -1954,13 +1961,9 @@ function BusinessCheck() {
                 Starten Sie mit dem Namen oder der Adresse Ihres Unternehmens. Wir prüfen die wichtigsten Signale bei Google Maps, in der Google-Suche und in der KI-Suche und zeigen, wo schon alles stimmt und wo Potenzial liegt.
               </p>
             </Reveal>
-            <Reveal delay={0.16}>
-              <form onSubmit={e => e.preventDefault()} className="bc-form" style={{ display: 'flex', gap: 8, maxWidth: 560, backgroundColor: '#fff', borderRadius: 999, padding: 6 }}>
-                <label htmlFor="bc-search" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>Unternehmen in Google finden</label>
-                <input id="bc-search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Unternehmen in Google finden" autoComplete="organization"
-                  style={{ flex: 1, minWidth: 0, border: 0, outline: 'none', background: 'transparent', fontSize: 15, fontFamily: 'inherit', color: 'var(--ink)', padding: '0 18px' }} />
-                <button type="submit" className="btn btn-md btn-ink" style={{ flexShrink: 0 }}>Mein Unternehmen finden</button>
-              </form>
+            <Reveal delay={0.16} style={{ position: 'relative', zIndex: 5 }}>
+              {/* Suche mit Vorschlägen → /check (Demo-Daten, bis Google Places angebunden ist) */}
+              <CompanySearch />
             </Reveal>
             <Reveal delay={0.22}>
               <div style={{ marginTop: 30, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', gap: '12px 20px', flexWrap: 'wrap' }}>
@@ -3641,6 +3644,7 @@ const servicePages: ServicePageData[] = [
   },
 ]
 
+// Nicht mehr eingebunden (25.09) — auf den Leistungsseiten ersetzt durch CompanySearch.
 function ServiceLeadForm({ serviceLabel }: { serviceLabel: string }) {
   const [name, setName] = useState('')
   const [contact, setContact] = useState('')
@@ -4960,12 +4964,19 @@ function ServicePage({ slug }: { slug: string }) {
       <section id="get-audit" style={{ backgroundColor: 'var(--paper)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px)' }}>
         <div style={{ ...SHELL, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(28px, 4vw, 64px)', alignItems: 'center' }}>
           <div>
-            <Kicker>Anfrage</Kicker>
+            <Kicker>Sichtbarkeits-Check</Kicker>
             <h2 className="display" style={{ fontSize: 'clamp(22px, 2.6vw, 34px)', margin: '20px 0 12px', maxWidth: 460 }}>{data.ctaTitle}</h2>
             <p style={{ fontSize: 15, color: 'var(--muted)', lineHeight: 1.8, margin: 0, maxWidth: 460 }}>{data.ctaBody}</p>
           </div>
-          <div style={{ backgroundColor: '#fff', border: '1px solid var(--line)', borderRadius: 24, padding: '30px 28px', boxShadow: '0 20px 50px rgba(7,7,12,0.07)' }}>
-            <ServiceLeadForm serviceLabel={data.heroTitle} />
+          {/* Statt Kontaktformular (bis 25.09): derselbe Check wie auf der Startseite → /check */}
+          <div style={{ position: 'relative', zIndex: 5, backgroundColor: '#fff', border: '1px solid var(--line)', borderRadius: 24, padding: 'clamp(22px, 3vw, 30px) clamp(18px, 3vw, 28px)', boxShadow: '0 20px 50px rgba(7,7,12,0.07)' }}>
+            <p className="eyebrow" style={{ fontSize: 10, color: 'var(--electric)', marginBottom: 10 }}>Schritt 1 · Unternehmen finden</p>
+            <p style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 16px' }}>Geben Sie den Namen oder die Adresse Ihres Unternehmens ein. Danach bestätigen Sie Website und Profile — der Check ist kostenlos.</p>
+            <CompanySearch variant="plain" />
+            <p style={{ fontSize: 13.5, lineHeight: 1.6, color: 'var(--muted)', margin: '16px 0 0' }}>
+              Ihr Unternehmen ist noch nicht bei Google?{' '}
+              <a href="/#maps" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>Wir erstellen Ihr Google-Profil →</a>
+            </p>
           </div>
         </div>
       </section>
@@ -5289,6 +5300,24 @@ export default function App() {
   const glossarMatch = path.match(/^\/glossar\/([a-z0-9-]+)\/?$/)
   if (glossarMatch) {
     return <GlossarTermPage slug={glossarMatch[1]} />
+  }
+  if (/^\/check\/?$/.test(path)) {
+    return <CheckPage />
+  }
+  if (/^\/kabinett\/?$/.test(path)) {
+    return <CabinetPage />
+  }
+  if (/^\/anfrage\/?$/.test(path)) {
+    return <OrderPage items={orderItemsFromUrl()} />
+  }
+  if (/^\/login\/?$/.test(path)) {
+    return <LoginPage />
+  }
+  if (/^\/passwort-vergessen\/?$/.test(path)) {
+    return <ForgotPasswordPage />
+  }
+  if (/^\/passwort-neu\/?$/.test(path)) {
+    return <ResetPasswordPage />
   }
   if (/^\/preise\/?$/.test(path)) {
     return <PreisePage />
