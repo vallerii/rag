@@ -1,13 +1,10 @@
-@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800,900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 @import 'tailwindcss';
 
-/* ── Cyrillic fallbacks (RU version) ─────────────────────────
-   Satoshi and Instrument Serif have no Cyrillic glyphs. These faces only
-   cover the Cyrillic range, so the browser downloads them only when Russian
-   text is on the page; Latin text keeps the original fonts.
-   Manrope (OFL) for the sans, Cormorant Garamond (OFL) for the serif accents —
-   size-adjust matches Cormorant's x-height to Instrument Serif. */
+/* ── Stil D · Stadtplan (29.09.2026) ─────────────────────────
+   Hell, eine Schrift (Manrope, inkl. Kyrillisch), Akzent #2600FF.
+   Kein Kursiv, keine Nummerierung 01/02 — siehe Projekt-Doc
+   claude/style-d-stadtplan-2026-09-29.md. */
 @font-face {
   font-family: 'RAG Cyrillic Sans';
   src: url('/fonts/manrope-cyrillic.woff2') format('woff2');
@@ -16,73 +13,89 @@
   font-display: swap;
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }
-@font-face {
-  font-family: 'RAG Cyrillic Serif';
-  src: url('/fonts/cormorant-garamond-cyrillic-500-normal.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  size-adjust: 122%;
-  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-}
-@font-face {
-  font-family: 'RAG Cyrillic Serif';
-  src: url('/fonts/cormorant-garamond-cyrillic-500-italic.woff2') format('woff2');
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-  size-adjust: 122%;
-  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-}
 
 @theme {
-  --font-sans: 'Satoshi', 'RAG Cyrillic Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Manrope', 'RAG Cyrillic Sans', ui-sans-serif, system-ui, sans-serif;
   --color-violet: #2600FF;
-  --color-ink: #07070C;
+  --color-ink: #0B0B1A;
 }
 
 :root {
-  --ink: #07070C;
-  --ink-soft: #101019;
+  --ink: #0B0B1A;
+  --ink-soft: #1A1A2E;
   --paper: #ffffff;
-  --bone: #F1F0EB;
-  --bone-2: #E8E7E0;
+  --bone: #F7F7FB;
+  --bone-2: #EFEEF8;
   --electric: #2600FF;
-  --electric-2: #6B4BFF;
-  --muted: #6B6B78;
-  --muted-dark: #8E8E9E;
-  --line: rgba(7, 7, 12, 0.12);
-  --line-soft: rgba(7, 7, 12, 0.07);
-  --line-dark: rgba(255, 255, 255, 0.14);
+  --electric-2: #2600FF;
+  --electric-hover: #1A00B3;
+  --brand-soft: #ECEBFF;
+  --brand-line: #DAD8F5;
+  --muted: #4A4A63;
+  --muted-dark: #8A89A3;
+  --subtle: #8A89A3;
+  --border: #E7E6F2;
+  --divider: #EDECF5;
+  --line: #E7E6F2;
+  --line-soft: #EDECF5;
+  --line-dark: rgba(255, 255, 255, 0.18);
+  --shadow-card: 0 20px 60px rgba(11, 11, 26, 0.07);
+  --shadow-float: 0 12px 36px rgba(11, 11, 26, 0.10);
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 html, body, button, input, select, textarea {
-  font-family: 'Satoshi', 'RAG Cyrillic Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Manrope', 'RAG Cyrillic Sans', ui-sans-serif, system-ui, sans-serif;
 }
 
-html { scroll-behavior: smooth; background-color: var(--ink); }
+html { scroll-behavior: smooth; background-color: var(--bone); }
 body {
-  background-color: var(--paper);
+  background-color: var(--bone);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 * { box-sizing: border-box; }
+em, i, cite, address, dfn { font-style: normal; }
 
 /* ── Type scale ───────────────────────────────────────────── */
-.display { font-weight: 700; letter-spacing: -0.035em; line-height: 0.99; margin: 0; }
-.h-xl { font-size: clamp(40px, 6.4vw, 88px); }
-.h-lg { font-size: clamp(32px, 4.6vw, 62px); }
-.h-md { font-size: clamp(26px, 3.2vw, 44px); }
-.h-sm { font-size: clamp(20px, 2.2vw, 30px); letter-spacing: -0.025em; line-height: 1.12; }
-.serif, .serif * { font-family: 'Instrument Serif', 'RAG Cyrillic Serif', Georgia, 'Times New Roman', serif !important; font-weight: 400 !important; letter-spacing: -0.005em; }
-.italic-serif { font-style: italic; }
+.display { font-weight: 800; letter-spacing: -0.035em; line-height: 1.04; margin: 0; }
+.h-xl { font-size: clamp(42px, 6.6vw, 92px); letter-spacing: -0.045em; line-height: 1; }
+.h-lg { font-size: clamp(32px, 4.4vw, 56px); }
+.h-md { font-size: clamp(28px, 3.4vw, 48px); line-height: 1.08; }
+.h-sm { font-size: clamp(20px, 2.2vw, 28px); letter-spacing: -0.025em; line-height: 1.15; }
+/* Früher Instrument Serif kursiv — jetzt nur noch Farbakzent, gleiche Schrift, kein Kursiv. */
+.serif, .serif * { font-family: inherit !important; font-weight: inherit !important; font-style: normal !important; letter-spacing: inherit; }
+.italic-serif { font-style: normal !important; color: var(--electric); }
+.on-brand .italic-serif, .on-brand .serif { color: #fff !important; }
 .eyebrow {
-  font-size: 11px; font-weight: 700; letter-spacing: 0.2em;
+  font-size: 12.5px; font-weight: 700; letter-spacing: 0.08em;
   text-transform: uppercase; margin: 0;
 }
-.lead { font-size: clamp(15px, 1.25vw, 18px); line-height: 1.7; }
+.lead { font-size: clamp(16px, 1.3vw, 19px); line-height: 1.65; }
+
+/* ── Bausteine Stil D ─────────────────────────────────────── */
+.kick { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--electric); margin: 0; }
+.kick svg { width: 18px; height: 18px; flex-shrink: 0; }
+.d-card { background: #fff; border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow-card); }
+.d-card-flat { background: #fff; border: 1px solid var(--border); border-radius: 24px; }
+.d-float { background: #fff; border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-float); }
+.d-tile { width: 52px; height: 52px; border-radius: 14px; background: var(--brand-soft); color: var(--electric); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.d-tile svg { width: 24px; height: 24px; }
+.d-tile-sm { width: 40px; height: 40px; border-radius: 12px; }
+.d-tile-sm svg { width: 20px; height: 20px; }
+.d-check { width: 26px; height: 26px; border-radius: 50%; background: var(--brand-soft); color: var(--electric); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.d-check svg { width: 15px; height: 15px; }
+.d-pill { display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 16px 0 8px; background: #fff; border: 1px solid var(--border); border-radius: 999px; box-shadow: 0 6px 20px rgba(11,11,26,.06); font-size: 14px; font-weight: 600; }
+.d-panel { position: relative; overflow: hidden; border-radius: 36px; }
+.d-dots { background-image: radial-gradient(#DAD8F5 2px, transparent 2px); background-size: 20px 20px; }
+.d-link { font-weight: 700; color: var(--electric); text-decoration: none; }
+.d-link:hover { color: var(--electric-hover); }
+.d-link .arw { display: inline-block; transition: transform .3s var(--ease); }
+.d-link:hover .arw { transform: translateX(4px); }
+.d-lift { transition: transform .35s var(--ease), box-shadow .35s var(--ease), border-color .25s ease; }
+.d-lift:hover { transform: translateY(-4px); box-shadow: 0 28px 70px rgba(38,0,255,.10); border-color: #D6D2FF; }
+@media (max-width: 900px) { .d-hide-md { display: none !important; } .d-stack-md { grid-template-columns: minmax(0,1fr) !important; } }
 
 /* ── Reveal on scroll ─────────────────────────────────────── */
 .rv {
@@ -147,13 +160,14 @@ body {
 .btn .arw { transition: transform 0.45s var(--ease); }
 .btn:hover .arw { transform: translateX(4px); }
 
-.btn-lg { font-size: 15px; padding: 16px 30px; border-radius: 999px; }
-.btn-md { font-size: 14px; padding: 12px 22px; border-radius: 999px; }
-.btn-electric { background: var(--electric); color: #fff; --btn-fill: #07070C; --btn-fill-text: #fff; }
+.btn-lg { font-size: 16px; font-weight: 700; padding: 17px 28px; border-radius: 14px; }
+.btn-md { font-size: 14.5px; font-weight: 700; padding: 13px 22px; border-radius: 12px; }
+.btn-electric { background: var(--electric); color: #fff; --btn-fill: var(--electric-hover); --btn-fill-text: #fff; box-shadow: 0 10px 30px rgba(38,0,255,.28); }
 .btn-ink { background: var(--ink); color: #fff; --btn-fill: var(--electric); --btn-fill-text: #fff; }
-.btn-paper { background: #fff; color: var(--ink); --btn-fill: var(--electric); --btn-fill-text: #fff; }
-.btn-outline-dark { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.28); --btn-fill: #fff; --btn-fill-text: #07070C; }
-.btn-outline-light { background: transparent; color: var(--ink); border: 1px solid var(--line); --btn-fill: var(--ink); --btn-fill-text: #fff; }
+.btn-paper { background: #fff; color: var(--ink); border: 1px solid #DEDDEA; box-shadow: 0 4px 14px rgba(11,11,26,.06); --btn-fill: var(--ink); --btn-fill-text: #fff; }
+.btn-outline-dark { background: #fff; color: var(--ink); border: 1px solid #DEDDEA; box-shadow: 0 4px 14px rgba(11,11,26,.06); --btn-fill: var(--ink); --btn-fill-text: #fff; }
+.btn-outline-light { background: #fff; color: var(--ink); border: 1px solid #DEDDEA; --btn-fill: var(--ink); --btn-fill-text: #fff; }
+.btn-on-brand { background: #fff; color: var(--electric); --btn-fill: var(--ink); --btn-fill-text: #fff; }
 
 /* ── Marquee ──────────────────────────────────────────────── */
 .marquee { display: flex; overflow: hidden; width: 100%; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
@@ -210,15 +224,12 @@ body {
 .lift { transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease); }
 .lift:hover { transform: translateY(-6px); }
 
-.stroke-text {
-  -webkit-text-stroke: 1.4px currentColor;
-  color: transparent;
-}
+.stroke-text { color: var(--electric); }
 
 /* ── Scrollbar ────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(7,7,12,0.18); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(11,11,26,0.18); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(7,7,12,0.32); }
 
 ::selection { background: var(--electric); color: #fff; }

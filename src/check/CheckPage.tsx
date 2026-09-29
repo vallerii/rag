@@ -51,7 +51,7 @@ export function DemoNote({ children }: { children: React.ReactNode }) {
 function StepHead({ n, title, sub }: { n: string; title: string; sub: string }) {
   return (
     <>
-      <p className="eyebrow" style={{ color: 'var(--electric)', marginBottom: 12 }}>{n}</p>
+      <p className="kick" style={{ marginBottom: 12 }}>{n}</p>
       <h1 className="display" style={{ fontSize: 'clamp(26px, 3vw, 36px)', lineHeight: 1.08, margin: '0 0 12px' }}>{title}</h1>
       <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 26px', maxWidth: 520 }}>{sub}</p>
     </>
@@ -181,28 +181,28 @@ export default function CheckPage() {
 
       <div ref={topRef} style={{ scrollMarginTop: 80 }} />
       <main id="inhalt" className="ck-grid" style={{ maxWidth: 1240, margin: '0 auto', padding: 'clamp(28px, 5vw, 64px) clamp(20px, 4vw, 48px) 96px' }}>
-        <aside className="ck-aside" style={{ backgroundColor: 'var(--ink)', color: '#fff', borderRadius: 26, padding: 'clamp(24px, 3vw, 34px)', position: 'sticky', top: 96, alignSelf: 'start', overflow: 'hidden' }}>
-          <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.6, pointerEvents: 'none' }} />
+        <aside className="ck-aside" style={{ backgroundColor: 'var(--brand-soft)', color: 'var(--ink)', borderRadius: 26, padding: 'clamp(24px, 3vw, 34px)', position: 'sticky', top: 96, alignSelf: 'start', overflow: 'hidden' }}>
+          <div aria-hidden className="d-dots" style={{ position: 'absolute', right: -60, bottom: -60, width: 240, height: 240, pointerEvents: 'none' }} />
           <div style={{ position: 'relative' }}>
-            <p className="eyebrow" style={{ color: 'var(--electric-2)', marginBottom: 14 }}>Sichtbarkeits-Check</p>
+            <p className="kick" style={{ marginBottom: 14 }}>Sichtbarkeits-Check</p>
             <p className="display" style={{ fontSize: 26, lineHeight: 1.12, margin: '0 0 26px' }}>So sehen Google und KI<br /><span className="serif italic-serif">Ihr Unternehmen.</span></p>
             <ol style={{ listStyle: 'none', margin: 0, padding: 0 }}>
               {STEPS.map(([t, s], i) => {
                 const state = i < stepIdx ? 'done' : i === stepIdx ? 'now' : 'next'
                 return (
-                  <li key={t} style={{ display: 'flex', gap: 14, padding: '14px 0', borderTop: '1px solid var(--line-dark)', opacity: state === 'next' ? 0.45 : 1 }}>
-                    <span style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, backgroundColor: state === 'next' ? 'transparent' : 'var(--electric)', border: state === 'next' ? '1px solid var(--line-dark)' : 'none' }}>
-                      {state === 'done' ? '✓' : `0${i + 1}`}
+                  <li key={t} style={{ display: 'flex', gap: 14, padding: '14px 0', borderTop: '1px solid #DAD8F5', opacity: state === 'next' ? 0.55 : 1 }}>
+                    <span style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#fff', backgroundColor: state === 'next' ? '#fff' : 'var(--electric)', border: state === 'next' ? '1px solid #C9C5F7' : 'none' }}>
+                      {state === 'done' ? '✓' : state === 'now' ? <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#fff' }} /> : null}
                     </span>
                     <span>
                       <span style={{ display: 'block', fontWeight: 600, fontSize: 15 }}>{t}</span>
-                      <span style={{ display: 'block', fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>{s}</span>
+                      <span style={{ display: 'block', fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>{s}</span>
                     </span>
                   </li>
                 )
               })}
             </ol>
-            <p style={{ fontSize: 12.5, lineHeight: 1.6, color: 'rgba(255,255,255,0.55)', margin: '18px 0 0' }}>Kostenlos und unverbindlich. Den Bericht prüft ein Mensch aus unserem Team, nicht nur ein Tool.</p>
+            <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: '18px 0 0' }}>Kostenlos und unverbindlich. Den Bericht prüft ein Mensch aus unserem Team, nicht nur ein Tool.</p>
           </div>
         </aside>
 
