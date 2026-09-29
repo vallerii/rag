@@ -31,25 +31,25 @@ export default function OrderPage({ items }: { items: OrderItem[] }) {
       </header>
 
       <main id="inhalt" className="ck-grid" style={{ maxWidth: 1240, margin: '0 auto', padding: 'clamp(28px, 5vw, 64px) clamp(20px, 4vw, 48px) 96px' }}>
-        <aside style={{ backgroundColor: 'var(--ink)', color: '#fff', borderRadius: 26, padding: 'clamp(24px, 3vw, 34px)', alignSelf: 'start', position: 'relative', overflow: 'hidden' }}>
-          <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.6, pointerEvents: 'none' }} />
+        <aside style={{ backgroundColor: 'var(--brand-soft)', color: 'var(--ink)', borderRadius: 26, padding: 'clamp(24px, 3vw, 34px)', alignSelf: 'start', position: 'relative', overflow: 'hidden' }}>
+          <div aria-hidden className="d-dots" style={{ position: 'absolute', right: -60, bottom: -60, width: 240, height: 240, pointerEvents: 'none' }} />
           <div style={{ position: 'relative' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, marginBottom: 14 }}>
-              <p className="eyebrow" style={{ color: 'var(--electric-2)' }}>Ihre Auswahl</p>
-              <a href="/preise" className="ul" style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>Ändern</a>
+              <p className="kick">Ihre Auswahl</p>
+              <a href="/preise" className="ul" style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--electric)' }}>Ändern</a>
             </div>
             {items.map(i => (
-              <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '13px 0', borderTop: '1px solid var(--line-dark)' }}>
+              <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '13px 0', borderTop: '1px solid #DAD8F5' }}>
                 <span style={{ fontWeight: 600, fontSize: 15 }}>{i.name}</span>
-                <span style={{ whiteSpace: 'nowrap', fontSize: 15 }}><strong>{i.price} €</strong> <span style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.55)' }}>{i.unit}</span></span>
+                <span style={{ whiteSpace: 'nowrap', fontSize: 15 }}><strong>{i.price} €</strong> <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>{i.unit}</span></span>
               </div>
             ))}
             {items.length > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '14px 0 0', borderTop: '1px solid rgba(255,255,255,0.3)', fontSize: 14 }}>
-                <span style={{ color: 'rgba(255,255,255,0.6)' }}>Gesamt</span><strong style={{ textAlign: 'right' }}>{orderTotal(items)}</strong>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '14px 0 0', borderTop: '1px solid #C9C5F7', fontSize: 14 }}>
+                <span style={{ color: 'var(--muted)' }}>Gesamt</span><strong style={{ textAlign: 'right' }}>{orderTotal(items)}</strong>
               </div>
             )}
-            <p style={{ fontSize: 12.5, lineHeight: 1.6, color: 'rgba(255,255,255,0.55)', margin: '20px 0 0' }}>
+            <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: '20px 0 0' }}>
               Noch keine Bestellung. Nach dem Absenden rufen wir Sie an und besprechen alles persönlich — erst dann entstehen Kosten.
             </p>
           </div>
@@ -64,7 +64,7 @@ export default function OrderPage({ items }: { items: OrderItem[] }) {
             </>
           ) : (
             <>
-              <p className="eyebrow" style={{ color: 'var(--electric)', marginBottom: 12 }}>Schritt 2 von 2</p>
+              <p className="kick" style={{ marginBottom: 12 }}>Schritt 2 von 2</p>
               <h1 className="display" style={{ fontSize: 'clamp(26px, 3vw, 36px)', lineHeight: 1.08, margin: '0 0 12px' }}>Ihr Kundenbereich</h1>
               <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 26px', maxWidth: 540 }}>
                 Legen Sie ein Konto an oder melden Sie sich an. Im Kundenbereich ergänzen Sie kurz die Angaben zu Ihrem Unternehmen und sehen, wie es weitergeht.

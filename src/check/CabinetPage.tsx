@@ -57,8 +57,18 @@ const field: React.CSSProperties = { width: '100%', padding: '10px 12px', border
 const rowGrid: React.CSSProperties = { display: 'grid', gridTemplateColumns: '120px minmax(0, 1fr)', gap: 12, padding: '12px 0', borderTop: '1px solid var(--line-soft)', fontSize: 14 }
 
 function Eyebrow({ children, color = 'var(--electric)' }: { children: React.ReactNode; color?: string }) {
-  return <p className="eyebrow" style={{ fontSize: 10, color, marginBottom: 10 }}>{children}</p>
+  return <p className="kick" style={{ fontSize: 12, color, marginBottom: 10 }}>{children}</p>
 }
+
+
+// Kanal-Icons statt Nummern (Stil D) — gleiche Reihenfolge wie CHANNELS: KI, Maps, Search, Social.
+const icoProps = { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+const CHAN_ICON: React.ReactNode[] = [
+  <svg key="ki" {...icoProps}><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" /></svg>,
+  <svg key="maps" {...icoProps}><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></svg>,
+  <svg key="search" {...icoProps}><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></svg>,
+  <svg key="social" {...icoProps}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5" /></svg>,
+]
 
 function MarkIcon({ m }: { m: Mark }) {
   const c = m === 'ok' ? ['#0F7A3E', '#E6F6EC', '✓'] : m === 'warn' ? ['#9A6200', '#FFF3D6', '!'] : ['#C0262D', '#FDE8E8', '×']
@@ -203,30 +213,30 @@ export default function CabinetPage() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)' }}>
-      <header style={{ backgroundColor: 'var(--ink)', color: '#fff', position: 'relative', overflow: 'hidden' }}>
-        <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.7, pointerEvents: 'none' }} />
+      <header style={{ backgroundColor: 'var(--brand-soft)', color: 'var(--ink)', position: 'relative', overflow: 'hidden' }}>
+        <div aria-hidden className="d-dots" style={{ position: 'absolute', right: -40, top: -40, width: 360, height: 360, pointerEvents: 'none', opacity: 0.8 }} />
         <div style={{ position: 'relative', maxWidth: 1240, margin: '0 auto', padding: '0 clamp(20px, 4vw, 48px)' }}>
-          <div style={{ height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, borderBottom: '1px solid var(--line-dark)' }}>
+          <div style={{ height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, borderBottom: '1px solid #DAD8F5' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <Logo dark />
-              <span className="ck-hide-sm" style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>Kundenbereich</span>
+              <Logo />
+              <span className="ck-hide-sm" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--muted)' }}>Kundenbereich</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12.5, fontWeight: 700 }}>{initials(displayName)}</span>
+              <span style={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12.5, fontWeight: 700, color: '#fff' }}>{initials(displayName)}</span>
               <span className="ck-hide-sm" style={{ lineHeight: 1.3 }}>
                 <span style={{ display: 'block', fontSize: 13.5, fontWeight: 600 }}>{displayName}</span>
-                <span style={{ display: 'block', fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>{email}</span>
+                <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>{email}</span>
               </span>
-              <button type="button" onClick={logout} className="ul" style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', marginLeft: 6 }}>Abmelden</button>
+              <button type="button" onClick={logout} className="ul" style={{ background: 'none', border: 'none', color: 'var(--muted)', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', marginLeft: 6 }}>Abmelden</button>
             </div>
           </div>
           <div style={{ padding: 'clamp(28px, 4vw, 48px) 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 20, flexWrap: 'wrap' }}>
             <div style={{ minWidth: 0 }}>
-              {(place || order?.details) && <Eyebrow color="var(--electric-2)">Ihr Unternehmen</Eyebrow>}
+              {(place || order?.details) && <Eyebrow>Ihr Unternehmen</Eyebrow>}
               <h1 className="display" style={{ fontSize: 'clamp(28px, 4vw, 50px)', margin: '0 0 10px' }}>{headTitle}</h1>
-              {headSub && <p style={{ fontSize: 14.5, color: 'rgba(255,255,255,0.6)', margin: 0 }}>{headSub}</p>}
+              {headSub && <p style={{ fontSize: 15, color: 'var(--muted)', margin: 0 }}>{headSub}</p>}
             </div>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, padding: '8px 14px', borderRadius: 999, border: '1px solid var(--line-dark)', backgroundColor: 'rgba(255,255,255,0.06)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, padding: '8px 14px', borderRadius: 999, border: '1px solid var(--border)', backgroundColor: '#fff' }}>
               <span className={statusDone ? '' : 'blink'} style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: statusDone ? '#3DDC84' : statusWaiting ? '#F5B400' : 'var(--electric-2)' }} />
               {statusLabel}
             </span>
@@ -234,7 +244,7 @@ export default function CabinetPage() {
           <nav aria-label="Kundenbereich" className="cab-tabs" style={{ display: 'flex', gap: 4, marginTop: 28, overflowX: 'auto' }}>
             {tabs.map(([t, l]) => (
               <button key={t} type="button" onClick={() => setTab(t)} aria-current={tab === t ? 'page' : undefined}
-                style={{ background: 'none', border: 'none', fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap', padding: '14px 16px', fontSize: 14.5, fontWeight: 600, color: tab === t ? '#fff' : 'rgba(255,255,255,0.5)', borderBottom: `2px solid ${tab === t ? 'var(--electric-2)' : 'transparent'}`, transition: 'color 0.25s ease' }}>
+                style={{ background: 'none', border: 'none', fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap', padding: '14px 16px', fontSize: 14.5, fontWeight: 600, color: tab === t ? 'var(--electric)' : 'var(--muted)', borderBottom: `2px solid ${tab === t ? 'var(--electric)' : 'transparent'}`, transition: 'color 0.25s ease' }}>
                 {l}
               </button>
             ))}
@@ -323,7 +333,6 @@ export default function CabinetPage() {
                       <span style={{ display: 'block', fontWeight: 600, fontSize: 14.5 }}>{t}</span>
                       <span style={{ display: 'block', fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>{s}</span>
                     </span>
-                    <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--muted)' }}>0{i + 1}</span>
                   </div>
                 ))}
               </div>
@@ -333,7 +342,7 @@ export default function CabinetPage() {
               {chans.map((c, i) => (
                 <div key={c.key} style={{ ...card, display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
-                    <span className="display" style={{ fontSize: 38, lineHeight: 1, color: 'transparent', WebkitTextStroke: '1.4px var(--electric)' }}>0{i + 1}</span>
+                    <span className="d-tile d-tile-sm" aria-hidden>{CHAN_ICON[i] ?? CHAN_ICON[0]}</span>
                     <span className="display" style={{ fontSize: 28, lineHeight: 1 }}>{scored && c.score !== null ? c.score : '—'}</span>
                   </div>
                   <p style={{ fontWeight: 700, fontSize: 16, margin: '0 0 6px', letterSpacing: '-0.01em' }}>{c.title}</p>
@@ -360,15 +369,15 @@ export default function CabinetPage() {
               </div>
             ) : !ready && <PendingCard />}
 
-            <div style={{ ...card, backgroundColor: 'var(--ink)', color: '#fff', border: 'none', display: 'flex', gap: 24, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+            <div className="on-brand" style={{ ...card, backgroundColor: 'var(--electric)', color: '#fff', border: 'none', display: 'flex', gap: 24, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
               <div style={{ maxWidth: 620 }}>
-                <Eyebrow color="var(--electric-2)">Wir können das für Sie übernehmen</Eyebrow>
+                <Eyebrow color="#C9C2FF">Wir können das für Sie übernehmen</Eyebrow>
                 <p className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 30px)', lineHeight: 1.15, margin: '0 0 10px' }}>AI Plus — <span className="serif italic-serif">alle vier Kanäle aus einer Hand.</span></p>
-                <p style={{ fontSize: 14, lineHeight: 1.7, color: 'rgba(255,255,255,0.65)', margin: 0 }}>Lokale Website mit Seiten für Leistungen und Orte, Google-Profil, Verzeichnisse, Inhalte für die KI-Suche und laufendes Monitoring.</p>
+                <p style={{ fontSize: 14.5, lineHeight: 1.7, color: '#DCD8FF', margin: 0 }}>Lokale Website mit Seiten für Leistungen und Orte, Google-Profil, Verzeichnisse, Inhalte für die KI-Suche und laufendes Monitoring.</p>
               </div>
               <div>
                 <p className="display" style={{ fontSize: 34, margin: '0 0 12px' }}>499 €<span style={{ fontSize: 15, fontWeight: 500, opacity: 0.6, letterSpacing: 0 }}> / Monat</span></p>
-                <a href="/preise" className="btn btn-md btn-paper">Pakete ansehen <span className="arw">→</span></a>
+                <a href="/preise" className="btn btn-md btn-on-brand">Pakete ansehen <span className="arw">→</span></a>
               </div>
             </div>
           </div>
@@ -389,7 +398,7 @@ export default function CabinetPage() {
                 {chans.map((c, i) => (
                   <div key={c.key} style={card}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, marginBottom: 10 }}>
-                      <p style={{ fontWeight: 700, fontSize: 17, margin: 0 }}><span style={{ color: 'var(--electric)', marginRight: 8 }}>0{i + 1}</span>{c.title}</p>
+                      <p style={{ fontWeight: 800, fontSize: 17, margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}><span className="d-tile d-tile-sm" aria-hidden>{CHAN_ICON[i] ?? CHAN_ICON[0]}</span>{c.title}</p>
                       <span className="display" style={{ fontSize: 24 }}>{c.score ?? '—'}<span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 500, letterSpacing: 0 }}> / 100</span></span>
                     </div>
                     <p style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 14px' }}>{c.summary}</p>

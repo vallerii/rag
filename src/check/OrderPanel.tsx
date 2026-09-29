@@ -25,7 +25,7 @@ export function orderStatusLabel(o: OrderRow): string {
 }
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
-  return <p className="eyebrow" style={{ fontSize: 10, color: 'var(--electric)', marginBottom: 10 }}>{children}</p>
+  return <p className="kick" style={{ fontSize: 12, marginBottom: 10 }}>{children}</p>
 }
 
 function OrderSummary({ order }: { order: OrderRow }) {
@@ -150,7 +150,6 @@ export default function OrderPanel({ order, onChange, defaults }: {
                 <span style={{ display: 'block', fontWeight: 600, fontSize: 14.5 }}>{t}</span>
                 <span style={{ display: 'block', fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>{sub}</span>
               </span>
-              <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--muted)' }}>0{i + 1}</span>
             </div>
           ))}
           <div style={{ marginTop: 14, padding: '14px 16px', borderRadius: 14, backgroundColor: 'var(--bone)', fontSize: 13.5, lineHeight: 1.6 }}>

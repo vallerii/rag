@@ -485,63 +485,110 @@ function PinMark({ size = 150, color, opacity }: { size?: number; color: string;
   )
 }
 
-/**
- * Фон секции: спокойный план кварталов + пара магистралей.
- * Пины живут в боковых полях макета (шире 1620px) либо у нижнего края,
- * то есть никогда не попадают под текст.
- */
-function MapBackdrop({ tone = 'dark', shift = 0 }: { tone?: 'dark' | 'light' | 'electric'; shift?: number }) {
-  const isLight = tone === 'light'
-  const base = isLight ? '7,7,12' : '255,255,255'
-  const fine = `rgba(${base},${tone === 'electric' ? 0.1 : isLight ? 0.045 : 0.04})`
-  const bold = `rgba(${base},${tone === 'electric' ? 0.2 : isLight ? 0.09 : 0.085})`
-  const pinColor = isLight ? '#07070C' : '#ffffff'
-  const pinOpacity = tone === 'electric' ? 0.3 : isLight ? 0.11 : 0.16
+/** Контурный пин стиля D (синий). */
+function PinD({ size = 64, opacity = 1, filled = false }: { size?: number; opacity?: number; filled?: boolean }) {
+  return (
+    <svg aria-hidden width={size} height={size * 1.3} viewBox="0 0 40 52" fill="none" style={{ display: 'block', opacity }}>
+      <path d="M20 2C10.1 2 2 9.9 2 19.6 2 32.5 20 50 20 50s18-17.5 18-30.4C38 9.9 29.9 2 20 2z"
+        fill={filled ? '#2600FF' : 'none'} stroke="#2600FF" strokeWidth="2" strokeLinejoin="round" />
+      <circle cx="20" cy="19" r="6" fill={filled ? '#fff' : 'none'} stroke={filled ? '#fff' : '#2600FF'} strokeWidth="2" />
+    </svg>
+  )
+}
 
+/**
+ * Stil D · Stadtplan: heller Stadtplan (Kacheln + weiße Straßen), zur Mitte hin
+ * aufgehellt, damit Text lesbar bleibt. Kontur-Pins nur an den Rändern.
+ * `tone` bleibt aus Kompatibilitätsgründen, alle Varianten sind hell.
+ */
+function MapBackdrop({ shift = 0, pins = true, fade = 'center' }: { tone?: 'dark' | 'light' | 'electric'; shift?: number; pins?: boolean; fade?: 'center' | 'left' | 'none' }) {
+  const uid = useRef(`mb${Math.random().toString(36).slice(2, 8)}`).current
+  const fadeBg = fade === 'center'
+    ? 'radial-gradient(ellipse 62% 58% at 50% 46%, #F7F7FB 0%, rgba(247,247,251,0.93) 55%, rgba(247,247,251,0) 100%)'
+    : fade === 'left'
+      ? 'linear-gradient(90deg, #F7F7FB 0%, rgba(247,247,251,0.94) 42%, rgba(247,247,251,0.35) 75%, rgba(247,247,251,0) 100%)'
+      : 'none'
   return (
     <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      {/* кварталы: мелкая сетка + опорные линии каждые 4 шага */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        backgroundImage: `
-          linear-gradient(90deg, ${bold} 1px, transparent 1px),
-          linear-gradient(0deg, ${bold} 1px, transparent 1px),
-          linear-gradient(90deg, ${fine} 1px, transparent 1px),
-          linear-gradient(0deg, ${fine} 1px, transparent 1px)`,
-        backgroundSize: '376px 376px, 376px 376px, 94px 94px, 94px 94px',
-        backgroundPosition: `${shift}px 0px, 0px ${shift / 2}px, ${shift}px 0px, 0px ${shift / 2}px`,
-      }} />
-
-      {/* главные дороги: одна диагональ + одна горизонталь.
-          vector-effect НЕ наследуется от <g>, ставить его на каждую линию,
-          иначе при preserveAspectRatio="none" штрих растягивается вместе с SVG. */}
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" fill="none"
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-        <g stroke={bold}>
-          <line x1="-4" y1="86" x2="104" y2="10" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
-          <line x1="-4" y1="34" x2="104" y2="34" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
-        </g>
+      <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
+        <defs>
+          <pattern id={uid} width="120" height="96" patternUnits="userSpaceOnUse" x={shift} y={0}>
+            <rect x="8" y="8" width="104" height="80" rx="10" fill="#EFEEF8" stroke="#E2E0F0" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill={`url(#${uid})`} />
       </svg>
-
-      {/* пины — в полях, вне колонки контента */}
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', justifyContent: 'center' }}>
-        <div style={{ position: 'relative', width: '100%', maxWidth: 1240 }}>
-          <div className="mb-pin-side" style={{ position: 'absolute', left: -196, top: '13%' }}>
-            <PinMark size={150} color={pinColor} opacity={pinOpacity} />
-          </div>
-          <div className="mb-pin-side" style={{ position: 'absolute', right: -178, bottom: '16%' }}>
-            <PinMark size={112} color={pinColor} opacity={pinOpacity * 0.8} />
-          </div>
-          <div className="mb-pin-edge" style={{ position: 'absolute', left: '4%', bottom: -78 }}>
-            <PinMark size={124} color={pinColor} opacity={pinOpacity * 0.85} />
-          </div>
-          <div className="mb-pin-edge" style={{ position: 'absolute', right: '7%', bottom: -64 }}>
-            <PinMark size={92} color={pinColor} opacity={pinOpacity * 0.7} />
-          </div>
+      <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+        <path d="M-40 640 C 300 560, 520 760, 820 640 S 1300 520, 1500 600" stroke="#fff" strokeWidth="30" />
+        <path d="M-40 640 C 300 560, 520 760, 820 640 S 1300 520, 1500 600" stroke="#D9D7EA" strokeWidth="1.5" strokeDasharray="10 10" />
+        <path d="M1060 -20 C 1000 200, 1180 380, 1120 920" stroke="#fff" strokeWidth="26" />
+        <path d="M260 -20 C 330 260, 180 480, 300 920" stroke="#fff" strokeWidth="22" />
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, background: fadeBg }} />
+      {pins && (
+        <div className="d-hide-md">
+          <div style={{ position: 'absolute', left: '4%', top: '16%' }}><PinD size={64} /></div>
+          <div style={{ position: 'absolute', right: '6%', top: '12%' }}><PinD size={52} opacity={0.5} /></div>
+          <div style={{ position: 'absolute', left: '13%', bottom: '14%' }}><PinD size={44} opacity={0.45} /></div>
+          <div style={{ position: 'absolute', right: '12%', bottom: '18%' }}><PinD size={64} /></div>
         </div>
-      </div>
+      )}
     </div>
   )
+}
+
+/** Konzentrische Ringe (Scan) — hinter UI-Mockups. */
+function RingsBackdrop({ size = 640, color = '#DAD8F5', style }: { size?: number; color?: string; style?: React.CSSProperties }) {
+  const radii = [0.14, 0.25, 0.36, 0.47]
+  return (
+    <div aria-hidden style={{ position: 'absolute', width: size, height: size, pointerEvents: 'none', ...style }}>
+      {radii.map((r, i) => (
+        <span key={r} style={{
+          position: 'absolute', left: '50%', top: '50%', width: size * r * 2, height: size * r * 2,
+          transform: 'translate(-50%,-50%)', borderRadius: '50%',
+          border: `1px ${i === radii.length - 1 ? 'dashed' : 'solid'} ${color}`,
+        }} />
+      ))}
+    </div>
+  )
+}
+
+/** Punktraster in einer Ecke einer hellen Sektion. */
+function DotsCorner({ style }: { style?: React.CSSProperties }) {
+  return <div aria-hidden className="d-dots" style={{ position: 'absolute', width: 380, height: 380, pointerEvents: 'none', ...style }} />
+}
+
+type ChannelKind = 'ki' | 'maps' | 'search' | 'social' | 'profile' | 'website' | 'plus'
+
+/** Linien-Icons der Kanäle — ersetzen die frühere Nummerierung 01–04. */
+function ChannelIcon({ kind, size = 22 }: { kind: ChannelKind; size?: number }) {
+  const p = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true }
+  switch (kind) {
+    case 'ki': return <svg {...p}><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" /><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z" /></svg>
+    case 'maps': case 'profile': return <svg {...p}><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></svg>
+    case 'search': return <svg {...p}><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></svg>
+    case 'social': return <svg {...p}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5" /><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 13.8c2.1.8 3.5 3 3.5 6.2" /></svg>
+    case 'website': return <svg {...p}><rect x="3" y="4" width="18" height="15" rx="2.5" /><path d="M3 9h18" /><path d="M7 6.5h.01M10 6.5h.01" /></svg>
+    case 'plus': return <svg {...p}><path d="M12 5v14M5 12h14" /></svg>
+  }
+}
+
+/** Kanal-Slug / -Id → Icon-Art. */
+function channelKindOf(key: string): ChannelKind {
+  if (/ki|ai-|search-optim|citation/.test(key)) return 'ki'
+  if (/maps|profil|review/.test(key)) return 'maps'
+  if (/social/.test(key)) return 'social'
+  if (/website|search/.test(key)) return 'search'
+  return 'maps'
+}
+
+function IconTile({ kind, small = false }: { kind: ChannelKind; small?: boolean }) {
+  return <span className={`d-tile${small ? ' d-tile-sm' : ''}`}><ChannelIcon kind={kind} /></span>
+}
+
+function CheckDot() {
+  return <span className="d-check" aria-hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span>
 }
 
 /** Фон-текстура из случайных пересечений — линии под разными углами, скрещивающиеся по полю. */
@@ -687,14 +734,12 @@ function GapsBackdrop() {
   )
 }
 
-/** Small uppercase section marker with a hairline. */
-function Kicker({ children, tone = 'dark' }: { children: React.ReactNode; tone?: 'dark' | 'light' }) {
-  const c = tone === 'dark' ? '#07070C' : '#ffffff'
+/** Kicker über Überschriften: Großbuchstaben in Markenblau, optional mit Icon. */
+function Kicker({ children, tone = 'dark', icon }: { children: React.ReactNode; tone?: 'dark' | 'light'; icon?: ChannelKind }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-      <span style={{ width: 28, height: 1, backgroundColor: 'var(--electric)' }} />
-      <p className="eyebrow" style={{ color: c, opacity: 0.55 }}>{children}</p>
-    </div>
+    <p className="kick" style={tone === 'light' ? { color: 'rgba(255,255,255,0.85)' } : undefined}>
+      {icon && <ChannelIcon kind={icon} size={18} />}{children}
+    </p>
   )
 }
 
@@ -729,15 +774,15 @@ const PLATFORMS: { Logo: React.ComponentType; name: string }[] = [
 ]
 
 function PlatformMarquee({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
-  const col = tone === 'light' ? 'rgba(255,255,255,0.55)' : 'rgba(7,7,12,0.5)'
+  const col = tone === 'light' ? '#6E6D88' : '#6E6D88'
   const items = [...PLATFORMS, ...PLATFORMS, ...PLATFORMS, ...PLATFORMS]
   const Track = () => (
     <div className="marquee-track" aria-hidden>
       {items.map(({ Logo, name }, i) => (
         <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap' }}>
           <Logo />
-          <span style={{ fontSize: 13, fontWeight: 500, color: col, letterSpacing: '-0.01em' }}>{name}</span>
-          <span style={{ color: 'var(--electric)', fontSize: 11, marginLeft: 6 }}>◆</span>
+          <span style={{ fontSize: 15, fontWeight: 700, color: col, letterSpacing: '0.01em' }}>{name}</span>
+          <span style={{ color: '#C9C5F7', fontSize: 16, marginLeft: 10 }}>·</span>
         </span>
       ))}
     </div>
@@ -1129,14 +1174,13 @@ const PROFILE_PACKAGE = {
 // Kontur-Nummer wie in den Kanalblöcken der Startseite (01 KI-Suche … 04 Social Media).
 function OutlineNum({ n, dark = false, size = 'clamp(40px, 4vw, 56px)' }: { n: number | string; dark?: boolean; size?: string }) {
   return (
-    <span className="display" style={{ fontSize: size, lineHeight: 0.9, color: 'transparent', WebkitTextStroke: `1.4px ${dark ? '#6B4BFF' : '#2600FF'}` }}>
-      {typeof n === 'number' ? String(n).padStart(2, '0') : n}
-    </span>
+    // Nummern sind im Stil D verboten — nur noch ein neutraler Marker (nicht mehr eingebunden).
+    <span aria-hidden data-n={String(n)} className="d-tile d-tile-sm" style={{ fontSize: size, opacity: dark ? 0.8 : 1 }}><ChannelIcon kind="plus" /></span>
   )
 }
 
 function PriceTag({ children, dark = false }: { children: React.ReactNode; dark?: boolean }) {
-  return <span className="eyebrow" style={{ fontSize: 9.5, padding: '5px 10px', borderRadius: 999, backgroundColor: dark ? 'rgba(107,75,255,0.22)' : '#EEEBFF', color: dark ? '#fff' : 'var(--electric)' }}>{children}</span>
+  return <span className="eyebrow" style={{ fontSize: 11, padding: '6px 11px', borderRadius: 999, backgroundColor: dark ? 'rgba(255,255,255,0.18)' : 'var(--brand-soft)', color: dark ? '#fff' : 'var(--electric)' }}>{children}</span>
 }
 
 // Preisliste für die Seite /preise: oben das Google-Profil (einmalig) über die volle Breite,
@@ -1151,15 +1195,15 @@ function Pricing() {
       {profile && <ProfileOrderModal initialSocial={profileSocial} onClose={() => setProfile(false)} />}
       <style>{`@media (max-width: 900px) { .price-addon, .price-profile { grid-template-columns: 1fr !important; } }
 @media (max-width: 560px) { .price-profile-list { grid-template-columns: 1fr !important; } }`}</style>
-      <section id="pakete" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(56px, 6vw, 88px) clamp(20px, 4vw, 48px)' }}>
+      <section id="pakete" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 4vw, 56px) clamp(20px, 4vw, 48px) clamp(56px, 6vw, 88px)' }}>
         <div style={{ ...SHELL }}>
 
           {/* 01 — Google-Profil schlüsselfertig, volle Breite */}
           <Reveal>
-            <article className="price-profile" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.9fr) minmax(0, 1.1fr)', gap: 'clamp(24px, 4vw, 64px)', alignItems: 'center', padding: 'clamp(24px, 3.2vw, 44px)', borderRadius: 24, backgroundColor: '#fff', border: '1px solid var(--line)' }}>
+            <article className="price-profile d-card" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.9fr) minmax(0, 1.1fr)', gap: 'clamp(24px, 4vw, 64px)', alignItems: 'center', padding: 'clamp(24px, 3.2vw, 44px)' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(14px, 1.6vw, 20px)', marginBottom: 20 }}>
-                  <OutlineNum n={1} />
+                  <IconTile kind="maps" />
                   <PriceTag>{PROFILE_PACKAGE.tag}</PriceTag>
                 </div>
                 <h2 className="display" style={{ fontSize: 'clamp(24px, 2.4vw, 34px)', lineHeight: 1.15, margin: '0 0 12px' }}>{PROFILE_PACKAGE.name}</h2>
@@ -1190,12 +1234,13 @@ function Pricing() {
           {/* 02–04 — Website-Pakete */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: 'clamp(12px, 1.4vw, 18px)', marginTop: 'clamp(12px, 1.4vw, 18px)' }}>
             {WEBSITE_PACKAGES.map((p, i) => {
-              const dark = p.id === 'aiplus'
+              const dark = false
+              const top = p.id === 'aiplus'
               return (
                 <Reveal key={p.id} delay={0.06 * i}>
-                  <article style={{ height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', padding: 'clamp(22px, 2.4vw, 32px)', borderRadius: 24, backgroundColor: dark ? 'var(--ink)' : '#fff', color: dark ? '#fff' : 'var(--ink)', border: dark ? 'none' : '1px solid var(--line)' }}>
+                  <article className={top ? 'd-card' : 'd-card-flat'} style={{ height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', padding: 'clamp(22px, 2.4vw, 32px)', color: 'var(--ink)', border: top ? '2px solid var(--electric)' : '1px solid var(--border)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-                      <OutlineNum n={i + 2} dark={dark} />
+                      <IconTile kind={p.id === 'aiplus' ? 'ki' : 'website'} small />
                       <PriceTag dark={dark}>{p.tag}</PriceTag>
                     </div>
                     <h2 className="display" style={{ fontSize: 'clamp(21px, 1.9vw, 27px)', lineHeight: 1.15, margin: '0 0 10px' }}>{p.name}</h2>
@@ -1211,7 +1256,7 @@ function Pricing() {
                         </div>
                       ))}
                     </div>
-                    <button type="button" onClick={() => setOrder({ pkg: p.id, social: false })} className={`btn btn-md ${dark ? 'btn-electric' : 'btn-ink'}`} style={{ marginTop: 'auto', alignSelf: 'flex-start' }}>
+                    <button type="button" onClick={() => setOrder({ pkg: p.id, social: false })} className={`btn btn-md ${top ? 'btn-electric' : 'btn-ink'}`} style={{ marginTop: 'auto', alignSelf: 'flex-start' }}>
                       Paket anfragen <span className="arw">→</span>
                     </button>
                   </article>
@@ -1222,10 +1267,10 @@ function Pricing() {
 
           {/* + — Social Media, Add-on oder einzeln */}
           <Reveal delay={0.1}>
-            <div className="price-addon" style={{ marginTop: 'clamp(12px, 1.4vw, 18px)', display: 'grid', gridTemplateColumns: 'minmax(0, 0.9fr) minmax(0, 1.1fr) auto', gap: 'clamp(20px, 3vw, 48px)', alignItems: 'center', padding: 'clamp(24px, 2.4vw, 32px)', borderRadius: 24, backgroundColor: '#fff', border: '1px dashed rgba(38,0,255,0.35)' }}>
+            <div className="price-addon" style={{ marginTop: 'clamp(12px, 1.4vw, 18px)', display: 'grid', gridTemplateColumns: 'minmax(0, 0.9fr) minmax(0, 1.1fr) auto', gap: 'clamp(20px, 3vw, 48px)', alignItems: 'center', padding: 'clamp(24px, 2.4vw, 32px)', borderRadius: 24, backgroundColor: 'var(--brand-soft)', border: '1px dashed #C9C5F7' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(14px, 1.6vw, 20px)', marginBottom: 16 }}>
-                  <OutlineNum n="+" />
+                  <span className="d-tile" style={{ backgroundColor: '#fff' }}><ChannelIcon kind="social" /></span>
                   <PriceTag>Add-on · auch einzeln</PriceTag>
                 </div>
                 <h2 className="display" style={{ fontSize: 'clamp(20px, 1.8vw, 25px)', lineHeight: 1.2, margin: '0 0 8px' }}>{SOCIAL_ADDON.name}</h2>
@@ -1238,11 +1283,11 @@ function Pricing() {
                 <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)', margin: '0 0 12px' }}>{SOCIAL_ADDON.thesis} Zu jedem Website-Paket dazu — oder ganz ohne Website.</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {SOCIAL_ADDON.includes.map(it => (
-                    <span key={it} style={{ fontSize: 12.5, padding: '6px 11px', borderRadius: 999, backgroundColor: 'var(--bone)' }}>{it}</span>
+                    <span key={it} style={{ fontSize: 13, fontWeight: 600, padding: '6px 11px', borderRadius: 999, backgroundColor: '#fff' }}>{it}</span>
                   ))}
                 </div>
               </div>
-              <button type="button" onClick={() => setOrder({ pkg: null, social: true })} className="btn btn-md btn-outline-light" style={{ whiteSpace: 'nowrap' }}>
+              <button type="button" onClick={() => setOrder({ pkg: null, social: true })} className="btn btn-md btn-electric" style={{ whiteSpace: 'nowrap' }}>
                 Social Media anfragen <span className="arw">→</span>
               </button>
             </div>
@@ -1306,7 +1351,7 @@ function ServicesNavDropdown({ fg }: { fg: string }) {
   return (
     <div style={{ position: 'relative' }} onMouseEnter={show} onMouseLeave={hide}
       onFocus={show} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) hide() }}>
-      <a href="/services" className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, display: 'flex', alignItems: 'center', gap: 6 }}>
+      <a href="/services" className="ul" style={{ fontWeight: 600, fontSize: 15, color: fg, display: 'flex', alignItems: 'center', gap: 6 }}>
         Leistungen
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }}>
           <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -1322,22 +1367,22 @@ function ServicesNavDropdown({ fg }: { fg: string }) {
         transform: `translateY(${open ? '0px' : '-8px'})`,
         opacity: open ? 1 : 0,
         transition: `opacity 0.28s ease, transform 0.4s ${EASE}`,
-        backgroundColor: '#07070C', borderRadius: 18, padding: 10, minWidth: 320,
-        boxShadow: '0 30px 70px rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.1)',
+        backgroundColor: '#fff', borderRadius: 20, padding: 10, minWidth: 340,
+        boxShadow: '0 30px 70px rgba(11,11,26,0.14)', border: '1px solid var(--border)',
       }}>
-        {modules.map((m, i) => (
+        {modules.map(m => (
           <a key={m.slug} href={`/services/${m.slug}`}
             style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '11px 13px', borderRadius: 12, textDecoration: 'none', transition: 'background 0.25s' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.07)')}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bone)')}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
-            <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--electric)', paddingTop: 3, letterSpacing: '0.08em' }}>{String(i + 1).padStart(2, '0')}</span>
+            <IconTile kind={channelKindOf(m.slug)} small />
             <span>
-              <span style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: '#fff', marginBottom: 2 }}>{m.label}</span>
-              <span style={{ display: 'block', fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.45 }}>{m.sentence}</span>
+              <span style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--ink)', marginBottom: 2 }}>{m.label}</span>
+              <span style={{ display: 'block', fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.45 }}>{m.sentence}</span>
             </span>
           </a>
         ))}
-        <a href="/services" style={{ display: 'block', padding: '11px 13px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 6, fontSize: 12.5, fontWeight: 600, color: 'var(--electric-2)', textDecoration: 'none' }}>
+        <a href="/services" style={{ display: 'block', padding: '12px 13px', borderTop: '1px solid var(--divider)', marginTop: 6, fontSize: 13.5, fontWeight: 700, color: 'var(--electric)', textDecoration: 'none' }}>
           Alle Leistungen ansehen →
         </a>
       </div>
@@ -1384,20 +1429,20 @@ function Nav() {
   }, [])
 
   // Open mobile menu is white, so the bar above it switches to the light look too.
-  const light = solid || open
-  const fg = light ? '#07070C' : '#ffffff'
+  const light = true
+  const fg = '#0B0B1A'
 
   return (
     <header style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 90,
-      backgroundColor: solid ? 'rgba(255,255,255,0.82)' : open ? '#ffffff' : 'transparent',
+      backgroundColor: solid ? 'rgba(247,247,251,0.86)' : open ? '#ffffff' : 'transparent',
       backdropFilter: solid ? 'saturate(180%) blur(18px)' : 'none',
       WebkitBackdropFilter: solid ? 'saturate(180%) blur(18px)' : 'none',
       borderBottom: `1px solid ${solid ? 'var(--line)' : 'transparent'}`,
       transition: 'background-color 0.5s ease, border-color 0.5s ease, backdrop-filter 0.5s ease',
     }}>
       <nav aria-label="Hauptnavigation" style={{ ...SHELL, padding: '0 clamp(20px, 4vw, 48px)', height: solid ? 66 : 82, display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'height 0.5s ' + EASE }}>
-        <a href="/" style={{ fontWeight: 800, fontSize: 21, color: fg, letterSpacing: '-0.05em', textDecoration: 'none', transition: 'color 0.4s ease' }}>
+        <a href="/" style={{ fontWeight: 800, fontSize: 24, color: fg, letterSpacing: '-0.04em', textDecoration: 'none', transition: 'color 0.4s ease' }}>
           RAG<span style={{ color: 'var(--electric)' }}>.</span>
         </a>
 
@@ -1405,20 +1450,20 @@ function Nav() {
           <ServicesNavDropdown fg={fg} />
           {/* FAQ removed from the header; 'Ergebnisse' hidden while the results block is off: ['Ergebnisse', 'results'], ['FAQ', 'faq'] */}
           {[['Preise', '/preise'], ['Ratgeber', '/ratgeber']].map(([l, target]) => (
-            <a key={l} href={linkHref(target)} className="ul" style={{ fontWeight: 500, fontSize: 14, color: fg, transition: 'color 0.4s ease' }}>{l}</a>
+            <a key={l} href={linkHref(target)} className="ul" style={{ fontWeight: 600, fontSize: 15, color: fg, transition: 'color 0.4s ease' }}>{l}</a>
           ))}
-          <LangSwitch fg={fg} border={solid ? 'var(--line)' : 'rgba(255,255,255,0.25)'} />
-          <span className="nav-phone" style={{ width: 1, height: 18, backgroundColor: solid ? 'var(--line)' : 'rgba(255,255,255,0.2)' }} />
+          <LangSwitch fg={fg} border="var(--border)" />
+          <span className="nav-phone" style={{ width: 1, height: 18, backgroundColor: 'var(--border)' }} />
           <a href="tel:+493012345678" className="ul nav-phone" style={{ fontWeight: 500, fontSize: 14, color: fg, opacity: 0.75, transition: 'color 0.4s ease' }}>+49 30 12345678</a>
-          <a href={homeHref('audit-quiz')} className={`btn btn-md ${solid ? 'btn-ink' : 'btn-paper'}`} style={{ whiteSpace: 'nowrap' }}>
+          <a href={homeHref('audit-quiz')} className="btn btn-md btn-electric" style={{ whiteSpace: 'nowrap' }}>
             Sichtbarkeits-Check starten
             <span className="arw">→</span>
           </a>
-          <a href="/kabinett" className={`btn btn-md ${solid ? 'btn-outline-light' : 'btn-outline-dark'}`} style={{ whiteSpace: 'nowrap', marginLeft: -20 }}>Login</a>
+          <a href="/kabinett" className="btn btn-md btn-outline-light" style={{ whiteSpace: 'nowrap', marginLeft: -20 }}>Login</a>
         </div>
 
         <div className="show-mobile" style={{ display: 'none', alignItems: 'center', gap: 12 }}>
-        <LangSwitch fg={fg} border={light ? 'var(--line)' : 'rgba(255,255,255,0.25)'} />
+        <LangSwitch fg={fg} border={light ? 'var(--border)' : 'var(--border)'} />
         <button aria-label="Menü" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }} onClick={() => setOpen(v => !v)}>
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={open ? '#07070C' : fg} strokeWidth="1.8" strokeLinecap="round">
             {open ? <><path d="M18 6L6 18" /><path d="M6 6l12 12" /></> : <><path d="M3 7h18" /><path d="M3 12h18" /><path d="M3 17h18" /></>}
@@ -1530,58 +1575,74 @@ function Hero() {
   return (
     <>
       <section ref={ref} className={`mask ${seen ? 'in' : ''}`} style={{
-        position: 'relative', backgroundColor: 'var(--ink)', color: '#fff',
-        padding: 'clamp(126px, 14vh, 178px) clamp(20px, 4vw, 48px) 0', overflow: 'hidden',
+        position: 'relative', backgroundColor: 'var(--bone)', color: 'var(--ink)',
+        padding: 'clamp(132px, 16vh, 196px) clamp(20px, 4vw, 48px) 0', overflow: 'hidden',
       }}>
-        <MapBackdrop tone="dark" />
+        <MapBackdrop />
 
-        <div style={{ ...SHELL, position: 'relative' }}>
-          {/* zentriert, ohne Animation rechts (21.09) */}
-          <div className="hero-center" style={{ textAlign: 'center', maxWidth: 900, margin: '0 auto', paddingBottom: 'clamp(56px, 7vw, 96px)' }}>
-            <div className="mask-line" style={{ marginBottom: 26 }}>
+        {/* schwebende Karten am Rand — nie über dem Text */}
+        <div className="d-hide-md hero-float" aria-hidden style={{ position: 'absolute', left: 'max(24px, calc(50% - 680px))', top: '58%', width: 230, zIndex: 1 }}>
+          <div className="d-float floaty" style={{ padding: '14px 16px', fontSize: 13.5, lineHeight: 1.5 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, fontWeight: 800, color: 'var(--electric)' }}><ChannelIcon kind="ki" size={16} />ChatGPT empfiehlt</span>
+            „Muster Elektrotechnik in Siegen — schnell, zuverlässig, mit Notdienst.“
+          </div>
+        </div>
+        <div className="d-hide-md hero-float" aria-hidden style={{ position: 'absolute', right: 'max(24px, calc(50% - 680px))', top: '50%', width: 230, zIndex: 1 }}>
+          <div className="d-float floaty" style={{ padding: '14px 16px', animationDelay: '1.5s' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'var(--electric)', color: '#fff', display: 'grid', placeItems: 'center', fontWeight: 800, flexShrink: 0 }}>M</span>
+              <span>
+                <span style={{ display: 'block', fontSize: 14, fontWeight: 800 }}>Muster Elektrotechnik</span>
+                <span style={{ fontSize: 12.5, color: 'var(--muted)' }}><span style={{ color: '#E9A100' }}>★★★★★</span> 5,0 · Siegen</span>
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <div style={{ ...SHELL, position: 'relative', zIndex: 2 }}>
+          <div className="hero-center" style={{ textAlign: 'center', maxWidth: 1060, margin: '0 auto', paddingBottom: 'clamp(64px, 8vw, 112px)' }}>
+            <div className="mask-line" style={{ marginBottom: 28 }}>
               <span style={{ ['--d' as any]: '0s' }}>
-                {/* Bewertungsplakette wie in der Kundenvorlage: Google-Logo · 5,0 · Sterne · bei Google (21.09) */}
-                <span role="img" aria-label="Bewertung 5,0 von 5 Sternen bei Google" style={{ display: 'inline-flex', alignItems: 'center', gap: 14, border: '1px solid rgba(255,255,255,0.16)', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 999, padding: '8px 22px 8px 8px' }}>
-                  <span aria-hidden style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: '#fff', display: 'grid', placeItems: 'center', flexShrink: 0 }}><GLogo /></span>
-                  <span aria-hidden className="display" style={{ fontSize: 22, color: '#fff', lineHeight: 1 }}>5,0</span>
-                  <span aria-hidden style={{ display: 'inline-flex', gap: 2 }}>
+                <span role="img" aria-label="Bewertung 5,0 von 5 Sternen bei Google" className="d-pill">
+                  <span aria-hidden style={{ height: 28, padding: '0 10px', borderRadius: 999, backgroundColor: 'var(--brand-soft)', color: 'var(--electric)', display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 800, fontSize: 13.5 }}>
+                    <GLogo /> 5,0
+                  </span>
+                  <span aria-hidden style={{ display: 'inline-flex', gap: 1 }}>
                     {[0, 1, 2, 3, 4].map(i => (
-                      <svg key={i} width="17" height="17" viewBox="0 0 24 24"><path fill="#fff" d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" /></svg>
+                      <svg key={i} width="15" height="15" viewBox="0 0 24 24"><path fill="#E9A100" d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" /></svg>
                     ))}
                   </span>
-                  <span aria-hidden style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>bei Google</span>
+                  <span aria-hidden style={{ color: 'var(--muted)' }}>bei Google</span>
                 </span>
               </span>
             </div>
 
-            <h1 className="display" style={{ fontSize: 'clamp(40px, 5.8vw, 86px)', marginBottom: 28 }}>
-              <span className="mask-line"><span style={{ ['--d' as any]: '0.08s' }}>Werden Sie zur</span></span>
-              <span className="mask-line"><span style={{ ['--d' as any]: '0.16s' }}><span style={{ color: 'var(--electric-2)' }}>ersten Wahl</span></span></span>
-              <span className="mask-line"><span style={{ ['--d' as any]: '0.24s' }}>in Ihrer Region.</span></span>
+            <h1 className="display h-xl" style={{ marginBottom: 28 }}>
+              <span className="mask-line"><span style={{ ['--d' as any]: '0.08s' }}>Werden Sie zur <span style={{ color: 'var(--electric)' }}>ersten Wahl</span></span></span>
+              <span className="mask-line"><span style={{ ['--d' as any]: '0.16s' }}>in Ihrer Region.</span></span>
             </h1>
 
-            <div className="mask-line" style={{ marginBottom: 34 }}>
+            <div className="mask-line" style={{ marginBottom: 36 }}>
               <span style={{ ['--d' as any]: '0.42s' }}>
-                <p className="lead" style={{ color: 'rgba(255,255,255,0.62)', maxWidth: 640, margin: '0 auto' }}>
+                <p className="lead" style={{ color: 'var(--muted)', maxWidth: 720, margin: '0 auto' }}>
                   Kunden rufen den Betrieb an, den sie zuerst finden — nicht unbedingt den besten. Wir verbinden Google-Profil, Website, Bewertungen und KI-Suche zu einem System aus einer Hand, damit diese Anrufe bei Ihnen landen statt bei der Konkurrenz.
                 </p>
               </span>
             </div>
 
-            <div className="mask-line">
+            <div className="mask-line" style={{ paddingBottom: 24 }}>
               <span style={{ ['--d' as any]: '0.5s' }}>
-                <span style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-                  <a href="#audit-quiz" className="btn btn-lg btn-paper">Kostenlosen Sichtbarkeits-Check starten <span className="arw">→</span></a>
-                  <a href="#maps" className="btn btn-lg btn-outline-dark">Google-Profil · 149 € einmalig</a>
+                <span style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <a href="#audit-quiz" className="btn btn-lg btn-electric">Kostenlosen Sichtbarkeits-Check starten <span className="arw">→</span></a>
+                  <a href="#maps" className="btn btn-lg btn-paper">Google-Profil · 149 € einmalig</a>
                 </span>
               </span>
             </div>
-
           </div>
         </div>
 
-        <div style={{ position: 'relative', borderTop: '1px solid var(--line-dark)', padding: '22px 0' }}>
-          <PlatformMarquee tone="light" />
+        <div style={{ position: 'relative', zIndex: 2, padding: '0 0 40px' }}>
+          <PlatformMarquee tone="dark" />
         </div>
       </section>
     </>
@@ -1605,28 +1666,30 @@ const channels = [
 // 1 — Die Suche hat sich verändert: vier Kanäle, jede Karte springt zu ihrem Block.
 function ChannelOverview() {
   return (
-    <section id="kanaele" style={{ backgroundColor: 'var(--paper)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', scrollMarginTop: 90 }}>
-      <div style={{ ...SHELL }}>
-        <Reveal><Kicker>Die Suche hat sich verändert</Kicker></Reveal>
-        <div className="chan-head" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 0.9fr)', gap: 'clamp(24px, 4vw, 72px)', alignItems: 'end', marginTop: 26 }}>
+    <section id="kanaele" style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'var(--paper)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', scrollMarginTop: 90 }}>
+      <DotsCorner style={{ right: -80, top: -60 }} />
+      <div style={{ ...SHELL, position: 'relative' }}>
+        <div style={{ textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
+          <Reveal><Kicker>Die Suche hat sich verändert</Kicker></Reveal>
           <MaskHeading
             className="h-lg"
-            lines={[<>Ihre Kunden suchen Sie</>, <>nicht mehr <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>an einem Ort.</span></>]}
+            style={{ marginTop: 18 }}
+            lines={[<>Ihre Kunden suchen Sie nicht mehr an einem Ort.</>]}
           />
           <Reveal delay={0.1}>
-            <p className="lead" style={{ color: 'var(--muted)', maxWidth: 520, margin: 0 }}>
+            <p className="lead" style={{ color: 'var(--muted)', maxWidth: 680, margin: '20px auto 0' }}>
               Heute suchen sie bei Google Maps, Google, ChatGPT, Perplexity und in sozialen Netzwerken. Wir machen Ihr Unternehmen überall dort sichtbar — gleichzeitig.
             </p>
           </Reveal>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'clamp(12px, 1.4vw, 18px)', marginTop: 'clamp(36px, 4vw, 56px)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginTop: 'clamp(40px, 4.4vw, 60px)' }}>
           {channels.map((c, i) => (
             <Reveal key={c.id} delay={0.06 * i}>
-              <a href={`#${c.id}`} className="chan-card">
-                <span className="chan-num display">{String(i + 1).padStart(2, '0')}</span>
-                <span className="display" style={{ fontSize: 'clamp(20px, 1.7vw, 24px)', lineHeight: 1.2, color: 'var(--ink)' }}>{c.label}</span>
-                <span style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--muted)', flex: 1 }}>{c.text}</span>
+              <a href={`#${c.id}`} className="chan-card d-card d-lift">
+                <IconTile kind={channelKindOf(c.id)} />
+                <span className="display" style={{ fontSize: 'clamp(20px, 1.7vw, 23px)', lineHeight: 1.2, color: 'var(--ink)', marginTop: 4 }}>{c.label}</span>
+                <span style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)', flex: 1 }}>{c.text}</span>
                 <span className="chan-more">Mehr erfahren <span aria-hidden className="chan-arrow">↓</span></span>
               </a>
             </Reveal>
@@ -1637,81 +1700,116 @@ function ChannelOverview() {
   )
 }
 
-// Rahmen eines Kanalblocks: Kontur-Nummer wie früher im Ablauf, Titel, Text,
-// rechts der Inhalt, unten der passende Ratgeber-Artikel.
-function ChannelBlock({ id, n, label, title, body, actions, aside, article, tone = 'light', stacked = false, reverse = false }: {
-  id: string; n: number; label: string; title: React.ReactNode; body: string
+// Rahmen eines Kanalblocks: Kicker mit Kanal-Icon (keine Nummer), Titel, Text,
+// daneben der Inhalt. `tone`: light = weiß, bone = Seitenhintergrund, soft = blaue Panel-Fläche.
+function ChannelBlock({ id, label, title, body, actions, aside, article, tone = 'light', stacked = false, reverse = false, backdrop }: {
+  id: string; n?: number; label: string; title: React.ReactNode; body: string
   actions: React.ReactNode; aside: React.ReactNode
-  article?: { href: string; title: string }; tone?: 'light' | 'bone' | 'dark'
+  article?: { href: string; title: string }; tone?: 'light' | 'bone' | 'dark' | 'soft'
   stacked?: boolean // Inhalt unter dem Text statt daneben
   reverse?: boolean // Inhalt links, Text rechts (nur Desktop)
+  backdrop?: React.ReactNode
 }) {
-  const dark = tone === 'dark'
-  const bg = dark ? 'var(--ink)' : tone === 'bone' ? 'var(--bone)' : 'var(--paper)'
-  return (
-    <section id={id} style={{ backgroundColor: bg, color: dark ? '#fff' : 'var(--ink)', padding: 'clamp(56px, 6vw, 88px) clamp(20px, 4vw, 48px)', scrollMarginTop: 70, position: 'relative', overflow: 'clip' }}>
-      {dark && <div aria-hidden style={{ position: 'absolute', inset: 0, opacity: 0.5 }}><CrossBackdrop tone="dark" /></div>}
-      <div style={{ ...SHELL, position: 'relative' }}>
-        <div className={`chan-grid${reverse ? ' chan-rev' : ''}`} style={{ display: 'grid', gridTemplateColumns: stacked ? 'minmax(0, 1fr)' : 'minmax(0, 1fr) minmax(0, 1fr)', gap: stacked ? 'clamp(36px, 4vw, 56px)' : 'clamp(32px, 5vw, 88px)', alignItems: 'center' }}>
-          <div style={reverse ? { order: 2 } : undefined}>
-            <Reveal>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(16px, 2vw, 24px)', marginBottom: 22 }}>
-                <span className="display" style={{ fontSize: 'clamp(44px, 5vw, 72px)', lineHeight: 0.9, color: 'transparent', WebkitTextStroke: `1.4px ${dark ? '#6B4BFF' : '#2600FF'}` }}>{String(n).padStart(2, '0')}</span>
-                <span className="eyebrow" style={{ color: dark ? 'var(--electric-2)' : 'var(--electric)' }}>{label}</span>
-              </div>
-            </Reveal>
-            <Reveal delay={0.05}>
-              <h2 className="display h-md" style={{ margin: '0 0 18px', maxWidth: stacked ? 'none' : 560 }}>{title}</h2>
-            </Reveal>
-            <Reveal delay={0.1}>
-              <p style={{ fontSize: 'clamp(15.5px, 1.3vw, 17px)', lineHeight: 1.75, color: dark ? 'rgba(255,255,255,0.62)' : 'var(--muted)', margin: '0 0 28px', maxWidth: stacked ? 'none' : 520 }}>{body}</p>
-            </Reveal>
-            <Reveal delay={0.14}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px 24px', flexWrap: 'wrap' }}>
-                {actions}
-                {/* passender Ratgeber-Artikel direkt neben dem Button (21.09) */}
-                {article && <a href={article.href} className="ul chan-article" style={{ fontSize: 14, fontWeight: 600, color: dark ? '#fff' : 'var(--ink)' }}>
-                  {article.title} <span aria-hidden className="chan-arrow" style={{ color: dark ? 'var(--electric-2)' : 'var(--electric)' }}>→</span>
-                </a>}
-              </div>
-            </Reveal>
+  const soft = tone === 'soft' || tone === 'dark'
+  const bg = tone === 'light' ? 'var(--paper)' : 'var(--bone)'
+  const inner = (
+    <div className={`chan-grid${reverse ? ' chan-rev' : ''}`} style={{ position: 'relative', display: 'grid', gridTemplateColumns: stacked ? 'minmax(0, 1fr)' : 'minmax(0, 1fr) minmax(0, 1fr)', gap: stacked ? 'clamp(36px, 4vw, 56px)' : 'clamp(36px, 5.5vw, 88px)', alignItems: 'center' }}>
+      <div style={reverse ? { order: 2 } : undefined}>
+        <Reveal><Kicker icon={channelKindOf(id)}>{label}</Kicker></Reveal>
+        <Reveal delay={0.05}>
+          <h2 className="display h-md" style={{ margin: '20px 0 18px', maxWidth: stacked ? 760 : 580 }}>{title}</h2>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <p style={{ fontSize: 'clamp(16px, 1.3vw, 18px)', lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 28px', maxWidth: stacked ? 680 : 540 }}>{body}</p>
+        </Reveal>
+        <Reveal delay={0.14}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px 24px', flexWrap: 'wrap' }}>
+            {actions}
+            {article && <a href={article.href} className="d-link chan-article" style={{ fontSize: 14.5 }}>
+              {article.title} <span aria-hidden className="chan-arrow arw">→</span>
+            </a>}
           </div>
-          <Reveal delay={0.1}>{aside}</Reveal>
-        </div>
-
+        </Reveal>
       </div>
+      <Reveal delay={0.1} style={{ position: 'relative' }}>{aside}</Reveal>
+    </div>
+  )
+  return (
+    <section id={id} style={{ backgroundColor: bg, color: 'var(--ink)', padding: soft ? 'clamp(24px, 3vw, 40px) clamp(12px, 4vw, 48px)' : 'var(--sec-y) clamp(20px, 4vw, 48px)', scrollMarginTop: 70, position: 'relative', overflow: 'clip' }}>
+      {!soft && backdrop}
+      {soft ? (
+        <div className="d-panel" style={{ ...SHELL, maxWidth: 1344, backgroundColor: 'var(--brand-soft)', padding: 'clamp(40px, 5.4vw, 80px) clamp(20px, 4.8vw, 72px)' }}>
+          {backdrop}
+          {inner}
+        </div>
+      ) : (
+        <div style={{ ...SHELL, position: 'relative' }}>{inner}</div>
+      )}
     </section>
   )
 }
 
+/** Blaue Stadtplan-Fläche rechts in einer weichen Panel-Sektion (Google Maps). */
+function PanelMapBackdrop() {
+  return (
+    <div aria-hidden style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '62%', pointerEvents: 'none', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(#ECEBFF 8px, transparent 8px), linear-gradient(90deg, #ECEBFF 8px, transparent 8px)', backgroundSize: '96px 80px', backgroundColor: '#E2E0FB' }} />
+      <svg viewBox="0 0 720 620" preserveAspectRatio="xMidYMid slice" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+        <path d="M0 430 C 200 370, 380 490, 720 390" stroke="#F7F7FF" strokeWidth="24" fill="none" />
+        <path d="M470 -20 C 430 200, 560 360, 520 640" stroke="#F7F7FF" strokeWidth="18" fill="none" />
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #ECEBFF 0%, rgba(236,235,255,0.6) 30%, rgba(236,235,255,0) 60%)' }} />
+    </div>
+  )
+}
+
 const checkIcon = (dark = false) => (
-  <span aria-hidden style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', display: 'inline-grid', placeItems: 'center', backgroundColor: dark ? 'rgba(107,75,255,0.22)' : '#EEEBFF', color: dark ? '#fff' : 'var(--electric)', fontSize: 11, fontWeight: 700 }}>✓</span>
+  <span aria-hidden className="d-check" style={dark ? { backgroundColor: 'rgba(255,255,255,0.18)', color: '#fff' } : undefined}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+  </span>
 )
 
 function articleTitle(slug: string) {
   return ratgeberArticles.find(a => a.slug === slug)?.title ?? 'Ratgeber'
 }
 
-// 01 — KI-Suche
+// KI-Suche
 function ChannelAI() {
   const signals = ['Was Sie anbieten', 'Wo Sie tätig sind', 'Was Kunden über Sie sagen', 'Ob Ihre Angaben auf Website, Karten, Verzeichnissen und Social Media übereinstimmen']
   return (
     <ChannelBlock
-      id="ki" n={1} label="KI-Suche"
-      title={<>Lokale Suche beginnt immer öfter mit einer <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Frage an die KI.</span></>}
+      id="ki" label="KI-Suche"
+      title={<>Lokale Suche beginnt immer öfter mit einer <span className="serif italic-serif">Frage an die KI.</span></>}
       body="ChatGPT, Perplexity und die KI-Übersichten bei Google nennen nur wenige Anbieter — und zwar die, die sie eindeutig verstehen und für vertrauenswürdig halten."
       actions={<>
         <a href="#audit-quiz" className="btn btn-md btn-electric">Prüfen, wie die KI mich sieht <span className="arw">→</span></a>
       </>}
       aside={
-        <div style={{ backgroundColor: 'var(--ink)', color: '#fff', borderRadius: 24, padding: 'clamp(24px, 3vw, 36px)' }}>
-          <p className="eyebrow" style={{ fontSize: 10, color: 'var(--electric-2)', marginBottom: 14 }}>Sichtbarkeit in der KI ist ein System</p>
-          <p className="display" style={{ fontSize: 'clamp(19px, 1.7vw, 23px)', lineHeight: 1.3, margin: '0 0 22px' }}>Die KI muss schnell verstehen, was Sie tun, wo Sie arbeiten und ob man Ihnen vertrauen kann.</p>
-          {signals.map(s => (
-            <div key={s} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 0', borderTop: '1px solid var(--line-dark)' }}>
-              {checkIcon(true)}<span style={{ fontSize: 14.5, lineHeight: 1.5, color: 'rgba(255,255,255,0.85)' }}>{s}</span>
+        <div style={{ position: 'relative', padding: 'clamp(8px, 2vw, 28px) 0' }}>
+          <RingsBackdrop size={620} style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
+          <div aria-hidden className="d-card d-hide-md" style={{ position: 'absolute', inset: '44px -8px 0 28px', transform: 'rotate(-2deg)', opacity: 0.55 }} />
+          <div className="d-card" style={{ position: 'relative', padding: 'clamp(22px, 2.6vw, 30px)', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ alignSelf: 'flex-end', maxWidth: 340, backgroundColor: 'var(--ink)', color: '#fff', borderRadius: '18px 18px 4px 18px', padding: '13px 17px', fontSize: 15, lineHeight: 1.5 }}>
+              Welcher Elektriker in Siegen ist zuverlässig und hat einen Notdienst?
             </div>
-          ))}
+            <div style={{ display: 'flex', gap: 12 }}>
+              <IconTile kind="ki" small />
+              <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6 }}>In Siegen wird häufig <strong>Muster Elektrotechnik</strong> empfohlen: Installation, Smart Home und Notdienst, sehr gute Bewertungen bei Google.</p>
+            </div>
+            <div style={{ borderTop: '1px solid var(--divider)', paddingTop: 14 }}>
+              <p className="eyebrow" style={{ color: 'var(--muted)', fontSize: 11.5, marginBottom: 10 }}>Die KI muss verstehen</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px 16px' }}>
+                {signals.map(sig => (
+                  <div key={sig} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    {checkIcon()}<span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 600 }}>{sig}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="d-float d-hide-md" style={{ position: 'absolute', right: -12, bottom: -14, padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center', fontSize: 13.5, fontWeight: 700 }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', backgroundColor: '#16A34A', boxShadow: '0 0 0 4px #DCFCE7' }} />In der KI-Antwort genannt
+          </div>
         </div>
       }
       article={{ href: '/ratgeber/in-chatgpt-und-perplexity-gefunden-werden', title: articleTitle('in-chatgpt-und-perplexity-gefunden-werden') }}
@@ -1719,7 +1817,7 @@ function ChannelAI() {
   )
 }
 
-// 02 — Google Maps: hier sitzt das Einstiegsangebot (149 € einmalig).
+// Google Maps: hier sitzt das Einstiegsangebot (149 € einmalig).
 function ChannelMaps() {
   const [order, setOrder] = useState(false)
   const included = [
@@ -1733,33 +1831,31 @@ function ChannelMaps() {
     <>
       {order && <ProfileOrderModal onClose={() => setOrder(false)} />}
       <ChannelBlock
-        id="maps" n={2} label="Google Maps" tone="dark"
-        title={<>Google Maps ist <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>Pflicht</span> für lokale Unternehmen.</>}
+        id="maps" label="Google Maps" tone="soft"
+        backdrop={<PanelMapBackdrop />}
+        title={<>Google Maps ist <span className="serif italic-serif">Pflicht</span> für lokale Unternehmen.</>}
         body="Menschen suchen in der Nähe, lesen Bewertungen und rufen direkt an. Für ein lokales Unternehmen ist das einer der kürzesten Wege von der Suche zur Anfrage."
         actions={<>
-          <a href="/services/google-maps-business-profile" className="btn btn-md btn-outline-dark">Mehr zu Google Maps <span className="arw">→</span></a>
+          <a href="/services/google-maps-business-profile" className="btn btn-md btn-paper">Mehr zu Google Maps <span className="arw">→</span></a>
         </>}
-        stacked
         aside={
-          <div className="chan-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.15fr)', gap: 'clamp(24px, 4vw, 64px)', alignItems: 'center', backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 24, padding: 'clamp(24px, 3.4vw, 48px)', boxShadow: '0 40px 90px rgba(0,0,0,0.35)' }}>
-            <div>
-              <p className="eyebrow" style={{ fontSize: 10, color: 'var(--electric)', marginBottom: 12 }}>Selbst machen — oder wir übernehmen das</p>
-              <p className="display" style={{ fontSize: 'clamp(24px, 2.4vw, 34px)', lineHeight: 1.15, margin: '0 0 12px' }}>Google-Profil, fertig eingerichtet.</p>
-              <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 24px', maxWidth: 440 }}>Wir erstellen oder überarbeiten Ihr Profil, pflegen Leistungen und Angaben ein und bereiten alles für die ersten Bewertungen vor.</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px 20px', flexWrap: 'wrap' }}>
-                <button type="button" onClick={() => setOrder(true)} className="btn btn-md btn-electric">Google-Profil starten <span className="arw">→</span></button>
-                <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6, whiteSpace: 'nowrap' }}>
-                  <span className="display" style={{ fontSize: 26 }}>149 €</span>
-                  <span style={{ fontSize: 13, color: 'var(--muted)' }}>einmalig · ohne Abo</span>
-                </span>
-              </div>
-            </div>
-            <div>
-              {included.map((s, i) => (
-                <div key={s} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 0', borderTop: i === 0 ? 'none' : '1px solid var(--line)' }}>
-                  {checkIcon()}<span style={{ fontSize: 14.5, lineHeight: 1.5 }}>{s}</span>
+          <div className="d-card" style={{ position: 'relative', padding: 'clamp(24px, 3vw, 40px)' }}>
+            <p className="kick" style={{ color: 'var(--muted)', fontSize: 12 }}>Selbst machen — oder wir übernehmen das</p>
+            <p className="display" style={{ fontSize: 'clamp(24px, 2.2vw, 30px)', lineHeight: 1.15, margin: '12px 0 10px' }}>Google-Profil, fertig eingerichtet.</p>
+            <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 18px' }}>Wir erstellen oder überarbeiten Ihr Profil, pflegen Leistungen und Angaben ein und bereiten alles für die ersten Bewertungen vor.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
+              {included.map(it => (
+                <div key={it} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  {checkIcon()}<span style={{ fontSize: 14.5, lineHeight: 1.5 }}>{it}</span>
                 </div>
               ))}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px 20px', flexWrap: 'wrap', paddingTop: 20, borderTop: '1px solid var(--divider)' }}>
+              <span>
+                <span className="display" style={{ display: 'block', fontSize: 'clamp(38px, 3.4vw, 48px)', lineHeight: 1, letterSpacing: '-0.04em' }}>149 €</span>
+                <span style={{ fontSize: 13.5, color: 'var(--muted)' }}>einmalig · ohne Abo</span>
+              </span>
+              <button type="button" onClick={() => setOrder(true)} className="btn btn-md btn-electric">Google-Profil starten <span className="arw">→</span></button>
             </div>
           </div>
         }
@@ -1769,68 +1865,63 @@ function ChannelMaps() {
   )
 }
 
-// 03 — Google Search: die Website.
+// Google Search: die Website.
 function ChannelSearch() {
   const [order, setOrder] = useState<null | PackageOrder>(null)
   return (
     <>
       {order && <PackageOrderModal initial={order} onClose={() => setOrder(null)} />}
       <ChannelBlock
-        id="search" n={3} label="Google Search" tone="bone"
-        title={<>Google Search schaut auf <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Ihre Website.</span></>}
+        id="search" label="Google Search" tone="bone"
+        title={<>Google Search schaut auf <span className="serif italic-serif">Ihre Website.</span></>}
         body="Ihre Website muss in einfachen Worten erklären, was Sie tun, wo Sie arbeiten und warum man Ihnen vertrauen kann — für Menschen und für Google."
         actions={<>
           <a href="/services/website-google-search" className="btn btn-md btn-ink">Mehr zu Website & Google Search <span className="arw">→</span></a>
         </>}
         reverse
         aside={
-          // Suchergebnis-Mockup statt Liste: 03 soll sich optisch von 01 (dunkle Checkliste)
-          // und 04 (nummerierte Zeilen) unterscheiden (25.09).
           <div style={{ position: 'relative' }}>
-            <div style={{ backgroundColor: '#fff', borderRadius: 24, boxShadow: '0 30px 70px rgba(7,7,12,0.10)', overflow: 'hidden' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 'clamp(16px, 2vw, 22px) clamp(18px, 2.4vw, 28px)', borderBottom: '1px solid var(--line)' }}>
+            <div aria-hidden className="d-hide-md" style={{ position: 'absolute', inset: '-14px -14px 40px 26px', borderRadius: 24, backgroundColor: 'var(--brand-soft)', transform: 'rotate(3deg)' }} />
+            <div className="d-card" style={{ position: 'relative', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 'clamp(16px, 2vw, 22px) clamp(18px, 2.4vw, 28px)', borderBottom: '1px solid var(--divider)' }}>
                 <GLogo />
-                <span style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 16px', borderRadius: 999, border: '1px solid rgba(7,7,12,0.12)', fontSize: 14.5, color: 'var(--ink)' }}>
+                <span style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '11px 18px', borderRadius: 999, border: '1px solid var(--border)', fontSize: 15, color: 'var(--ink)' }}>
                   Elektriker in Siegen
-                  <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2600FF" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+                  <ChannelIcon kind="search" size={17} />
                 </span>
               </div>
-
               <div style={{ padding: 'clamp(18px, 2.4vw, 28px)' }}>
-                <div style={{ position: 'relative', padding: '18px 18px 16px', borderRadius: 18, backgroundColor: '#F4F2FF', border: '1px solid #DCD5FF' }}>
-                  <span className="eyebrow" style={{ position: 'absolute', top: -10, right: 16, fontSize: 9, padding: '4px 9px', borderRadius: 999, backgroundColor: 'var(--electric)', color: '#fff' }}>Ihr Unternehmen</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                    <span aria-hidden style={{ width: 26, height: 26, borderRadius: '50%', backgroundColor: 'var(--ink)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 700 }}>M</span>
+                <div style={{ position: 'relative', padding: '18px 18px 16px', borderRadius: 16, border: '2px solid var(--electric)' }}>
+                  <span className="kick" style={{ fontSize: 11 }}>Ihr Unternehmen</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '8px 0' }}>
+                    <span aria-hidden style={{ width: 26, height: 26, borderRadius: 8, backgroundColor: 'var(--electric)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 800 }}>M</span>
                     <span style={{ fontSize: 12.5, lineHeight: 1.3, color: 'var(--muted)' }}>
-                      <span style={{ display: 'block', color: 'var(--ink)', fontWeight: 600 }}>Muster Elektrotechnik</span>
+                      <span style={{ display: 'block', color: 'var(--ink)', fontWeight: 700 }}>Muster Elektrotechnik</span>
                       muster-elektro.de › leistungen
                     </span>
                   </div>
-                  <p style={{ fontSize: 'clamp(17px, 1.5vw, 20px)', lineHeight: 1.3, color: '#1A0DAB', margin: '0 0 6px', fontWeight: 500 }}>Elektriker in Siegen — Installation, Smart Home & Notdienst</p>
-                  <p style={{ fontSize: 13.5, lineHeight: 1.6, color: 'var(--muted)', margin: '0 0 14px' }}>Was wir tun, wo wir arbeiten und welche Projekte wir in der Region umgesetzt haben — klar erklärt.</p>
+                  <p style={{ fontSize: 'clamp(17px, 1.5vw, 19px)', lineHeight: 1.3, color: 'var(--electric)', margin: '0 0 6px', fontWeight: 800 }}>Elektriker in Siegen — Installation, Smart Home & Notdienst</p>
+                  <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--muted)', margin: '0 0 12px' }}>Was wir tun, wo wir arbeiten und welche Projekte wir in der Region umgesetzt haben — klar erklärt.</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {['Leistungen', 'Region', 'Referenzen', 'Kontakt'].map(t => (
-                      <span key={t} style={{ fontSize: 12.5, fontWeight: 600, padding: '6px 12px', borderRadius: 999, backgroundColor: '#fff', border: '1px solid #DCD5FF', color: 'var(--electric)' }}>{t}</span>
+                      <span key={t} style={{ fontSize: 12.5, fontWeight: 700, padding: '6px 11px', borderRadius: 8, backgroundColor: 'var(--bone)', color: 'var(--ink)' }}>{t}</span>
                     ))}
                   </div>
                 </div>
-
                 {[0.62, 0.48].map((w, i) => (
-                  <div key={i} aria-hidden style={{ padding: '16px 4px 0', opacity: 0.55 - i * 0.2 }}>
-                    <div style={{ width: '38%', height: 8, borderRadius: 4, backgroundColor: 'rgba(7,7,12,0.10)', marginBottom: 8 }} />
-                    <div style={{ width: `${w * 100}%`, height: 11, borderRadius: 5, backgroundColor: 'rgba(26,13,171,0.18)', marginBottom: 8 }} />
-                    <div style={{ width: '88%', height: 7, borderRadius: 4, backgroundColor: 'rgba(7,7,12,0.07)' }} />
+                  <div key={i} aria-hidden style={{ padding: '16px 18px 0', opacity: 0.8 - i * 0.3 }}>
+                    <div style={{ width: '38%', height: 9, borderRadius: 5, backgroundColor: 'var(--divider)', marginBottom: 8 }} />
+                    <div style={{ width: `${w * 100}%`, height: 12, borderRadius: 6, backgroundColor: 'var(--divider)' }} />
                   </div>
                 ))}
               </div>
             </div>
-
-            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px 16px', flexWrap: 'wrap', fontSize: 14, lineHeight: 1.6 }}>
+            <div className="d-card-flat" style={{ position: 'relative', marginTop: 16, padding: '16px 20px', borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px 16px', flexWrap: 'wrap', fontSize: 15 }}>
               <span>
-                Noch keine Website? Wir starten mit einem One Pager —{' '}
-                <button type="button" onClick={() => setOrder({ pkg: 'onepager', social: false })} className="ul" style={{ background: 'none', border: 0, padding: 0, font: 'inherit', fontWeight: 600, color: 'var(--electric)', cursor: 'pointer' }}>ab 30 €/Monat →</button>
+                Noch keine Website?{' '}
+                <button type="button" onClick={() => setOrder({ pkg: 'onepager', social: false })} style={{ background: 'none', border: 0, padding: 0, font: 'inherit', fontWeight: 800, color: 'var(--ink)', cursor: 'pointer' }}>One Pager ab 30 €/Monat</button>
               </span>
-              <a href={'/preise'} className="ul" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--ink)' }}>Alle Website-Pakete ansehen <span aria-hidden style={{ color: 'var(--electric)' }}>→</span></a>
+              <a href={'/preise'} className="d-link" style={{ fontSize: 14.5 }}>Alle Website-Pakete <span className="arw">→</span></a>
             </div>
           </div>
         }
@@ -1840,91 +1931,104 @@ function ChannelSearch() {
   )
 }
 
-// 04 — Social Media
+// Social Media
 function ChannelSocial() {
   const [order, setOrder] = useState(false)
   const pillars = [
-    ['Menschen', 'Zeigen Sie sich und Ihr Team. So bekommt das Unternehmen ein Gesicht.'],
-    ['Arbeitsweise', 'Zeigen Sie, wie Sie arbeiten — ohne Inszenierung und Marketing-Floskeln.'],
-    ['Ergebnisse', 'Echte Arbeiten, Projekte und Kunden erklären Qualität besser als jedes Werbeversprechen.'],
+    ['Menschen', 'Zeigen Sie sich und Ihr Team. So bekommt das Unternehmen ein Gesicht.', '#ECEBFF', '#6D6A9E'],
+    ['Arbeitsweise', 'Zeigen Sie, wie Sie arbeiten — ohne Inszenierung und Marketing-Floskeln.', '#E6F4EE', '#4D7A66'],
+    ['Ergebnisse', 'Echte Arbeiten, Projekte und Kunden erklären Qualität besser als jedes Werbeversprechen.', '#FFF1DE', '#9A7440'],
   ]
   return (
     <>
     {order && <PackageOrderModal initial={{ pkg: null, social: true }} onClose={() => setOrder(false)} />}
-    <ChannelBlock
-      id="social" n={4} label="Social Media"
-      title={<>In sozialen Netzwerken sehen Kunden <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Menschen.</span></>}
-      body="Team, Arbeitsweise und echte Ergebnisse machen Ihr Unternehmen vertraut — schon vor dem ersten Anruf. Dafür müssen Sie kein Influencer werden."
-      actions={<>
-        <a href="/services/social-media" className="btn btn-md btn-ink">Mehr zu Social Media <span className="arw">→</span></a>
-      </>}
-      aside={
-        <div>
-          {pillars.map(([t, d], i) => (
-            <div key={t} style={{ display: 'grid', gridTemplateColumns: '44px minmax(0, 1fr)', gap: 16, padding: '18px 0', borderTop: '1px solid var(--line)' }}>
-              <span className="display" style={{ fontSize: 13, color: 'var(--electric)', letterSpacing: '0.08em', paddingTop: 4 }}>{String(i + 1).padStart(2, '0')}</span>
-              <div>
-                <p className="display" style={{ fontSize: 'clamp(18px, 1.6vw, 22px)', margin: '0 0 6px' }}>{t}</p>
-                <p style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>{d}</p>
-              </div>
-            </div>
-          ))}
-          <div style={{ marginTop: 8, padding: '16px 18px', borderRadius: 16, backgroundColor: 'var(--bone)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px 18px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 14, lineHeight: 1.55 }}>
-              <strong>Auch einzeln buchbar</strong> — ohne Website-Paket.<br />
-              <span style={{ color: 'var(--muted)' }}>Social-Media-Betreuung · {SOCIAL_ADDON.price} €/Monat</span>
-            </span>
-            <button type="button" onClick={() => setOrder(true)} className="btn btn-md btn-ink">Social Media anfragen <span className="arw">→</span></button>
-          </div>
-        </div>
-      }
-    />
-    </>
-  )
-}
-
-// Zusammenspiel — alle Kanäle erzählen dieselbe Geschichte.
-// Überschrift zentriert, darunter vier Karten im Stil der Kanal-Übersicht (21.09).
-function ChannelSummary() {
-  const rows = [
-    ['KI-Suche', 'Damit man Sie empfehlen kann.'],
-    ['Google Maps', 'Damit man Sie in der Nähe findet.'],
-    ['Google Search', 'Damit Google Ihre Leistungen versteht.'],
-    ['Social Media', 'Damit Kunden die Menschen dahinter sehen.'],
-  ]
-  return (
-    <section style={{ backgroundColor: 'var(--paper)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', borderTop: '1px solid var(--line)' }}>
-      <div style={{ ...SHELL }}>
+    <section id="social" style={{ backgroundColor: 'var(--paper)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', scrollMarginTop: 70, position: 'relative', overflow: 'clip' }}>
+      <div style={{ ...SHELL, position: 'relative' }}>
         <div style={{ textAlign: 'center', maxWidth: 820, margin: '0 auto' }}>
-          <Reveal>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-              <span style={{ width: 28, height: 1, backgroundColor: 'var(--electric)' }} />
-              <p className="eyebrow" style={{ color: 'var(--ink)', opacity: 0.55 }}>Das Zusammenspiel</p>
-              <span style={{ width: 28, height: 1, backgroundColor: 'var(--electric)' }} />
-            </div>
-          </Reveal>
-          <MaskHeading
-            className="h-md"
-            style={{ marginTop: 22 }}
-            lines={[<>Alle Kanäle sollten eine</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>klare Geschichte</span></>, <>über Ihr Unternehmen erzählen.</>]}
-          />
+          <Reveal><Kicker icon="social">Social Media</Kicker></Reveal>
+          <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '20px 0 18px' }}>In sozialen Netzwerken sehen Kunden <span className="serif italic-serif">Menschen.</span></h2></Reveal>
+          <Reveal delay={0.1}><p className="lead" style={{ color: 'var(--muted)', margin: 0 }}>Team, Arbeitsweise und echte Ergebnisse machen Ihr Unternehmen vertraut — schon vor dem ersten Anruf. Dafür müssen Sie kein Influencer werden.</p></Reveal>
         </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 'clamp(12px, 1.4vw, 18px)', marginTop: 'clamp(36px, 4vw, 56px)' }}>
-          {rows.map(([a, b], i) => (
-            <Reveal key={a} delay={0.06 * i}>
-              <div style={{ height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12, padding: 'clamp(22px, 2.2vw, 30px)', borderRadius: 22, backgroundColor: 'var(--bone)' }}>
-                <span className="chan-num display">{String(i + 1).padStart(2, '0')}</span>
-                <span className="display" style={{ fontSize: 'clamp(20px, 1.7vw, 24px)', lineHeight: 1.2 }}>{a}</span>
-                <span style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)' }}>{b}</span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 24, marginTop: 'clamp(40px, 4.4vw, 56px)' }}>
+          {pillars.map(([t, d, bg, fg], i) => (
+            <Reveal key={t} delay={0.06 * i}>
+              <div className="d-card social-card" style={{ overflow: 'hidden', height: '100%', transform: i === 1 ? 'translateY(24px)' : undefined }}>
+                <div aria-hidden style={{ height: 'clamp(150px, 15vw, 210px)', backgroundColor: bg, color: fg, display: 'grid', placeItems: 'center' }}>
+                  <ChannelIcon kind="social" size={40} />
+                </div>
+                <div style={{ padding: 'clamp(22px, 2.2vw, 28px)' }}>
+                  <p className="display" style={{ fontSize: 22, margin: '0 0 8px' }}>{t}</p>
+                  <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)', margin: 0 }}>{d}</p>
+                </div>
               </div>
             </Reveal>
           ))}
         </div>
+        <Reveal delay={0.15}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'clamp(48px, 5vw, 64px)' }}>
+            <div className="d-card-flat" style={{ display: 'flex', alignItems: 'center', gap: '12px 24px', flexWrap: 'wrap', justifyContent: 'center', padding: '12px 12px 12px 26px', borderRadius: 18, backgroundColor: 'var(--bone)' }}>
+              <span style={{ fontSize: 15.5 }}>Auch einzeln buchbar — <strong>Social-Media-Betreuung · {SOCIAL_ADDON.price} €/Monat</strong></span>
+              <span style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button type="button" onClick={() => setOrder(true)} className="btn btn-md btn-electric">Social Media anfragen <span className="arw">→</span></button>
+                <a href="/services/social-media" className="btn btn-md btn-paper">Mehr erfahren</a>
+              </span>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+    </>
+  )
+}
+
+// Zusammenspiel — alle Kanäle erzählen dieselbe Geschichte: Knoten „Ihr Unternehmen“ in der Mitte.
+function ChannelSummary() {
+  const rows: [ChannelKind, string, string][] = [
+    ['ki', 'KI-Suche', 'Damit man Sie empfehlen kann.'],
+    ['maps', 'Google Maps', 'Damit man Sie in der Nähe findet.'],
+    ['search', 'Google Search', 'Damit Google Ihre Leistungen versteht.'],
+    ['social', 'Social Media', 'Damit Kunden die Menschen dahinter sehen.'],
+  ]
+  const card = ([k, a, b]: [ChannelKind, string, string]) => (
+    <div key={a} className="d-float hub-card" style={{ padding: '16px 18px', borderRadius: 18, display: 'flex', gap: 14, alignItems: 'center' }}>
+      <IconTile kind={k} small />
+      <span><span style={{ display: 'block', fontWeight: 800, fontSize: 16 }}>{a}</span><span style={{ fontSize: 14, color: 'var(--muted)' }}>{b}</span></span>
+    </div>
+  )
+  return (
+    <section style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'var(--bone)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)' }}>
+      <div style={{ ...SHELL, position: 'relative' }}>
+        <div style={{ textAlign: 'center', maxWidth: 880, margin: '0 auto' }}>
+          <Reveal><Kicker>Das Zusammenspiel</Kicker></Reveal>
+          <MaskHeading
+            className="h-md"
+            style={{ marginTop: 18 }}
+            lines={[<>Alle Kanäle sollten eine <span className="serif italic-serif">klare Geschichte</span> über Ihr Unternehmen erzählen.</>]}
+          />
+        </div>
+
+        <Reveal delay={0.1}>
+          <div className="hub" style={{ position: 'relative', maxWidth: 1100, margin: 'clamp(36px, 4vw, 56px) auto 0', minHeight: 420 }}>
+            <svg aria-hidden className="d-hide-md" viewBox="0 0 1100 420" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+              <g stroke="#C9C5F7" strokeWidth="2" strokeDasharray="6 8" fill="none">
+                <path d="M550 210 L200 80" vectorEffect="non-scaling-stroke" /><path d="M550 210 L900 80" vectorEffect="non-scaling-stroke" />
+                <path d="M550 210 L200 340" vectorEffect="non-scaling-stroke" /><path d="M550 210 L900 340" vectorEffect="non-scaling-stroke" />
+              </g>
+            </svg>
+            <RingsBackdrop size={380} color="#E2E0F0" style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
+            <div className="hub-center" style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 176, height: 176, borderRadius: '50%', backgroundColor: 'var(--electric)', color: '#fff', display: 'grid', placeItems: 'center', textAlign: 'center', fontWeight: 800, fontSize: 18, lineHeight: 1.25, boxShadow: '0 20px 60px rgba(38,0,255,.35)' }}>Ihr<br />Unternehmen</div>
+            <div className="hub-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 320px) minmax(0, 1fr) minmax(0, 320px)', gridTemplateRows: 'auto auto', rowGap: 180, alignContent: 'space-between', minHeight: 420, paddingTop: 30 }}>
+              <div style={{ gridColumn: 1, gridRow: 1 }}>{card(rows[0])}</div>
+              <div style={{ gridColumn: 3, gridRow: 1 }}>{card(rows[1])}</div>
+              <div style={{ gridColumn: 1, gridRow: 2 }}>{card(rows[2])}</div>
+              <div style={{ gridColumn: 3, gridRow: 2 }}>{card(rows[3])}</div>
+            </div>
+          </div>
+        </Reveal>
 
         <Reveal delay={0.2}>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'clamp(32px, 3.5vw, 48px)' }}>
-            <a href="/services" className="btn btn-lg btn-ink">Alle Leistungen ansehen <span className="arw">→</span></a>
+            <a href="/services" className="btn btn-lg btn-paper">Alle Leistungen ansehen <span className="arw">→</span></a>
           </div>
         </Reveal>
       </div>
@@ -1932,8 +2036,7 @@ function ChannelSummary() {
   )
 }
 
-// Unternehmen finden — ersetzt das Quiz. Die Suche (Google Places) folgt später,
-// Eingabe und Button haben vorerst keine Logik. Anker bleibt #audit-quiz,
+// Unternehmen finden — ersetzt das Quiz. Anker bleibt #audit-quiz,
 // damit alle bestehenden Links auf der Website weiter funktionieren.
 function BusinessCheck() {
   const [order, setOrder] = useState(false)
@@ -1941,60 +2044,57 @@ function BusinessCheck() {
   return (
     <>
       {order && <ProfileOrderModal onClose={() => setOrder(false)} />}
-      <section id="audit-quiz" style={{ backgroundColor: 'var(--electric)', color: '#fff', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden', scrollMarginTop: 70 }}>
-        <ScanBackdrop />
-        <div className="audit-grid" style={{ ...SHELL, position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 440px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
-          <div>
-            <Reveal>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-                <span style={{ width: 28, height: 1, backgroundColor: 'rgba(255,255,255,0.6)' }} />
-                <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.7)' }}>Kostenloser Sichtbarkeits-Check</p>
-              </div>
-            </Reveal>
-            <MaskHeading
-              className="h-md"
-              style={{ marginBottom: 20, color: '#fff' }}
-              lines={[<>Finden Sie Ihr Unternehmen —</>, <><span className="serif italic-serif">wir zeigen, wie Google und KI Sie sehen.</span></>]}
-            />
+      <section id="audit-quiz" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 3vw, 40px) clamp(12px, 4vw, 48px) var(--sec-y)', scrollMarginTop: 70 }}>
+        <div className="d-panel on-brand" style={{ ...SHELL, maxWidth: 1344, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(40px, 5.4vw, 80px) clamp(20px, 4.8vw, 72px)' }}>
+          <RingsBackdrop size={900} color="rgba(255,255,255,0.14)" style={{ right: -240, top: -220 }} />
+          <div className="audit-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 440px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
+            <div>
+              <Reveal><p className="kick" style={{ color: '#C9C2FF' }}>Kostenloser Sichtbarkeits-Check</p></Reveal>
+              <MaskHeading
+                className="h-md"
+                style={{ margin: '18px 0 20px', color: '#fff' }}
+                lines={[<>Finden Sie Ihr Unternehmen —</>, <>wir zeigen, wie Google und KI Sie sehen.</>]}
+              />
+              <Reveal delay={0.1}>
+                <p style={{ fontSize: 17, lineHeight: 1.65, color: '#DCD8FF', margin: '0 0 28px', maxWidth: 540 }}>
+                  Starten Sie mit dem Namen oder der Adresse Ihres Unternehmens. Wir prüfen die wichtigsten Signale bei Google Maps, in der Google-Suche und in der KI-Suche und zeigen, wo schon alles stimmt und wo Potenzial liegt.
+                </p>
+              </Reveal>
+              <Reveal delay={0.16} style={{ position: 'relative', zIndex: 5 }}>
+                <CompanySearch />
+              </Reveal>
+              <Reveal delay={0.22}>
+                <div style={{ marginTop: 28, paddingTop: 22, borderTop: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', gap: '12px 20px', flexWrap: 'wrap' }}>
+                  <p style={{ fontSize: 15, lineHeight: 1.6, color: '#DCD8FF', margin: 0, maxWidth: 340 }}>Ihr Unternehmen ist noch nicht bei Google? Wir erstellen Ihr Google-Profil.</p>
+                  <button type="button" onClick={() => setOrder(true)} className="btn btn-md btn-on-brand">Google-Profil · 149 € einmalig <span className="arw">→</span></button>
+                </div>
+              </Reveal>
+            </div>
+
             <Reveal delay={0.1}>
-              <p style={{ fontSize: 16, lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', margin: '0 0 28px', maxWidth: 520 }}>
-                Starten Sie mit dem Namen oder der Adresse Ihres Unternehmens. Wir prüfen die wichtigsten Signale bei Google Maps, in der Google-Suche und in der KI-Suche und zeigen, wo schon alles stimmt und wo Potenzial liegt.
-              </p>
-            </Reveal>
-            <Reveal delay={0.16} style={{ position: 'relative', zIndex: 5 }}>
-              {/* Suche mit Vorschlägen → /check (Demo-Daten, bis Google Places angebunden ist) */}
-              <CompanySearch />
-            </Reveal>
-            <Reveal delay={0.22}>
-              <div style={{ marginTop: 30, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', gap: '12px 20px', flexWrap: 'wrap' }}>
-                <p style={{ fontSize: 15, lineHeight: 1.6, color: 'rgba(255,255,255,0.85)', margin: 0, maxWidth: 340 }}>Ihr Unternehmen ist noch nicht bei Google? Wir erstellen Ihr Google-Profil.</p>
-                <button type="button" onClick={() => setOrder(true)} className="btn btn-md btn-paper">Google-Profil · 149 € einmalig <span className="arw">→</span></button>
+              <div className="d-card" style={{ color: 'var(--ink)', padding: 'clamp(24px, 3vw, 32px)', boxShadow: '0 40px 80px rgba(11,11,26,0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+                  <p style={{ fontWeight: 800, margin: 0 }}>Beispielbericht</p>
+                  <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 999, backgroundColor: 'var(--bone)', color: 'var(--muted)' }}>nur Beispiel</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
+                  <div aria-hidden style={{ width: 104, height: 104, borderRadius: '50%', background: 'conic-gradient(#2600FF 0 62%, #ECEBFF 62% 100%)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                    <div style={{ width: 80, height: 80, borderRadius: '50%', backgroundColor: '#fff', display: 'grid', placeItems: 'center', fontSize: 30, fontWeight: 800 }}>62</div>
+                  </div>
+                  <p className="display" style={{ fontSize: 20, margin: 0 }}>Lokale Sichtbarkeit</p>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
+                  {scores.map(([l, v]) => (
+                    <div key={l} style={{ backgroundColor: 'var(--bone)', borderRadius: 14, padding: '12px 14px' }}>
+                      <div style={{ fontSize: 13, color: 'var(--muted)' }}>{l}</div>
+                      <div style={{ fontSize: 24, fontWeight: 800, color: v < 50 ? 'var(--electric)' : 'var(--ink)' }}>{v}</div>
+                    </div>
+                  ))}
+                </div>
+                <p style={{ fontSize: 12.5, lineHeight: 1.6, color: 'var(--muted)', margin: '14px 0 0' }}>Die Zahlen sind nur ein Beispiel für den späteren Bericht.</p>
               </div>
             </Reveal>
           </div>
-
-          <Reveal delay={0.1}>
-            <div style={{ backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 26, padding: 'clamp(24px, 3vw, 34px)', boxShadow: '0 40px 80px rgba(7,7,12,0.28)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, marginBottom: 22 }}>
-                <div>
-                  <p className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)', marginBottom: 8 }}>Beispielbericht</p>
-                  <p className="display" style={{ fontSize: 19, lineHeight: 1.3, margin: 0 }}>Lokale Sichtbarkeit</p>
-                </div>
-                <span className="display" style={{ fontSize: 46, lineHeight: 1, color: 'var(--electric)' }}>62</span>
-              </div>
-              {scores.map(([l, v]) => (
-                <div key={l} style={{ padding: '10px 0', borderTop: '1px solid var(--line)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 8 }}>
-                    <span style={{ fontWeight: 600 }}>{l}</span><span style={{ color: 'var(--muted)' }}>{v}</span>
-                  </div>
-                  <div style={{ height: 6, borderRadius: 3, backgroundColor: '#EEEBFF' }}>
-                    <div style={{ width: `${v}%`, height: '100%', borderRadius: 3, backgroundColor: 'var(--electric)' }} />
-                  </div>
-                </div>
-              ))}
-              <p style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--muted)', margin: '14px 0 0' }}>Die Zahlen sind nur ein Beispiel für den späteren Bericht.</p>
-            </div>
-          </Reveal>
         </div>
       </section>
     </>
@@ -2518,7 +2618,7 @@ function ServiceSelector() {
     <>
       {pkgOrder && <PackageOrderModal initial={pkgOrder} onClose={() => setPkgOrder(null)} />}
       {profileOrder && <ProfileOrderModal onClose={() => setProfileOrder(false)} />}
-      <section id="auswahl" style={{ backgroundColor: 'var(--paper)', padding: 'clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)' }}>
+      <section id="auswahl" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 4vw, 56px) clamp(20px, 4vw, 48px) var(--sec-y, 110px)' }}>
         <div style={{ ...SHELL }}>
           <Reveal><Kicker>Leistungen & Pakete</Kicker></Reveal>
           <div className="sol-head" style={{ marginTop: 26, marginBottom: 'clamp(40px, 5vw, 64px)' }}>
@@ -2530,20 +2630,20 @@ function ServiceSelector() {
             <Reveal delay={0.12}>
               <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '26px 0 0', maxWidth: 600 }}>
                 Zu jedem Kanal sehen Sie, in welchem Paket er steckt und was er kostet. Wählen Sie ein Paket — wir melden uns und klären alles, bevor Kosten entstehen.{' '}
-                <a href="/preise" className="ul" style={{ color: 'var(--ink)', fontWeight: 600 }}>Alle Preise ansehen →</a>
+                <a href="/preise" className="d-link">Alle Preise ansehen <span className="arw">→</span></a>
               </p>
             </Reveal>
           </div>
 
-          <div style={{ borderTop: '1px solid var(--line)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {modules.map((m, i) => {
               const offer = SERVICE_OFFER[m.slug]
               const isOpen = expanded === m.slug
               return (
                 <Reveal key={m.slug} delay={Math.min(i * 0.05, 0.2)}>
-                  <div className="row" style={{ borderBottom: '1px solid var(--line)' }}>
-                    <div className="svc-row" style={{ display: 'grid', gridTemplateColumns: '84px minmax(0, 1.1fr) minmax(0, 0.9fr) auto', alignItems: 'center', gap: 'clamp(14px, 2vw, 32px)', padding: 'clamp(24px, 2.6vw, 36px) 0' }}>
-                      <OutlineNum n={i + 1} />
+                  <div className={isOpen ? 'd-card' : 'd-card-flat'} style={{ padding: '0 clamp(18px, 2.4vw, 32px)' }}>
+                    <div className="svc-row" style={{ display: 'grid', gridTemplateColumns: '64px minmax(0, 1.1fr) minmax(0, 0.9fr) auto', alignItems: 'center', gap: 'clamp(14px, 2vw, 32px)', padding: 'clamp(22px, 2.4vw, 30px) 0' }}>
+                      <IconTile kind={channelKindOf(m.slug)} />
                       <div>
                         <h3 className="display" style={{ fontSize: 'clamp(20px, 2vw, 28px)', lineHeight: 1.15, margin: '0 0 8px' }}>{m.label}</h3>
                         <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--muted)', margin: 0 }}>{m.sentence}</p>
@@ -2556,17 +2656,17 @@ function ServiceSelector() {
                       </div>
                       <div className="svc-actions" style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end' }}>
                         <button onClick={() => setExpanded(isOpen ? null : m.slug)} aria-label="Details"
-                          style={{ width: 40, height: 40, borderRadius: '50%', border: '1px solid var(--line)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: `transform 0.5s ${EASE}`, transform: isOpen ? 'rotate(45deg)' : 'none', flexShrink: 0 }}>
-                          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="#07070C" strokeWidth="1.5" strokeLinecap="round" /></svg>
+                          style={{ width: 42, height: 42, borderRadius: 12, border: 'none', background: isOpen ? 'var(--electric)' : 'var(--brand-soft)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: `transform 0.5s ${EASE}, background-color .3s ease`, transform: isOpen ? 'rotate(45deg)' : 'none', flexShrink: 0 }}>
+                          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke={isOpen ? '#fff' : '#2600FF'} strokeWidth="1.8" strokeLinecap="round" /></svg>
                         </button>
-                        <button type="button" onClick={() => open(m.slug)} className="btn btn-md btn-ink" style={{ whiteSpace: 'nowrap' }}>
+                        <button type="button" onClick={() => open(m.slug)} className="btn btn-md btn-electric" style={{ whiteSpace: 'nowrap' }}>
                           Paket wählen <span className="arw">→</span>
                         </button>
                       </div>
                     </div>
 
                     <div style={{ overflow: 'hidden', maxHeight: isOpen ? 700 : 0, transition: `max-height 0.7s ${EASE}` }}>
-                      <div className="mod-detail" style={{ display: 'grid', gridTemplateColumns: '84px minmax(0,260px) minmax(0,1fr)', gap: 'clamp(14px, 2vw, 32px)', padding: '4px 0 clamp(28px, 3vw, 40px)' }}>
+                      <div className="mod-detail" style={{ display: 'grid', gridTemplateColumns: '64px minmax(0,260px) minmax(0,1fr)', gap: 'clamp(14px, 2vw, 32px)', padding: '4px 0 clamp(28px, 3vw, 40px)' }}>
                         <span />
                         <div style={{ borderRadius: 14, overflow: 'hidden', backgroundColor: 'var(--bone)', alignSelf: 'start' }}>
                           <m.Illust />
@@ -2578,12 +2678,12 @@ function ServiceSelector() {
                             { k: 'Warum Sie es brauchen', v: m.why, accent: true },
                           ].map(col => (
                             <div key={col.k}>
-                              <p className="eyebrow" style={{ fontSize: 9.5, color: col.accent ? 'var(--electric)' : 'rgba(7,7,12,0.35)', marginBottom: 8 }}>{col.k}</p>
-                              <p style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--muted)', margin: 0 }}>{col.v}</p>
+                              <p className="eyebrow" style={{ fontSize: 11.5, color: col.accent ? 'var(--electric)' : 'var(--ink)', marginBottom: 8 }}>{col.k}</p>
+                              <p style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>{col.v}</p>
                             </div>
                           ))}
-                          <a href={`/services/${m.slug}`} className="ul" style={{ gridColumn: '1 / -1', fontSize: 13, fontWeight: 600, color: 'var(--electric)' }}>
-                            Zur vollständigen Service-Seite →
+                          <a href={`/services/${m.slug}`} className="d-link" style={{ gridColumn: '1 / -1', fontSize: 14.5 }}>
+                            Zur vollständigen Service-Seite <span className="arw">→</span>
                           </a>
                         </div>
                       </div>
@@ -2595,15 +2695,15 @@ function ServiceSelector() {
           </div>
 
           <Reveal delay={0.1}>
-            <div className="notsure" style={{ marginTop: 'clamp(40px, 5vw, 64px)', backgroundColor: 'var(--ink)', color: '#fff', borderRadius: 24, padding: 'clamp(32px, 4vw, 52px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap', position: 'relative', overflow: 'hidden' }}>
-              <CrossBackdrop tone="dark" />
+            <div className="notsure d-panel on-brand" style={{ marginTop: 'clamp(40px, 5vw, 64px)', backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(32px, 4vw, 56px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
+              <RingsBackdrop size={700} color="rgba(255,255,255,0.14)" style={{ right: -160, top: -260 }} />
               <div style={{ position: 'relative', maxWidth: 560 }}>
-                <h3 className="display" style={{ fontSize: 'clamp(22px, 2.6vw, 34px)', marginBottom: 12 }}>Nicht sicher, wo Sie anfangen sollen?</h3>
-                <p style={{ fontSize: 14.5, lineHeight: 1.7, color: 'rgba(255,255,255,0.55)', margin: 0 }}>
+                <h3 className="display" style={{ fontSize: 'clamp(24px, 2.8vw, 36px)', marginBottom: 12 }}>Nicht sicher, wo Sie anfangen sollen?</h3>
+                <p style={{ fontSize: 16, lineHeight: 1.65, color: '#DCD8FF', margin: 0 }}>
                   Fordern Sie den kostenlosen Sichtbarkeits-Check an. Wir sagen Ihnen genau, welche Bereiche Ihr Unternehmen zuerst braucht.
                 </p>
               </div>
-              <a href="/#audit-quiz" className="btn btn-lg btn-paper" style={{ position: 'relative', flexShrink: 0 }}>
+              <a href="/#audit-quiz" className="btn btn-lg btn-on-brand" style={{ position: 'relative', flexShrink: 0 }}>
                 Sichtbarkeits-Check starten <span className="arw">→</span>
               </a>
             </div>
@@ -2611,7 +2711,7 @@ function ServiceSelector() {
         </div>
       </section>
       <style>{`@media (max-width: 900px) {
-  .svc-row { grid-template-columns: 56px minmax(0, 1fr) !important; }
+  .svc-row { grid-template-columns: 52px minmax(0, 1fr) !important; }
   .svc-price, .svc-actions { grid-column: 2 / -1; }
   .svc-actions { justify-content: flex-start !important; }
 }`}</style>
@@ -3262,7 +3362,7 @@ const faqs = [
 function FAQ() {
   const [open, setOpen] = useState<number | null>(0)
   return (
-    <section id="faq" style={{ backgroundColor: 'var(--bone)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)' }}>
+    <section id="faq" style={{ backgroundColor: 'var(--bone)', padding: '0 clamp(20px, 4vw, 48px) var(--sec-y)' }}>
       <JsonLd data={{
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
@@ -3272,39 +3372,39 @@ function FAQ() {
           acceptedAnswer: { '@type': 'Answer', text: f.a },
         })),
       }} />
-      <div style={{ ...SHELL, maxWidth: 1000 }}>
-        <Reveal><Kicker>FAQ</Kicker></Reveal>
-        <div className="faq-head" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 28, flexWrap: 'wrap', marginTop: 26, marginBottom: 'clamp(36px, 4vw, 56px)' }}>
-          <MaskHeading className="h-lg" lines={[<>Häufige Fragen</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>beantwortet</span></>]} />
+      <div style={{ ...SHELL, maxWidth: 940 }}>
+        <div style={{ textAlign: 'center', marginBottom: 'clamp(32px, 4vw, 48px)' }}>
+          <Reveal><Kicker>FAQ</Kicker></Reveal>
+          <MaskHeading className="h-md" style={{ marginTop: 16 }} lines={[<>Häufige Fragen beantwortet</>]} />
           <Reveal delay={0.12}>
-            <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, paddingBottom: 8, maxWidth: 280 }}>Alles, was Sie wissen müssen, bevor Sie Ihren Sichtbarkeits-Check starten</p>
+            <p style={{ fontSize: 16, color: 'var(--muted)', margin: '14px auto 0', maxWidth: 520 }}>Alles, was Sie wissen müssen, bevor Sie Ihren Sichtbarkeits-Check starten.</p>
           </Reveal>
         </div>
 
-        <div style={{ borderTop: '1px solid var(--line)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {faqs.map((f, i) => {
             const isOpen = open === i
             return (
-              <div key={i} style={{ borderBottom: '1px solid var(--line)' }}>
-                <button onClick={() => setOpen(isOpen ? null : i)}
+              <div key={i} className={isOpen ? 'd-card' : 'd-card-flat'} style={{ borderRadius: 20, transition: 'box-shadow .35s ease' }}>
+                <button onClick={() => setOpen(isOpen ? null : i)} aria-expanded={isOpen}
                   style={{
                     width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24,
-                    padding: 'clamp(22px, 2.4vw, 32px) 0', background: 'none', border: 'none', cursor: 'pointer',
+                    padding: 'clamp(20px, 2vw, 26px) clamp(20px, 2.4vw, 30px)', background: 'none', border: 'none', cursor: 'pointer',
                     textAlign: 'left', fontFamily: 'inherit',
                   }}>
-                  <span className="display" style={{ fontSize: 'clamp(17px, 1.7vw, 25px)', lineHeight: 1.25, color: isOpen ? 'var(--electric)' : 'var(--ink)', transition: 'color 0.35s ease' }}>{f.q}</span>
+                  <span style={{ fontSize: 'clamp(16px, 1.4vw, 19px)', fontWeight: 800, lineHeight: 1.3, color: isOpen ? 'var(--electric)' : 'var(--ink)', transition: 'color 0.35s ease' }}>{f.q}</span>
                   <span style={{
-                    flexShrink: 0, width: 38, height: 38, borderRadius: '50%',
-                    border: `1px solid ${isOpen ? 'var(--electric)' : 'var(--line)'}`,
+                    flexShrink: 0, width: 36, height: 36, borderRadius: 12,
+                    backgroundColor: isOpen ? 'var(--electric)' : 'var(--brand-soft)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     transform: isOpen ? 'rotate(45deg)' : 'none',
-                    transition: `transform 0.5s ${EASE}, border-color 0.35s ease`,
+                    transition: `transform 0.5s ${EASE}, background-color 0.35s ease`,
                   }}>
-                    <svg width="13" height="13" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke={isOpen ? '#2600FF' : '#07070C'} strokeWidth="1.5" strokeLinecap="round" /></svg>
+                    <svg width="13" height="13" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke={isOpen ? '#fff' : '#2600FF'} strokeWidth="1.8" strokeLinecap="round" /></svg>
                   </span>
                 </button>
                 <div style={{ overflow: 'hidden', maxHeight: isOpen ? 400 : 0, transition: `max-height 0.6s ${EASE}` }}>
-                  <p className="faq-answer" style={{ margin: 0, paddingBottom: 30, paddingRight: 62, maxWidth: 760, fontSize: 14.5, lineHeight: 1.85, color: 'var(--muted)' }}>{f.a}</p>
+                  <p className="faq-answer" style={{ margin: 0, padding: '0 clamp(20px, 2.4vw, 30px) 26px', paddingRight: 72, maxWidth: 820, fontSize: 15.5, lineHeight: 1.75, color: 'var(--muted)' }}>{f.a}</p>
                 </div>
               </div>
             )
@@ -3320,35 +3420,38 @@ function FAQ() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function Footer() {
+  const linkStyle: React.CSSProperties = { display: 'block', width: 'fit-content', fontSize: 15, color: 'var(--muted)', marginBottom: 10 }
   return (
-    <footer style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(56px, 6vw, 88px) clamp(20px, 4vw, 48px) 28px', position: 'relative', overflow: 'hidden', borderTop: '1px solid var(--line-dark)' }}>
+    <footer style={{ backgroundColor: 'var(--paper)', color: 'var(--ink)', padding: 'clamp(56px, 6vw, 80px) clamp(20px, 4vw, 48px) 32px', position: 'relative', overflow: 'hidden', borderTop: '1px solid var(--border)' }}>
+      <DotsCorner style={{ right: -120, bottom: -160, opacity: 0.7 }} />
       <div style={{ ...SHELL, position: 'relative' }}>
-        <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) repeat(3, minmax(0,1fr))', gap: 'clamp(28px, 4vw, 56px)', marginBottom: 'clamp(48px, 6vw, 80px)' }}>
+        <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) repeat(3, minmax(0,1fr))', gap: 'clamp(28px, 4vw, 56px)', marginBottom: 'clamp(40px, 5vw, 64px)' }}>
           <div>
-            <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.5)', maxWidth: 300, margin: '0 0 22px' }}>
+            <p style={{ fontWeight: 800, fontSize: 28, letterSpacing: '-0.04em', margin: '0 0 14px' }}>RAG<span style={{ color: 'var(--electric)' }}>.</span></p>
+            <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', maxWidth: 320, margin: '0 0 22px' }}>
               Das einheitliche System für lokale Sichtbarkeit bei Google, KI und Offline-Kanälen.
             </p>
-            <a href={homeHref('audit-quiz')} className="btn btn-md btn-outline-dark">Sichtbarkeits-Check starten <span className="arw">→</span></a>
+            <a href={homeHref('audit-quiz')} className="btn btn-md btn-electric">Sichtbarkeits-Check starten <span className="arw">→</span></a>
           </div>
           {[
-            { title: 'Navigation', items: [['Sichtbarkeit', 'kanaele'], ['Leistungen', '/services'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], /* ['Ergebnisse', 'results'] — hidden with the results block */ ['FAQ', 'faq']] as [string, string][] },
+            { title: 'Navigation', items: [['Sichtbarkeit', 'kanaele'], ['Leistungen', '/services'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], ['FAQ', 'faq']] as [string, string][] },
           ].map(col => (
             <div key={col.title}>
-              <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>{col.title}</p>
+              <p style={{ fontWeight: 800, fontSize: 15, margin: '0 0 16px' }}>{col.title}</p>
               {col.items.map(([l, target]) => (
-                <a key={l} href={linkHref(target)} className="ul" style={{ display: 'block', width: 'fit-content', fontSize: 14, color: 'rgba(255,255,255,0.75)', marginBottom: 10 }}>{l}</a>
+                <a key={l} href={linkHref(target)} className="ul" style={linkStyle}>{l}</a>
               ))}
             </div>
           ))}
           <div>
-            <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>Rechtliches</p>
+            <p style={{ fontWeight: 800, fontSize: 15, margin: '0 0 16px' }}>Rechtliches</p>
             {['Impressum', 'Datenschutz', 'DSGVO-Konformität', 'AGB'].map(l => (
-              <a key={l} href="#" className="ul" style={{ display: 'block', width: 'fit-content', fontSize: 14, color: 'rgba(255,255,255,0.75)', marginBottom: 10 }}>{l}</a>
+              <a key={l} href="#" className="ul" style={linkStyle}>{l}</a>
             ))}
           </div>
           <div>
-            <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>Kontakt</p>
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', lineHeight: 1.9, margin: 0 }}>
+            <p style={{ fontWeight: 800, fontSize: 15, margin: '0 0 16px' }}>Kontakt</p>
+            <p style={{ fontSize: 15, color: 'var(--muted)', lineHeight: 1.9, margin: 0 }}>
               Musterstraße 12<br />10115 Berlin, Deutschland<br />
               <a href="tel:+493012345678" className="ul" style={{ color: 'inherit' }}>+49 30 12345678</a><br />
               <a href="mailto:hallo@rag-agentur.de" className="ul" style={{ color: 'inherit' }}>hallo@rag-agentur.de</a>
@@ -3356,16 +3459,9 @@ function Footer() {
           </div>
         </div>
 
-        {/* oversized wordmark */}
-        <div aria-hidden style={{ position: 'relative', lineHeight: 0.8, marginBottom: 24, overflow: 'hidden' }}>
-          <span className="display" style={{ fontSize: 'clamp(72px, 20vw, 300px)', letterSpacing: '-0.06em', display: 'block', color: '#fff' }}>
-            RAG<span style={{ color: 'var(--electric)' }}>.</span>
-          </span>
-        </div>
-
-        <div style={{ borderTop: '1px solid var(--line-dark)', paddingTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: 0 }}>© 2026 RAG, Regionale Agentur. Alle Rechte vorbehalten.</p>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: 0 }}>DSGVO-konform · Made in Deutschland</p>
+        <div style={{ borderTop: '1px solid var(--divider)', paddingTop: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+          <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>© 2026 RAG, Regionale Agentur. Alle Rechte vorbehalten.</p>
+          <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>DSGVO-konform · Made in Deutschland</p>
         </div>
       </div>
     </footer>
@@ -4153,8 +4249,8 @@ const ratgeberArticles: RatgeberArticle[] = [
 type Crumb = { label: string; href?: string }
 
 function Breadcrumbs({ items, tone = 'dark' }: { items: Crumb[]; tone?: 'dark' | 'light' }) {
-  const dim = tone === 'dark' ? 'rgba(255,255,255,0.45)' : 'rgba(7,7,12,0.45)'
-  const current = tone === 'dark' ? 'rgba(255,255,255,0.85)' : 'var(--ink)'
+  const dim = tone === 'dark' || tone === 'light' ? 'var(--muted)' : 'var(--muted)'
+  const current = 'var(--ink)'
   const origin = typeof window !== 'undefined' ? window.location.origin : ''
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -4171,7 +4267,7 @@ function Breadcrumbs({ items, tone = 'dark' }: { items: Crumb[]; tone?: 'dark' |
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <ol style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 9, listStyle: 'none', margin: 0, padding: 0 }}>
         {items.map((it, i) => (
-          <li key={it.label} style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 12.5 }}>
+          <li key={it.label} style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 13.5, fontWeight: 600 }}>
             {it.href
               ? <a href={it.href} className="ul" style={{ color: dim }}>{it.label}</a>
               : <span aria-current="page" style={{ color: current }}>{it.label}</span>}
@@ -4231,20 +4327,23 @@ function usePageMeta(title: string, description: string, ogType: 'website' | 'ar
 
 function ContentCTA() {
   return (
-    <section style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px)', position: 'relative', overflow: 'clip' }}>
-      <div aria-hidden style={{ position: 'absolute', inset: 0, opacity: 0.5 }}><CrossBackdrop tone="dark" /></div>
-      <div style={{ ...SHELL, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
-        <div style={{ maxWidth: 560 }}>
-          <h2 className="display" style={{ fontSize: 'clamp(22px, 2.6vw, 34px)', margin: '0 0 12px' }}>
-            Wie steht Ihr Unternehmen heute da?
-          </h2>
-          <p style={{ fontSize: 14.5, lineHeight: 1.75, color: 'rgba(255,255,255,0.55)', margin: 0 }}>
-            Wir prüfen kostenlos Ihre Sichtbarkeit bei Google Maps, in der Google-Suche und in der KI-Suche — und sagen Ihnen, was zuerst zu tun ist.
-          </p>
+    <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 3vw, 40px) clamp(12px, 4vw, 48px) clamp(56px, 7vw, 96px)' }}>
+      <div className="d-panel on-brand" style={{ ...SHELL, maxWidth: 1344, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(40px, 5vw, 72px) clamp(20px, 4.8vw, 72px)' }}>
+        <RingsBackdrop size={760} color="rgba(255,255,255,0.14)" style={{ right: -180, top: -260 }} />
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
+          <div style={{ maxWidth: 620 }}>
+            <p className="kick" style={{ color: '#C9C2FF', marginBottom: 14 }}>Kostenloser Sichtbarkeits-Check</p>
+            <h2 className="display" style={{ fontSize: 'clamp(26px, 3.2vw, 42px)', margin: '0 0 12px' }}>
+              Wie steht Ihr Unternehmen heute da?
+            </h2>
+            <p style={{ fontSize: 16.5, lineHeight: 1.65, color: '#DCD8FF', margin: 0 }}>
+              Wir prüfen kostenlos Ihre Sichtbarkeit bei Google Maps, in der Google-Suche und in der KI-Suche — und sagen Ihnen, was zuerst zu tun ist.
+            </p>
+          </div>
+          <a href="/#audit-quiz" className="btn btn-lg btn-on-brand" style={{ flexShrink: 0 }}>
+            Kostenlosen Sichtbarkeits-Check starten <span className="arw">→</span>
+          </a>
         </div>
-        <a href="/#audit-quiz" className="btn btn-lg btn-paper" style={{ flexShrink: 0 }}>
-          Kostenlosen Sichtbarkeits-Check starten <span className="arw">→</span>
-        </a>
       </div>
     </section>
   )
@@ -4252,14 +4351,16 @@ function ContentCTA() {
 
 function ContentHero({ kicker, title, sub, meta, crumbs }: { kicker: string; title: React.ReactNode; sub: string; meta?: string; crumbs?: Crumb[] }) {
   return (
-    <section style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(60px, 7vw, 96px)', position: 'relative', overflow: 'hidden' }}>
-      <MapBackdrop tone="dark" shift={120} />
+    <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(64px, 7vw, 104px)', position: 'relative', overflow: 'hidden' }}>
+      <MapBackdrop fade="left" shift={120} pins={false} />
+      <div className="d-hide-md" aria-hidden style={{ position: 'absolute', right: 'max(48px, calc(50% - 620px))', top: '38%' }}><PinD size={72} /></div>
+      <div className="d-hide-md" aria-hidden style={{ position: 'absolute', right: 'max(180px, calc(50% - 480px))', top: '64%' }}><PinD size={44} opacity={0.45} /></div>
       <div style={{ ...SHELL, position: 'relative' }}>
-        {crumbs && <Breadcrumbs items={crumbs} />}
-        <p className="eyebrow" style={{ color: 'var(--electric-2)', marginBottom: 22 }}>{kicker}</p>
+        {crumbs && <Breadcrumbs items={crumbs} tone="light" />}
+        <p className="kick" style={{ marginBottom: 18 }}>{kicker}</p>
         <h1 className="display h-lg" style={{ marginBottom: 22, maxWidth: 900 }}>{title}</h1>
-        <p className="lead" style={{ color: 'rgba(255,255,255,0.6)', maxWidth: 640, margin: 0 }}>{sub}</p>
-        {meta && <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.35)', margin: '20px 0 0', letterSpacing: '0.04em' }}>{meta}</p>}
+        <p className="lead" style={{ color: 'var(--muted)', maxWidth: 660, margin: 0 }}>{sub}</p>
+        {meta && <p style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--muted)', margin: '20px 0 0', letterSpacing: '0.02em' }}>{meta}</p>}
       </div>
     </section>
   )
@@ -4280,27 +4381,30 @@ function RatgeberIndex() {
         title={<>Lokale Sichtbarkeit, <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>ohne Fachchinesisch</span></>}
         sub="Die drei Fragen, die uns Inhaberinnen und Inhaber am häufigsten stellen — ausführlich beantwortet, ohne Versprechen, die niemand halten kann."
       />
-      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)' }}>
-        <div style={{ ...SHELL, borderTop: '1px solid var(--line)' }}>
-          {ratgeberArticles.map((a, i) => (
-            <a key={a.slug} href={`/ratgeber/${a.slug}`} className="row" style={{
+      <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 4vw, 56px) clamp(20px,4vw,48px) clamp(56px, 6vw, 88px)' }}>
+        <div style={{ ...SHELL, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {ratgeberArticles.map(a => (
+            <a key={a.slug} href={`/ratgeber/${a.slug}`} className="d-card d-lift" style={{
               display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
               gap: 'clamp(14px, 2vw, 40px)', alignItems: 'center',
-              padding: 'clamp(26px, 3vw, 42px) 0', borderBottom: '1px solid var(--line)',
+              padding: 'clamp(24px, 3vw, 40px)',
               textDecoration: 'none', color: 'inherit',
             }}>
-              <div>
-                <span className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)' }}>{String(i + 1).padStart(2, '0')} · {a.minutes} Min. Lesezeit</span>
-                <h2 className="display" style={{ fontSize: 'clamp(21px, 2.2vw, 30px)', lineHeight: 1.18, margin: '12px 0 0' }}>{a.title}</h2>
+              <div style={{ display: 'flex', gap: 18, alignItems: 'flex-start' }}>
+                <IconTile kind={channelKindOf(a.serviceSlug)} />
+                <div>
+                <span className="kick" style={{ fontSize: 12 }}>{a.minutes} Min. Lesezeit</span>
+                <h2 className="display" style={{ fontSize: 'clamp(21px, 2.1vw, 28px)', lineHeight: 1.2, margin: '10px 0 0' }}>{a.title}</h2>
+                </div>
               </div>
               <div>
-                <p style={{ fontSize: 14.5, lineHeight: 1.8, color: 'var(--muted)', margin: '0 0 14px' }}>{a.teaser}</p>
-                <span className="ul" style={{ fontSize: 13, fontWeight: 600, color: 'var(--electric)' }}>Artikel lesen →</span>
+                <p style={{ fontSize: 15.5, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 14px' }}>{a.teaser}</p>
+                <span className="d-link" style={{ fontSize: 14.5 }}>Artikel lesen <span className="arw">→</span></span>
               </div>
             </a>
           ))}
-          <p style={{ fontSize: 14.5, color: 'var(--muted)', marginTop: 34 }}>
-            Begriffe kurz nachschlagen? <a href="/glossar" className="ul" style={{ color: 'var(--ink)', fontWeight: 600 }}>Zum Glossar</a>
+          <p style={{ fontSize: 15.5, color: 'var(--muted)', marginTop: 18 }}>
+            Begriffe kurz nachschlagen? <a href="/glossar" className="d-link">Zum Glossar <span className="arw">→</span></a>
           </p>
         </div>
       </section>
@@ -4397,10 +4501,11 @@ function RatgeberArticlePage({ slug }: { slug: string }) {
         <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(50px, 6vw, 80px) clamp(20px,4vw,48px)' }}>
           <div style={{ ...SHELL, maxWidth: 1240 }}><div style={{ maxWidth: 760 }}>
             <Kicker>Passende Leistung</Kicker>
-            <div style={{ marginTop: 22, border: '1px solid var(--line)', borderRadius: 20, padding: 'clamp(24px, 3vw, 36px)' }}>
+            <div className="d-card" style={{ marginTop: 22, padding: 'clamp(24px, 3vw, 36px)' }}>
+              <div style={{ marginBottom: 16 }}><IconTile kind={channelKindOf(service.slug)} /></div>
               <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 28px)', margin: '0 0 10px' }}>{service.label}</h2>
               <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '0 0 22px' }}>{a.serviceNote}</p>
-              <a href={`/services/${service.slug}`} className="btn btn-md btn-ink">Zur Leistungsseite <span className="arw">→</span></a>
+              <a href={`/services/${service.slug}`} className="btn btn-md btn-electric">Zur Leistungsseite <span className="arw">→</span></a>
             </div>
             <div style={{ marginTop: 'clamp(34px, 4vw, 52px)' }}>
               <Kicker>Weiterlesen</Kicker>
@@ -4433,7 +4538,7 @@ const glossarOrigin = () => (typeof window !== 'undefined' ? window.location.ori
 
 const glossarCSS = `
 .gl-az a{transition:background-color .2s,color .2s,border-color .2s}
-.gl-az a:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.gl-az a:hover{background:var(--electric);color:#fff;border-color:var(--electric)}
 .gl-term{transition:color .2s}
 .gl-term:hover{color:var(--electric)}
 .gl-term .arw{transition:transform .25s}
@@ -4444,7 +4549,7 @@ const glossarCSS = `
 .gl-faq .gl-plus{transition:transform .25s}
 .gl-faq details[open] .gl-plus{transform:rotate(45deg)}
 .gl-card{transition:border-color .2s,transform .25s}
-.gl-card:hover{border-color:var(--ink);transform:translateY(-2px)}
+.gl-card:hover{border-color:#D6D2FF;transform:translateY(-3px);box-shadow:0 28px 70px rgba(38,0,255,.10)}
 @media (min-width: 900px){.gl-aside{position:sticky;top:110px}}
 `
 
@@ -4505,7 +4610,7 @@ function GlossarPage() {
             autoComplete="off"
             style={{
               width: '100%', maxWidth: 560, height: 54, padding: '0 20px', fontSize: 16,
-              border: '1px solid var(--line)', borderRadius: 999, background: 'var(--bone)', color: 'var(--ink)',
+              border: '1px solid var(--border)', borderRadius: 14, background: '#fff', color: 'var(--ink)', boxShadow: 'var(--shadow-float)',
             }}
           />
 
@@ -4632,7 +4737,7 @@ function GlossarTermPage({ slug }: { slug: string }) {
               {toc.map(t => (
                 <li key={t.id} style={{ borderBottom: '1px solid var(--line)' }}>
                   <a href={`#${t.id}`} className="gl-term" style={{ display: 'flex', gap: 10, padding: '11px 0', fontSize: 14, lineHeight: 1.45, color: 'var(--ink)', textDecoration: 'none' }}>
-                    <span style={{ color: 'var(--electric)', minWidth: 18 }}>{t.n}</span>
+                    <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--electric)', marginTop: 8, flexShrink: 0 }} />
                     <span>{t.label}</span>
                   </a>
                 </li>
@@ -4646,7 +4751,7 @@ function GlossarTermPage({ slug }: { slug: string }) {
             {g.sections.map((s, i) => (
               <section key={s.h} id={`abschnitt-${i + 1}`} style={{ marginBottom: 'clamp(34px, 4vw, 52px)', scrollMarginTop: 100 }}>
                 <h2 className="display" style={{ fontSize: 'clamp(21px, 2.1vw, 29px)', lineHeight: 1.22, margin: '0 0 14px' }}>
-                  <span style={{ color: 'var(--electric)', marginRight: 10 }}>{i + 1}.</span><span>{s.h}</span>
+                  <span>{s.h}</span>
                 </h2>
                 {s.p.map((t, j) => (
                   <p key={j} style={{ fontSize: 15.5, lineHeight: 1.85, color: 'var(--muted)', margin: '0 0 14px' }}>{t}</p>
@@ -4674,11 +4779,12 @@ function GlossarTermPage({ slug }: { slug: string }) {
             {service && (
               <section id="leistung" style={{ scrollMarginTop: 100 }}>
                 <Kicker>Passende Leistung</Kicker>
-                <div style={{ marginTop: 18, border: '1px solid var(--line)', borderRadius: 20, padding: 'clamp(24px, 3vw, 36px)' }}>
+                <div className="d-card" style={{ marginTop: 18, padding: 'clamp(24px, 3vw, 36px)' }}>
+                  <div style={{ marginBottom: 16 }}><IconTile kind={channelKindOf(service.slug)} /></div>
                   <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 28px)', margin: '0 0 10px' }}>{service.label}</h2>
                   <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '0 0 8px' }}>{service.sentence}</p>
                   <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 22px' }}>Wie wir das für Ihr Unternehmen umsetzen, lesen Sie auf der Leistungsseite.</p>
-                  <a href={`/services/${service.slug}`} className="btn btn-md btn-ink">Zur Leistungsseite <span className="arw">→</span></a>
+                  <a href={`/services/${service.slug}`} className="btn btn-md btn-electric">Zur Leistungsseite <span className="arw">→</span></a>
                 </div>
               </section>
             )}
@@ -4696,7 +4802,7 @@ function GlossarTermPage({ slug }: { slug: string }) {
               {related.map(r => (
                 <a key={r.slug} href={`/glossar/${r.slug}`} className="gl-card" style={{
                   display: 'flex', flexDirection: 'column', gap: 10, padding: 'clamp(20px, 2.4vw, 28px)',
-                  background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 18, textDecoration: 'none', color: 'inherit',
+                  background: 'var(--paper)', border: '1px solid var(--border)', borderRadius: 20, boxShadow: 'var(--shadow-card)', textDecoration: 'none', color: 'inherit',
                 }}>
                   <span className="display" style={{ fontSize: 18, lineHeight: 1.3 }}>{r.term}</span>
                   <span style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--muted)', flex: 1 }}>{r.short}</span>
@@ -4735,18 +4841,19 @@ function ServicesIndex() {
           url: (typeof window !== 'undefined' ? window.location.origin : '') + '/services/' + m.slug,
         })),
       }} />
-      <section style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
-        <MapBackdrop tone="dark" shift={120} />
+      <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
+        <MapBackdrop fade="left" shift={120} pins={false} />
+        <div className="d-hide-md" aria-hidden style={{ position: 'absolute', right: 'max(48px, calc(50% - 620px))', top: '36%' }}><PinD size={72} /></div>
         <div style={{ ...SHELL, position: 'relative' }}>
-          <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Leistungen' }]} />
-          <p className="eyebrow" style={{ color: 'var(--electric-2)', marginBottom: 22 }}>LEISTUNGEN</p>
+          <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Leistungen' }]} tone="light" />
+          <p className="kick" style={{ marginBottom: 18 }}>LEISTUNGEN</p>
           <h1 className="display h-lg" style={{ marginBottom: 22, maxWidth: 900 }}>
-            Woraus lokale <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>Sichtbarkeit besteht</span>
+            Woraus lokale <span className="serif italic-serif">Sichtbarkeit besteht</span>
           </h1>
-          <p className="lead" style={{ color: 'rgba(255,255,255,0.6)', maxWidth: 620, margin: '0 0 34px' }}>
+          <p className="lead" style={{ color: 'var(--muted)', maxWidth: 640, margin: '0 0 34px' }}>
             Vier Kanäle, die zusammen darüber entscheiden, ob lokale Kunden Sie finden, verstehen und Ihnen vertrauen: KI-Suche, Google Maps, Google Search und Social Media.
           </p>
-          <a href="/#audit-quiz" className="btn btn-lg btn-paper">Kostenlosen Sichtbarkeits-Check starten <span className="arw">→</span></a>
+          <a href="/#audit-quiz" className="btn btn-lg btn-electric">Kostenlosen Sichtbarkeits-Check starten <span className="arw">→</span></a>
         </div>
       </section>
 
@@ -4799,9 +4906,10 @@ function ServicePackages({ slug }: { slug: string }) {
             {cfg.items.map(id => {
               const it = priceItem(id)
               const hi = id === cfg.highlight
-              const dark = hi && id === 'aiplus'
+              const dark = false
               return (
-                <article key={id} style={{ display: 'flex', flexDirection: 'column', padding: 'clamp(22px, 2.4vw, 32px)', borderRadius: 24, backgroundColor: dark ? 'var(--ink)' : '#fff', color: dark ? '#fff' : 'var(--ink)', border: dark ? 'none' : `1px solid ${hi ? 'var(--electric)' : 'var(--line)'}` }}>
+                <article key={id} className={hi ? 'd-card' : 'd-card-flat'} style={{ display: 'flex', flexDirection: 'column', padding: 'clamp(22px, 2.4vw, 32px)', color: 'var(--ink)', border: `${hi ? 2 : 1}px solid ${hi ? 'var(--electric)' : 'var(--border)'}` }}>
+                  <div style={{ marginBottom: 16 }}><IconTile kind={id === 'profile' ? 'maps' : id === 'social' ? 'social' : id === 'aiplus' ? 'ki' : 'website'} small /></div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                     <PriceTag dark={dark}>{it.tag}</PriceTag>
                     {hi && !single && <span className="eyebrow" style={{ fontSize: 9.5, color: dark ? 'var(--electric-2)' : 'var(--electric)' }}>Passt hierzu</span>}
@@ -4831,11 +4939,19 @@ function ServicePackages({ slug }: { slug: string }) {
               Kombinierbar mit: Google-Profil schlüsselfertig (149 € einmalig) · One Pager (30 €/Monat) · Local Website (299 €/Monat) · AI Plus (499 €/Monat).
             </p>
           )}
-          <a href="/preise" className="ul" style={{ display: 'inline-block', marginTop: 18, fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>Alle Pakete und Preise <span aria-hidden style={{ color: 'var(--electric)' }}>→</span></a>
+          <a href="/preise" className="d-link" style={{ display: 'inline-block', marginTop: 20, fontSize: 15 }}>Alle Pakete und Preise <span className="arw">→</span></a>
         </div>
       </section>
     </>
   )
+}
+
+// Beschriftung des Check-Buttons im Hero je Leistungsseite — das Formular ist überall dasselbe (/check).
+const SERVICE_CHECK_BUTTON: Record<string, string> = {
+  'google-maps-business-profile': 'Google-Profil prüfen',
+  'website-google-search': 'Website prüfen',
+  'ai-search-optimization': 'KI-Sichtbarkeit prüfen',
+  'social-media': 'Social Media prüfen',
 }
 
 function ServicePage({ slug }: { slug: string }) {
@@ -4889,31 +5005,49 @@ function ServicePage({ slug }: { slug: string }) {
           acceptedAnswer: { '@type': 'Answer', text: f.a },
         })),
       }} />
-      <section style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
-        <MapBackdrop tone="dark" shift={120} />
+      <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
+        <MapBackdrop fade="left" shift={120} pins={false} />
+        <div className="d-hide-md" aria-hidden style={{ position: 'absolute', left: 'max(24px, calc(50% - 700px))', bottom: '10%' }}><PinD size={44} opacity={0.45} /></div>
         <div style={{ ...SHELL, position: 'relative' }}>
-          <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Leistungen', href: '/services' }, { label: modules.find(m => m.slug === slug)?.label ?? data.heroTitle }]} />
-          <h1 className="display h-lg" style={{ marginBottom: 22, maxWidth: 900 }}>{data.heroTitle}</h1>
-          <p className="lead" style={{ color: 'rgba(255,255,255,0.6)', maxWidth: 620, margin: '0 0 34px' }}>{data.heroSubtitle}</p>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <a href="#get-audit" className="btn btn-lg btn-paper">{data.ctaTitle} <span className="arw">→</span></a>
-            {SERVICE_PACKAGES[slug] && <a href="#pakete" className="btn btn-lg btn-outline-dark">Pakete & Preise <span className="arw">→</span></a>}
+          <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Leistungen', href: '/services' }, { label: modules.find(m => m.slug === slug)?.label ?? data.heroTitle }]} tone="light" />
+          {/* Hero mit Check-Formular rechts (Wunsch des Kunden 29.09) — ersetzt den Block #get-audit weiter unten. */}
+          <div className="svc-hero" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 0.9fr)', gap: 'clamp(32px, 5vw, 72px)', alignItems: 'center' }}>
+            <div>
+              <div style={{ marginBottom: 20 }}><Kicker icon={channelKindOf(slug)}>{modules.find(m => m.slug === slug)?.label ?? data.kicker}</Kicker></div>
+              <h1 className="display h-lg" style={{ marginBottom: 22, maxWidth: 720 }}>{data.heroTitle}</h1>
+              <p className="lead" style={{ color: 'var(--muted)', maxWidth: 600, margin: '0 0 26px' }}>{data.heroSubtitle}</p>
+              {SERVICE_PACKAGES[slug] && <a href="#pakete" className="d-link" style={{ fontSize: 15.5 }}>Pakete & Preise ansehen <span className="arw">→</span></a>}
+            </div>
+            <div style={{ position: 'relative' }}>
+              <RingsBackdrop size={560} style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
+              <div className="d-card" style={{ position: 'relative', zIndex: 5, padding: 'clamp(24px, 3vw, 36px)' }}>
+                <p className="kick" style={{ fontSize: 12, marginBottom: 12 }}>Kostenlos · unverbindlich</p>
+                <h2 className="display" style={{ fontSize: 'clamp(22px, 2.2vw, 28px)', lineHeight: 1.15, margin: '0 0 10px' }}>{data.ctaTitle}</h2>
+                <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 20px' }}>{data.ctaBody}</p>
+                <CompanySearch variant="plain" buttonLabel={SERVICE_CHECK_BUTTON[slug]} />
+                <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--muted)', margin: '16px 0 0' }}>
+                  Ihr Unternehmen ist noch nicht bei Google?{' '}
+                  <a href="/#maps" className="d-link">Wir erstellen Ihr Google-Profil <span className="arw">→</span></a>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
+        <style>{`@media (max-width: 900px) { .svc-hero { grid-template-columns: minmax(0, 1fr) !important; } }`}</style>
       </section>
 
       <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px)' }}>
         <div style={{ ...SHELL, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(28px, 4vw, 64px)', alignItems: 'start' }}>
           <div className="svc-rail" style={{ position: 'sticky', top: 96 }}>
-            <div style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: 'var(--bone)', marginBottom: 26 }}><data.Illust /></div>
+            <div className="d-card-flat" style={{ overflow: 'hidden', backgroundColor: 'var(--bone)', marginBottom: 20 }}><data.Illust /></div>
 
-            <div style={{ backgroundColor: '#f2f2ff', border: '1px solid #ddd6fe', borderRadius: 16, padding: '28px 26px' }}>
-              <h2 className="display" style={{ fontSize: 18, marginBottom: 14 }}>{data.receiveTitle}</h2>
+            <div className="d-card" style={{ padding: '28px 26px' }}>
+              <h2 className="display" style={{ fontSize: 19, marginBottom: 16 }}>{data.receiveTitle}</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {data.receiveItems.map(item => (
                   <div key={item} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginTop: 2, flexShrink: 0 }}><circle cx="8" cy="8" r="8" fill="#2600FF" /><path d="M4.5 8l2.5 2.5 4.5-5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                    <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>{item}</p>
+                    {checkIcon()}
+                    <p style={{ fontSize: 14.5, color: 'var(--ink)', lineHeight: 1.6, margin: 0 }}>{item}</p>
                   </div>
                 ))}
               </div>
@@ -4922,35 +5056,35 @@ function ServicePage({ slug }: { slug: string }) {
 
           <div style={{ maxWidth: 680 }}>
           <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 26px)', marginBottom: 12 }}>{data.whatTitle}</h2>
-          <p style={{ fontSize: 15, color: '#4b5563', lineHeight: 1.75, marginBottom: 40 }}>{data.whatBody}</p>
+          <p style={{ fontSize: 16, color: 'var(--muted)', lineHeight: 1.75, marginBottom: 44 }}>{data.whatBody}</p>
 
           <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 26px)', marginBottom: 20 }}>{data.howTitle}</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18, marginBottom: 40 }}>
             {data.howItems.map(item => (
               <div key={item.title} style={{ display: 'flex', gap: 14 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#2600FF', marginTop: 8, flexShrink: 0 }} />
+                {checkIcon()}
                 <div>
-                  <p style={{ fontWeight: 700, fontSize: 14, color: '#030712', margin: '0 0 3px' }}>{item.title}</p>
-                  <p style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.65, margin: 0 }}>{item.body}</p>
+                  <p style={{ fontWeight: 800, fontSize: 15.5, color: 'var(--ink)', margin: '2px 0 4px' }}>{item.title}</p>
+                  <p style={{ fontSize: 15, color: 'var(--muted)', lineHeight: 1.65, margin: 0 }}>{item.body}</p>
                 </div>
               </div>
             ))}
           </div>
 
           <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 26px)', marginBottom: 12 }}>{data.whyTitle}</h2>
-          <p style={{ fontSize: 15, color: '#4b5563', lineHeight: 1.75, marginBottom: 40 }}>{data.whyBody}</p>
+          <p style={{ fontSize: 16, color: 'var(--muted)', lineHeight: 1.75, marginBottom: 44 }}>{data.whyBody}</p>
 
           <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 26px)', marginBottom: 16 }}>Häufig gestellte Fragen</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {data.faq.map((item, i) => (
-              <div key={i} style={{ backgroundColor: '#f9fafb', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+              <div key={i} className={faqOpen === i ? 'd-card' : 'd-card-flat'} style={{ borderRadius: 16, overflow: 'hidden' }}>
                 <button onClick={() => setFaqOpen(faqOpen === i ? null : i)}
                   style={{ width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', gap: 16, fontFamily: 'inherit' }}>
-                  <span style={{ fontWeight: 600, fontSize: 14, color: '#030712' }}>{item.q}</span>
+                  <span style={{ fontWeight: 800, fontSize: 15.5, color: faqOpen === i ? 'var(--electric)' : 'var(--ink)' }}>{item.q}</span>
                   <IconChevron open={faqOpen === i} />
                 </button>
                 <div style={{ overflow: 'hidden', maxHeight: faqOpen === i ? 300 : 0, transition: 'max-height 0.3s ease' }}>
-                  <p style={{ margin: 0, padding: '0 20px 16px', fontSize: 13.5, color: '#4b5563', lineHeight: 1.7 }}>{item.a}</p>
+                  <p style={{ margin: 0, padding: '0 20px 18px', fontSize: 15, color: 'var(--muted)', lineHeight: 1.7 }}>{item.a}</p>
                 </div>
               </div>
             ))}
@@ -4961,43 +5095,22 @@ function ServicePage({ slug }: { slug: string }) {
 
       <ServicePackages slug={slug} />
 
-      <section id="get-audit" style={{ backgroundColor: 'var(--paper)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px)' }}>
-        <div style={{ ...SHELL, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(28px, 4vw, 64px)', alignItems: 'center' }}>
-          <div>
-            <Kicker>Sichtbarkeits-Check</Kicker>
-            <h2 className="display" style={{ fontSize: 'clamp(22px, 2.6vw, 34px)', margin: '20px 0 12px', maxWidth: 460 }}>{data.ctaTitle}</h2>
-            <p style={{ fontSize: 15, color: 'var(--muted)', lineHeight: 1.8, margin: 0, maxWidth: 460 }}>{data.ctaBody}</p>
-          </div>
-          {/* Statt Kontaktformular (bis 25.09): derselbe Check wie auf der Startseite → /check */}
-          <div style={{ position: 'relative', zIndex: 5, backgroundColor: '#fff', border: '1px solid var(--line)', borderRadius: 24, padding: 'clamp(22px, 3vw, 30px) clamp(18px, 3vw, 28px)', boxShadow: '0 20px 50px rgba(7,7,12,0.07)' }}>
-            <p className="eyebrow" style={{ fontSize: 10, color: 'var(--electric)', marginBottom: 10 }}>Schritt 1 · Unternehmen finden</p>
-            <p style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 16px' }}>Geben Sie den Namen oder die Adresse Ihres Unternehmens ein. Danach bestätigen Sie Website und Profile — der Check ist kostenlos.</p>
-            <CompanySearch variant="plain" />
-            <p style={{ fontSize: 13.5, lineHeight: 1.6, color: 'var(--muted)', margin: '16px 0 0' }}>
-              Ihr Unternehmen ist noch nicht bei Google?{' '}
-              <a href="/#maps" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>Wir erstellen Ihr Google-Profil →</a>
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)' }}>
+      <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)' }}>
         <div style={{ ...SHELL }}>
           <Kicker>Weitere Leistungen</Kicker>
           <h2 className="display" style={{ fontSize: 'clamp(20px, 2.2vw, 28px)', margin: '20px 0 8px' }}>Lokale Sichtbarkeit entsteht selten aus einem einzigen Kanal</h2>
           <p style={{ fontSize: 14.5, color: 'var(--muted)', lineHeight: 1.75, marginBottom: 32, maxWidth: 560 }}>Die meisten Unternehmen brauchen mehrere Bereiche, die zusammenspielen. Hier ist der Rest des Systems.</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: 16 }}>
             {others.map(m => (
-              <a key={m.slug} href={`/services/${m.slug}`} style={{ display: 'block', backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 14, padding: '18px', textDecoration: 'none', transition: 'border-color 0.15s' }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = '#2600FF')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = '#e5e7eb')}>
-                <p style={{ fontWeight: 700, fontSize: 14, color: '#030712', margin: '0 0 4px' }}>{m.label}</p>
-                <p style={{ fontSize: 12.5, color: '#4b5563', margin: 0, lineHeight: 1.5 }}>{m.sentence}</p>
+              <a key={m.slug} href={`/services/${m.slug}`} className="d-card d-lift" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '24px', textDecoration: 'none' }}>
+                <IconTile kind={channelKindOf(m.slug)} small />
+                <p style={{ fontWeight: 800, fontSize: 17, color: 'var(--ink)', margin: 0 }}>{m.label}</p>
+                <p style={{ fontSize: 14.5, color: 'var(--muted)', margin: 0, lineHeight: 1.55 }}>{m.sentence}</p>
               </a>
             ))}
           </div>
           <div style={{ marginTop: 28 }}>
-            <a href="/services" className="ul" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--electric)' }}>Alle Leistungen mit Details ansehen →</a>
+            <a href="/services" className="d-link" style={{ fontSize: 15 }}>Alle Leistungen mit Details ansehen <span className="arw">→</span></a>
           </div>
         </div>
       </section>
@@ -5044,7 +5157,7 @@ const responsiveCSS = `
   .nav-links { gap: 20px !important; }
 }
 
-:root { --sec-y: clamp(64px, 7vw, 96px); }
+:root { --sec-y: clamp(72px, 8.4vw, 120px); }
 
 /* Startseite: Kanal-Karten und Kanalblöcke (21.09) */
 .chan-card {
@@ -5053,9 +5166,16 @@ const responsiveCSS = `
   background: var(--paper); color: inherit; text-decoration: none;
   transition: border-color .25s ease, transform .3s ease, box-shadow .3s ease;
 }
-.chan-card:hover { border-color: var(--electric); transform: translateY(-3px); box-shadow: 0 20px 40px rgba(38,0,255,0.08); }
-.chan-num { font-size: 13px; color: var(--electric); letter-spacing: .08em; }
-.chan-more { font-size: 13.5px; font-weight: 600; color: var(--electric); margin-top: 6px; }
+.chan-card { padding: clamp(24px, 2.4vw, 32px); border-radius: 24px; gap: 14px; }
+.chan-num { display: none; }
+.chan-more { font-size: 14.5px; font-weight: 700; color: var(--electric); margin-top: 6px; }
+@media (max-width: 900px) {
+  .hub { min-height: 0 !important; }
+  .hub-center { position: relative !important; left: auto !important; top: auto !important; transform: none !important; margin: 0 auto 20px; width: 140px !important; height: 140px !important; }
+  .hub-grid { grid-template-columns: minmax(0,1fr) !important; row-gap: 12px !important; min-height: 0 !important; padding-top: 0 !important; }
+  .hub-grid > div { grid-column: 1 !important; grid-row: auto !important; }
+  .social-card { transform: none !important; }
+}
 .chan-arrow { display: inline-block; transition: transform .25s ease; }
 .chan-card:hover .chan-arrow { transform: translateY(3px); }
 .chan-article:hover .chan-arrow { transform: translateX(4px); }
@@ -5346,15 +5466,16 @@ function NotFoundPage() {
   return (
     <>
       <Nav />
-      <main id="inhalt" style={{ backgroundColor: 'var(--ink)', color: '#fff', minHeight: '70vh', padding: '180px clamp(20px,4vw,48px) 120px' }}>
-        <div style={{ ...SHELL }}>
-          <p className="eyebrow" style={{ color: 'var(--electric-2)', marginBottom: 18 }}>404</p>
+      <main id="inhalt" style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'var(--bone)', color: 'var(--ink)', minHeight: '70vh', padding: '180px clamp(20px,4vw,48px) 120px' }}>
+        <MapBackdrop fade="left" pins={false} />
+        <div style={{ ...SHELL, position: 'relative' }}>
+          <p className="kick" style={{ marginBottom: 18 }}>404</p>
           <h1 className="display h-lg" style={{ margin: '0 0 18px' }}>Seite nicht gefunden</h1>
-          <p className="lead" style={{ color: 'rgba(255,255,255,0.7)', maxWidth: 520, margin: '0 0 32px' }}>Diese Adresse gibt es nicht oder nicht mehr. Hier geht es weiter:</p>
+          <p className="lead" style={{ color: 'var(--muted)', maxWidth: 520, margin: '0 0 32px' }}>Diese Adresse gibt es nicht oder nicht mehr. Hier geht es weiter:</p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <a href="/" className="btn btn-md btn-paper">Zur Startseite <span className="arw">→</span></a>
-            <a href="/services" className="btn btn-md btn-outline-dark">Leistungen</a>
-            <a href="/ratgeber" className="btn btn-md btn-outline-dark">Ratgeber</a>
+            <a href="/" className="btn btn-md btn-electric">Zur Startseite <span className="arw">→</span></a>
+            <a href="/services" className="btn btn-md btn-paper">Leistungen</a>
+            <a href="/ratgeber" className="btn btn-md btn-paper">Ratgeber</a>
           </div>
         </div>
       </main>

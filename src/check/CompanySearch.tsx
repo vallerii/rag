@@ -14,8 +14,10 @@ export function goToCheck(params: { place?: string; q?: string }) {
   window.location.href = `/check?${sp.toString()}`
 }
 
-export default function CompanySearch({ variant = 'hero', initial = '', autoFocus = false, onSubmitQuery }: {
+export default function CompanySearch({ variant = 'hero', initial = '', autoFocus = false, onSubmitQuery, buttonLabel = 'Mein Unternehmen finden' }: {
   variant?: 'hero' | 'plain'
+  /** Text des Buttons, z. B. je Leistungsseite anders */
+  buttonLabel?: string
   initial?: string
   autoFocus?: boolean
   /** Ohne Angabe: Weiterleitung nach /check?q=… */
@@ -32,12 +34,12 @@ export default function CompanySearch({ variant = 'hero', initial = '', autoFocu
   }
   return (
     <form onSubmit={submit} className="bc-form" role="search"
-      style={{ display: 'flex', gap: 8, maxWidth: hero ? 560 : undefined, backgroundColor: '#fff', borderRadius: 999, padding: 6, border: hero ? 'none' : '1px solid var(--line)' }}>
+      style={{ display: 'flex', gap: 8, maxWidth: hero ? 580 : undefined, backgroundColor: '#fff', borderRadius: 16, padding: 6, border: hero ? 'none' : '1px solid var(--border)', boxShadow: hero ? '0 12px 30px rgba(11,11,26,.18)' : 'var(--shadow-float)' }}>
       <label htmlFor={`cs-${variant}`} style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>Unternehmen in Google finden</label>
       <input id={`cs-${variant}`} value={query} autoFocus={autoFocus} onChange={e => setQuery(e.target.value)}
         placeholder="Unternehmen in Google finden" autoComplete="organization" enterKeyHint="search"
         style={{ flex: 1, minWidth: 0, border: 0, outline: 'none', background: 'transparent', fontSize: 15, fontFamily: 'inherit', color: 'var(--ink)', padding: '0 18px' }} />
-      <button type="submit" className={`btn btn-md ${hero ? 'btn-ink' : 'btn-electric'}`} style={{ flexShrink: 0 }}>Mein Unternehmen finden</button>
+      <button type="submit" className={`btn btn-md ${hero ? 'btn-ink' : 'btn-electric'}`} style={{ flexShrink: 0 }}>{buttonLabel}</button>
     </form>
   )
 }
