@@ -50,16 +50,16 @@ export const SOURCE_LABELS: Record<SourceKey, string> = {
 }
 export const SOURCE_ORDER: SourceKey[] = ['website', 'instagram', 'facebook', 'linkedin', 'tiktok']
 
-// ── Beispieldaten (erfundene Betriebe in Siegen) ───────────────────────────────
+// ── Beispieldaten (erfundene Betriebe in DACH) ─────────────────────────────────
 const DEMO_PLACES: Place[] = [
-  { id: 'demo-1', name: 'Schneider Dachtechnik GmbH', address: 'Sandstraße 48, 57072 Siegen', city: 'Siegen', category: 'Dachdecker', rating: 4.7, reviews: 38, website: 'schneider-dachtechnik.de', phone: '0271 123450', mapsUrl: '' },
-  { id: 'demo-2', name: 'Elektro Becker', address: 'Weidenauer Straße 120, 57076 Siegen', city: 'Siegen', category: 'Elektriker', rating: 4.9, reviews: 112, website: 'elektro-becker-siegen.de', phone: '0271 223344', mapsUrl: '' },
-  { id: 'demo-3', name: 'Friseursalon Haarwerk', address: 'Kölner Straße 22, 57072 Siegen', city: 'Siegen', category: 'Friseur', rating: 4.6, reviews: 214, website: 'haarwerk-siegen.de', phone: '0271 998877', mapsUrl: '' },
-  { id: 'demo-4', name: 'Malerbetrieb Klein & Sohn', address: 'Hagener Straße 70, 57072 Siegen', city: 'Siegen', category: 'Malerbetrieb', rating: 4.4, reviews: 27, website: null, phone: '0271 445566', mapsUrl: '' },
-  { id: 'demo-5', name: 'Physiotherapie am Obergraben', address: 'Obergraben 5, 57072 Siegen', city: 'Siegen', category: 'Physiotherapeut', rating: 4.8, reviews: 96, website: 'physio-obergraben.de', phone: '0271 556677', mapsUrl: '' },
-  { id: 'demo-6', name: 'Autowerkstatt Weber', address: 'Leimbachstraße 200, 57074 Siegen', city: 'Siegen', category: 'Autowerkstatt', rating: 4.3, reviews: 151, website: 'kfz-weber-siegen.de', phone: '0271 667788', mapsUrl: '' },
-  { id: 'demo-7', name: 'Sanitär Hoffmann', address: 'Freudenberger Straße 300, 57072 Siegen', city: 'Siegen', category: 'Sanitärinstallateur', rating: 4.5, reviews: 64, website: 'sanitaer-hoffmann.de', phone: '0271 778899', mapsUrl: '' },
-  { id: 'demo-8', name: 'Gartenbau Siegerland', address: 'Netphener Straße 15, 57223 Kreuztal', city: 'Kreuztal', category: 'Garten- und Landschaftsbau', rating: 4.9, reviews: 41, website: 'gartenbau-siegerland.de', phone: '02732 12345', mapsUrl: '' },
+  { id: 'demo-1', name: 'Schneider Dachtechnik GmbH', address: 'Eppendorfer Weg 48, 20259 Hamburg', city: 'Hamburg', category: 'Dachdecker', rating: 4.7, reviews: 38, website: 'schneider-dachtechnik.de', phone: '040 1234500', mapsUrl: '' },
+  { id: 'demo-2', name: 'Elektro Becker', address: 'Leopoldstraße 120, 80802 München', city: 'München', category: 'Elektriker', rating: 4.9, reviews: 112, website: 'elektro-becker-muenchen.de', phone: '089 2233440', mapsUrl: '' },
+  { id: 'demo-3', name: 'Friseursalon Haarwerk', address: 'Mariahilfer Straße 22, 1070 Wien', city: 'Wien', category: 'Friseur', rating: 4.6, reviews: 214, website: 'haarwerk-wien.at', phone: '+43 1 9988770', mapsUrl: '' },
+  { id: 'demo-4', name: 'Malerbetrieb Klein & Sohn', address: 'Badenerstrasse 70, 8004 Zürich', city: 'Zürich', category: 'Malerbetrieb', rating: 4.4, reviews: 27, website: null, phone: '+41 44 4455660', mapsUrl: '' },
+  { id: 'demo-5', name: 'Physiotherapie am Ring', address: 'Hohenzollernring 5, 50672 Köln', city: 'Köln', category: 'Physiotherapeut', rating: 4.8, reviews: 96, website: 'physio-am-ring.de', phone: '0221 5566770', mapsUrl: '' },
+  { id: 'demo-6', name: 'Autowerkstatt Weber', address: 'Kärntner Straße 200, 8020 Graz', city: 'Graz', category: 'Autowerkstatt', rating: 4.3, reviews: 151, website: 'kfz-weber-graz.at', phone: '+43 316 667788', mapsUrl: '' },
+  { id: 'demo-7', name: 'Sanitär Hoffmann', address: 'Freiburgerstrasse 30, 4057 Basel', city: 'Basel', category: 'Sanitärinstallateur', rating: 4.5, reviews: 64, website: 'sanitaer-hoffmann.ch', phone: '+41 61 7788990', mapsUrl: '' },
+  { id: 'demo-8', name: 'Gartenbau Alpenland', address: 'Amraser Straße 15, 6020 Innsbruck', city: 'Innsbruck', category: 'Garten- und Landschaftsbau', rating: 4.9, reviews: 41, website: 'gartenbau-alpenland.at', phone: '+43 512 123450', mapsUrl: '' },
 ]
 
 const wait = (ms: number) => new Promise(r => setTimeout(r, ms))
@@ -68,7 +68,7 @@ const norm = (s: string) => s.toLocaleLowerCase('de-DE').replace(/\s+/g, ' ').tr
 /** Ergebnis ohne Treffer in den Beispieldaten: aus der Eingabe gebautes Unternehmen. */
 function syntheticPlace(query: string): Place {
   const name = query.trim().replace(/\s+/g, ' ')
-  return { id: 'demo-q:' + encodeURIComponent(name), name, address: 'Siegen, Deutschland', city: 'Siegen', category: 'Unternehmen', rating: null, reviews: 0, website: null, phone: null, mapsUrl: '' }
+  return { id: 'demo-q:' + encodeURIComponent(name), name, address: 'Berlin, Deutschland', city: 'Berlin', category: 'Unternehmen', rating: null, reviews: 0, website: null, phone: null, mapsUrl: '' }
 }
 
 function toSuggestion(p: Place): Suggestion {

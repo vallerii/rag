@@ -236,7 +236,7 @@ export default function CheckPage() {
                   </>
                 )}
                 {!searching && results && results.length === 0 && (
-                  <p style={{ fontSize: 15, lineHeight: 1.7, margin: 0 }}>Dazu haben wir nichts gefunden. Versuchen Sie es mit dem Namen und dem Ort, z. B. «Elektro Becker Siegen».</p>
+                  <p style={{ fontSize: 15, lineHeight: 1.7, margin: 0 }}>Dazu haben wir nichts gefunden. Versuchen Sie es mit dem Namen und dem Ort, z. B. «Elektro Becker München».</p>
                 )}
               </div>
               <p style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--muted)', margin: '26px 0 0' }}>

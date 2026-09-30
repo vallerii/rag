@@ -1584,7 +1584,7 @@ function Hero() {
         <div className="d-hide-md hero-float" aria-hidden style={{ position: 'absolute', left: 'max(24px, calc(50% - 680px))', top: '58%', width: 230, zIndex: 1 }}>
           <div className="d-float floaty" style={{ padding: '14px 16px', fontSize: 13.5, lineHeight: 1.5 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, fontWeight: 800, color: 'var(--electric)' }}><ChannelIcon kind="ki" size={16} />ChatGPT empfiehlt</span>
-            „Muster Elektrotechnik in Siegen — schnell, zuverlässig, mit Notdienst.“
+            „Muster Elektrotechnik in München — schnell, zuverlässig, mit Notdienst.“
           </div>
         </div>
         <div className="d-hide-md hero-float" aria-hidden style={{ position: 'absolute', right: 'max(24px, calc(50% - 680px))', top: '50%', width: 230, zIndex: 1 }}>
@@ -1593,7 +1593,7 @@ function Hero() {
               <span style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'var(--electric)', color: '#fff', display: 'grid', placeItems: 'center', fontWeight: 800, flexShrink: 0 }}>M</span>
               <span>
                 <span style={{ display: 'block', fontSize: 14, fontWeight: 800 }}>Muster Elektrotechnik</span>
-                <span style={{ fontSize: 12.5, color: 'var(--muted)' }}><span style={{ color: '#E9A100' }}>★★★★★</span> 5,0 · Siegen</span>
+                <span style={{ fontSize: 12.5, color: 'var(--muted)' }}><span style={{ color: '#E9A100' }}>★★★★★</span> 5,0 · München</span>
               </span>
             </span>
           </div>
@@ -1790,11 +1790,11 @@ function ChannelAI() {
           <div aria-hidden className="d-card d-hide-md" style={{ position: 'absolute', inset: '44px -8px 0 28px', transform: 'rotate(-2deg)', opacity: 0.55 }} />
           <div className="d-card" style={{ position: 'relative', padding: 'clamp(22px, 2.6vw, 30px)', display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ alignSelf: 'flex-end', maxWidth: 340, backgroundColor: 'var(--ink)', color: '#fff', borderRadius: '18px 18px 4px 18px', padding: '13px 17px', fontSize: 15, lineHeight: 1.5 }}>
-              Welcher Elektriker in Siegen ist zuverlässig und hat einen Notdienst?
+              Welcher Elektriker in Wien ist zuverlässig und hat einen Notdienst?
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
               <IconTile kind="ki" small />
-              <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6 }}>In Siegen wird häufig <strong>Muster Elektrotechnik</strong> empfohlen: Installation, Smart Home und Notdienst, sehr gute Bewertungen bei Google.</p>
+              <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6 }}>In Wien wird häufig <strong>Muster Elektrotechnik</strong> empfohlen: Installation, Smart Home und Notdienst, sehr gute Bewertungen bei Google.</p>
             </div>
             <div style={{ borderTop: '1px solid var(--divider)', paddingTop: 14 }}>
               <p className="eyebrow" style={{ color: 'var(--muted)', fontSize: 11.5, marginBottom: 10 }}>Die KI muss verstehen</p>
@@ -1886,7 +1886,7 @@ function ChannelSearch() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 'clamp(16px, 2vw, 22px) clamp(18px, 2.4vw, 28px)', borderBottom: '1px solid var(--divider)' }}>
                 <GLogo />
                 <span style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '11px 18px', borderRadius: 999, border: '1px solid var(--border)', fontSize: 15, color: 'var(--ink)' }}>
-                  Elektriker in Siegen
+                  Elektriker in Zürich
                   <ChannelIcon kind="search" size={17} />
                 </span>
               </div>
@@ -1900,7 +1900,7 @@ function ChannelSearch() {
                       muster-elektro.de › leistungen
                     </span>
                   </div>
-                  <p style={{ fontSize: 'clamp(17px, 1.5vw, 19px)', lineHeight: 1.3, color: 'var(--electric)', margin: '0 0 6px', fontWeight: 800 }}>Elektriker in Siegen — Installation, Smart Home & Notdienst</p>
+                  <p style={{ fontSize: 'clamp(17px, 1.5vw, 19px)', lineHeight: 1.3, color: 'var(--electric)', margin: '0 0 6px', fontWeight: 800 }}>Elektriker in Zürich — Installation, Smart Home & Notdienst</p>
                   <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--muted)', margin: '0 0 12px' }}>Was wir tun, wo wir arbeiten und welche Projekte wir in der Region umgesetzt haben — klar erklärt.</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {['Leistungen', 'Region', 'Referenzen', 'Kontakt'].map(t => (
@@ -3585,7 +3585,7 @@ const servicePages: ServicePageData[] = [
       { q: 'In welchem Paket ist das enthalten?', a: 'Im Paket AI Plus für 499 € im Monat: Website, erweiterte Optimierung des Google-Profils, Verzeichnisse, Inhalte für Google und die KI-Suche sowie Monitoring und Empfehlungen.' },
     ],
     ctaTitle: 'Kostenloser Check Ihrer KI-Sichtbarkeit',
-    ctaBody: 'Wir sehen nach, wie ChatGPT, Perplexity und Google Ihr Unternehmen aktuell darstellen, und zeigen, was Sie zuerst verbessern sollten.',
+    ctaBody: 'Wir sagen Ihnen, was Sie zuerst verbessern sollten.',
   },
   {
     slug: 'reviews',
@@ -3797,7 +3797,7 @@ const glossarEntries: GlossarEntry[] = [
     sections: [
       { h: "Was ist lokale Sichtbarkeit?", p: [
         "Lokale Sichtbarkeit ist kein einzelner Kanal, sondern die Summe aus Google-Unternehmensprofil, Website, Bewertungen, Verzeichniseinträgen, sozialen Netzwerken und dem, was KI-Systeme über Sie wiedergeben. Sie entscheidet darüber, ob ein kaufbereiter Kunde Sie überhaupt zu Gesicht bekommt.",
-        "Gemessen wird sie nicht an einer einzigen Position, sondern daran, wie oft und wie überzeugend Ihr Unternehmen bei den Suchanfragen erscheint, die in Ihrem Einzugsgebiet tatsächlich gestellt werden — „Elektriker Siegen“, „Zahnarzt in der Nähe“, „wer repariert Rollläden“.",
+        "Gemessen wird sie nicht an einer einzigen Position, sondern daran, wie oft und wie überzeugend Ihr Unternehmen bei den Suchanfragen erscheint, die in Ihrem Einzugsgebiet tatsächlich gestellt werden — „Elektriker Hamburg“, „Zahnarzt in der Nähe“, „wer repariert Rollläden“.",
       ] },
       { h: "Woraus lokale Sichtbarkeit besteht", p: [
         "Die wichtigsten Bausteine sind das Google-Unternehmensprofil, eine Website mit einer eigenen Seite je Leistung und Region, aktuelle Bewertungen, einheitliche Einträge in Verzeichnissen sowie Inhalte, die KI-Systeme verlässlich auslesen können.",
@@ -3953,7 +3953,7 @@ const glossarEntries: GlossarEntry[] = [
         "„Was kostet eine Heizungswartung\" und „Heizungsnotdienst in meiner Nähe\" sind zwei völlig verschiedene Situationen. Inhalte funktionieren dann, wenn sie zur Absicht passen: Ratgeber und Glossar bedienen die Recherche, Leistungs- und Regionenseiten die Entscheidung.",
       ] },
       { h: "Die drei typischen Absichten", p: [
-        "Informieren: Der Kunde will ein Problem verstehen („warum tropft der Heizkörper“). Vergleichen: Er sucht Optionen und Preise („Heizungswartung Kosten Siegen“). Handeln: Er will jetzt einen Anbieter („Heizungsnotdienst in meiner Nähe“).",
+        "Informieren: Der Kunde will ein Problem verstehen („warum tropft der Heizkörper“). Vergleichen: Er sucht Optionen und Preise („Heizungswartung Kosten Graz“). Handeln: Er will jetzt einen Anbieter („Heizungsnotdienst in meiner Nähe“).",
       ] },
       { h: "Was das für Ihre Website bedeutet", p: [
         "Jede Absicht braucht eine passende Seite: Ratgeber-Inhalte für Fragen, Leistungs- und Preisseiten für den Vergleich und klare Regionen- und Kontaktseiten mit Telefonnummer für die Entscheidung.",
@@ -4104,7 +4104,7 @@ const ratgeberArticles: RatgeberArticle[] = [
     title: 'Wie funktioniert lokales SEO?',
     teaser: 'Warum lokale Ergebnisse anders zustande kommen als normale Suchergebnisse — und woran Sie tatsächlich arbeiten können.',
     minutes: 6,
-    intro: 'Lokales SEO ist die Arbeit daran, bei Suchanfragen mit örtlichem Bezug gefunden zu werden: „Zahnarzt in der Nähe", „Heizung reparieren Siegen", „bestes Café Innenstadt". Diese Ergebnisse funktionieren nach anderen Regeln als eine gewöhnliche Websuche.',
+    intro: 'Lokales SEO ist die Arbeit daran, bei Suchanfragen mit örtlichem Bezug gefunden zu werden: „Zahnarzt in der Nähe", „Heizung reparieren Köln", „bestes Café Innenstadt". Diese Ergebnisse funktionieren nach anderen Regeln als eine gewöhnliche Websuche.',
     sections: [
       {
         h: 'Der Unterschied zur klassischen Suche',
@@ -4210,7 +4210,7 @@ const ratgeberArticles: RatgeberArticle[] = [
       {
         h: 'Klare Inhalte statt Werbesprache',
         p: [
-          'Ein Sprachmodell kann nur wiedergeben, was eindeutig formuliert ist. „Ganzheitliche Lösungen für Ihren Erfolg" ist für ein KI-System wertlos. „Wir reparieren Gasheizungen in Siegen und im Umkreis von 30 Kilometern, Notdienst rund um die Uhr" ist eine Aussage, die zitiert werden kann.',
+          'Ein Sprachmodell kann nur wiedergeben, was eindeutig formuliert ist. „Ganzheitliche Lösungen für Ihren Erfolg" ist für ein KI-System wertlos. „Wir reparieren Gasheizungen in Basel und im Umkreis von 30 Kilometern, Notdienst rund um die Uhr" ist eine Aussage, die zitiert werden kann.',
           'Deshalb ist die Website die Grundlage: Sie ist der einzige Ort, an dem Sie vollständig bestimmen, welche Informationen über Sie im Umlauf sind.',
         ],
       },
@@ -4895,51 +4895,58 @@ function ServicePackages({ slug }: { slug: string }) {
     <>
       {pkgOrder && <PackageOrderModal initial={pkgOrder} onClose={() => setPkgOrder(null)} />}
       {profileOrder && <ProfileOrderModal initialSocial={profileOrder.social} onClose={() => setProfileOrder(null)} />}
-      <section id="pakete" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px)', scrollMarginTop: 80 }}>
+      <section id="pakete" style={{ backgroundColor: 'var(--bone)', padding: '0 clamp(20px,4vw,48px) var(--sec-y, 110px)', scrollMarginTop: 80 }}>
         <div style={{ ...SHELL }}>
-          <Kicker>Pakete & Preise</Kicker>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '12px 40px', flexWrap: 'wrap', margin: '20px 0 clamp(24px, 3vw, 40px)' }}>
-            <h2 className="display" style={{ fontSize: 'clamp(24px, 2.8vw, 38px)', lineHeight: 1.1, margin: 0 }}>Was es kostet</h2>
-            <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: 0, maxWidth: 520 }}>{cfg.intro}</p>
+          <div style={{ textAlign: 'center', maxWidth: 760, margin: '0 auto' }}>
+            <Reveal><Kicker>Pakete & Preise</Kicker></Reveal>
+            <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 16px' }}>Was es kostet</h2></Reveal>
+            <Reveal delay={0.1}><p style={{ fontSize: 'clamp(16px, 1.3vw, 18px)', lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>{cfg.intro}</p></Reveal>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: single ? 'minmax(0, 1fr)' : 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(12px, 1.4vw, 18px)' }}>
-            {cfg.items.map(id => {
+          <div className="svc-pk" style={{ display: 'grid', gridTemplateColumns: `repeat(${cfg.items.length}, minmax(0, 1fr))`, gap: 'clamp(16px, 2vw, 28px)', maxWidth: single ? 620 : cfg.items.length === 2 ? 1040 : undefined, margin: 'clamp(40px, 5vw, 64px) auto 0', alignItems: 'stretch' }}>
+            {cfg.items.map((id, i) => {
               const it = priceItem(id)
               const hi = id === cfg.highlight
-              const dark = false
               return (
-                <article key={id} className={hi ? 'd-card' : 'd-card-flat'} style={{ display: 'flex', flexDirection: 'column', padding: 'clamp(22px, 2.4vw, 32px)', color: 'var(--ink)', border: `${hi ? 2 : 1}px solid ${hi ? 'var(--electric)' : 'var(--border)'}` }}>
-                  <div style={{ marginBottom: 16 }}><IconTile kind={id === 'profile' ? 'maps' : id === 'social' ? 'social' : id === 'aiplus' ? 'ki' : 'website'} small /></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                    <PriceTag dark={dark}>{it.tag}</PriceTag>
-                    {hi && !single && <span className="eyebrow" style={{ fontSize: 9.5, color: dark ? 'var(--electric-2)' : 'var(--electric)' }}>Passt hierzu</span>}
-                  </div>
-                  <h3 className="display" style={{ fontSize: 'clamp(20px, 1.8vw, 25px)', lineHeight: 1.15, margin: '0 0 10px' }}>{it.name}</h3>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
-                    <span className="display" style={{ fontSize: 'clamp(30px, 2.8vw, 38px)', lineHeight: 1 }}>{it.price} €</span>
-                    <span style={{ fontSize: 14, color: dark ? 'rgba(255,255,255,0.55)' : 'var(--muted)' }}>{it.unit}</span>
-                  </div>
-                  <p style={{ fontSize: 14.5, lineHeight: 1.6, color: dark ? 'rgba(255,255,255,0.7)' : 'var(--muted)', margin: '0 0 16px' }}>{it.thesis}</p>
-                  <div style={{ marginBottom: 20, display: single ? 'grid' : 'block', gridTemplateColumns: single ? 'repeat(auto-fit, minmax(240px, 1fr))' : undefined, columnGap: 28 }}>
-                    {it.includes.map(x => (
-                      <div key={x} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '8px 0', borderTop: `1px solid ${dark ? 'var(--line-dark)' : 'var(--line)'}` }}>
-                        {checkIcon(dark)}<span style={{ fontSize: 14, lineHeight: 1.5 }}>{x}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <button type="button" onClick={() => order(id)} className={`btn btn-md ${hi ? 'btn-electric' : 'btn-ink'}`} style={{ marginTop: 'auto', alignSelf: 'flex-start' }}>
-                    Paket anfragen <span className="arw">→</span>
-                  </button>
-                </article>
+                <Reveal key={id} delay={0.06 * i} style={{ display: 'flex' }}>
+                  <article className="d-card" style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', gap: 20, padding: 'clamp(26px, 2.8vw, 40px)', color: 'var(--ink)', border: hi ? '2px solid var(--electric)' : '1px solid var(--border)', boxShadow: hi ? '0 30px 70px rgba(38,0,255,0.16)' : undefined }}>
+                    {hi && !single && (
+                      <span style={{ position: 'absolute', top: -16, left: 'clamp(26px, 2.8vw, 40px)', height: 32, padding: '0 14px', borderRadius: 999, backgroundColor: 'var(--electric)', color: '#fff', fontSize: 13, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 6 }}><span aria-hidden>★</span><span>Passt hierzu</span></span>
+                    )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                      <IconTile kind={id === 'profile' ? 'maps' : id === 'social' ? 'social' : id === 'aiplus' ? 'ki' : 'website'} />
+                      <PriceTag>{it.tag}</PriceTag>
+                    </div>
+                    <div>
+                      <h3 className="display" style={{ fontSize: 'clamp(22px, 2vw, 26px)', lineHeight: 1.15, margin: '0 0 8px' }}>{it.name}</h3>
+                      <p style={{ fontSize: 15.5, lineHeight: 1.6, color: 'var(--muted)', margin: 0 }}>{it.thesis}</p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                      <span className="display" style={{ fontSize: 'clamp(40px, 4vw, 56px)', lineHeight: 1, color: hi ? 'var(--electric)' : 'var(--ink)' }}>{it.price} €</span>
+                      <span style={{ fontSize: 15, color: 'var(--muted)' }}>{it.unit}</span>
+                    </div>
+                    <div style={{ borderTop: '1px solid var(--divider)', paddingTop: 20, display: single ? 'grid' : 'flex', flexDirection: 'column', gridTemplateColumns: single ? 'repeat(auto-fit, minmax(220px, 1fr))' : undefined, gap: 12 }}>
+                      {it.includes.map(x => (
+                        <div key={x} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                          {checkIcon()}<span style={{ fontSize: 15.5, lineHeight: 1.5 }}>{x}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => order(id)} className={`btn btn-md ${hi ? 'btn-electric' : 'btn-outline-dark'}`} style={{ marginTop: 'auto', width: '100%', justifyContent: 'center' }}>
+                      Paket anfragen <span className="arw">→</span>
+                    </button>
+                  </article>
+                </Reveal>
               )
             })}
           </div>
           {cfg.combo && (
-            <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--muted)', margin: '18px 0 0' }}>
+            <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: '24px auto 0', textAlign: 'center', maxWidth: 720 }}>
               Kombinierbar mit: Google-Profil schlüsselfertig (149 € einmalig) · One Pager (30 €/Monat) · Local Website (299 €/Monat) · AI Plus (499 €/Monat).
             </p>
           )}
-          <a href="/preise" className="d-link" style={{ display: 'inline-block', marginTop: 20, fontSize: 15 }}>Alle Pakete und Preise <span className="arw">→</span></a>
+          <div style={{ textAlign: 'center', marginTop: 28 }}>
+            <a href="/preise" className="d-link" style={{ fontSize: 15.5 }}>Alle Pakete und Preise <span className="arw">→</span></a>
+          </div>
         </div>
       </section>
     </>
@@ -4979,7 +4986,7 @@ type ServiceContent = {
 const SERVICE_CONTENT: Record<string, ServiceContent> = {
   'ai-search-optimization': {
     title: 'Lokale Suche beginnt immer öfter mit einer Frage an die KI.',
-    sub: 'Wenn jemand ChatGPT fragt, wen er anrufen soll, nennt die KI zwei, drei Betriebe — die, über die es im Netz die meisten verständlichen Informationen gibt. Wir sorgen dafür, dass Sie dabei sind.',
+    sub: 'Wer etwas sucht, bekommt die Antwort immer öfter von ChatGPT, Perplexity oder den KI-Übersichten bei Google. Sie nennen und beschreiben die Betriebe, über die es im Netz die meisten verständlichen Informationen gibt. Wir sorgen dafür, dass Sie dabei sind.',
     priceLink: 'Paket und Preis',
     problem: {
       title: 'Ihr nächster Kunde fragt nicht den Nachbarn, sondern ChatGPT.',
@@ -5007,11 +5014,12 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
   },
   'google-maps-business-profile': {
     title: 'Google Maps ist Pflicht für lokale Unternehmen.',
-    sub: 'Wenn es schnell gehen muss, öffnen Menschen die Karte und rufen einen der ersten an. Wir machen Ihr Google-Profil vollständig und gepflegt, damit man Sie anruft.',
+    sub: 'Wenn man schnell etwas in der Nähe braucht, öffnet man die Karte und entscheidet nach dem Profil. Wir richten Ihr Google-Profil so ein, dass die Wahl auf Sie fällt.',
     priceLink: 'Google-Profil schlüsselfertig — 149 €',
     problem: {
       title: 'Kunden entscheiden in einer halben Minute. Nach dem Profil.',
-      text: 'Abends fliegt die Sicherung raus. Jemand tippt „Elektriker Siegen“ und sieht drei Betriebe. Er ruft den an, der Fotos und Bewertungen hat und bei dem klar ist, dass er gerade erreichbar ist.',
+      text: 'Abends fliegt die Sicherung raus. Jemand tippt „Elektriker Frankfurt“ und sieht drei Betriebe. Angerufen wird der, bei dem im Profil sofort zu sehen ist:',
+      points: ['echte Fotos vom Betrieb und von Arbeiten', 'frische Bewertungen', 'aktuelle Öffnungszeiten und Telefonnummer', 'welche Leistungen es gibt'],
       outro: 'Sie können der beste Betrieb der Stadt sein. Ist Ihr Profil leer oder steht dort eine alte Nummer, ruft man den Nachbarn an.',
       visual: 'map',
     },
@@ -5039,7 +5047,8 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
     priceLink: 'Website ab 30 € im Monat',
     problem: {
       title: 'Google zeigt den, der die Frage genauer beantwortet.',
-      text: 'Hat Ihre Website nur eine Seite „Alle Elektroarbeiten“, versteht Google nicht, dass Sie Wallboxen installieren — und zeigt den, der dafür eine eigene Seite hat.',
+      text: 'Hat Ihre Website nur eine Seite „Alle Elektroarbeiten“, versteht Google nicht, dass Sie Wallboxen installieren. Google zeigt die Betriebe, bei denen es vier Dinge sicher versteht:',
+      points: ['welche Leistungen es gibt — jede auf eigener Seite', 'in welchem Ort und welcher Region', 'dass man dem Betrieb trauen kann', 'dass die Website gepflegt wird'],
       outro: 'Eine Website, die einmal gebaut und dann vergessen wurde, rutscht mit der Zeit nach unten — auch wenn sie schön aussieht.',
       visual: 'serp',
     },
@@ -5062,11 +5071,12 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
   },
   'social-media': {
     title: 'In sozialen Netzwerken sehen Kunden Menschen.',
-    sub: 'Bevor jemand einen Handwerker ins Haus lässt, will er sehen, wer kommt. Wir betreuen Ihre Social-Media-Kanäle und zeigen Ihr Team und Ihre Arbeit — Influencer müssen Sie dafür nicht werden.',
+    sub: 'Bevor jemand einen Betrieb beauftragt, will er wissen, wer dahintersteht. Wir betreuen Ihre Social-Media-Kanäle und zeigen Ihr Team und Ihre Arbeit — Influencer müssen Sie dafür nicht werden.',
     priceLink: '199 € im Monat, auch ohne Website',
     problem: {
       title: 'Der Kunde hat Sie schon gefunden. Jetzt prüft er Sie.',
-      text: 'Jemand findet Sie auf der Karte und schaut auf Instagram — dort ist der letzte Beitrag von vorletztem Jahr. Gibt es den Betrieb überhaupt noch? Wer kommt da zu mir?',
+      text: 'Jemand findet Sie auf der Karte und schaut auf Instagram — dort ist der letzte Beitrag von vorletztem Jahr. Gibt es den Betrieb überhaupt noch? Bevor man anruft, will man im Profil sehen:',
+      points: ['dass der Betrieb gerade arbeitet', 'wer dahintersteht', 'echte Arbeiten und Ergebnisse', 'dasselbe Bild wie bei Google und auf der Website'],
       outro: 'Social Media bringt selten von allein Aufträge. Aber es entscheidet, ob jemand anruft, der Sie bei Google schon gefunden hat.',
       visual: 'social',
     },
@@ -5089,6 +5099,31 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
   },
 }
 
+/** Icons der Karten „Was Sie brauchen“ — je Leistungsseite in der Reihenfolge von `needs`. */
+type NeedIconKind = 'page' | 'data' | 'star' | 'chart' | 'list' | 'camera' | 'shield' | 'chat' | 'refresh' | 'calendar' | 'users'
+const NEED_ICONS: Record<string, NeedIconKind[]> = {
+  'ai-search-optimization': ['page', 'data', 'star', 'chart'],
+  'google-maps-business-profile': ['list', 'camera', 'star', 'shield'],
+  'website-google-search': ['page', 'chat', 'shield', 'refresh'],
+  'social-media': ['calendar', 'users', 'camera', 'data'],
+}
+function NeedIcon({ kind }: { kind: NeedIconKind }) {
+  const p = { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true }
+  switch (kind) {
+    case 'page': return <svg {...p}><path d="M7 3h7l5 5v13H7z" /><path d="M14 3v5h5M10 13h6M10 17h6" /></svg>
+    case 'data': return <svg {...p}><rect x="3" y="5" width="18" height="14" rx="3" /><path d="M7 10h6M7 14h10" /></svg>
+    case 'star': return <svg {...p}><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" /></svg>
+    case 'chart': return <svg {...p}><path d="M5 19V10M11 19V5M17 19v-7M3 19h18" /></svg>
+    case 'list': return <svg {...p}><rect x="4" y="3" width="16" height="18" rx="3" /><path d="M8 8.5l1.5 1.5L12 7.5M8 14.5l1.5 1.5 2.5-2.5M14.5 9h2M14.5 15h2" /></svg>
+    case 'camera': return <svg {...p}><path d="M4 8h3l1.5-2.5h7L17 8h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
+    case 'shield': return <svg {...p}><path d="M12 3l7 3v5.5c0 4.5-3 8-7 9.5-4-1.5-7-5-7-9.5V6z" /><path d="M9 12l2 2 4-4" /></svg>
+    case 'chat': return <svg {...p}><path d="M4 5h16v11H9l-5 4z" /><path d="M8 9.5h8M8 12.5h5" /></svg>
+    case 'refresh': return <svg {...p}><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8" /><path d="M4 4v4h4" /><path d="M4 13a8 8 0 0 0 14.3 4.9L20 16" /><path d="M20 20v-4h-4" /></svg>
+    case 'calendar': return <svg {...p}><rect x="3.5" y="5" width="17" height="15" rx="3" /><path d="M3.5 10h17M8 3v4M16 3v4" /></svg>
+    case 'users': return <svg {...p}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5" /><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 13.8c2.1.8 3.5 3 3.5 6.2" /></svg>
+  }
+}
+
 /** Visual im Problem-Block — je Kanal ein kleines Mockup. */
 function ProblemVisual({ kind }: { kind: ServiceContent['problem']['visual'] }) {
   const muted: React.CSSProperties = { fontSize: 13, color: 'var(--muted)' }
@@ -5096,13 +5131,13 @@ function ProblemVisual({ kind }: { kind: ServiceContent['problem']['visual'] }) 
     return (
       <div className="d-card" style={{ padding: 'clamp(20px, 2.4vw, 28px)', display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ alignSelf: 'flex-end', maxWidth: 320, backgroundColor: 'var(--ink)', color: '#fff', borderRadius: '18px 18px 4px 18px', padding: '12px 16px', fontSize: 15, lineHeight: 1.5 }}>
-          Kannst du mir einen Elektriker in Siegen empfehlen?
+          Kannst du mir einen Elektriker in Berlin empfehlen?
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
           <IconTile kind="ki" small />
           <div style={{ flex: 1 }}>
             <p style={{ margin: '0 0 10px', fontSize: 15, lineHeight: 1.55 }}>Gern, diese Betriebe werden häufig empfohlen:</p>
-            {['Elektro Becker', 'Schmidt Elektrotechnik', 'Voltwerk Siegen'].map(n => (
+            {['Elektro Becker', 'Schmidt Elektrotechnik', 'Voltwerk Berlin'].map(n => (
               <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', marginBottom: 6, borderRadius: 12, backgroundColor: 'var(--bone)', fontSize: 14.5, fontWeight: 700 }}>
                 <span aria-hidden style={{ color: '#E9A100' }}>★</span>{n}
               </div>
@@ -5149,13 +5184,13 @@ function ProblemVisual({ kind }: { kind: ServiceContent['problem']['visual'] }) 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', borderBottom: '1px solid var(--divider)' }}>
           <GLogo />
           <span style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 16px', borderRadius: 999, border: '1px solid var(--border)', fontSize: 14.5 }}>
-            Wallbox installieren Siegen <ChannelIcon kind="search" size={16} />
+            Wallbox installieren Bern <ChannelIcon kind="search" size={16} />
           </span>
         </div>
         <div style={{ padding: 'clamp(16px, 2vw, 22px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ padding: '14px 16px', borderRadius: 14, backgroundColor: 'var(--bone)' }}>
-            <div style={muted}>voltwerk-siegen.de › wallbox</div>
-            <div style={{ fontWeight: 800, fontSize: 16.5, color: 'var(--electric)', margin: '2px 0 4px' }}>Wallbox-Installation in Siegen: Kosten, Ablauf, Förderung</div>
+            <div style={muted}>voltwerk-bern.ch › wallbox</div>
+            <div style={{ fontWeight: 800, fontSize: 16.5, color: 'var(--electric)', margin: '2px 0 4px' }}>Wallbox-Installation in Bern: Kosten, Ablauf, Förderung</div>
             <div style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.5 }}>Mitbewerber mit einer eigenen Seite genau zu dieser Leistung.</div>
           </div>
           <div aria-hidden style={{ padding: '4px 16px' }}>
@@ -5275,68 +5310,92 @@ function ServicePage({ slug }: { slug: string }) {
             </div>
           </div>
         </div>
-        <style>{`@media (max-width: 900px) { .svc-hero, .svc-two { grid-template-columns: minmax(0, 1fr) !important; } .svc-needs { grid-template-columns: minmax(0, 1fr) !important; } }`}</style>
+        <style>{`@media (max-width: 900px) { .svc-hero, .svc-two { grid-template-columns: minmax(0, 1fr) !important; } .svc-needs, .svc-pts, .svc-pk, .audit-grid { grid-template-columns: minmax(0, 1fr) !important; } .footer-grid { grid-template-columns: 1fr 1fr !important; } }`}</style>
       </section>
 
-      {/* 2 — Problem */}
+      {/* 2 — Problem: Überschrift mittig · Text + Visual · Ratgeber-Link mittig (Stil der Startseite) */}
       <section style={{ ...sec, backgroundColor: 'var(--paper)' }}>
         <DotsCorner style={{ right: -80, top: -60 }} />
-        <div className="svc-two" style={{ ...SHELL, position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'clamp(36px, 5.5vw, 88px)', alignItems: 'center' }}>
-          <div>
+        <div style={{ ...SHELL, position: 'relative' }}>
+          <div style={{ textAlign: 'center', maxWidth: 900, margin: '0 auto' }}>
             <Reveal><Kicker>Das Problem</Kicker></Reveal>
-            <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 18px' }}>{content.problem.title}</h2></Reveal>
+            <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 0' }}>{content.problem.title}</h2></Reveal>
+          </div>
+          <div className="svc-two" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'clamp(36px, 6vw, 88px)', alignItems: 'center', marginTop: 'clamp(40px, 5vw, 72px)' }}>
             <Reveal delay={0.1}>
-              <p style={{ fontSize: 17, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 16px' }}>{content.problem.text}</p>
-              {content.problem.points && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, margin: '0 0 18px' }}>
-                  {content.problem.points.map(p => (
-                    <div key={p} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>{checkIcon()}<span style={{ fontSize: 15.5, lineHeight: 1.5, fontWeight: 600 }}>{p}</span></div>
-                  ))}
-                </div>
-              )}
-              <p style={{ fontSize: 17, lineHeight: 1.6, fontWeight: 700, margin: '0 0 22px' }}>{content.problem.outro}</p>
-              {content.article && <a href={content.article.href} className="d-link" style={{ fontSize: 15 }}>{content.article.label} <span className="arw">→</span></a>}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
+                <p style={{ fontSize: 'clamp(18px, 1.6vw, 21px)', lineHeight: 1.6, color: 'var(--ink)', fontWeight: 500, margin: 0 }}>{content.problem.text}</p>
+                {content.problem.points && (
+                  <div className="svc-pts" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
+                    {content.problem.points.map(p => (
+                      <div key={p} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '14px 16px', borderRadius: 16, backgroundColor: 'var(--bone)' }}>
+                        {checkIcon()}<span style={{ fontSize: 15.5, lineHeight: 1.4, fontWeight: 700 }}>{p}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="display" style={{ fontSize: 'clamp(19px, 1.8vw, 24px)', lineHeight: 1.4, margin: 0 }}>{content.problem.outro}</p>
+              </div>
+            </Reveal>
+            <Reveal delay={0.15} style={{ position: 'relative' }}>
+              <div aria-hidden style={{ position: 'absolute', left: '50%', top: '50%', width: 250, height: 250, transform: 'translate(-50%,-50%)', borderRadius: '50%', backgroundColor: '#F4F3FF' }} />
+              <RingsBackdrop size={580} style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
+              <div style={{ position: 'relative' }}><ProblemVisual kind={content.problem.visual} /></div>
             </Reveal>
           </div>
-          <Reveal delay={0.1} style={{ position: 'relative' }}>
-            <RingsBackdrop size={520} style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
-            <div style={{ position: 'relative' }}><ProblemVisual kind={content.problem.visual} /></div>
-          </Reveal>
+          {content.article && (
+            <Reveal delay={0.2}>
+              <div style={{ textAlign: 'center', marginTop: 'clamp(36px, 4vw, 56px)' }}>
+                <a href={content.article.href} className="d-link" style={{ fontSize: 16 }}>{content.article.label} <span className="arw">→</span></a>
+              </div>
+            </Reveal>
+          )}
         </div>
       </section>
 
-      {/* 3 — Was Sie brauchen — und wobei wir helfen */}
-      <section style={{ ...sec, backgroundColor: 'var(--bone)' }}>
-        <div style={{ ...SHELL, position: 'relative' }}>
-          <div style={{ maxWidth: 820 }}>
-            <Reveal><Kicker icon={channelKindOf(slug)}>So kommen Sie dahin</Kicker></Reveal>
-            <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 0' }}>{content.needsTitle}</h2></Reveal>
+      {/* 3 — Was Sie brauchen — und wobei wir helfen: großes Brand-Soft-Panel mit Stadtplan */}
+      <section style={{ backgroundColor: 'var(--bone)', padding: 'var(--sec-y, 110px) clamp(12px, 4vw, 48px)' }}>
+        <div className="d-panel" style={{ ...SHELL, maxWidth: 1344, backgroundColor: 'var(--brand-soft)', padding: 'clamp(48px, 7vw, 104px) clamp(20px, 6vw, 100px) clamp(44px, 6vw, 96px)' }}>
+          <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+            <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
+              <defs><pattern id="svc-needs-map" width="120" height="96" patternUnits="userSpaceOnUse"><rect x="8" y="8" width="104" height="80" rx="10" fill="#E3E1FB" /></pattern></defs>
+              <rect width="100%" height="100%" fill="url(#svc-needs-map)" />
+            </svg>
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(236,235,255,0) 0%, rgba(236,235,255,0.93) 22%, rgba(236,235,255,0.93) 78%, rgba(236,235,255,0) 100%)' }} />
           </div>
-          <div className="svc-needs" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 18, marginTop: 'clamp(32px, 4vw, 48px)' }}>
-            {content.needs.map((n, i) => (
-              <Reveal key={n.need} delay={0.05 * i}>
-                <div className="d-card" style={{ height: '100%', boxSizing: 'border-box', padding: 'clamp(22px, 2.6vw, 32px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                    {checkIcon()}
-                    <div>
-                      <p style={{ fontWeight: 800, fontSize: 19, lineHeight: 1.3, margin: '0 0 6px' }}>{n.need}</p>
-                      <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)', margin: 0 }}>{n.why}</p>
+          <div style={{ position: 'relative' }}>
+            <div style={{ textAlign: 'center', maxWidth: 920, margin: '0 auto' }}>
+              <Reveal><Kicker icon={channelKindOf(slug)}>So kommen Sie dahin</Kicker></Reveal>
+              <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 0' }}>{content.needsTitle}</h2></Reveal>
+            </div>
+            <div className="svc-needs" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 'clamp(14px, 1.8vw, 24px)', marginTop: 'clamp(36px, 4.4vw, 64px)' }}>
+              {content.needs.map((n, i) => (
+                <Reveal key={n.need} delay={0.05 * i} style={{ display: 'flex' }}>
+                  <div className="d-card" style={{ flex: 1, padding: 'clamp(24px, 2.6vw, 34px)', display: 'flex', flexDirection: 'column', gap: 18 }}>
+                    <div style={{ display: 'flex', gap: 18, alignItems: 'flex-start' }}>
+                      <span className="d-tile" aria-hidden><NeedIcon kind={NEED_ICONS[slug]?.[i] ?? 'page'} /></span>
+                      <div>
+                        <h3 className="display" style={{ fontSize: 'clamp(19px, 1.7vw, 22px)', lineHeight: 1.25, margin: '4px 0 8px' }}>{n.need}</h3>
+                        <p style={{ fontSize: 15.5, lineHeight: 1.6, color: 'var(--muted)', margin: 0 }}>{n.why}</p>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 'auto', borderTop: '1px solid var(--divider)', paddingTop: 18, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                      {checkIcon()}
+                      <p style={{ fontSize: 15.5, lineHeight: 1.6, margin: 0 }}><strong style={{ color: 'var(--electric)' }}>Wobei wir helfen:</strong> {n.help}</p>
                     </div>
                   </div>
-                  <div style={{ marginTop: 'auto', padding: '14px 16px', borderRadius: 14, backgroundColor: 'var(--brand-soft)' }}>
-                    <p className="kick" style={{ fontSize: 11.5, marginBottom: 6 }}>Wobei wir helfen</p>
-                    <p style={{ fontSize: 15, lineHeight: 1.6, margin: 0 }}>{n.help}</p>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-          <Reveal delay={0.1}>
-            <div className="d-card-flat" style={{ marginTop: 18, padding: '18px 22px', borderRadius: 18, display: 'flex', alignItems: 'center', gap: 14 }}>
-              <span className="d-tile d-tile-sm" aria-hidden><ChannelIcon kind="social" /></span>
-              <p style={{ margin: 0, fontSize: 16, lineHeight: 1.55 }}>{content.fromYou}</p>
+                </Reveal>
+              ))}
             </div>
-          </Reveal>
+            <Reveal delay={0.1}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'clamp(24px, 3vw, 40px)' }}>
+                <div className="d-card-flat" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 22px 12px 12px', borderRadius: 28, maxWidth: 900, boxShadow: '0 10px 30px rgba(11,11,26,0.06)' }}>
+                  <span className="d-tile d-tile-sm" aria-hidden style={{ borderRadius: 999 }}><ChannelIcon kind="social" size={18} /></span>
+                  <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.55, fontWeight: 600 }}>{content.fromYou}</p>
+                </div>
+              </div>
+            </Reveal>
+          </div>
         </div>
       </section>
 
@@ -5345,12 +5404,12 @@ function ServicePage({ slug }: { slug: string }) {
 
       {/* 5 — FAQ */}
       <section style={{ ...sec, backgroundColor: 'var(--paper)' }}>
-        <div style={{ ...SHELL, maxWidth: 940 }}>
-          <div style={{ textAlign: 'center', marginBottom: 'clamp(28px, 3.5vw, 44px)' }}>
+        <div style={{ ...SHELL, maxWidth: 900 }}>
+          <div style={{ textAlign: 'center', marginBottom: 'clamp(32px, 4vw, 56px)' }}>
             <Reveal><Kicker>FAQ</Kicker></Reveal>
             <Reveal delay={0.05}><h2 className="display h-md" style={{ marginTop: 16 }}>Häufige Fragen</h2></Reveal>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {content.faq.map((item, i) => {
               const open = faqOpen === i
               return (
@@ -5358,7 +5417,7 @@ function ServicePage({ slug }: { slug: string }) {
                   <button onClick={() => setFaqOpen(open ? null : i)} aria-expanded={open}
                     style={{ width: '100%', padding: 'clamp(18px, 2vw, 24px) clamp(20px, 2.4vw, 28px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', gap: 16, fontFamily: 'inherit' }}>
                     <span style={{ fontWeight: 800, fontSize: 'clamp(16px, 1.4vw, 18px)', color: open ? 'var(--electric)' : 'var(--ink)' }}>{item.q}</span>
-                    <span style={{ flexShrink: 0, width: 34, height: 34, borderRadius: 10, backgroundColor: open ? 'var(--electric)' : 'var(--brand-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: open ? 'rotate(45deg)' : 'none', transition: `transform 0.5s ${EASE}, background-color .3s ease` }}>
+                    <span style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 999, backgroundColor: open ? 'var(--electric)' : 'var(--brand-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: open ? 'rotate(45deg)' : 'none', transition: `transform 0.5s ${EASE}, background-color .3s ease` }}>
                       <svg width="12" height="12" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke={open ? '#fff' : '#2600FF'} strokeWidth="1.8" strokeLinecap="round" /></svg>
                     </span>
                   </button>
@@ -5372,15 +5431,45 @@ function ServicePage({ slug }: { slug: string }) {
         </div>
       </section>
 
-      {/* 6 — Abschlussleiste: zurück zum Formular im Hero */}
-      <section style={{ backgroundColor: 'var(--paper)', padding: '0 clamp(12px, 4vw, 48px) clamp(56px, 7vw, 96px)' }}>
-        <div className="d-panel on-brand" style={{ ...SHELL, maxWidth: 1344, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(32px, 4vw, 56px) clamp(20px, 4.8vw, 72px)' }}>
-          <RingsBackdrop size={700} color="rgba(255,255,255,0.14)" style={{ right: -160, top: -260 }} />
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
-            <h2 className="display" style={{ fontSize: 'clamp(24px, 3vw, 38px)', margin: 0, maxWidth: 720 }}>{content.final.text}</h2>
-            <button type="button" onClick={toForm} className="btn btn-lg btn-on-brand" style={{ flexShrink: 0 }}>
-              {content.final.button} <span className="arw">↑</span>
-            </button>
+      {/* 6 — Abschluss: Brand-Panel mit Formular und Beispielbericht (wie der Check auf der Startseite) */}
+      <section style={{ backgroundColor: 'var(--paper)', padding: '0 clamp(12px, 4vw, 48px) var(--sec-y, 110px)' }}>
+        <div className="d-panel on-brand" style={{ ...SHELL, maxWidth: 1344, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(40px, 5.4vw, 88px) clamp(20px, 5.6vw, 96px)' }}>
+          <RingsBackdrop size={900} color="rgba(255,255,255,0.14)" style={{ right: -240, top: -220 }} />
+          <div className="audit-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 420px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
+            <div>
+              <Reveal><p className="kick" style={{ color: '#C9C2FF' }}>Kostenlos · unverbindlich</p></Reveal>
+              <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 18px', color: '#fff' }}>{content.final.text}</h2></Reveal>
+              <Reveal delay={0.1}><p style={{ fontSize: 17, lineHeight: 1.65, color: '#DCD8FF', margin: '0 0 28px', maxWidth: 540 }}>{data.ctaBody}</p></Reveal>
+              <Reveal delay={0.16} style={{ position: 'relative', zIndex: 5 }}>
+                <CompanySearch buttonLabel={content.final.button} />
+              </Reveal>
+            </div>
+            <Reveal delay={0.1}>
+              <div className="d-card" style={{ color: 'var(--ink)', padding: 'clamp(24px, 3vw, 32px)', boxShadow: '0 40px 80px rgba(11,11,26,0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+                  <p style={{ fontWeight: 800, margin: 0 }}>Beispielbericht</p>
+                  <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 999, backgroundColor: 'var(--bone)', color: 'var(--muted)' }}>nur Beispiel</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
+                  <div aria-hidden style={{ width: 96, height: 96, borderRadius: '50%', background: 'conic-gradient(#2600FF 0 62%, #ECEBFF 62% 100%)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                    <div style={{ width: 74, height: 74, borderRadius: '50%', backgroundColor: '#fff', display: 'grid', placeItems: 'center', fontSize: 28, fontWeight: 800 }}>62</div>
+                  </div>
+                  <p className="display" style={{ fontSize: 20, margin: 0 }}>Lokale Sichtbarkeit</p>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
+                  {([['Google Maps', 72, 'maps'], ['Google Search', 64, 'search'], ['KI-Suche', 44, 'ki'], ['Social Media', 67, 'social']] as const).map(([l, v, k]) => {
+                    const mine = k === channelKindOf(slug)
+                    return (
+                      <div key={l} style={{ backgroundColor: mine ? 'var(--brand-soft)' : 'var(--bone)', border: `1px solid ${mine ? '#C9C5F7' : 'transparent'}`, borderRadius: 14, padding: '12px 14px' }}>
+                        <div style={{ fontSize: 13, color: mine ? 'var(--electric)' : 'var(--muted)', fontWeight: mine ? 700 : 500 }}>{l}</div>
+                        <div style={{ fontSize: 24, fontWeight: 800, color: mine ? 'var(--electric)' : 'var(--ink)' }}>{v}</div>
+                      </div>
+                    )
+                  })}
+                </div>
+                <p style={{ fontSize: 12.5, lineHeight: 1.6, color: 'var(--muted)', margin: '14px 0 0' }}>Die Zahlen sind nur ein Beispiel für den späteren Bericht.</p>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
