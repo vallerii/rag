@@ -4867,10 +4867,10 @@ function ServicesIndex() {
 // Pakete auf den Leistungsseiten — dieselben Preise wie auf /preise (25.09.2026).
 type PriceItemId = 'profile' | PackageId | 'social'
 const SERVICE_PACKAGES: Record<string, { intro: string; items: PriceItemId[]; highlight: PriceItemId; combo?: boolean }> = {
-  'google-maps-business-profile': { intro: 'Das Google-Profil gibt es einzeln für einmalig 149 € — oder inklusive in einem Website-Paket.', items: ['profile', 'local', 'aiplus'], highlight: 'profile' },
-  'website-google-search': { intro: 'Drei Website-Pakete, monatlich abgerechnet. Social Media können Sie zu jedem Paket dazu buchen.', items: ['onepager', 'local', 'aiplus'], highlight: 'local' },
-  'ai-search-optimization': { intro: 'Die Sichtbarkeit in der KI-Suche steckt im Paket AI Plus. Local Website legt die Grundlage dafür.', items: ['local', 'aiplus'], highlight: 'aiplus' },
-  'social-media': { intro: 'Social Media gibt es einzeln — oder zusammen mit dem Google-Profil oder einem Website-Paket.', items: ['social'], highlight: 'social', combo: true },
+  'google-maps-business-profile': { intro: 'Google-Profil schlüsselfertig für 149 € einmalig, ohne Abo. Social Media können Sie für 199 €/Monat dazunehmen. In Local Website und AI Plus ist das Profil schon enthalten — in AI Plus laufen die Bitten um Bewertungen nach jedem Auftrag automatisch.', items: ['profile', 'local', 'aiplus'], highlight: 'profile' },
+  'website-google-search': { intro: 'One Pager ist das Minimum: Er beantwortet die Frage „Wer sind Sie?“, bringt aber keine neuen Kunden aus der Suche. Soll die Website Kunden aus Google bringen, nehmen Sie Local Website; mit Bewertungen und KI-Sichtbarkeit — AI Plus.', items: ['onepager', 'local', 'aiplus'], highlight: 'local' },
+  'ai-search-optimization': { intro: 'Die KI-Sichtbarkeit steckt in AI Plus: Google-Profil, Website mit bis zu 10 Leistungsseiten und monatlich neuen Artikeln, Bewertungen, Verzeichnisse und der monatliche KI-Check. Nur eine Website ohne KI? Local Website.', items: ['local', 'aiplus'], highlight: 'aiplus' },
+  'social-media': { intro: 'Einzeln oder zu jedem Paket. Zusammen mit dem Google-Profil oder einer Website wirkt Social Media besser: Man findet Sie bei Google und sieht sofort, wer zu einem kommt.', items: ['social'], highlight: 'social', combo: true },
 }
 
 function priceItem(id: PriceItemId) {
@@ -4946,6 +4946,14 @@ function ServicePackages({ slug }: { slug: string }) {
   )
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// LEISTUNGSSEITEN /services/:slug — 6 Blöcke nach den Kundendokumenten (30.09.2026):
+// 1 Hero + Check-Formular · 2 Problem · 3 Was Sie brauchen — und wobei wir helfen ·
+// 4 Preis · 5 FAQ · 6 Abschlussleiste (Button zurück zum Formular im Hero).
+// Block 3 zählt NICHT noch einmal die Punkte aus dem Problem auf, sondern sagt,
+// was der Kunde haben muss und wobei wir ihm das abnehmen.
+// ─────────────────────────────────────────────────────────────────────────────
+
 // Beschriftung des Check-Buttons im Hero je Leistungsseite — das Formular ist überall dasselbe (/check).
 const SERVICE_CHECK_BUTTON: Record<string, string> = {
   'google-maps-business-profile': 'Google-Profil prüfen',
@@ -4954,22 +4962,254 @@ const SERVICE_CHECK_BUTTON: Record<string, string> = {
   'social-media': 'Social Media prüfen',
 }
 
+type ServiceNeed = { need: string; why: string; help: string }
+type ServiceContent = {
+  title: string
+  sub: string
+  priceLink: string
+  problem: { title: string; text: string; points?: string[]; outro: string; visual: 'chat' | 'map' | 'serp' | 'social' }
+  article?: { href: string; label: string }
+  needsTitle: string
+  needs: ServiceNeed[]
+  fromYou: string
+  faq: { q: string; a: string }[]
+  final: { text: string; button: string }
+}
+
+const SERVICE_CONTENT: Record<string, ServiceContent> = {
+  'ai-search-optimization': {
+    title: 'Lokale Suche beginnt immer öfter mit einer Frage an die KI.',
+    sub: 'Wenn jemand ChatGPT fragt, wen er anrufen soll, nennt die KI zwei, drei Betriebe — die, über die es im Netz die meisten verständlichen Informationen gibt. Wir sorgen dafür, dass Sie dabei sind.',
+    priceLink: 'Paket und Preis',
+    problem: {
+      title: 'Ihr nächster Kunde fragt nicht den Nachbarn, sondern ChatGPT.',
+      text: 'In so einer Antwort gibt es keine Werbung und keine zweite Seite. Die KI nennt die Betriebe, über die sie vier Dinge sicher weiß:',
+      points: ['was der Betrieb macht', 'wo er arbeitet', 'was Kunden über ihn sagen', 'ob seine Angaben auf der Website, bei Google und in Verzeichnissen übereinstimmen'],
+      outro: 'Fehlt etwas davon, empfiehlt die KI einen anderen Betrieb — auch wenn Sie besser arbeiten.',
+      visual: 'chat',
+    },
+    article: { href: '/ratgeber/in-chatgpt-und-perplexity-gefunden-werden', label: 'Warum empfiehlt die KI andere? Im Ratgeber erklärt' },
+    needsTitle: 'Was Sie brauchen, damit die KI Sie nennt — und wobei wir helfen',
+    needs: [
+      { need: 'Eine eigene Seite für jede Leistung', why: 'Damit die KI etwas über Sie hat, das sie zitieren kann.', help: 'Wir schreiben die Seiten und jeden Monat Artikel zu den Fragen Ihrer Kunden.' },
+      { need: 'Überall dieselben Angaben', why: 'Name, Adresse, Telefon und Einsatzgebiet gleich auf der Website, bei Google und in Verzeichnissen.', help: 'Wir tragen Sie in die wichtigen Verzeichnisse ein und korrigieren Abweichungen.' },
+      { need: 'Frische, echte Bewertungen', why: 'Die KI liest, was Kunden über Sie schreiben.', help: 'Wir richten ein, dass nach jedem Auftrag eine Bitte um Bewertung verschickt wird.' },
+      { need: 'Einen Blick auf die Antworten der KI', why: 'Sonst wissen Sie nicht, ob es wirkt.', help: 'Einmal im Monat stellen wir ChatGPT zehn Fragen, die Ihre Kunden stellen würden, und zeigen im Bericht, in wie vielen Antworten Sie genannt wurden.' },
+    ],
+    fromYou: 'Von Ihnen: ein Gespräch von 30–45 Minuten und Fotos Ihrer Arbeiten. Den Rest machen wir.',
+    faq: [
+      { q: 'Garantieren Sie, dass ChatGPT mich empfiehlt?', a: 'Nein — und glauben Sie niemandem, der das verspricht. Wir versprechen, dass es mehr und verständlichere Informationen über Sie gibt als über Ihre Mitbewerber. Im Bericht sehen Sie jeden Monat, wie sich die Antworten verändern.' },
+      { q: 'Wann sehe ich Ergebnisse?', a: 'Erste Veränderungen nach einigen Wochen, stabile Ergebnisse nach einigen Monaten.' },
+      { q: 'Ich habe schon eine Website.', a: 'Dann prüfen wir sie zuerst. Meistens lässt sie sich weiter nutzen und verbessern.' },
+      { q: 'Meine Kunden nutzen kein ChatGPT.', a: 'Alles, was wir für die KI tun, wirkt auch in der normalen Google-Suche. Und Google zeigt KI-Antworten inzwischen selbst über den Links.' },
+    ],
+    final: { text: 'Sehen wir nach, was die KI schon über Sie weiß.', button: 'In der KI prüfen' },
+  },
+  'google-maps-business-profile': {
+    title: 'Google Maps ist Pflicht für lokale Unternehmen.',
+    sub: 'Wenn es schnell gehen muss, öffnen Menschen die Karte und rufen einen der ersten an. Wir machen Ihr Google-Profil vollständig und gepflegt, damit man Sie anruft.',
+    priceLink: 'Google-Profil schlüsselfertig — 149 €',
+    problem: {
+      title: 'Kunden entscheiden in einer halben Minute. Nach dem Profil.',
+      text: 'Abends fliegt die Sicherung raus. Jemand tippt „Elektriker Siegen“ und sieht drei Betriebe. Er ruft den an, der Fotos und Bewertungen hat und bei dem klar ist, dass er gerade erreichbar ist.',
+      outro: 'Sie können der beste Betrieb der Stadt sein. Ist Ihr Profil leer oder steht dort eine alte Nummer, ruft man den Nachbarn an.',
+      visual: 'map',
+    },
+    article: { href: '/ratgeber/google-maps-ranking-verbessern', label: 'Wovon hängt der Platz auf der Karte ab? Im Ratgeber erklärt' },
+    needsTitle: 'Was Sie auf der Karte brauchen — und wobei wir helfen',
+    needs: [
+      { need: 'Ein vollständiges Profil', why: 'Richtige Kategorie, alle Leistungen, Öffnungszeiten, Telefon und Link zur Website.', help: 'Wir füllen alles aus. Gibt es schon ein Profil, legen wir kein zweites an, sondern bereinigen das bestehende: Dubletten, alte Nummern, falsche Kategorie.' },
+      { need: 'Fotos von Ihnen und Ihren Arbeiten', why: 'Menschen wollen sehen, wer zu ihnen kommt.', help: 'Wir sagen Ihnen, welche Fotos Sie machen sollen, und laden sie hoch.' },
+      { need: 'Laufend neue Bewertungen', why: 'Ein Profil mit frischen Bewertungen wirkt lebendig und vertrauenswürdig.', help: 'Sie bekommen von uns einen Link und einen QR-Code — zum Verschicken nach dem Auftrag oder als Aufkleber fürs Auto.' },
+      { need: 'Ein bestätigtes Profil auf Ihren Namen', why: 'Nur so können Sie es selbst verwalten.', help: 'Wir führen Sie Schritt für Schritt durch die Bestätigung per Google-Code. Das Profil gehört Ihnen und bleibt Ihres.' },
+    ],
+    fromYou: 'Von Ihnen: 15 Minuten für ein paar Fragen, 10–15 Fotos vom Handy und der Bestätigungscode von Google.',
+    faq: [
+      { q: 'Kostet das Google-Profil selbst etwas?', a: 'Nein. Die 149 € sind für unsere Arbeit.' },
+      { q: 'Ich habe kein Büro, ich fahre zu den Kunden.', a: 'Kein Problem: Wir hinterlegen Ihr Einsatzgebiet. Ihre Privatadresse muss nicht sichtbar sein.' },
+      { q: 'Garantieren Sie Platz 1?', a: 'Nein. Den Platz auf der Karte kann man weder bei uns noch bei Google kaufen. Er hängt davon ab, wo der Suchende ist, wie vollständig das Profil ist und wie viele Bewertungen Sie haben. Das Erste können wir nicht ändern, am Zweiten und Dritten arbeiten wir.' },
+      { q: 'Kann ich Bewertungen kaufen, damit es schneller geht?', a: 'Nein. Für gefälschte Bewertungen kann Google das Profil sperren. Es hilft nur eines: echte Kunden regelmäßig fragen.' },
+      { q: 'Muss ich danach etwas zahlen?', a: 'Nein. Ein Abo gibt es nur, wenn Sie eine Website oder Social Media möchten.' },
+    ],
+    final: { text: 'Prüfen Sie, wie man Sie auf der Karte sieht.', button: 'Mein Profil prüfen' },
+  },
+  'website-google-search': {
+    title: 'Google Search schaut auf Ihre Website.',
+    sub: 'Menschen suchen bei Google nicht nach „Elektriker“, sondern nach einer konkreten Arbeit: „Leitungen erneuern“, „Wallbox installieren“. Wir bauen eine Website, die auf jede dieser Suchen eine Antwort hat — damit Google Sie zeigt und man Sie anruft.',
+    priceLink: 'Website ab 30 € im Monat',
+    problem: {
+      title: 'Google zeigt den, der die Frage genauer beantwortet.',
+      text: 'Hat Ihre Website nur eine Seite „Alle Elektroarbeiten“, versteht Google nicht, dass Sie Wallboxen installieren — und zeigt den, der dafür eine eigene Seite hat.',
+      outro: 'Eine Website, die einmal gebaut und dann vergessen wurde, rutscht mit der Zeit nach unten — auch wenn sie schön aussieht.',
+      visual: 'serp',
+    },
+    article: { href: '/ratgeber/wie-funktioniert-lokales-seo', label: 'Wie wählt Google aus, wen es zeigt? Im Ratgeber erklärt' },
+    needsTitle: 'Was Ihre Website braucht, damit Google Sie zeigt — und wobei wir helfen',
+    needs: [
+      { need: 'Eine Seite für jede wichtige Leistung', why: 'Mit Ort und Region im Text, damit Google sie der passenden Suche zuordnet.', help: 'Wir schreiben bis zu 10 Leistungsseiten. Sie lesen nur gegen und geben frei.' },
+      { need: 'Antworten auf die Fragen Ihrer Kunden', why: 'Wer „Was kostet ein neuer Sicherungskasten im Altbau?“ sucht, findet die Antwort bei Ihnen — und ruft an.', help: 'Jeden Monat schreiben wir neue Artikel und kurze Begriffserklärungen.' },
+      { need: 'Belege, dass man Ihnen trauen kann', why: 'Fotos Ihrer Arbeiten, Bewertungen und klare Kontaktwege.', help: 'Wir bauen sie ein und halten sie aktuell.' },
+      { need: 'Eine Website, die nicht stehen bleibt', why: 'Neue Inhalte zeigen Google, dass der Betrieb aktiv ist.', help: 'Hosting, Updates und Änderungen sind im Preis. Einmal im Monat bekommen Sie einen kurzen Bericht: wie viele Besucher kamen und wie viele angefragt haben.' },
+    ],
+    fromYou: 'Von Ihnen: ein Gespräch von 30–45 Minuten und Fotos Ihrer Arbeiten. Die Texte schreiben wir, Sie geben nur frei.',
+    faq: [
+      { q: 'Ich habe schon eine Website. Wozu eine neue?', a: 'Eine neue ist nicht nötig. Wir prüfen zuerst Ihre: Bringt sie schon Kunden, sagen wir Ihnen das. Wenn nicht, verbessern wir, was sie bremst.' },
+      { q: 'Brauche ich eine Website, wenn ich ein Google-Profil habe?', a: 'Für den Anfang reicht das Profil. Sobald es mehrere Leistungen oder Orte gibt, wird die Website zur Quelle, aus der Google und KI ihre Informationen über Sie holen.' },
+      { q: 'Wann sehe ich Ergebnisse?', a: 'Die ersten Seiten erscheinen nach einigen Wochen in der Suche, spürbar mehr Anfragen kommen nach einigen Monaten.' },
+      { q: 'Wohin gehen die Anfragen?', a: 'Direkt an Ihre E-Mail-Adresse.' },
+    ],
+    final: { text: 'Prüfen Sie, ob Google Ihre Website findet.', button: 'Meine Website prüfen' },
+  },
+  'social-media': {
+    title: 'In sozialen Netzwerken sehen Kunden Menschen.',
+    sub: 'Bevor jemand einen Handwerker ins Haus lässt, will er sehen, wer kommt. Wir betreuen Ihre Social-Media-Kanäle und zeigen Ihr Team und Ihre Arbeit — Influencer müssen Sie dafür nicht werden.',
+    priceLink: '199 € im Monat, auch ohne Website',
+    problem: {
+      title: 'Der Kunde hat Sie schon gefunden. Jetzt prüft er Sie.',
+      text: 'Jemand findet Sie auf der Karte und schaut auf Instagram — dort ist der letzte Beitrag von vorletztem Jahr. Gibt es den Betrieb überhaupt noch? Wer kommt da zu mir?',
+      outro: 'Social Media bringt selten von allein Aufträge. Aber es entscheidet, ob jemand anruft, der Sie bei Google schon gefunden hat.',
+      visual: 'social',
+    },
+    needsTitle: 'Was Ihr Profil braucht, damit man Sie anruft — und wobei wir helfen',
+    needs: [
+      { need: 'Ein lebendiges Profil', why: 'Regelmäßige Beiträge zeigen: Der Betrieb arbeitet.', help: 'Wir erstellen jeden Monat einen Plan und veröffentlichen Beiträge und kurze Videos.' },
+      { need: 'Gesichter', why: 'Man will sehen, wer ins Haus kommt.', help: 'Wir zeigen Sie und Ihr Team — oder, wenn Sie nicht vor die Kamera möchten, Ihre Arbeit und Ihr Werkzeug.' },
+      { need: 'Echte Arbeiten', why: '„Vorher und nachher“ erklärt Qualität besser als jeder Werbespruch.', help: 'Aus Ihren Fotos von der Baustelle machen wir Beiträge mit kurzen Erklärungen.' },
+      { need: 'Überall dasselbe Bild', why: 'Wer Sie bei Google und auf Instagram sieht, soll denselben Betrieb erkennen.', help: 'Dieselben Fotos kommen auch in Ihr Google-Profil und auf Ihre Website.' },
+    ],
+    fromYou: 'Von Ihnen: Fotos und kurze Videos von den Einsätzen in den Chat schicken und einmal im Monat den Plan freigeben. Was und wie Sie filmen, zeigen wir Ihnen. Texte und Veröffentlichung übernehmen wir.',
+    faq: [
+      { q: 'Muss ich selbst vor die Kamera?', a: 'Nicht unbedingt. Arbeiten, Werkzeug und Team zeigen auch die Menschen hinter dem Betrieb.' },
+      { q: 'Bringt Social Media mir Aufträge?', a: 'Direkt eher selten. Es überzeugt die, die Sie bei Google schon gefunden haben, dass es Sie wirklich gibt und man Sie anrufen kann.' },
+      { q: 'Geht auch nur Social Media, ohne Website?', a: 'Ja, für 199 € im Monat.' },
+      { q: 'Welche Plattformen betreuen Sie und wie viele Beiträge gibt es?', a: 'Das legen wir im ersten Gespräch passend zu Ihrer Branche fest. Die Zahl der Beiträge steht im Monatsplan, den Sie freigeben.' },
+      { q: 'Und wenn wir nichts zu zeigen haben?', a: 'Doch: Jeder Einsatz ist ein „Vorher und nachher“, jede Kundenfrage ein Thema für einen Beitrag.' },
+    ],
+    final: { text: 'Menschen wählen Menschen. Zeigen Sie Ihre.', button: 'Meine Kanäle prüfen' },
+  },
+}
+
+/** Visual im Problem-Block — je Kanal ein kleines Mockup. */
+function ProblemVisual({ kind }: { kind: ServiceContent['problem']['visual'] }) {
+  const muted: React.CSSProperties = { fontSize: 13, color: 'var(--muted)' }
+  if (kind === 'chat') {
+    return (
+      <div className="d-card" style={{ padding: 'clamp(20px, 2.4vw, 28px)', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ alignSelf: 'flex-end', maxWidth: 320, backgroundColor: 'var(--ink)', color: '#fff', borderRadius: '18px 18px 4px 18px', padding: '12px 16px', fontSize: 15, lineHeight: 1.5 }}>
+          Kannst du mir einen Elektriker in Siegen empfehlen?
+        </div>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <IconTile kind="ki" small />
+          <div style={{ flex: 1 }}>
+            <p style={{ margin: '0 0 10px', fontSize: 15, lineHeight: 1.55 }}>Gern, diese Betriebe werden häufig empfohlen:</p>
+            {['Elektro Becker', 'Schmidt Elektrotechnik', 'Voltwerk Siegen'].map(n => (
+              <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', marginBottom: 6, borderRadius: 12, backgroundColor: 'var(--bone)', fontSize: 14.5, fontWeight: 700 }}>
+                <span aria-hidden style={{ color: '#E9A100' }}>★</span>{n}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, border: '1px dashed #C9C5F7', fontSize: 14 }}>
+          <span aria-hidden style={{ width: 9, height: 9, borderRadius: '50%', backgroundColor: '#E5484D' }} />
+          <span><strong>Ihr Betrieb</strong> <span style={muted}>— nicht genannt</span></span>
+        </div>
+      </div>
+    )
+  }
+  if (kind === 'map') {
+    const rows = [
+      { n: 'Elektro Becker', r: '4,8', c: 60, extra: 'Fotos · Geöffnet bis 22:00', strong: true },
+      { n: 'Schmidt Elektrotechnik', r: '4,5', c: 23, extra: 'Fotos · Geöffnet', strong: false },
+    ]
+    return (
+      <div className="d-card" style={{ overflow: 'hidden' }}>
+        <div aria-hidden style={{ position: 'relative', height: 150, backgroundColor: '#EFEEF8', backgroundImage: 'linear-gradient(#F7F7FB 8px, transparent 8px), linear-gradient(90deg, #F7F7FB 8px, transparent 8px)', backgroundSize: '96px 80px' }}>
+          <div style={{ position: 'absolute', left: '22%', top: 30 }}><PinD size={30} filled /></div>
+          <div style={{ position: 'absolute', left: '58%', top: 58 }}><PinD size={30} filled /></div>
+          <div style={{ position: 'absolute', left: '80%', top: 26 }}><PinD size={30} opacity={0.5} /></div>
+        </div>
+        <div style={{ padding: 'clamp(16px, 2vw, 22px)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {rows.map(x => (
+            <div key={x.n} style={{ padding: '12px 14px', borderRadius: 14, border: `1px solid ${x.strong ? '#C9C5F7' : 'var(--border)'}`, backgroundColor: x.strong ? 'var(--brand-soft)' : '#fff' }}>
+              <div style={{ fontWeight: 800, fontSize: 15 }}>{x.n}</div>
+              <div style={muted}><span style={{ color: '#E9A100' }}>★</span> {x.r} ({x.c}) · {x.extra}</div>
+            </div>
+          ))}
+          <div style={{ padding: '12px 14px', borderRadius: 14, border: '1px dashed #C9C5F7' }}>
+            <div style={{ fontWeight: 800, fontSize: 15 }}>Ihr Betrieb</div>
+            <div style={muted}>Nur Adresse · keine Fotos · keine Bewertungen</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  if (kind === 'serp') {
+    return (
+      <div className="d-card" style={{ overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', borderBottom: '1px solid var(--divider)' }}>
+          <GLogo />
+          <span style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 16px', borderRadius: 999, border: '1px solid var(--border)', fontSize: 14.5 }}>
+            Wallbox installieren Siegen <ChannelIcon kind="search" size={16} />
+          </span>
+        </div>
+        <div style={{ padding: 'clamp(16px, 2vw, 22px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ padding: '14px 16px', borderRadius: 14, backgroundColor: 'var(--bone)' }}>
+            <div style={muted}>voltwerk-siegen.de › wallbox</div>
+            <div style={{ fontWeight: 800, fontSize: 16.5, color: 'var(--electric)', margin: '2px 0 4px' }}>Wallbox-Installation in Siegen: Kosten, Ablauf, Förderung</div>
+            <div style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.5 }}>Mitbewerber mit einer eigenen Seite genau zu dieser Leistung.</div>
+          </div>
+          <div aria-hidden style={{ padding: '4px 16px' }}>
+            <div style={{ width: '40%', height: 9, borderRadius: 5, backgroundColor: 'var(--divider)', marginBottom: 8 }} />
+            <div style={{ width: '70%', height: 12, borderRadius: 6, backgroundColor: 'var(--divider)' }} />
+          </div>
+          <div style={{ padding: '14px 16px', borderRadius: 14, border: '1px dashed #C9C5F7' }}>
+            <div style={muted}>ihr-betrieb.de</div>
+            <div style={{ fontWeight: 800, fontSize: 16, margin: '2px 0 4px' }}>Alle Elektroarbeiten</div>
+            <div style={{ fontSize: 13.5, color: 'var(--muted)' }}>Ihre Website — weit unten, weil es keine Seite zur Wallbox gibt.</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  // social
+  const Tile = ({ bg }: { bg: string }) => <span aria-hidden style={{ aspectRatio: '1', borderRadius: 8, backgroundColor: bg }} />
+  const Profile = ({ name, note, fresh }: { name: string; note: string; fresh: boolean }) => (
+    <div className="d-card" style={{ padding: 16, opacity: fresh ? 1 : 0.7 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+        <span aria-hidden style={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: fresh ? 'var(--electric)' : '#C9C9D6' }} />
+        <span><span style={{ display: 'block', fontWeight: 800, fontSize: 14 }}>{name}</span><span style={muted}>{note}</span></span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 4 }}>
+        {(fresh ? ['#ECEBFF', '#E6F4EE', '#FFF1DE', '#E6F4EE', '#ECEBFF', '#FFF1DE'] : ['#EDEDF2', '#EDEDF2', '#EDEDF2']).map((c, i) => <Tile key={i} bg={c} />)}
+      </div>
+    </div>
+  )
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 14, alignItems: 'start' }}>
+      <Profile name="ihr_betrieb" note="Letzter Beitrag: 2023" fresh={false} />
+      <Profile name="elektro_becker" note="Neuer Beitrag vor 2 Tagen" fresh />
+    </div>
+  )
+}
+
 function ServicePage({ slug }: { slug: string }) {
   const data = servicePages.find(s => s.slug === slug)
-  const [faqOpen, setFaqOpen] = useState<number | null>(null)
+  const content = SERVICE_CONTENT[slug]
+  const [faqOpen, setFaqOpen] = useState<number | null>(0)
+  const moduleLabel = modules.find(m => m.slug === slug)?.label
   usePageMeta(
-    data ? `${data.heroTitle} | RAG` : 'Leistung nicht gefunden | RAG',
-    data ? data.heroSubtitle : 'Diese Leistungsseite existiert nicht.',
+    data ? `${content?.title ?? data.heroTitle} | RAG` : 'Leistung nicht gefunden | RAG',
+    data ? (content?.sub ?? data.heroSubtitle) : 'Diese Leistungsseite existiert nicht.',
   )
 
-  if (!data) {
+  if (!data || !content) {
     return (
       <>
         <Nav />
         <main id="inhalt" style={{ padding: '180px clamp(20px,4vw,48px) 120px' }}>
           <div style={{ ...SHELL }}>
           <h1 className="display" style={{ fontSize: 30, marginBottom: 14 }}>Leistung nicht gefunden</h1>
-          <a href="/services" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>← Zurück zu den Leistungen</a>
+          <a href="/services" className="d-link">← Zurück zu den Leistungen</a>
           </div>
         </main>
         <Footer />
@@ -4977,7 +5217,12 @@ function ServicePage({ slug }: { slug: string }) {
     )
   }
 
-  const others = modules.filter(m => m.slug !== slug)
+  const toForm = () => {
+    const el = document.getElementById('check-form')
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    window.setTimeout(() => (el?.querySelector('input') as HTMLInputElement | null)?.focus({ preventScroll: true }), 500)
+  }
+  const sec: React.CSSProperties = { padding: 'var(--sec-y, 110px) clamp(20px,4vw,48px)', position: 'relative', overflow: 'hidden' }
 
   return (
     <>
@@ -4986,8 +5231,8 @@ function ServicePage({ slug }: { slug: string }) {
       <JsonLd data={{
         '@context': 'https://schema.org',
         '@type': 'Service',
-        name: modules.find(m => m.slug === slug)?.label ?? data.heroTitle,
-        description: data.heroSubtitle,
+        name: moduleLabel ?? content.title,
+        description: content.sub,
         serviceType: data.kicker,
         areaServed: ['Germany', 'Austria', 'Switzerland'],
         provider: { '@type': 'ProfessionalService', name: SITE_NAME },
@@ -4999,26 +5244,23 @@ function ServicePage({ slug }: { slug: string }) {
       <JsonLd data={{
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
-        mainEntity: data.faq.map(f => ({
-          '@type': 'Question',
-          name: f.q,
-          acceptedAnswer: { '@type': 'Answer', text: f.a },
-        })),
+        mainEntity: content.faq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
       }} />
+
+      {/* 1 — Hero + Check-Formular */}
       <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
         <MapBackdrop fade="left" shift={120} pins={false} />
         <div className="d-hide-md" aria-hidden style={{ position: 'absolute', left: 'max(24px, calc(50% - 700px))', bottom: '10%' }}><PinD size={44} opacity={0.45} /></div>
         <div style={{ ...SHELL, position: 'relative' }}>
-          <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Leistungen', href: '/services' }, { label: modules.find(m => m.slug === slug)?.label ?? data.heroTitle }]} tone="light" />
-          {/* Hero mit Check-Formular rechts (Wunsch des Kunden 29.09) — ersetzt den Block #get-audit weiter unten. */}
+          <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Leistungen', href: '/services' }, { label: moduleLabel ?? content.title }]} tone="light" />
           <div className="svc-hero" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 0.9fr)', gap: 'clamp(32px, 5vw, 72px)', alignItems: 'center' }}>
             <div>
-              <div style={{ marginBottom: 20 }}><Kicker icon={channelKindOf(slug)}>{modules.find(m => m.slug === slug)?.label ?? data.kicker}</Kicker></div>
-              <h1 className="display h-lg" style={{ marginBottom: 22, maxWidth: 720 }}>{data.heroTitle}</h1>
-              <p className="lead" style={{ color: 'var(--muted)', maxWidth: 600, margin: '0 0 26px' }}>{data.heroSubtitle}</p>
-              {SERVICE_PACKAGES[slug] && <a href="#pakete" className="d-link" style={{ fontSize: 15.5 }}>Pakete & Preise ansehen <span className="arw">→</span></a>}
+              <div style={{ marginBottom: 20 }}><Kicker icon={channelKindOf(slug)}>{moduleLabel ?? data.kicker}</Kicker></div>
+              <h1 className="display h-lg" style={{ marginBottom: 22, maxWidth: 720 }}>{content.title}</h1>
+              <p className="lead" style={{ color: 'var(--muted)', maxWidth: 600, margin: '0 0 26px' }}>{content.sub}</p>
+              {SERVICE_PACKAGES[slug] && <a href="#pakete" className="d-link" style={{ fontSize: 15.5 }}>{content.priceLink} <span className="arw">↓</span></a>}
             </div>
-            <div style={{ position: 'relative' }}>
+            <div id="check-form" style={{ position: 'relative', scrollMarginTop: 120 }}>
               <RingsBackdrop size={560} style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
               <div className="d-card" style={{ position: 'relative', zIndex: 5, padding: 'clamp(24px, 3vw, 36px)' }}>
                 <p className="kick" style={{ fontSize: 12, marginBottom: 12 }}>Kostenlos · unverbindlich</p>
@@ -5033,84 +5275,112 @@ function ServicePage({ slug }: { slug: string }) {
             </div>
           </div>
         </div>
-        <style>{`@media (max-width: 900px) { .svc-hero { grid-template-columns: minmax(0, 1fr) !important; } }`}</style>
+        <style>{`@media (max-width: 900px) { .svc-hero, .svc-two { grid-template-columns: minmax(0, 1fr) !important; } .svc-needs { grid-template-columns: minmax(0, 1fr) !important; } }`}</style>
       </section>
 
-      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px)' }}>
-        <div style={{ ...SHELL, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(28px, 4vw, 64px)', alignItems: 'start' }}>
-          <div className="svc-rail" style={{ position: 'sticky', top: 96 }}>
-            <div className="d-card-flat" style={{ overflow: 'hidden', backgroundColor: 'var(--bone)', marginBottom: 20 }}><data.Illust /></div>
+      {/* 2 — Problem */}
+      <section style={{ ...sec, backgroundColor: 'var(--paper)' }}>
+        <DotsCorner style={{ right: -80, top: -60 }} />
+        <div className="svc-two" style={{ ...SHELL, position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'clamp(36px, 5.5vw, 88px)', alignItems: 'center' }}>
+          <div>
+            <Reveal><Kicker>Das Problem</Kicker></Reveal>
+            <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 18px' }}>{content.problem.title}</h2></Reveal>
+            <Reveal delay={0.1}>
+              <p style={{ fontSize: 17, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 16px' }}>{content.problem.text}</p>
+              {content.problem.points && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, margin: '0 0 18px' }}>
+                  {content.problem.points.map(p => (
+                    <div key={p} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>{checkIcon()}<span style={{ fontSize: 15.5, lineHeight: 1.5, fontWeight: 600 }}>{p}</span></div>
+                  ))}
+                </div>
+              )}
+              <p style={{ fontSize: 17, lineHeight: 1.6, fontWeight: 700, margin: '0 0 22px' }}>{content.problem.outro}</p>
+              {content.article && <a href={content.article.href} className="d-link" style={{ fontSize: 15 }}>{content.article.label} <span className="arw">→</span></a>}
+            </Reveal>
+          </div>
+          <Reveal delay={0.1} style={{ position: 'relative' }}>
+            <RingsBackdrop size={520} style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
+            <div style={{ position: 'relative' }}><ProblemVisual kind={content.problem.visual} /></div>
+          </Reveal>
+        </div>
+      </section>
 
-            <div className="d-card" style={{ padding: '28px 26px' }}>
-              <h2 className="display" style={{ fontSize: 19, marginBottom: 16 }}>{data.receiveTitle}</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {data.receiveItems.map(item => (
-                  <div key={item} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+      {/* 3 — Was Sie brauchen — und wobei wir helfen */}
+      <section style={{ ...sec, backgroundColor: 'var(--bone)' }}>
+        <div style={{ ...SHELL, position: 'relative' }}>
+          <div style={{ maxWidth: 820 }}>
+            <Reveal><Kicker icon={channelKindOf(slug)}>So kommen Sie dahin</Kicker></Reveal>
+            <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 0' }}>{content.needsTitle}</h2></Reveal>
+          </div>
+          <div className="svc-needs" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 18, marginTop: 'clamp(32px, 4vw, 48px)' }}>
+            {content.needs.map((n, i) => (
+              <Reveal key={n.need} delay={0.05 * i}>
+                <div className="d-card" style={{ height: '100%', boxSizing: 'border-box', padding: 'clamp(22px, 2.6vw, 32px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                     {checkIcon()}
-                    <p style={{ fontSize: 14.5, color: 'var(--ink)', lineHeight: 1.6, margin: 0 }}>{item}</p>
+                    <div>
+                      <p style={{ fontWeight: 800, fontSize: 19, lineHeight: 1.3, margin: '0 0 6px' }}>{n.need}</p>
+                      <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)', margin: 0 }}>{n.why}</p>
+                    </div>
                   </div>
-                ))}
-              </div>
+                  <div style={{ marginTop: 'auto', padding: '14px 16px', borderRadius: 14, backgroundColor: 'var(--brand-soft)' }}>
+                    <p className="kick" style={{ fontSize: 11.5, marginBottom: 6 }}>Wobei wir helfen</p>
+                    <p style={{ fontSize: 15, lineHeight: 1.6, margin: 0 }}>{n.help}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+          <Reveal delay={0.1}>
+            <div className="d-card-flat" style={{ marginTop: 18, padding: '18px 22px', borderRadius: 18, display: 'flex', alignItems: 'center', gap: 14 }}>
+              <span className="d-tile d-tile-sm" aria-hidden><ChannelIcon kind="social" /></span>
+              <p style={{ margin: 0, fontSize: 16, lineHeight: 1.55 }}>{content.fromYou}</p>
             </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* 4 — Preis */}
+      <ServicePackages slug={slug} />
+
+      {/* 5 — FAQ */}
+      <section style={{ ...sec, backgroundColor: 'var(--paper)' }}>
+        <div style={{ ...SHELL, maxWidth: 940 }}>
+          <div style={{ textAlign: 'center', marginBottom: 'clamp(28px, 3.5vw, 44px)' }}>
+            <Reveal><Kicker>FAQ</Kicker></Reveal>
+            <Reveal delay={0.05}><h2 className="display h-md" style={{ marginTop: 16 }}>Häufige Fragen</h2></Reveal>
           </div>
-
-          <div style={{ maxWidth: 680 }}>
-          <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 26px)', marginBottom: 12 }}>{data.whatTitle}</h2>
-          <p style={{ fontSize: 16, color: 'var(--muted)', lineHeight: 1.75, marginBottom: 44 }}>{data.whatBody}</p>
-
-          <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 26px)', marginBottom: 20 }}>{data.howTitle}</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 18, marginBottom: 40 }}>
-            {data.howItems.map(item => (
-              <div key={item.title} style={{ display: 'flex', gap: 14 }}>
-                {checkIcon()}
-                <div>
-                  <p style={{ fontWeight: 800, fontSize: 15.5, color: 'var(--ink)', margin: '2px 0 4px' }}>{item.title}</p>
-                  <p style={{ fontSize: 15, color: 'var(--muted)', lineHeight: 1.65, margin: 0 }}>{item.body}</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {content.faq.map((item, i) => {
+              const open = faqOpen === i
+              return (
+                <div key={item.q} className={open ? 'd-card' : 'd-card-flat'} style={{ borderRadius: 20, overflow: 'hidden' }}>
+                  <button onClick={() => setFaqOpen(open ? null : i)} aria-expanded={open}
+                    style={{ width: '100%', padding: 'clamp(18px, 2vw, 24px) clamp(20px, 2.4vw, 28px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', gap: 16, fontFamily: 'inherit' }}>
+                    <span style={{ fontWeight: 800, fontSize: 'clamp(16px, 1.4vw, 18px)', color: open ? 'var(--electric)' : 'var(--ink)' }}>{item.q}</span>
+                    <span style={{ flexShrink: 0, width: 34, height: 34, borderRadius: 10, backgroundColor: open ? 'var(--electric)' : 'var(--brand-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: open ? 'rotate(45deg)' : 'none', transition: `transform 0.5s ${EASE}, background-color .3s ease` }}>
+                      <svg width="12" height="12" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke={open ? '#fff' : '#2600FF'} strokeWidth="1.8" strokeLinecap="round" /></svg>
+                    </span>
+                  </button>
+                  <div style={{ overflow: 'hidden', maxHeight: open ? 320 : 0, transition: `max-height 0.5s ${EASE}` }}>
+                    <p style={{ margin: 0, padding: '0 clamp(20px, 2.4vw, 28px) 22px', paddingRight: 64, fontSize: 15.5, color: 'var(--muted)', lineHeight: 1.7 }}>{item.a}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 26px)', marginBottom: 12 }}>{data.whyTitle}</h2>
-          <p style={{ fontSize: 16, color: 'var(--muted)', lineHeight: 1.75, marginBottom: 44 }}>{data.whyBody}</p>
-
-          <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 26px)', marginBottom: 16 }}>Häufig gestellte Fragen</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {data.faq.map((item, i) => (
-              <div key={i} className={faqOpen === i ? 'd-card' : 'd-card-flat'} style={{ borderRadius: 16, overflow: 'hidden' }}>
-                <button onClick={() => setFaqOpen(faqOpen === i ? null : i)}
-                  style={{ width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', gap: 16, fontFamily: 'inherit' }}>
-                  <span style={{ fontWeight: 800, fontSize: 15.5, color: faqOpen === i ? 'var(--electric)' : 'var(--ink)' }}>{item.q}</span>
-                  <IconChevron open={faqOpen === i} />
-                </button>
-                <div style={{ overflow: 'hidden', maxHeight: faqOpen === i ? 300 : 0, transition: 'max-height 0.3s ease' }}>
-                  <p style={{ margin: 0, padding: '0 20px 18px', fontSize: 15, color: 'var(--muted)', lineHeight: 1.7 }}>{item.a}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+              )
+            })}
           </div>
         </div>
       </section>
 
-      <ServicePackages slug={slug} />
-
-      <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(60px, 7vw, 96px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)' }}>
-        <div style={{ ...SHELL }}>
-          <Kicker>Weitere Leistungen</Kicker>
-          <h2 className="display" style={{ fontSize: 'clamp(20px, 2.2vw, 28px)', margin: '20px 0 8px' }}>Lokale Sichtbarkeit entsteht selten aus einem einzigen Kanal</h2>
-          <p style={{ fontSize: 14.5, color: 'var(--muted)', lineHeight: 1.75, marginBottom: 32, maxWidth: 560 }}>Die meisten Unternehmen brauchen mehrere Bereiche, die zusammenspielen. Hier ist der Rest des Systems.</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: 16 }}>
-            {others.map(m => (
-              <a key={m.slug} href={`/services/${m.slug}`} className="d-card d-lift" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '24px', textDecoration: 'none' }}>
-                <IconTile kind={channelKindOf(m.slug)} small />
-                <p style={{ fontWeight: 800, fontSize: 17, color: 'var(--ink)', margin: 0 }}>{m.label}</p>
-                <p style={{ fontSize: 14.5, color: 'var(--muted)', margin: 0, lineHeight: 1.55 }}>{m.sentence}</p>
-              </a>
-            ))}
-          </div>
-          <div style={{ marginTop: 28 }}>
-            <a href="/services" className="d-link" style={{ fontSize: 15 }}>Alle Leistungen mit Details ansehen <span className="arw">→</span></a>
+      {/* 6 — Abschlussleiste: zurück zum Formular im Hero */}
+      <section style={{ backgroundColor: 'var(--paper)', padding: '0 clamp(12px, 4vw, 48px) clamp(56px, 7vw, 96px)' }}>
+        <div className="d-panel on-brand" style={{ ...SHELL, maxWidth: 1344, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(32px, 4vw, 56px) clamp(20px, 4.8vw, 72px)' }}>
+          <RingsBackdrop size={700} color="rgba(255,255,255,0.14)" style={{ right: -160, top: -260 }} />
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
+            <h2 className="display" style={{ fontSize: 'clamp(24px, 3vw, 38px)', margin: 0, maxWidth: 720 }}>{content.final.text}</h2>
+            <button type="button" onClick={toForm} className="btn btn-lg btn-on-brand" style={{ flexShrink: 0 }}>
+              {content.final.button} <span className="arw">↑</span>
+            </button>
           </div>
         </div>
       </section>
