@@ -236,12 +236,15 @@ export default function CheckPage() {
                   </>
                 )}
                 {!searching && results && results.length === 0 && (
-                  <p style={{ fontSize: 15, lineHeight: 1.7, margin: 0 }}>Dazu haben wir nichts gefunden. Versuchen Sie es mit dem Namen und dem Ort, z. B. «Elektro Becker München».</p>
+                  <>
+                    <p style={{ fontSize: 15, lineHeight: 1.7, margin: 0 }}>Dazu haben wir nichts gefunden. Versuchen Sie es mit dem Namen und dem Ort, z. B. «Elektro Becker München».</p>
+                    <p style={{ fontSize: 15, lineHeight: 1.7, margin: '10px 0 0' }}><span>Ihr Betrieb ist noch nicht bei Google?</span>{' '}<a href="/start?from=check" className="ul" style={{ color: 'var(--electric)', fontWeight: 700 }}>Starten Sie mit 5 kurzen Fragen →</a></p>
+                  </>
                 )}
               </div>
               <p style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--muted)', margin: '26px 0 0' }}>
                 Ihr Unternehmen ist noch nicht bei Google?{' '}
-                <a href="/#maps" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>Wir erstellen Ihr Google-Profil →</a>
+                <a href="/start?from=check" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>Beantworten Sie 5 kurze Fragen →</a>
               </p>
             </>
           )}

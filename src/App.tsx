@@ -2075,7 +2075,7 @@ function BusinessCheck() {
               </Reveal>
               <Reveal delay={0.22}>
                 <div style={{ marginTop: 28, paddingTop: 22, borderTop: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', gap: '12px 20px', flexWrap: 'wrap' }}>
-                  <p style={{ fontSize: 15, lineHeight: 1.6, color: '#DCD8FF', margin: 0, maxWidth: 340 }}>Ihr Unternehmen ist noch nicht bei Google? Wir erstellen Ihr Google-Profil.</p>
+                  <p style={{ fontSize: 15, lineHeight: 1.6, color: '#DCD8FF', margin: 0, maxWidth: 360 }}><span>Noch keine Website oder kein Google-Profil?</span>{' '}<a href="/start?from=home" style={{ color: '#fff', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3 }}>In 5 Fragen zu Ihrem Plan →</a></p>
                   <button type="button" onClick={() => setOrder(true)} className="btn btn-md btn-on-brand">Google-Profil · 149 € einmalig <span className="arw">→</span></button>
                 </div>
               </Reveal>
@@ -4999,12 +4999,12 @@ function ServicePackages({ slug }: { slug: string }) {
 // was der Kunde haben muss und wobei wir ihm das abnehmen.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Zeile unter dem Check-Formular im Hero: führt je Leistungsseite zur Terminbuchung. */
+/** Zeile unter dem Check-Formular im Hero: führt je Leistungsseite zum Quiz /start. */
 const SERVICE_CONSULT: Record<string, { lead: string; link: string }> = {
-  'google-maps-business-profile': { lead: 'Noch kein Google-Profil?', link: 'Wir richten es mit Ihnen ein — Gespräch buchen' },
-  'website-google-search': { lead: 'Noch keine Website oder unsicher, welche Sie brauchen?', link: 'Kostenlos beraten lassen' },
-  'ai-search-optimization': { lead: 'Sie wissen nicht, wo Sie anfangen sollen?', link: 'Kostenloses Gespräch zur KI-Suche buchen' },
-  'social-media': { lead: 'Noch kein Profil oder keine Zeit dafür?', link: 'Besprechen wir Ihren Kanal — Termin buchen' },
+  'google-maps-business-profile': { lead: 'Noch kein Google-Profil?', link: 'In 2 Minuten zu Ihrem Plan' },
+  'website-google-search': { lead: 'Noch keine Website oder unsicher, welche Sie brauchen?', link: 'Finden Sie es mit 5 kurzen Fragen heraus' },
+  'ai-search-optimization': { lead: 'Sie wissen nicht, wo Sie anfangen sollen?', link: '5 Fragen — und wir zeigen Ihnen den Startpunkt' },
+  'social-media': { lead: 'Noch kein Profil oder keine Zeit dafür?', link: 'Ihre Ausgangslage in 5 Fragen' },
 }
 
 // Beschriftung des Check-Buttons im Hero je Leistungsseite — das Formular ist überall dasselbe (/check).
@@ -5345,7 +5345,6 @@ function ServicePage({ slug }: { slug: string }) {
   const data = servicePages.find(s => s.slug === slug)
   const content = SERVICE_CONTENT[slug]
   const [faqOpen, setFaqOpen] = useState<number | null>(0)
-  const [bookOpen, setBookOpen] = useState(false)
   const moduleLabel = modules.find(m => m.slug === slug)?.label
   usePageMeta(
     data ? `${content?.title ?? data.heroTitle} | RAG` : 'Leistung nicht gefunden | RAG',
@@ -5376,7 +5375,6 @@ function ServicePage({ slug }: { slug: string }) {
 
   return (
     <>
-      {bookOpen && <BookCallModal onClose={() => setBookOpen(false)} />}
       <Nav />
       <main id="inhalt">
       <JsonLd data={{
@@ -5420,7 +5418,7 @@ function ServicePage({ slug }: { slug: string }) {
                 {SERVICE_CONSULT[slug] && (
                   <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--muted)', margin: '16px 0 0' }}>
                     <span>{SERVICE_CONSULT[slug].lead}</span>{' '}
-                    <button type="button" onClick={() => setBookOpen(true)} className="d-link" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', fontWeight: 700, textAlign: 'left' }}>{SERVICE_CONSULT[slug].link} <span className="arw">→</span></button>
+                    <a href={`/start?from=${slug}`} className="d-link" style={{ fontWeight: 700 }}>{SERVICE_CONSULT[slug].link} <span className="arw">→</span></a>
                   </p>
                 )}
               </div>
@@ -5948,6 +5946,9 @@ export default function App() {
   if (/^\/preise\/?$/.test(path)) {
     return <PreisePage />
   }
+  if (/^\/start\/?$/.test(path)) {
+    return <StartQuizPage />
+  }
   if (/^\/glossar\/?$/.test(path)) {
     return <GlossarPage />
   }
@@ -5955,6 +5956,193 @@ export default function App() {
     return <LandingPage />
   }
   return <NotFoundPage />
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// QUIZ /start — für alle, die noch keine Website, kein Google-Profil o. Ä. haben
+// (Wunsch des Kunden, 01.10.2026). 5 Schritte: erst Auswahl, ganz am Ende Text.
+// Ergebnis: «Ihre Ausgangslage» + Empfehlungen + Termin (Google-Kalender, noch Platzhalter).
+// TODO Supabase: Antworten (QuizAnswers + from) in Tabelle `leads` speichern und im Admin anzeigen —
+// Logik siehe Projekt-Doc claude/quiz-start-2026-10.md. Aktuell wird NICHTS gesendet.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Link zur Google-Kalender-Terminbuchung — Platzhalter, bis der Kalender eingerichtet ist. */
+const QUIZ_BOOKING_URL = '#termin-platzhalter'
+
+type QuizHave = 'profile' | 'website' | 'social' | 'none'
+type QuizSource = 'referral' | 'google' | 'portals' | 'social' | 'unknown'
+type QuizGoal = 'calls' | 'service' | 'region' | 'trust'
+type QuizCapacity = 'few' | 'some' | 'many' | 'unknown'
+type QuizAnswers = { have: QuizHave[]; sources: QuizSource[]; goal: QuizGoal | null; capacity: QuizCapacity | null; branche: string; ort: string }
+
+type QuizOption<T extends string> = { id: T; label: string; hint?: string }
+const QUIZ_HAVE: QuizOption<QuizHave>[] = [
+  { id: 'profile', label: 'Google-Profil', hint: 'Eintrag bei Google Maps' },
+  { id: 'website', label: 'Website' },
+  { id: 'social', label: 'Social Media', hint: 'Instagram, Facebook, TikTok …' },
+  { id: 'none', label: 'Noch nichts davon' },
+]
+const QUIZ_SOURCES: QuizOption<QuizSource>[] = [
+  { id: 'referral', label: 'Über Empfehlungen' },
+  { id: 'google', label: 'Über Google' },
+  { id: 'portals', label: 'Über Portale', hint: 'MyHammer, Check24, Gelbe Seiten …' },
+  { id: 'social', label: 'Über Social Media' },
+  { id: 'unknown', label: 'Weiß ich nicht genau' },
+]
+const QUIZ_GOALS: QuizOption<QuizGoal>[] = [
+  { id: 'calls', label: 'Mehr Anrufe und Anfragen' },
+  { id: 'service', label: 'Mehr Kunden für eine bestimmte Leistung' },
+  { id: 'region', label: 'Kunden in einem neuen Ort oder Gebiet' },
+  { id: 'trust', label: 'Professioneller wirken als die Konkurrenz' },
+]
+const QUIZ_CAPACITY: QuizOption<QuizCapacity>[] = [
+  { id: 'few', label: 'Bis zu 5' },
+  { id: 'some', label: '5 bis 15' },
+  { id: 'many', label: 'Mehr als 15' },
+  { id: 'unknown', label: 'Weiß ich nicht' },
+]
+
+type QuizRec = { title: string; text: string; href: string; kind: ChannelKind }
+function quizRecommendations(a: QuizAnswers): QuizRec[] {
+  const has = (h: QuizHave) => a.have.includes(h)
+  const recs: QuizRec[] = []
+  if (!has('profile')) recs.push({ kind: 'maps', title: 'Zuerst: Google-Profil', text: 'Wer Sie in der Nähe sucht, schaut auf die Karte. Ohne Profil tauchen Sie dort nicht auf. Das ist der schnellste Start — schlüsselfertig für 149 € einmalig.', href: '/services/google-maps-business-profile' })
+  if (!has('website')) recs.push({ kind: 'search', title: 'Eine Website, die Fragen beantwortet', text: 'Damit Google und die KI verstehen, was Sie anbieten und wo. Eine eigene Seite pro Leistung bringt Anfragen genau für die Arbeiten, die Sie wollen.', href: '/services/website-google-search' })
+  else if (a.goal === 'service' || a.goal === 'region') recs.push({ kind: 'search', title: 'Seiten für Ihre Leistungen und Orte', text: 'Ihre Website ist eine gute Basis. Mit eigenen Seiten für die Leistung oder den Ort, um den es Ihnen geht, zeigt Google Sie genau bei diesen Suchen.', href: '/services/website-google-search' })
+  if (a.sources.includes('portals')) recs.push({ kind: 'maps', title: 'Weniger abhängig von Portalen', text: 'Portale nehmen Provision und zeigen Ihre Konkurrenz direkt daneben. Eigene Sichtbarkeit bei Google bringt Anfragen ohne Zwischenhändler.', href: '/services/google-maps-business-profile' })
+  if (a.goal === 'trust' || (!has('social') && recs.length < 2)) recs.push({ kind: 'social', title: 'Social Media, das Vertrauen schafft', text: 'Wer Sie gefunden hat, prüft Sie. Ein lebendiges Profil mit Team und echten Arbeiten macht aus dem Klick einen Anruf.', href: '/services/social-media' })
+  if ((has('profile') && has('website')) || a.capacity === 'many') recs.push({ kind: 'ki', title: 'Sichtbar in der KI-Suche', text: 'Immer mehr Kunden fragen ChatGPT oder sehen die KI-Übersicht bei Google. Genannt wird, über wen es klare, übereinstimmende Informationen gibt.', href: '/services/ai-search-optimization' })
+  return recs.slice(0, 3)
+}
+
+function QuizOptionTile({ label, hint, selected, multi, onClick }: { label: string; hint?: string; selected: boolean; multi: boolean; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} aria-pressed={selected}
+      style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', padding: '16px 18px', borderRadius: 16, cursor: 'pointer', fontFamily: 'inherit', color: 'var(--ink)', backgroundColor: selected ? 'var(--brand-soft)' : '#fff', border: `${selected ? 2 : 1}px solid ${selected ? 'var(--electric)' : 'var(--border)'}`, boxShadow: selected ? 'none' : '0 4px 14px rgba(11,11,26,0.04)', transition: 'background-color .2s, border-color .2s' }}>
+      <span aria-hidden style={{ flexShrink: 0, width: 24, height: 24, borderRadius: multi ? 7 : 999, border: `2px solid ${selected ? 'var(--electric)' : '#C9C5F7'}`, backgroundColor: selected ? 'var(--electric)' : '#fff', display: 'grid', placeItems: 'center' }}>
+        {selected && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>}
+      </span>
+      <span>
+        <span style={{ display: 'block', fontSize: 16.5, fontWeight: 700, lineHeight: 1.35 }}>{label}</span>
+        {hint && <span style={{ display: 'block', fontSize: 14, color: 'var(--muted)', lineHeight: 1.45, marginTop: 2 }}>{hint}</span>}
+      </span>
+    </button>
+  )
+}
+
+function StartQuizPage() {
+  usePageMeta('In 5 Fragen zu Ihrem Plan | RAG', 'Noch keine Website oder kein Google-Profil? Beantworten Sie 5 kurze Fragen — wir zeigen, womit Sie anfangen sollten.')
+  const from = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('from') ?? '' : ''
+  const [step, setStep] = useState(0)
+  const [a, setA] = useState<QuizAnswers>({ have: [], sources: [], goal: null, capacity: null, branche: '', ort: '' })
+  const TOTAL = 5
+  const done = step >= TOTAL
+  const toggle = <K extends 'have' | 'sources'>(key: K, id: QuizAnswers[K][number], exclusive?: string) => setA(prev => {
+    const cur = prev[key] as string[]
+    let next: string[]
+    if (cur.includes(id)) next = cur.filter(x => x !== id)
+    else if (id === exclusive) next = [id]
+    else next = [...cur.filter(x => x !== exclusive), id]
+    return { ...prev, [key]: next }
+  })
+  const canNext = [a.have.length > 0, a.sources.length > 0, !!a.goal, !!a.capacity, a.branche.trim().length > 1 && a.ort.trim().length > 1][step]
+  const next = () => { setStep(s => s + 1); window.scrollTo({ top: 0, behavior: 'smooth' }) }
+  const back = () => setStep(s => Math.max(0, s - 1))
+  // Später an Supabase senden: { ...a, from, createdAt }
+  const recs = done ? quizRecommendations(a) : []
+  const label = <T extends string>(list: QuizOption<T>[], id: T | null) => list.find(o => o.id === id)?.label ?? ''
+  const field: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '15px 18px', borderRadius: 14, border: '1px solid var(--border)', fontSize: 16, fontFamily: 'inherit', color: 'var(--ink)', backgroundColor: '#fff', outline: 'none' }
+
+  const questions: { title: string; hint?: string; body: React.ReactNode }[] = [
+    { title: 'Was haben Sie schon?', hint: 'Mehrere Antworten möglich', body: QUIZ_HAVE.map(o => <QuizOptionTile key={o.id} label={o.label} hint={o.hint} multi selected={a.have.includes(o.id)} onClick={() => toggle('have', o.id, 'none')} />) },
+    { title: 'Wie kommen neue Kunden heute zu Ihnen?', hint: 'Mehrere Antworten möglich', body: QUIZ_SOURCES.map(o => <QuizOptionTile key={o.id} label={o.label} hint={o.hint} multi selected={a.sources.includes(o.id)} onClick={() => toggle('sources', o.id, 'unknown')} />) },
+    { title: 'Was ist Ihnen gerade am wichtigsten?', body: QUIZ_GOALS.map(o => <QuizOptionTile key={o.id} label={o.label} multi={false} selected={a.goal === o.id} onClick={() => setA(p => ({ ...p, goal: o.id }))} />) },
+    { title: 'Wie viele neue Aufträge im Monat könnten Sie noch annehmen?', body: QUIZ_CAPACITY.map(o => <QuizOptionTile key={o.id} label={o.label} multi={false} selected={a.capacity === o.id} onClick={() => setA(p => ({ ...p, capacity: o.id }))} />) },
+    { title: 'Zum Schluss: Womit und wo sind Sie tätig?', body: (
+      <>
+        <label style={{ display: 'block' }}>
+          <span style={{ display: 'block', fontSize: 14, fontWeight: 700, marginBottom: 8 }}>Branche</span>
+          <input style={field} value={a.branche} onChange={e => setA(p => ({ ...p, branche: e.target.value }))} placeholder="z. B. Elektriker, Friseur, Physiotherapie" autoComplete="organization-title" />
+        </label>
+        <label style={{ display: 'block' }}>
+          <span style={{ display: 'block', fontSize: 14, fontWeight: 700, marginBottom: 8 }}>Ort oder Region</span>
+          <input style={field} value={a.ort} onChange={e => setA(p => ({ ...p, ort: e.target.value }))} placeholder="z. B. Graz und Umgebung" autoComplete="address-level2" />
+        </label>
+      </>
+    ) },
+  ]
+
+  return (
+    <>
+      <Nav />
+      <main id="inhalt">
+        <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(130px, 15vh, 170px) clamp(20px,4vw,48px) var(--sec-y, 110px)', position: 'relative', overflow: 'hidden', minHeight: '80vh' }}>
+          <MapBackdrop fade="center" pins={!done} />
+          <div style={{ position: 'relative', maxWidth: done ? 980 : 680, margin: '0 auto' }}>
+            {!done ? (
+              <>
+                <div style={{ textAlign: 'center', marginBottom: 28 }}>
+                  <Kicker>In 5 Fragen zu Ihrem Plan</Kicker>
+                  <div aria-hidden style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 18 }}>
+                    {Array.from({ length: TOTAL }).map((_, i) => (
+                      <span key={i} style={{ width: i === step ? 36 : 18, height: 6, borderRadius: 999, backgroundColor: i <= step ? 'var(--electric)' : '#DAD8F5', transition: 'width .3s, background-color .3s' }} />
+                    ))}
+                  </div>
+                </div>
+                <div className="d-card" style={{ padding: 'clamp(24px, 3.4vw, 44px)' }}>
+                  <h1 className="display" style={{ fontSize: 'clamp(24px, 2.6vw, 34px)', lineHeight: 1.2, margin: 0 }}>{questions[step].title}</h1>
+                  {questions[step].hint && <p style={{ fontSize: 14.5, color: 'var(--muted)', margin: '8px 0 0' }}>{questions[step].hint}</p>}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 24 }}>{questions[step].body}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 28 }}>
+                    {step > 0 ? <button type="button" onClick={back} className="d-link" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', fontWeight: 700, fontSize: 15 }}>← Zurück</button> : <span />}
+                    <button type="button" onClick={next} disabled={!canNext} className="btn btn-md btn-electric" style={{ opacity: canNext ? 1 : 0.4, cursor: canNext ? 'pointer' : 'not-allowed' }}>
+                      {step === TOTAL - 1 ? 'Auswertung ansehen' : 'Weiter'} <span className="arw">→</span>
+                    </button>
+                  </div>
+                </div>
+                <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted)', margin: '18px 0 0' }}>Kostenlos · ohne Anmeldung · etwa 2 Minuten</p>
+              </>
+            ) : (
+              <>
+                <div style={{ textAlign: 'center', maxWidth: 760, margin: '0 auto' }}>
+                  <Kicker>Ihre Ausgangslage</Kicker>
+                  <h1 className="display h-md" style={{ margin: '18px 0 14px' }}>Das ist Ihr Startpunkt.</h1>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+                    {[`${a.branche.trim()} · ${a.ort.trim()}`, ...a.have.map(h => label(QUIZ_HAVE, h)), label(QUIZ_GOALS, a.goal)].filter(Boolean).map(t => (
+                      <span key={t} style={{ padding: '7px 14px', borderRadius: 999, backgroundColor: '#fff', border: '1px solid var(--border)', fontSize: 14, fontWeight: 700 }}>{t}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="svc-needs" style={{ display: 'grid', gridTemplateColumns: `repeat(${recs.length}, minmax(0, 1fr))`, gap: 16, marginTop: 'clamp(32px, 4vw, 48px)' }}>
+                  {recs.map(r => (
+                    <a key={r.title} href={r.href} className="d-card d-lift" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 'clamp(22px, 2.4vw, 30px)', color: 'var(--ink)', textDecoration: 'none' }}>
+                      <IconTile kind={r.kind} />
+                      <h2 className="display" style={{ fontSize: 'clamp(19px, 1.7vw, 22px)', lineHeight: 1.25, margin: '6px 0 0' }}>{r.title}</h2>
+                      <p style={{ fontSize: 15.5, lineHeight: 1.6, color: 'var(--muted)', margin: 0 }}>{r.text}</p>
+                      <span className="d-link" style={{ marginTop: 'auto', fontSize: 15 }}>Mehr dazu <span className="arw">→</span></span>
+                    </a>
+                  ))}
+                </div>
+                <div className="d-panel on-brand" style={{ marginTop: 24, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(28px, 3.6vw, 48px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap', borderRadius: 28 }}>
+                  <RingsBackdrop size={600} color="rgba(255,255,255,0.14)" style={{ right: -160, top: -220 }} />
+                  <div style={{ position: 'relative', maxWidth: 560 }}>
+                    <h2 className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 30px)', margin: '0 0 10px', color: '#fff' }}>Besprechen wir Ihren Plan</h2>
+                    <p style={{ fontSize: 16, lineHeight: 1.6, color: '#DCD8FF', margin: 0 }}>Wählen Sie einen Termin für ein kostenloses Gespräch von 20 Minuten. Wir gehen Ihre Antworten gemeinsam durch und sagen, womit Sie anfangen sollten.</p>
+                  </div>
+                  <a href={QUIZ_BOOKING_URL} target={QUIZ_BOOKING_URL.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" className="btn btn-lg btn-on-brand" style={{ position: 'relative', flexShrink: 0 }}>Termin wählen <span className="arw">→</span></a>
+                </div>
+                <p style={{ textAlign: 'center', margin: '20px 0 0' }}>
+                  <button type="button" onClick={() => setStep(0)} className="d-link" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', fontWeight: 700, fontSize: 15 }}>Antworten ändern</button>
+                </p>
+                {from && <span hidden data-from={from} />}
+              </>
+            )}
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </>
+  )
 }
 
 // Unknown URL — real "not found" instead of silently rendering the landing page.
