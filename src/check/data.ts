@@ -2,16 +2,18 @@
 // SICHTBARKEITS-CHECK — Datenschicht (Stand 25.09.2026: Demo-Modus)
 //
 // Alles, was später echte Dienste braucht, läuft über diese Datei:
-//   • Unternehmenssuche  → Google Places API (New): Autocomplete + Place Details,
-//                          über einen eigenen Proxy (Supabase Edge Function), damit
-//                          der API-Schlüssel nie im Browser landet.
-//   • Quellen finden     → Edge Function lädt die Website und sucht Social-Links.
+//   • Unternehmenssuche  → Google Places API (New): Text Search + Place Details,
+//                          über Supabase Edge Functions (supabase/functions/places-*),
+//                          damit der API-Schlüssel nie im Browser landet.
+//   • Quellen finden     → Edge Function discover-sources lädt die Website und sucht Social-Links.
+//   • Analyse            → Edge Function audit-collect (nach «Analyse starten»): Google-Profil,
+//                          Wettbewerber, Website-Prüfung → checks.audit + checks.report_draft.
 //   • Anmeldung          → Supabase Auth: E-Mail + Passwort (ohne E-Mail-Bestätigung),
 //                          «Passwort vergessen» per Link → /passwort-neu.
 //   • Speichern          → Supabase-Tabellen checks + messages (Schema: supabase/schema.sql).
 //
 // Solange VITE_PLACES_PROXY nicht gesetzt ist, liefert die Unternehmenssuche
-// Beispieldaten (DEMO). Konto, Check und Nachrichten laufen bereits über Supabase.
+// Beispieldaten (DEMO). Wert: https://<projekt>.supabase.co/functions/v1 (siehe .env.example). Konto, Check und Nachrichten laufen bereits über Supabase.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { User } from '@supabase/supabase-js'
@@ -31,6 +33,9 @@ export type Place = {
   website: string | null
   phone: string | null
   mapsUrl: string
+  country?: string
+  lat?: number
+  lng?: number
 }
 
 export type SourceKey = 'website' | 'instagram' | 'facebook' | 'linkedin' | 'tiktok'
@@ -80,14 +85,14 @@ export function newSessionToken(): string {
   try { return crypto.randomUUID() } catch { return Math.random().toString(36).slice(2) + Date.now().toString(36) }
 }
 
-/** Vorschläge während der Eingabe (Places Autocomplete). */
-export async function searchCompanies(query: string, sessionToken: string): Promise<Suggestion[]> {
+/** Trefferliste nach Klick auf «Finden» (Places Text Search, Gebiet DACH). */
+export async function searchCompanies(query: string, _sessionToken?: string): Promise<Suggestion[]> {
   const q = query.trim()
   if (q.length < 2) return []
   if (PROXY) {
-    const res = await fetch(`${PROXY}/places-autocomplete`, {
+    const res = await fetch(`${PROXY}/places-search`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: q, sessionToken }),
+      body: JSON.stringify({ query: q }),
     })
     if (!res.ok) throw new Error('search failed')
     return (await res.json()) as Suggestion[]
@@ -99,11 +104,11 @@ export async function searchCompanies(query: string, sessionToken: string): Prom
 }
 
 /** Details zum gewählten Unternehmen (Places Details). */
-export async function getCompany(id: string, sessionToken: string): Promise<Place | null> {
-  if (PROXY) {
+export async function getCompany(id: string, _sessionToken?: string): Promise<Place | null> {
+  if (PROXY && !id.startsWith('demo')) {
     const res = await fetch(`${PROXY}/places-details`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ placeId: id, sessionToken }),
+      body: JSON.stringify({ placeId: id }),
     })
     if (!res.ok) return null
     return (await res.json()) as Place
@@ -113,7 +118,7 @@ export async function getCompany(id: string, sessionToken: string): Promise<Plac
   return DEMO_PLACES.find(p => p.id === id) ?? null
 }
 
-/** Website + Social-Profile (später: Edge Function liest die Website und sucht Links). */
+/** Website + Social-Profile (Edge Function liest die Website und sucht Links). */
 export async function discoverSources(place: Place): Promise<Source[]> {
   if (PROXY) {
     const res = await fetch(`${PROXY}/discover-sources`, {
@@ -228,6 +233,21 @@ export async function loadLatestCheck(): Promise<CheckRow | null> {
     .order('created_at', { ascending: false }).limit(1).maybeSingle()
   if (error) { console.error(error); return null }
   return data as CheckRow | null
+}
+
+/**
+ * Startet die automatische Datensammlung (Edge Function audit-collect) für einen bestätigten Check.
+ * Läuft im Hintergrund; der Server ignoriert Wiederholungen innerhalb von 30 Minuten.
+ */
+export async function runAudit(checkId: string): Promise<void> {
+  if (!PROXY) return
+  const { data } = await (await getSupabase()).auth.getSession()
+  const token = data.session?.access_token
+  if (!token) return
+  await fetch(`${PROXY}/audit-collect`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ checkId }), keepalive: true,
+  }).catch(() => undefined)
 }
 
 /** Kunde bestätigt Website + Profile im Kundenbereich → Analyse kann starten. */

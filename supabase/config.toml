@@ -1,0 +1,17 @@
+# Supabase CLI — nur die Einstellungen für die Edge Functions.
+# Deploy: npx supabase functions deploy --project-ref bmajnndqvpemerecvjfz
+project_id = "bmajnndqvpemerecvjfz"
+
+# Die Website ruft die Funktionen ohne Supabase-JWT auf (Publishable Key ist kein JWT).
+# Schutz: ALLOWED_ORIGINS + Drossel; audit-collect prüft die Kundensitzung selbst.
+[functions.places-search]
+verify_jwt = false
+
+[functions.places-details]
+verify_jwt = false
+
+[functions.discover-sources]
+verify_jwt = false
+
+[functions.audit-collect]
+verify_jwt = false

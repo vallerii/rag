@@ -981,7 +981,17 @@ const WEBSITE_PACKAGES: { id: PackageId; tag: string; name: string; price: numbe
 const SOCIAL_ADDON = {
   name: 'Social-Media-Betreuung', price: 199,
   thesis: 'Regelmäßig präsent in sozialen Netzwerken — ohne selbst planen und posten zu müssen.',
-  includes: ['Redaktionsplan', 'Vorbereitung der Beiträge', 'Regelmäßiges Posten', 'Themen passend zu Ihren Leistungen und Ihrer Region'],
+  includes: [
+    'Ein Hauptkanal nach Wahl — dort, wo Ihre Kunden sind',
+    'Beratungsgespräch zum Start: Ziele, Leistungen, Einsatzgebiet',
+    'Zielgruppenanalyse: wer Ihre Kunden sind und was sie sehen wollen',
+    'Positionierung: wofür man Ihren Betrieb kennen soll',
+    'Analyse Ihres bestehenden Profils — oder Aufbau von null',
+    'Profil-Optimierung: Name, Bio, Kategorie, Kontakt-Buttons und Highlights — damit man Sie in der Suche findet und sofort versteht, wer Sie sind',
+    'Redaktionsplan jeden Monat zur Freigabe',
+    '3 Beiträge pro Woche und 3 Stories am Tag (wo der Kanal Stories hat)',
+    'Weitere Kanäle auf Wunsch gegen Aufpreis',
+  ],
 }
 
 function useEscape(onClose: () => void) {
@@ -1352,7 +1362,7 @@ function ServicesNavDropdown({ fg }: { fg: string }) {
     <div style={{ position: 'relative' }} onMouseEnter={show} onMouseLeave={hide}
       onFocus={show} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) hide() }}>
       <a href="/services" className="ul" style={{ fontWeight: 600, fontSize: 15, color: fg, display: 'flex', alignItems: 'center', gap: 6 }}>
-        Leistungen
+        Wo man Sie sucht
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }}>
           <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
@@ -1383,7 +1393,7 @@ function ServicesNavDropdown({ fg }: { fg: string }) {
           </a>
         ))}
         <a href="/services" style={{ display: 'block', padding: '12px 13px', borderTop: '1px solid var(--divider)', marginTop: 6, fontSize: 13.5, fontWeight: 700, color: 'var(--electric)', textDecoration: 'none' }}>
-          Alle Leistungen ansehen →
+          Überblick →
         </a>
       </div>
       </div>
@@ -1446,7 +1456,7 @@ function Nav() {
           RAG<span style={{ color: 'var(--electric)' }}>.</span>
         </a>
 
-        <div className="hidden-mobile nav-links" style={{ display: 'flex', gap: 30, alignItems: 'center' }}>
+        <div className="hidden-mobile nav-links" style={{ display: 'flex', gap: 'clamp(16px, 1.7vw, 30px)', alignItems: 'center', marginLeft: 32, whiteSpace: 'nowrap' }}>
           <ServicesNavDropdown fg={fg} />
           {/* FAQ removed from the header; 'Ergebnisse' hidden while the results block is off: ['Ergebnisse', 'results'], ['FAQ', 'faq'] */}
           {[['Preise', '/preise'], ['Ratgeber', '/ratgeber']].map(([l, target]) => (
@@ -1475,7 +1485,7 @@ function Nav() {
       {open && (
         <nav aria-label="Mobile Navigation" className="show-mobile" style={{ display: 'none', flexDirection: 'column', gap: 2, padding: '10px 24px 26px', backgroundColor: '#fff', borderTop: '1px solid var(--line)' }}>
           {/* FAQ removed from the header; 'Ergebnisse' hidden while the results block is off: ['Ergebnisse', 'results'], ['FAQ', 'faq'] */}
-          {[['Leistungen', '/services'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar']].map(([l, target]) => (
+          {[['Wo man Sie sucht', '/services'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar']].map(([l, target]) => (
             <a key={l} href={linkHref(target)} style={{ fontWeight: 600, fontSize: 22, letterSpacing: '-0.03em', color: '#07070C', textDecoration: 'none', padding: '10px 0', borderBottom: '1px solid var(--line-soft)' }} onClick={() => setOpen(false)}>{l}</a>
           ))}
           <span style={{ fontWeight: 500, fontSize: 14, color: 'var(--muted)', padding: '14px 0 10px' }}>+49 30 12345678</span>
@@ -1873,8 +1883,8 @@ function ChannelSearch() {
       {order && <PackageOrderModal initial={order} onClose={() => setOrder(null)} />}
       <ChannelBlock
         id="search" label="Google Search" tone="bone"
-        title={<>Google Search schaut auf <span className="serif italic-serif">Ihre Website.</span></>}
-        body="Ihre Website muss in einfachen Worten erklären, was Sie tun, wo Sie arbeiten und warum man Ihnen vertrauen kann — für Menschen und für Google."
+        title={<>Google Search schaut nicht nur auf <span className="serif italic-serif">Ihre Website.</span></>}
+        body="Über den Links stehen heute eine KI-Antwort und eine Karte mit drei Betrieben. Google sammelt Informationen über Sie im ganzen Netz: auf Ihrer Website, im Google-Profil, in Bewertungen und sozialen Netzwerken. Wir sorgen dafür, dass Google Sie findet und jede Kundenfrage beantworten kann."
         actions={<>
           <a href="/services/website-google-search" className="btn btn-md btn-ink">Mehr zu Website & Google Search <span className="arw">→</span></a>
         </>}
@@ -2028,7 +2038,7 @@ function ChannelSummary() {
 
         <Reveal delay={0.2}>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'clamp(32px, 3.5vw, 48px)' }}>
-            <a href="/services" className="btn btn-lg btn-paper">Alle Leistungen ansehen <span className="arw">→</span></a>
+            <a href="/services" className="btn btn-lg btn-paper">Zum Überblick <span className="arw">→</span></a>
           </div>
         </Reveal>
       </div>
@@ -2389,7 +2399,7 @@ function LocalPromotion() {
             />
             <Reveal delay={0.12}>
               <a href="/services" className="btn btn-lg btn-ink" style={{ marginTop: 32 }}>
-                Alle Leistungen ansehen <span className="arw">→</span>
+                Zum Überblick <span className="arw">→</span>
               </a>
             </Reveal>
           </div>
@@ -3434,7 +3444,7 @@ function Footer() {
             <a href={homeHref('audit-quiz')} className="btn btn-md btn-electric">Sichtbarkeits-Check starten <span className="arw">→</span></a>
           </div>
           {[
-            { title: 'Navigation', items: [['Sichtbarkeit', 'kanaele'], ['Leistungen', '/services'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], ['FAQ', 'faq']] as [string, string][] },
+            { title: 'Navigation', items: [['Sichtbarkeit', 'kanaele'], ['Wo man Sie sucht', '/services'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], ['FAQ', 'faq']] as [string, string][] },
           ].map(col => (
             <div key={col.title}>
               <p style={{ fontWeight: 800, fontSize: 15, margin: '0 0 16px' }}>{col.title}</p>
@@ -3529,8 +3539,8 @@ const servicePages: ServicePageData[] = [
     slug: 'website-google-search',
     Illust: IllustWebsiteSearch,
     kicker: 'WEBSITE & GOOGLE SEARCH',
-    heroTitle: 'Google Search schaut auf Ihre Website',
-    heroSubtitle: 'Ihre Website muss in einfachen Worten erklären, was Sie tun, wo Sie arbeiten und warum man Ihnen vertrauen kann — für Menschen und für Google.',
+    heroTitle: 'Google Search schaut nicht nur auf Ihre Website',
+    heroSubtitle: 'Über den Links stehen heute eine KI-Antwort und eine Karte mit drei Betrieben. Google sammelt Informationen über Sie im ganzen Netz: auf Ihrer Website, im Google-Profil, in Bewertungen und sozialen Netzwerken. Wir sorgen dafür, dass Google Sie findet und jede Kundenfrage beantworten kann.',
     whatTitle: 'Was eine gute lokale Website ausmacht',
     whatBody: 'Eine gute Website sieht nicht nur gut aus. Sie beantwortet die Fragen Ihrer Kunden: Was bieten Sie an, wo sind Sie tätig, welche Arbeiten haben Sie schon gemacht und wie erreicht man Sie. Genau daraus lesen auch Google und KI-Systeme, wer Sie sind.',
     howTitle: 'Drei Pakete — je nachdem, wo Sie stehen',
@@ -3553,7 +3563,7 @@ const servicePages: ServicePageData[] = [
       { q: 'Können Sie meine bestehende Website optimieren?', a: 'In den meisten Fällen ja. Wir prüfen Struktur, Inhalte und Technik Ihrer bestehenden Website und verbessern gezielt das, was Sichtbarkeit und Anfragen blockiert. Nur wenn die technische Basis eine sinnvolle Weiterentwicklung nicht zulässt, empfehlen wir einen Neuaufbau.' },
       { q: 'Brauche ich unbedingt eine Website?', a: 'Für den Start reicht ein gut gepflegtes Google-Unternehmensprofil oft aus. Sobald Sie aber mehrere Leistungen, mehrere Regionen oder erklärungsbedürftige Angebote haben, ist die Website der Ort, an dem all das verständlich zusammenkommt – auch für KI-Systeme.' },
     ],
-    ctaTitle: 'Kostenloser Sichtbarkeits-Check Ihrer Website',
+    ctaTitle: 'Kostenloser Check: Was Google über Sie findet',
     ctaBody: 'Wir prüfen Struktur, Inhalte und Technik Ihrer Website und zeigen Ihnen, welche Schritte Ihre Sichtbarkeit bei Google und in der KI-Suche am stärksten verbessern.',
   },
   {
@@ -3675,7 +3685,7 @@ const servicePages: ServicePageData[] = [
       { q: 'Kann ich Social Media ohne Website buchen?', a: 'Ja. Die Social-Media-Betreuung kostet 199 € im Monat und lässt sich zu jedem Paket dazu buchen — oder ganz allein.' },
       { q: 'Muss ich selbst vor die Kamera?', a: 'Nein. Fotos von Projekten, dem Team oder der Werkstatt reichen oft völlig. Wer mag, zeigt sich — Pflicht ist das nicht.' },
     ],
-    ctaTitle: 'Kostenloser Check Ihrer Social-Media-Präsenz',
+    ctaTitle: 'Kostenlose Social-Media-Analyse',
     ctaBody: 'Wir sehen uns Ihre Profile an und sagen Ihnen, was fehlt und womit Sie anfangen sollten.',
   },
   {
@@ -4823,7 +4833,7 @@ function GlossarTermPage({ slug }: { slug: string }) {
 
 function ServicesIndex() {
   usePageMeta(
-    'Leistungen — woraus lokale Sichtbarkeit besteht | RAG',
+    'Wo man Sie sucht — woraus lokale Sichtbarkeit besteht | RAG',
     'KI-Suche, Google Maps, Website & Google Search und Social Media: die vier Kanäle lokaler Sichtbarkeit — einzeln erklärt, mit Preisen und Paketen.',
   )
   return (
@@ -4845,8 +4855,8 @@ function ServicesIndex() {
         <MapBackdrop fade="left" shift={120} pins={false} />
         <div className="d-hide-md" aria-hidden style={{ position: 'absolute', right: 'max(48px, calc(50% - 620px))', top: '36%' }}><PinD size={72} /></div>
         <div style={{ ...SHELL, position: 'relative' }}>
-          <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Leistungen' }]} tone="light" />
-          <p className="kick" style={{ marginBottom: 18 }}>LEISTUNGEN</p>
+          <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Wo man Sie sucht' }]} tone="light" />
+          <p className="kick" style={{ marginBottom: 18 }}>Wo man Sie sucht</p>
           <h1 className="display h-lg" style={{ marginBottom: 22, maxWidth: 900 }}>
             Woraus lokale <span className="serif italic-serif">Sichtbarkeit besteht</span>
           </h1>
@@ -4868,9 +4878,9 @@ function ServicesIndex() {
 type PriceItemId = 'profile' | PackageId | 'social'
 const SERVICE_PACKAGES: Record<string, { intro: string; items: PriceItemId[]; highlight: PriceItemId; combo?: boolean }> = {
   'google-maps-business-profile': { intro: 'Google-Profil schlüsselfertig für 149 € einmalig, ohne Abo. Social Media können Sie für 199 €/Monat dazunehmen. In Local Website und AI Plus ist das Profil schon enthalten — in AI Plus laufen die Bitten um Bewertungen nach jedem Auftrag automatisch.', items: ['profile', 'local', 'aiplus'], highlight: 'profile' },
-  'website-google-search': { intro: 'One Pager ist das Minimum: Er beantwortet die Frage „Wer sind Sie?“, bringt aber keine neuen Kunden aus der Suche. Soll die Website Kunden aus Google bringen, nehmen Sie Local Website; mit Bewertungen und KI-Sichtbarkeit — AI Plus.', items: ['onepager', 'local', 'aiplus'], highlight: 'local' },
+  'website-google-search': { intro: 'Welches Paket passt, hängt davon ab, wie viel von dem, was Google zeigt, wir für Sie übernehmen. One Pager: die Website als Visitenkarte. Local Website: Website mit Leistungsseiten und Google-Profil — für Suche und Karte. AI Plus: dazu Bewertungen, Verzeichnisse und die KI-Übersicht.', items: ['onepager', 'local', 'aiplus'], highlight: 'local' },
   'ai-search-optimization': { intro: 'Die KI-Sichtbarkeit steckt in AI Plus: Google-Profil, Website mit bis zu 10 Leistungsseiten und monatlich neuen Artikeln, Bewertungen, Verzeichnisse und der monatliche KI-Check. Nur eine Website ohne KI? Local Website.', items: ['local', 'aiplus'], highlight: 'aiplus' },
-  'social-media': { intro: 'Einzeln oder zu jedem Paket. Zusammen mit dem Google-Profil oder einer Website wirkt Social Media besser: Man findet Sie bei Google und sieht sofort, wer zu einem kommt.', items: ['social'], highlight: 'social', combo: true },
+  'social-media': { intro: 'Einzeln oder zu jedem Paket. Sie wählen Ihren Hauptkanal — dort, wo Ihre Kunden sind. Weitere Kanäle kommen auf Wunsch gegen Aufpreis dazu. Zusammen mit dem Google-Profil oder einer Website wirkt Social Media besser: Man findet Sie bei Google und sieht sofort, wer hinter dem Betrieb steht.', items: ['social'], highlight: 'social', combo: true },
 }
 
 function priceItem(id: PriceItemId) {
@@ -4902,38 +4912,66 @@ function ServicePackages({ slug }: { slug: string }) {
             <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 16px' }}>Was es kostet</h2></Reveal>
             <Reveal delay={0.1}><p style={{ fontSize: 'clamp(16px, 1.3vw, 18px)', lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>{cfg.intro}</p></Reveal>
           </div>
-          <div className="svc-pk" style={{ display: 'grid', gridTemplateColumns: `repeat(${cfg.items.length}, minmax(0, 1fr))`, gap: 'clamp(16px, 2vw, 28px)', maxWidth: single ? 620 : cfg.items.length === 2 ? 1040 : undefined, margin: 'clamp(40px, 5vw, 64px) auto 0', alignItems: 'stretch' }}>
+          <div className="svc-pk" style={{ display: 'grid', gridTemplateColumns: `repeat(${cfg.items.length}, minmax(0, 1fr))`, gap: 'clamp(16px, 2vw, 28px)', maxWidth: cfg.items.length === 2 ? 1040 : undefined, margin: 'clamp(40px, 5vw, 64px) auto 0', alignItems: 'stretch' }}>
             {cfg.items.map((id, i) => {
               const it = priceItem(id)
               const hi = id === cfg.highlight
+              const head = (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                    <IconTile kind={id === 'profile' ? 'maps' : id === 'social' ? 'social' : id === 'aiplus' ? 'ki' : 'website'} />
+                    <PriceTag>{it.tag}</PriceTag>
+                  </div>
+                  <div>
+                    <h3 className="display" style={{ fontSize: 'clamp(22px, 2vw, 26px)', lineHeight: 1.15, margin: '0 0 8px' }}>{it.name}</h3>
+                    <p style={{ fontSize: 15.5, lineHeight: 1.6, color: 'var(--muted)', margin: 0 }}>{it.thesis}</p>
+                  </div>
+                  {id === 'social' && (
+                    <div style={{ padding: '16px 18px', borderRadius: 16, backgroundColor: 'var(--brand-soft)' }}>
+                      <p style={{ fontSize: 14, fontWeight: 800, margin: '0 0 10px' }}>Ihr Hauptkanal — nach Wahl</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        {['Instagram', 'Facebook', 'TikTok', 'LinkedIn', 'Threads'].map(c => (
+                          <span key={c} style={{ padding: '6px 12px', borderRadius: 999, backgroundColor: '#fff', border: '1px solid #C9C5F7', fontSize: 14, fontWeight: 700 }}>{c}</span>
+                        ))}
+                      </div>
+                      <p style={{ fontSize: 13.5, lineHeight: 1.5, color: 'var(--muted)', margin: '10px 0 0' }}>Weitere Kanäle auf Wunsch gegen Aufpreis.</p>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                    <span className="display" style={{ fontSize: 'clamp(40px, 4vw, 56px)', lineHeight: 1, color: hi ? 'var(--electric)' : 'var(--ink)' }}>{it.price} €</span>
+                    <span style={{ fontSize: 15, color: 'var(--muted)' }}>{it.unit}</span>
+                  </div>
+                </>
+              )
+              const list = (
+                <div style={{ display: single ? 'grid' : 'flex', flexDirection: 'column', gridTemplateColumns: single ? 'repeat(auto-fit, minmax(240px, 1fr))' : undefined, gap: single ? '16px 28px' : 12, ...(single ? {} : { borderTop: '1px solid var(--divider)', paddingTop: 20 }) }}>
+                  {single && <p className="kick" style={{ fontSize: 12, margin: 0, gridColumn: '1 / -1' }}>Das ist enthalten</p>}
+                  {it.includes.map(x => (
+                    <div key={x} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                      {checkIcon()}<span style={{ fontSize: 15.5, lineHeight: 1.5 }}>{x}</span>
+                    </div>
+                  ))}
+                </div>
+              )
+              const btn = (
+                <button type="button" onClick={() => order(id)} className={`btn btn-md ${hi ? 'btn-electric' : 'btn-outline-dark'}`} style={{ marginTop: 'auto', width: '100%', justifyContent: 'center' }}>
+                  Paket anfragen <span className="arw">→</span>
+                </button>
+              )
               return (
                 <Reveal key={id} delay={0.06 * i} style={{ display: 'flex' }}>
-                  <article className="d-card" style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', gap: 20, padding: 'clamp(26px, 2.8vw, 40px)', color: 'var(--ink)', border: hi ? '2px solid var(--electric)' : '1px solid var(--border)', boxShadow: hi ? '0 30px 70px rgba(38,0,255,0.16)' : undefined }}>
+                  <article className={`d-card${single ? ' svc-pk-wide' : ''}`} style={{ position: 'relative', flex: 1, display: single ? 'grid' : 'flex', flexDirection: 'column', gridTemplateColumns: single ? 'minmax(0, 0.85fr) minmax(0, 1.15fr)' : undefined, gap: single ? 'clamp(28px, 4vw, 64px)' : 20, padding: 'clamp(26px, 2.8vw, 44px)', color: 'var(--ink)', border: hi ? '2px solid var(--electric)' : '1px solid var(--border)', boxShadow: hi ? '0 30px 70px rgba(38,0,255,0.16)' : undefined }}>
                     {hi && !single && (
                       <span style={{ position: 'absolute', top: -16, left: 'clamp(26px, 2.8vw, 40px)', height: 32, padding: '0 14px', borderRadius: 999, backgroundColor: 'var(--electric)', color: '#fff', fontSize: 13, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 6 }}><span aria-hidden>★</span><span>Passt hierzu</span></span>
                     )}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-                      <IconTile kind={id === 'profile' ? 'maps' : id === 'social' ? 'social' : id === 'aiplus' ? 'ki' : 'website'} />
-                      <PriceTag>{it.tag}</PriceTag>
-                    </div>
-                    <div>
-                      <h3 className="display" style={{ fontSize: 'clamp(22px, 2vw, 26px)', lineHeight: 1.15, margin: '0 0 8px' }}>{it.name}</h3>
-                      <p style={{ fontSize: 15.5, lineHeight: 1.6, color: 'var(--muted)', margin: 0 }}>{it.thesis}</p>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                      <span className="display" style={{ fontSize: 'clamp(40px, 4vw, 56px)', lineHeight: 1, color: hi ? 'var(--electric)' : 'var(--ink)' }}>{it.price} €</span>
-                      <span style={{ fontSize: 15, color: 'var(--muted)' }}>{it.unit}</span>
-                    </div>
-                    <div style={{ borderTop: '1px solid var(--divider)', paddingTop: 20, display: single ? 'grid' : 'flex', flexDirection: 'column', gridTemplateColumns: single ? 'repeat(auto-fit, minmax(220px, 1fr))' : undefined, gap: 12 }}>
-                      {it.includes.map(x => (
-                        <div key={x} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                          {checkIcon()}<span style={{ fontSize: 15.5, lineHeight: 1.5 }}>{x}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <button type="button" onClick={() => order(id)} className={`btn btn-md ${hi ? 'btn-electric' : 'btn-outline-dark'}`} style={{ marginTop: 'auto', width: '100%', justifyContent: 'center' }}>
-                      Paket anfragen <span className="arw">→</span>
-                    </button>
+                    {single ? (
+                      <>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>{head}{btn}</div>
+                        <div className="svc-pk-list" style={{ borderLeft: '1px solid var(--divider)', paddingLeft: 'clamp(28px, 4vw, 64px)' }}>{list}</div>
+                      </>
+                    ) : (
+                      <>{head}{list}{btn}</>
+                    )}
                   </article>
                 </Reveal>
               )
@@ -4961,6 +4999,14 @@ function ServicePackages({ slug }: { slug: string }) {
 // was der Kunde haben muss und wobei wir ihm das abnehmen.
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Zeile unter dem Check-Formular im Hero: führt je Leistungsseite zur Terminbuchung. */
+const SERVICE_CONSULT: Record<string, { lead: string; link: string }> = {
+  'google-maps-business-profile': { lead: 'Noch kein Google-Profil?', link: 'Wir richten es mit Ihnen ein — Gespräch buchen' },
+  'website-google-search': { lead: 'Noch keine Website oder unsicher, welche Sie brauchen?', link: 'Kostenlos beraten lassen' },
+  'ai-search-optimization': { lead: 'Sie wissen nicht, wo Sie anfangen sollen?', link: 'Kostenloses Gespräch zur KI-Suche buchen' },
+  'social-media': { lead: 'Noch kein Profil oder keine Zeit dafür?', link: 'Besprechen wir Ihren Kanal — Termin buchen' },
+}
+
 // Beschriftung des Check-Buttons im Hero je Leistungsseite — das Formular ist überall dasselbe (/check).
 const SERVICE_CHECK_BUTTON: Record<string, string> = {
   'google-maps-business-profile': 'Google-Profil prüfen',
@@ -4976,6 +5022,7 @@ type ServiceContent = {
   priceLink: string
   problem: { title: string; text: string; points?: string[]; outro: string; visual: 'chat' | 'map' | 'serp' | 'social' }
   article?: { href: string; label: string }
+  layers?: { title: string; intro: string; items: { kind: 'ads' | 'ai' | 'map' | 'links'; name: string; what: string; source: string }[] }
   needsTitle: string
   needs: ServiceNeed[]
   fromYou: string
@@ -5027,7 +5074,7 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
     needsTitle: 'Was Sie auf der Karte brauchen — und wobei wir helfen',
     needs: [
       { need: 'Ein vollständiges Profil', why: 'Richtige Kategorie, alle Leistungen, Öffnungszeiten, Telefon und Link zur Website.', help: 'Wir füllen alles aus. Gibt es schon ein Profil, legen wir kein zweites an, sondern bereinigen das bestehende: Dubletten, alte Nummern, falsche Kategorie.' },
-      { need: 'Fotos von Ihnen und Ihren Arbeiten', why: 'Menschen wollen sehen, wer zu ihnen kommt.', help: 'Wir sagen Ihnen, welche Fotos Sie machen sollen, und laden sie hoch.' },
+      { need: 'Fotos von Ihnen und Ihren Arbeiten', why: 'Menschen wollen sehen, mit wem sie es zu tun haben.', help: 'Wir sagen Ihnen, welche Fotos Sie machen sollen, und laden sie hoch.' },
       { need: 'Laufend neue Bewertungen', why: 'Ein Profil mit frischen Bewertungen wirkt lebendig und vertrauenswürdig.', help: 'Sie bekommen von uns einen Link und einen QR-Code — zum Verschicken nach dem Auftrag oder als Aufkleber fürs Auto.' },
       { need: 'Ein bestätigtes Profil auf Ihren Namen', why: 'Nur so können Sie es selbst verwalten.', help: 'Wir führen Sie Schritt für Schritt durch die Bestätigung per Google-Code. Das Profil gehört Ihnen und bleibt Ihres.' },
     ],
@@ -5042,28 +5089,39 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
     final: { text: 'Prüfen Sie, wie man Sie auf der Karte sieht.', button: 'Mein Profil prüfen' },
   },
   'website-google-search': {
-    title: 'Google Search schaut auf Ihre Website.',
-    sub: 'Menschen suchen bei Google nicht nach „Elektriker“, sondern nach einer konkreten Arbeit: „Leitungen erneuern“, „Wallbox installieren“. Wir bauen eine Website, die auf jede dieser Suchen eine Antwort hat — damit Google Sie zeigt und man Sie anruft.',
+    title: 'Google baut seine Antwort aus allem, was es über Sie findet.',
+    sub: 'Über den Links stehen heute eine KI-Antwort und eine Karte mit drei Betrieben. Google sammelt Informationen über Sie im ganzen Netz: auf Ihrer Website, im Google-Profil, in Bewertungen und sozialen Netzwerken. Wir sorgen dafür, dass Google Sie findet und jede Kundenfrage beantworten kann.',
     priceLink: 'Website ab 30 € im Monat',
     problem: {
-      title: 'Google zeigt den, der die Frage genauer beantwortet.',
-      text: 'Hat Ihre Website nur eine Seite „Alle Elektroarbeiten“, versteht Google nicht, dass Sie Wallboxen installieren. Google zeigt die Betriebe, bei denen es vier Dinge sicher versteht:',
-      points: ['welche Leistungen es gibt — jede auf eigener Seite', 'in welchem Ort und welcher Region', 'dass man dem Betrieb trauen kann', 'dass die Website gepflegt wird'],
-      outro: 'Eine Website, die einmal gebaut und dann vergessen wurde, rutscht mit der Zeit nach unten — auch wenn sie schön aussieht.',
+      title: 'Google zeigt den, über den es sich am sichersten ist.',
+      text: 'Google sammelt alles, was es über einen Betrieb findet: Website, Google-Profil, Bewertungen, Verzeichnisse. Hat Ihre Website nur eine Seite „Alle Elektroarbeiten“, weiß Google nicht, dass Sie Wallboxen installieren. Nach oben kommt, bei wem Google vier Dinge sicher versteht:',
+      points: ['welche Leistungen es gibt — jede auf eigener Seite', 'in welchem Ort und welcher Region', 'dass die Angaben überall gleich sind', 'dass der Betrieb aktiv ist und man ihm trauen kann'],
+      outro: 'Eine Website, die einmal gebaut und dann vergessen wurde, liefert Google keine Antworten — dann zeigt Google den Nachbarn, auch wenn Ihre Seite schön aussieht.',
       visual: 'serp',
     },
     article: { href: '/ratgeber/wie-funktioniert-lokales-seo', label: 'Wie wählt Google aus, wen es zeigt? Im Ratgeber erklärt' },
+    layers: {
+      title: 'So sieht die Google-Suche heute aus',
+      intro: 'Unter einer Suche wie „Elektriker Frankfurt“ stehen heute vier Dinge. Google füllt sie aus allem, was es über Sie findet — Ihre Website ist dabei die Quelle, die Sie selbst in der Hand haben.',
+      items: [
+        { kind: 'ads', name: 'Anzeigen', what: 'Bezahlte Plätze ganz oben, markiert mit „Gesponsert“.', source: 'Hilft sofort — aber nur, solange Sie zahlen.' },
+        { kind: 'ai', name: 'KI-Übersicht', what: 'Eine fertige Antwort von Google: Preise, Tipps, oft schon Namen von Betrieben. Dazu der KI-Modus — Suche im Chat.', source: 'Woher: Seiten, die die Frage klar beantworten, Bewertungen und Verzeichnisse.' },
+        { kind: 'map', name: 'Karte mit drei Betrieben', what: 'Sterne, Bewertungen, „Jetzt geöffnet“, Button „Anrufen“. Viele entscheiden schon hier.', source: 'Woher: Google-Profil, Bewertungen und die Nähe zum Suchenden.' },
+        { kind: 'links', name: 'Websites und Verzeichnisse', what: 'Klassische Treffer — gemischt mit Gelbe Seiten, MyHammer, YouTube und Foren.', source: 'Woher: Ihre Website — am besten eine eigene Seite für jede Leistung und jeden Ort.' },
+      ],
+    },
     needsTitle: 'Was Ihre Website braucht, damit Google Sie zeigt — und wobei wir helfen',
     needs: [
       { need: 'Eine Seite für jede wichtige Leistung', why: 'Mit Ort und Region im Text, damit Google sie der passenden Suche zuordnet.', help: 'Wir schreiben bis zu 10 Leistungsseiten. Sie lesen nur gegen und geben frei.' },
-      { need: 'Antworten auf die Fragen Ihrer Kunden', why: 'Wer „Was kostet ein neuer Sicherungskasten im Altbau?“ sucht, findet die Antwort bei Ihnen — und ruft an.', help: 'Jeden Monat schreiben wir neue Artikel und kurze Begriffserklärungen.' },
-      { need: 'Belege, dass man Ihnen trauen kann', why: 'Fotos Ihrer Arbeiten, Bewertungen und klare Kontaktwege.', help: 'Wir bauen sie ein und halten sie aktuell.' },
-      { need: 'Eine Website, die nicht stehen bleibt', why: 'Neue Inhalte zeigen Google, dass der Betrieb aktiv ist.', help: 'Hosting, Updates und Änderungen sind im Preis. Einmal im Monat bekommen Sie einen kurzen Bericht: wie viele Besucher kamen und wie viele angefragt haben.' },
+      { need: 'Antworten auf die Fragen Ihrer Kunden', why: 'Wer „Was kostet ein neuer Sicherungskasten im Altbau?“ sucht, findet die Antwort bei Ihnen. Genau solche Antworten zitiert Google in der KI-Übersicht.', help: 'Jeden Monat schreiben wir neue Artikel und kurze Begriffserklärungen.' },
+      { need: 'Website, Google-Profil und Bewertungen, die zusammenpassen', why: 'Die Karte mit drei Betrieben nimmt ihre Daten aus dem Google-Profil, die KI-Übersicht auch aus Bewertungen und Verzeichnissen. Widersprechen sie sich, traut Google keinem.', help: 'In Local Website richten wir Ihr Google-Profil mit ein und gleichen die Angaben ab. In AI Plus kommen Verzeichnisse und die Bitte um Bewertung nach jedem Auftrag dazu.' },
+      { need: 'Eine Website, die nicht stehen bleibt', why: 'Neue Inhalte, echte Fotos und klare Kontaktwege zeigen Google und Kunden, dass der Betrieb arbeitet.', help: 'Hosting, Updates und Änderungen sind im Preis. Einmal im Monat bekommen Sie einen kurzen Bericht: wie viele Besucher kamen und wie viele angefragt haben.' },
     ],
     fromYou: 'Von Ihnen: ein Gespräch von 30–45 Minuten und Fotos Ihrer Arbeiten. Die Texte schreiben wir, Sie geben nur frei.',
     faq: [
+      { q: 'Wozu eine Website, wenn Google die Antwort selbst zeigt?', a: 'Weil Google sie irgendwoher nehmen muss. Die KI-Übersicht zitiert Seiten, die eine Frage klar beantworten, und verlinkt sie. Ihre Website ist der einzige Ort, an dem Sie selbst bestimmen, was dort steht.' },
       { q: 'Ich habe schon eine Website. Wozu eine neue?', a: 'Eine neue ist nicht nötig. Wir prüfen zuerst Ihre: Bringt sie schon Kunden, sagen wir Ihnen das. Wenn nicht, verbessern wir, was sie bremst.' },
-      { q: 'Brauche ich eine Website, wenn ich ein Google-Profil habe?', a: 'Für den Anfang reicht das Profil. Sobald es mehrere Leistungen oder Orte gibt, wird die Website zur Quelle, aus der Google und KI ihre Informationen über Sie holen.' },
+      { q: 'Brauche ich eine Website, wenn ich ein Google-Profil habe?', a: 'Für den Anfang reicht das Profil — es füllt die Karte. Für die KI-Übersicht und die Suche nach einzelnen Leistungen braucht Google mehr Text, als in ein Profil passt. Diese Quelle ist Ihre Website.' },
       { q: 'Wann sehe ich Ergebnisse?', a: 'Die ersten Seiten erscheinen nach einigen Wochen in der Suche, spürbar mehr Anfragen kommen nach einigen Monaten.' },
       { q: 'Wohin gehen die Anfragen?', a: 'Direkt an Ihre E-Mail-Adresse.' },
     ],
@@ -5071,28 +5129,31 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
   },
   'social-media': {
     title: 'In sozialen Netzwerken sehen Kunden Menschen.',
-    sub: 'Bevor jemand einen Betrieb beauftragt, will er wissen, wer dahintersteht. Wir betreuen Ihre Social-Media-Kanäle und zeigen Ihr Team und Ihre Arbeit — Influencer müssen Sie dafür nicht werden.',
+    sub: 'Bevor jemand einen Betrieb beauftragt, will er wissen, wer dahintersteht. Wir betreuen Ihre Social-Media-Kanäle und zeigen Ihr Team und Ihre Arbeit: Wir richten Ihre Profile so ein, dass man Sie in den sozialen Netzwerken und bei Google findet, und erarbeiten Ihre Inhalte.',
     priceLink: '199 € im Monat, auch ohne Website',
     problem: {
       title: 'Der Kunde hat Sie schon gefunden. Jetzt prüft er Sie.',
-      text: 'Jemand findet Sie auf der Karte und schaut auf Instagram — dort ist der letzte Beitrag von vorletztem Jahr. Gibt es den Betrieb überhaupt noch? Bevor man anruft, will man im Profil sehen:',
-      points: ['dass der Betrieb gerade arbeitet', 'wer dahintersteht', 'echte Arbeiten und Ergebnisse', 'dasselbe Bild wie bei Google und auf der Website'],
+      text: 'Jemand findet Sie auf Instagram — und dort ist der letzte Beitrag von vorletztem Jahr. Bevor man anruft, will man im Profil sehen:',
+      points: ['eine klare Kopfzeile: wer Sie sind, was Sie machen, wo und wie man Sie erreicht', 'dass der Betrieb gerade arbeitet', 'wer dahintersteht', 'echte Arbeiten und Ergebnisse', 'dasselbe Bild wie bei Google und auf der Website'],
       outro: 'Social Media bringt selten von allein Aufträge. Aber es entscheidet, ob jemand anruft, der Sie bei Google schon gefunden hat.',
       visual: 'social',
     },
     needsTitle: 'Was Ihr Profil braucht, damit man Sie anruft — und wobei wir helfen',
     needs: [
-      { need: 'Ein lebendiges Profil', why: 'Regelmäßige Beiträge zeigen: Der Betrieb arbeitet.', help: 'Wir erstellen jeden Monat einen Plan und veröffentlichen Beiträge und kurze Videos.' },
-      { need: 'Gesichter', why: 'Man will sehen, wer ins Haus kommt.', help: 'Wir zeigen Sie und Ihr Team — oder, wenn Sie nicht vor die Kamera möchten, Ihre Arbeit und Ihr Werkzeug.' },
-      { need: 'Echte Arbeiten', why: '„Vorher und nachher“ erklärt Qualität besser als jeder Werbespruch.', help: 'Aus Ihren Fotos von der Baustelle machen wir Beiträge mit kurzen Erklärungen.' },
+      { need: 'Ein lebendiges Profil', why: 'Regelmäßige Beiträge zeigen: Der Betrieb arbeitet.', help: 'Jeden Monat ein Plan zur Freigabe, dann täglich Stories und dreimal pro Woche ein Beitrag oder ein kurzes Video.' },
+      { need: 'Gesichter', why: 'Man will wissen, mit wem man es zu tun hat.', help: 'Wir zeigen Sie und Ihr Team — oder, wenn Sie nicht vor die Kamera möchten, Ihre Arbeit und Ihren Arbeitsalltag.' },
+      { need: 'Echte Arbeiten', why: '„Vorher und nachher“ erklärt Qualität besser als jeder Werbespruch.', help: 'Aus Ihren Fotos von der Arbeit machen wir Beiträge mit kurzen Erklärungen.' },
       { need: 'Überall dasselbe Bild', why: 'Wer Sie bei Google und auf Instagram sieht, soll denselben Betrieb erkennen.', help: 'Dieselben Fotos kommen auch in Ihr Google-Profil und auf Ihre Website.' },
     ],
     fromYou: 'Von Ihnen: Fotos und kurze Videos von den Einsätzen in den Chat schicken und einmal im Monat den Plan freigeben. Was und wie Sie filmen, zeigen wir Ihnen. Texte und Veröffentlichung übernehmen wir.',
     faq: [
       { q: 'Muss ich selbst vor die Kamera?', a: 'Nicht unbedingt. Arbeiten, Werkzeug und Team zeigen auch die Menschen hinter dem Betrieb.' },
       { q: 'Bringt Social Media mir Aufträge?', a: 'Direkt eher selten. Es überzeugt die, die Sie bei Google schon gefunden haben, dass es Sie wirklich gibt und man Sie anrufen kann.' },
+      { q: 'Ich habe noch gar kein Profil.', a: 'Dann bauen wir es von null auf: Konto anlegen, Profil und Kopfzeile einrichten, die ersten Beiträge vorbereiten.' },
+      { q: 'Ein Profil gibt es, aber es ist eingeschlafen.', a: 'Wir sehen es uns zuerst genau an, räumen auf und bauen darauf auf. Follower und bisherige Beiträge bleiben erhalten.' },
+      { q: 'Welchen Kanal betreuen Sie?', a: 'Den, auf dem Ihre Kunden sind: Instagram, Facebook, TikTok, LinkedIn oder Threads. Welcher passt, klären wir im ersten Gespräch. Weitere Kanäle kommen auf Wunsch gegen Aufpreis dazu. Für TikTok braucht es kurze Videos im Hochformat — wie Sie sie mit dem Handy drehen, zeigen wir Ihnen.' },
+      { q: 'Wie oft wird gepostet?', a: 'Dreimal pro Woche ein Beitrag oder ein kurzes Video und jeden Tag drei Stories, wo der Kanal sie hat. Den Plan für den Monat geben Sie vorher frei.' },
       { q: 'Geht auch nur Social Media, ohne Website?', a: 'Ja, für 199 € im Monat.' },
-      { q: 'Welche Plattformen betreuen Sie und wie viele Beiträge gibt es?', a: 'Das legen wir im ersten Gespräch passend zu Ihrer Branche fest. Die Zahl der Beiträge steht im Monatsplan, den Sie freigeben.' },
       { q: 'Und wenn wir nichts zu zeigen haben?', a: 'Doch: Jeder Einsatz ist ein „Vorher und nachher“, jede Kundenfrage ein Thema für einen Beitrag.' },
     ],
     final: { text: 'Menschen wählen Menschen. Zeigen Sie Ihre.', button: 'Meine Kanäle prüfen' },
@@ -5122,6 +5183,59 @@ function NeedIcon({ kind }: { kind: NeedIconKind }) {
     case 'calendar': return <svg {...p}><rect x="3.5" y="5" width="17" height="15" rx="3" /><path d="M3.5 10h17M8 3v4M16 3v4" /></svg>
     case 'users': return <svg {...p}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5" /><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 13.8c2.1.8 3.5 3 3.5 6.2" /></svg>
   }
+}
+
+/** Ikonen der Ebenen auf der Google-Ergebnisseite. */
+function SerpLayerIcon({ kind }: { kind: 'ads' | 'ai' | 'map' | 'links' }) {
+  if (kind === 'ai') return <ChannelIcon kind="ki" />
+  if (kind === 'map') return <ChannelIcon kind="maps" />
+  if (kind === 'links') return <ChannelIcon kind="website" />
+  return <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 10v4h3l6 4V6L7 10z" /><path d="M16.5 9a4 4 0 0 1 0 6" /></svg>
+}
+
+/** Schema einer heutigen Google-Ergebnisseite: Anzeige · KI-Übersicht · Karte · Links. */
+function SerpLayersVisual() {
+  const line = (w: string, h = 9) => <div aria-hidden style={{ width: w, height: h, borderRadius: 6, backgroundColor: 'var(--divider)' }} />
+  const tag = (kind: 'ads' | 'ai' | 'map' | 'links') => <span aria-hidden style={{ position: 'absolute', right: 12, top: 12, width: 30, height: 30, borderRadius: 10, backgroundColor: '#fff', color: 'var(--electric)', display: 'grid', placeItems: 'center', boxShadow: '0 4px 12px rgba(11,11,26,0.08)' }}><span style={{ transform: 'scale(0.75)', display: 'grid' }}><SerpLayerIcon kind={kind} /></span></span>
+  return (
+    <div className="d-card" style={{ overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 18px', borderBottom: '1px solid var(--divider)' }}>
+        <GLogo />
+        <span style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '9px 16px', borderRadius: 999, border: '1px solid var(--border)', fontSize: 14.5 }}>
+          Elektriker Frankfurt <ChannelIcon kind="search" size={16} />
+        </span>
+      </div>
+      <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ position: 'relative', padding: '12px 14px', borderRadius: 14, border: '1px solid var(--border)' }}>
+          {tag('ads')}
+          <div style={{ fontSize: 12, fontWeight: 800, marginBottom: 6 }}>Gesponsert</div>
+          {line('55%')}
+        </div>
+        <div style={{ position: 'relative', padding: '12px 14px', borderRadius: 14, backgroundColor: 'var(--brand-soft)' }}>
+          {tag('ai')}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 800, color: 'var(--electric)', marginBottom: 8 }}><ChannelIcon kind="ki" size={14} />KI-Übersicht</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{line('92%')}{line('80%')}{line('64%')}</div>
+        </div>
+        <div style={{ position: 'relative', borderRadius: 14, border: '1px solid var(--border)', overflow: 'hidden' }}>
+          {tag('map')}
+          <div aria-hidden style={{ position: 'relative', height: 64, backgroundColor: '#EFEEF8', backgroundImage: 'linear-gradient(#F7F7FB 6px, transparent 6px), linear-gradient(90deg, #F7F7FB 6px, transparent 6px)', backgroundSize: '64px 48px' }}>
+            <div style={{ position: 'absolute', left: '22%', top: 12 }}><PinD size={18} filled /></div>
+            <div style={{ position: 'absolute', left: '50%', top: 22 }}><PinD size={18} filled /></div>
+            <div style={{ position: 'absolute', left: '72%', top: 8 }}><PinD size={18} filled /></div>
+          </div>
+          <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {['Elektro Becker', 'Schmidt Elektrotechnik', 'Voltwerk'].map(n => (
+              <div key={n} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700 }}>{n}<span style={{ color: '#E9A100' }}>★★★★★</span></div>
+            ))}
+          </div>
+        </div>
+        <div style={{ position: 'relative', padding: '12px 14px', borderRadius: 14, border: '1px dashed #C9C5F7', display: 'flex', flexDirection: 'column', gap: 7 }}>
+          {tag('links')}
+          {line('35%', 8)}{line('70%', 11)}{line('50%', 8)}{line('62%', 11)}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 /** Visual im Problem-Block — je Kanal ein kleines Mockup. */
@@ -5231,6 +5345,7 @@ function ServicePage({ slug }: { slug: string }) {
   const data = servicePages.find(s => s.slug === slug)
   const content = SERVICE_CONTENT[slug]
   const [faqOpen, setFaqOpen] = useState<number | null>(0)
+  const [bookOpen, setBookOpen] = useState(false)
   const moduleLabel = modules.find(m => m.slug === slug)?.label
   usePageMeta(
     data ? `${content?.title ?? data.heroTitle} | RAG` : 'Leistung nicht gefunden | RAG',
@@ -5261,6 +5376,7 @@ function ServicePage({ slug }: { slug: string }) {
 
   return (
     <>
+      {bookOpen && <BookCallModal onClose={() => setBookOpen(false)} />}
       <Nav />
       <main id="inhalt">
       <JsonLd data={{
@@ -5287,7 +5403,7 @@ function ServicePage({ slug }: { slug: string }) {
         <MapBackdrop fade="left" shift={120} pins={false} />
         <div className="d-hide-md" aria-hidden style={{ position: 'absolute', left: 'max(24px, calc(50% - 700px))', bottom: '10%' }}><PinD size={44} opacity={0.45} /></div>
         <div style={{ ...SHELL, position: 'relative' }}>
-          <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Leistungen', href: '/services' }, { label: moduleLabel ?? content.title }]} tone="light" />
+          <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Wo man Sie sucht', href: '/services' }, { label: moduleLabel ?? content.title }]} tone="light" />
           <div className="svc-hero" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 0.9fr)', gap: 'clamp(32px, 5vw, 72px)', alignItems: 'center' }}>
             <div>
               <div style={{ marginBottom: 20 }}><Kicker icon={channelKindOf(slug)}>{moduleLabel ?? data.kicker}</Kicker></div>
@@ -5299,18 +5415,19 @@ function ServicePage({ slug }: { slug: string }) {
               <RingsBackdrop size={560} style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
               <div className="d-card" style={{ position: 'relative', zIndex: 5, padding: 'clamp(24px, 3vw, 36px)' }}>
                 <p className="kick" style={{ fontSize: 12, marginBottom: 12 }}>Kostenlos · unverbindlich</p>
-                <h2 className="display" style={{ fontSize: 'clamp(22px, 2.2vw, 28px)', lineHeight: 1.15, margin: '0 0 10px' }}>{data.ctaTitle}</h2>
-                <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 20px' }}>{data.ctaBody}</p>
-                <CompanySearch variant="plain" buttonLabel={SERVICE_CHECK_BUTTON[slug]} />
-                <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--muted)', margin: '16px 0 0' }}>
-                  Ihr Unternehmen ist noch nicht bei Google?{' '}
-                  <a href="/#maps" className="d-link">Wir erstellen Ihr Google-Profil <span className="arw">→</span></a>
-                </p>
+                <h2 className="display" style={{ fontSize: 'clamp(22px, 2.2vw, 28px)', lineHeight: 1.15, margin: '0 0 20px' }}>{data.ctaTitle}</h2>
+                <CompanySearch variant="plain" buttonLabel={SERVICE_CHECK_BUTTON[slug]} placeholder="Name Ihres Unternehmens und Ort" />
+                {SERVICE_CONSULT[slug] && (
+                  <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--muted)', margin: '16px 0 0' }}>
+                    <span>{SERVICE_CONSULT[slug].lead}</span>{' '}
+                    <button type="button" onClick={() => setBookOpen(true)} className="d-link" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', fontWeight: 700, textAlign: 'left' }}>{SERVICE_CONSULT[slug].link} <span className="arw">→</span></button>
+                  </p>
+                )}
               </div>
             </div>
           </div>
         </div>
-        <style>{`@media (max-width: 900px) { .svc-hero, .svc-two { grid-template-columns: minmax(0, 1fr) !important; } .svc-needs, .svc-pts, .svc-pk, .audit-grid { grid-template-columns: minmax(0, 1fr) !important; } .footer-grid { grid-template-columns: 1fr 1fr !important; } }`}</style>
+        <style>{`@media (max-width: 900px) { .svc-hero, .svc-two { grid-template-columns: minmax(0, 1fr) !important; } .svc-needs, .svc-pts, .svc-pk, .svc-pk-wide, .audit-grid { grid-template-columns: minmax(0, 1fr) !important; } .svc-pk-list { border-left: 0 !important; padding-left: 0 !important; } .footer-grid { grid-template-columns: 1fr 1fr !important; } }`}</style>
       </section>
 
       {/* 2 — Problem: Überschrift mittig · Text + Visual · Ratgeber-Link mittig (Stil der Startseite) */}
@@ -5327,8 +5444,8 @@ function ServicePage({ slug }: { slug: string }) {
                 <p style={{ fontSize: 'clamp(18px, 1.6vw, 21px)', lineHeight: 1.6, color: 'var(--ink)', fontWeight: 500, margin: 0 }}>{content.problem.text}</p>
                 {content.problem.points && (
                   <div className="svc-pts" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
-                    {content.problem.points.map(p => (
-                      <div key={p} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '14px 16px', borderRadius: 16, backgroundColor: 'var(--bone)' }}>
+                    {content.problem.points.map((p, i, arr) => (
+                      <div key={p} style={{ gridColumn: arr.length % 2 === 1 && i === arr.length - 1 ? '1 / -1' : undefined, display: 'flex', gap: 12, alignItems: 'center', padding: '14px 16px', borderRadius: 16, backgroundColor: 'var(--bone)' }}>
                         {checkIcon()}<span style={{ fontSize: 15.5, lineHeight: 1.4, fontWeight: 700 }}>{p}</span>
                       </div>
                     ))}
@@ -5352,6 +5469,36 @@ function ServicePage({ slug }: { slug: string }) {
           )}
         </div>
       </section>
+
+      {/* 2b — So sieht Google heute aus (nur wenn content.layers) */}
+      {content.layers && (
+        <section style={{ ...sec, backgroundColor: 'var(--bone)', paddingBottom: 0 }}>
+          <div style={{ ...SHELL, position: 'relative' }}>
+            <div style={{ textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
+              <Reveal><Kicker icon="search">Wie Google heute antwortet</Kicker></Reveal>
+              <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 16px' }}>{content.layers.title}</h2></Reveal>
+              <Reveal delay={0.1}><p style={{ fontSize: 'clamp(16px, 1.3vw, 18px)', lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>{content.layers.intro}</p></Reveal>
+            </div>
+            <div className="svc-two" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.9fr) minmax(0, 1.1fr)', gap: 'clamp(32px, 5vw, 72px)', alignItems: 'center', marginTop: 'clamp(40px, 5vw, 64px)' }}>
+              <Reveal delay={0.1}><SerpLayersVisual /></Reveal>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {content.layers.items.map((it, i) => (
+                  <Reveal key={it.kind} delay={0.05 * i}>
+                    <div className="d-card" style={{ display: 'flex', gap: 18, alignItems: 'flex-start', padding: 'clamp(18px, 2vw, 24px)' }}>
+                      <span className="d-tile" aria-hidden><SerpLayerIcon kind={it.kind} /></span>
+                      <div>
+                        <h3 className="display" style={{ fontSize: 'clamp(18px, 1.5vw, 20px)', lineHeight: 1.25, margin: '2px 0 6px' }}>{it.name}</h3>
+                        <p style={{ fontSize: 15.5, lineHeight: 1.6, margin: '0 0 6px' }}>{it.what}</p>
+                        <p style={{ fontSize: 14.5, lineHeight: 1.55, color: it.kind === 'links' ? 'var(--electric)' : 'var(--muted)', fontWeight: it.kind === 'links' ? 700 : 500, margin: 0 }}>{it.source}</p>
+                      </div>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 3 — Was Sie brauchen — und wobei wir helfen: großes Brand-Soft-Panel mit Stadtplan */}
       <section style={{ backgroundColor: 'var(--bone)', padding: 'var(--sec-y, 110px) clamp(12px, 4vw, 48px)' }}>
@@ -5441,7 +5588,7 @@ function ServicePage({ slug }: { slug: string }) {
               <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 18px', color: '#fff' }}>{content.final.text}</h2></Reveal>
               <Reveal delay={0.1}><p style={{ fontSize: 17, lineHeight: 1.65, color: '#DCD8FF', margin: '0 0 28px', maxWidth: 540 }}>{data.ctaBody}</p></Reveal>
               <Reveal delay={0.16} style={{ position: 'relative', zIndex: 5 }}>
-                <CompanySearch buttonLabel={content.final.button} />
+                <CompanySearch buttonLabel={content.final.button} placeholder="Name Ihres Unternehmens und Ort" />
               </Reveal>
             </div>
             <Reveal delay={0.1}>
@@ -5833,7 +5980,7 @@ function NotFoundPage() {
           <p className="lead" style={{ color: 'var(--muted)', maxWidth: 520, margin: '0 0 32px' }}>Diese Adresse gibt es nicht oder nicht mehr. Hier geht es weiter:</p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <a href="/" className="btn btn-md btn-electric">Zur Startseite <span className="arw">→</span></a>
-            <a href="/services" className="btn btn-md btn-paper">Leistungen</a>
+            <a href="/services" className="btn btn-md btn-paper">Wo man Sie sucht</a>
             <a href="/ratgeber" className="btn btn-md btn-paper">Ratgeber</a>
           </div>
         </div>

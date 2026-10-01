@@ -36,6 +36,13 @@ create table if not exists public.checks (
 );
 -- Für Datenbanken, die mit einer älteren Version dieses Skripts angelegt wurden:
 alter table public.checks add column if not exists sources_confirmed boolean not null default false;
+-- Automatische Datensammlung (Edge Function audit-collect, 01.10.2026):
+--   audit        — Rohdaten: Google-Profil, Wettbewerber, Website-Prüfung
+--   report_draft — Berichtsentwurf im Format von report; das Team prüft, ergänzt «KI-Suche»
+--                  und gibt frei:  update checks set report = report_draft, status = 'ready' where id = '…';
+alter table public.checks add column if not exists audit        jsonb;
+alter table public.checks add column if not exists report_draft jsonb;
+alter table public.checks add column if not exists audited_at   timestamptz;
 
 create index if not exists checks_user_idx on public.checks (user_id, created_at desc);
 
@@ -139,7 +146,8 @@ create policy "checks: eigene lesen" on public.checks
   for select to authenticated using (user_id = auth.uid());
 create policy "checks: eigene anlegen" on public.checks
   for insert to authenticated
-  with check (user_id = auth.uid() and status = 'submitted' and report is null);
+  with check (user_id = auth.uid() and status = 'submitted' and report is null
+              and report_draft is null and audit is null);
 create policy "checks: eigene ändern" on public.checks
   for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 

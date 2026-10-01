@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { DemoNote, Logo, StarsRow, useNoindex } from './CheckPage'
 import {
-  DEMO, SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, loadLatestCheck, loadLatestOrder, loadMessages, sendMessage, signOut, updateSources,
+  DEMO, SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, loadLatestCheck, loadLatestOrder, loadMessages, runAudit, sendMessage, signOut, updateSources,
   type CheckRow, type MessageRow, type OrderRow, type Source,
 } from './data'
 import SourcesEditor from './SourcesEditor'
@@ -147,6 +147,8 @@ export default function CabinetPage() {
       const [c, o, m] = await Promise.all([loadLatestCheck(), loadLatestOrder(), loadMessages()])
       setCheck(c); setOrder(o); setMsgs(m)
       if (c) setConfirmDraft(allSources(c.sources))
+      // Bestätigt, aber noch nicht analysiert (z. B. Tab geschlossen) → Datensammlung nachholen.
+      if (c && c.sources_confirmed && c.status === 'submitted') void runAudit(c.id)
       setLoading(false)
     })()
   }, [])
@@ -201,7 +203,7 @@ export default function CabinetPage() {
     setConfirming(true); setConfirmError(false)
     const ok = await confirmSources(check.id, confirmDraft)
     setConfirming(false)
-    if (ok) setCheck({ ...check, sources: confirmDraft, sources_confirmed: true })
+    if (ok) { setCheck({ ...check, sources: confirmDraft, sources_confirmed: true }); void runAudit(check.id) }
     else setConfirmError(true)
   }
 
