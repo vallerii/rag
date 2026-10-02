@@ -351,3 +351,25 @@ export function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
   return ((parts[0]?.[0] ?? '') + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase() || 'R'
 }
+
+// ── Ansprechpartner & Angebot (Kundenbereich) ────────────────────────────────
+export type Manager = { name: string | null; title: string | null; photo_url: string | null; booking_url: string | null }
+export type OfferLine = { id: string; name: string; description?: string; price: number; unit: 'einmalig' | 'pro Monat' }
+export type ClientOffer = { id: string; items: OfferLine[]; note: string | null; status: 'sent' | 'accepted'; sent_at: string | null; updated_at: string }
+
+/** Wer betreut den Kunden (Verantwortlicher im Admin). null = noch niemand zugeteilt. */
+export async function loadMyManager(): Promise<Manager | null> {
+  const { data, error } = await (await getSupabase()).rpc('my_manager')
+  if (error || !Array.isArray(data) || !data.length) return null
+  return data[0] as Manager
+}
+/** Vom Team gesendetes Angebot (Entwürfe sieht der Kunde nicht). */
+export async function loadMyOffer(): Promise<ClientOffer | null> {
+  const { data, error } = await (await getSupabase()).from('offers').select('id, items, note, status, sent_at, updated_at')
+    .neq('status', 'draft').order('updated_at', { ascending: false }).limit(1).maybeSingle()
+  return error ? null : (data as ClientOffer | null)
+}
+export async function acceptOffer(id: string): Promise<boolean> {
+  const { error } = await (await getSupabase()).rpc('accept_offer', { p_id: id })
+  return !error
+}

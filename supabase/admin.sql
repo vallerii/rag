@@ -374,3 +374,46 @@ revoke execute on function public.create_staff_invite(text, text), public.accept
 grant execute on function public.create_staff_invite(text, text), public.accept_staff_invite(text),
   public.revoke_staff_invite(uuid), public.set_staff_role(uuid, text) to authenticated;
 
+
+-- ── Ansprechpartner & Angebot im Kundenbereich ──────────────────────────────
+alter table public.profiles add column if not exists title       text;   -- z. B. «Ihr Ansprechpartner»
+alter table public.profiles add column if not exists photo_url   text;
+alter table public.profiles add column if not exists booking_url text;   -- eigener Terminlink (Google Calendar)
+
+-- Mitarbeiter pflegen ihr eigenes Profil (Rolle bleibt unberührt)
+create or replace function public.update_my_staff_profile(p_name text, p_title text, p_photo text, p_booking text) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_staff() then raise exception 'not_staff'; end if;
+  update profiles set name = nullif(trim(p_name), ''), title = nullif(trim(p_title), ''),
+    photo_url = nullif(trim(p_photo), ''), booking_url = nullif(trim(p_booking), '')
+  where id = auth.uid();
+end $$;
+
+-- Kunde: wer betreut mich? (Verantwortlicher der neuesten offenen Anfrage; nur öffentliche Felder)
+create or replace function public.my_manager()
+returns table (name text, title text, photo_url text, booking_url text)
+language sql stable security definer set search_path = public as $$
+  with mine as (
+    select assignee_id, created_at from checks where user_id = auth.uid() and assignee_id is not null and stage <> 'lost'
+    union all select assignee_id, created_at from orders where user_id = auth.uid() and assignee_id is not null and stage <> 'lost'
+    union all select assignee_id, created_at from leads where user_id = auth.uid() and assignee_id is not null and stage <> 'lost'
+  )
+  select p.name, p.title, p.photo_url, p.booking_url
+  from mine m join profiles p on p.id = m.assignee_id and p.role in ('manager', 'admin')
+  order by m.created_at desc limit 1
+$$;
+
+-- Kunde nimmt ein gesendetes Angebot an
+create or replace function public.accept_offer(p_id uuid) returns void
+language plpgsql security definer set search_path = public as $$
+declare o offers;
+begin
+  select * into o from offers where id = p_id and user_id = auth.uid() and status = 'sent' for update;
+  if not found then raise exception 'not_found'; end if;
+  update offers set status = 'accepted', updated_at = now() where id = p_id;
+  insert into activity (client_key, kind) values (o.client_key, 'offer_accepted');
+end $$;
+
+revoke execute on function public.update_my_staff_profile(text, text, text, text), public.my_manager(), public.accept_offer(uuid) from public, anon;
+grant execute on function public.update_my_staff_profile(text, text, text, text), public.my_manager(), public.accept_offer(uuid) to authenticated;

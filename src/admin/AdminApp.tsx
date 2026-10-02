@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNoindex } from '../check/CheckPage'
 import {
-  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, loadAll, loadClient, loadTeam, myId, publishReport,
+  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, loadAll, loadClient, loadMyProfile, loadTeam, myId, saveMyProfile, publishReport,
   revokeInvite, saveOffer, sendStaffMessage, setAssignee, setNextContact, setRole, setStage, signInPlain, signInStaff, signOutStaff, signUpStaff, stageLabel,
   type Invite,
   type Activity, type Check, type Lead, type Message, type Note, type Offer, type Order, type Profile, type Request, type Stage,
@@ -80,7 +80,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [me, setMe] = useState<string | null>(null)
   const [q, setQ] = useState('')
   const [sel, setSel] = useState<string | null>(() => new URLSearchParams(window.location.search).get('r'))
-  const [view, setView] = useState<'requests' | 'team'>('requests')
+  const [view, setView] = useState<'requests' | 'team' | 'profile'>('requests')
   const [admin, setAdmin] = useState(false)
   const reload = () => { loadAll().then(setData) }
   useEffect(() => { reload(); isAdmin().then(setAdmin); myId().then(setMe) }, [])
@@ -103,12 +103,14 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', borderBottom: `1px solid ${line}`, backgroundColor: '#fff', position: 'sticky', top: 0, zIndex: 5 }}>
         <span style={{ fontWeight: 800, fontSize: 18 }}>RAG<span style={{ color: accent }}>.</span> <span style={{ fontWeight: 500, color: muted, fontSize: 14 }}>· заявки</span></span>
         <span style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-          {admin && <button type="button" onClick={() => setView(v => (v === 'team' ? 'requests' : 'team'))} style={{ ...linkBtn, fontWeight: view === 'team' ? 700 : 400 }}>{view === 'team' ? '← Заявки' : 'Команда'}</button>}
+          {view !== 'requests' && <button type="button" onClick={() => setView('requests')} style={linkBtn}>← Заявки</button>}
+          {admin && view !== 'team' && <button type="button" onClick={() => setView('team')} style={linkBtn}>Команда</button>}
+          {view !== 'profile' && <button type="button" onClick={() => setView('profile')} style={linkBtn}>Мой профиль</button>}
           <button type="button" onClick={reload} style={linkBtn}>Обновить</button>
           <button type="button" onClick={onLogout} style={{ ...linkBtn, color: ink }}>Выйти</button>
         </span>
       </header>
-      {view === 'team' ? <Team /> : <div className="adm-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 400px) minmax(0, 1fr)', gap: 20, padding: 20, alignItems: 'start' }}>
+      {view === 'profile' ? <MyProfile /> : view === 'team' ? <Team /> : <div className="adm-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 400px) minmax(0, 1fr)', gap: 20, padding: 20, alignItems: 'start' }}>
         <aside className="adm-aside" style={{ display: 'grid', gap: 12, position: 'sticky', top: 76 }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {QUEUES.map(([k, label]) => {
@@ -414,6 +416,7 @@ function activityText(a: Activity, profiles: Profile[]): string {
     case 'message': return d.author === 'rag' ? 'Сообщение от команды' : 'Сообщение от клиента'
     case 'note': return 'Добавлена заметка'
     case 'offer_sent': return 'Предложение отмечено как отправленное'
+    case 'offer_accepted': return 'Клиент принял предложение'
     case 'assigned': return d.to ? `Ответственный (${TABLE_RU[str(d.type)] ?? ''}): ${staffName(profiles, str(d.to))}` : `Ответственный снят (${TABLE_RU[str(d.type)] ?? ''})`
     case 'stage': return `Статус (${TABLE_RU[str(d.type)] ?? ''}): ${stageLabel(d.stage as Stage)}`
     default: return a.kind
@@ -432,6 +435,48 @@ function History({ items, profiles }: { items: Activity[]; profiles: Profile[] }
   )
 }
 
+
+// ── Мой профиль: так менеджера видит клиент в кабинете ───────────────────────
+function MyProfile() {
+  const [f, setF] = useState({ name: '', title: '', photo: '', booking: '' })
+  const [loaded, setLoaded] = useState(false), [busy, setBusy] = useState(false), [msg, setMsg] = useState('')
+  useEffect(() => { loadMyProfile().then(p => { if (p) setF({ name: p.name ?? '', title: p.title ?? '', photo: p.photo_url ?? '', booking: p.booking_url ?? '' }); setLoaded(true) }) }, [])
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF(x => ({ ...x, [k]: e.target.value }))
+  const urlOk = (u: string) => !u.trim() || /^https:\/\//.test(u.trim())
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!urlOk(f.photo) || !urlOk(f.booking)) { setMsg('Ссылки должны начинаться с https://'); return }
+    setBusy(true); setMsg('')
+    const err = await saveMyProfile(f)
+    setBusy(false); setMsg(err ? `Не удалось сохранить: ${err}` : 'Сохранено. Клиенты увидят изменения при следующем входе.')
+  }
+  if (!loaded) return <p style={{ padding: 20, color: muted }}>Загрузка…</p>
+  return (
+    <div style={{ maxWidth: 860, margin: '0 auto', padding: 20, display: 'grid', gap: 16 }}>
+      <section style={card}>
+        <h3 style={h3}>Мой профиль</h3>
+        <p style={{ ...small, margin: '0 0 14px' }}>Эти данные клиент видит в кабинете в карточке «Ваш менеджер» — у всех заявок, где вы ответственный.</p>
+        <form onSubmit={save} style={{ display: 'grid', gap: 10 }}>
+          <label style={small}>Имя<input style={input} value={f.name} onChange={set('name')} required /></label>
+          <label style={small}>Должность (по-немецки, напр. «Projektleiterin»)<input style={input} value={f.title} onChange={set('title')} /></label>
+          <label style={small}>Фото — ссылка на картинку (https://…)<input style={input} value={f.photo} onChange={set('photo')} placeholder="https://…" /></label>
+          <label style={small}>Ссылка для записи на созвон (Calendly и т. п.). Пусто — общая ссылка сайта<input style={input} value={f.booking} onChange={set('booking')} placeholder="https://…" /></label>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+            <button className="btn btn-md btn-electric" disabled={busy}>{busy ? 'Сохранение…' : 'Сохранить'}</button>
+            {msg && <span style={small}>{msg}</span>}
+          </div>
+        </form>
+      </section>
+      <section style={{ ...card, display: 'flex', gap: 14, alignItems: 'center' }}>
+        {f.photo && urlOk(f.photo)
+          ? <img src={f.photo} alt="" style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }} />
+          : <span style={{ width: 56, height: 56, borderRadius: '50%', backgroundColor: 'var(--brand-soft)', color: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>{(f.name || 'R').slice(0, 1).toUpperCase()}</span>}
+        <span><span style={small}>{f.title || 'Ihr Ansprechpartner'}</span><br /><strong>{f.name || '—'}</strong></span>
+        <span style={{ ...small, marginLeft: 'auto' }}>превью для клиента</span>
+      </section>
+    </div>
+  )
+}
 
 // ── Команда: сотрудники, роли, ссылки-приглашения ─────────────────────────────
 function Team() {

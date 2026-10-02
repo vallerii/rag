@@ -12,7 +12,7 @@ export const stageLabel = (s: Stage) => STAGES.find(x => x[0] === s)?.[1] ?? s
 export const OPEN: Stage[] = ['new', 'contacted', 'call_booked', 'call_done', 'offer_sent']
 
 export type Kind = 'lead' | 'order' | 'check'
-export type Profile = { id: string; email: string | null; name: string | null; phone: string | null; role: string; created_at: string }
+export type Profile = { id: string; email: string | null; name: string | null; phone: string | null; role: string; created_at: string; title?: string | null; photo_url?: string | null; booking_url?: string | null }
 export type Lead = { id: string; created_at: string; from_page: string | null; answers: Record<string, unknown>; recommendations: string[]; booking_clicked_at: string | null; user_id: string | null; stage: Stage; next_contact_at: string | null; assignee_id: string | null }
 export type Order = { id: string; user_id: string; email: string | null; items: OfferItem[]; details: Record<string, unknown> | null; status: string; stage: Stage; next_contact_at: string | null; assignee_id: string | null; source_page: string | null; created_at: string }
 export type Check = { id: string; user_id: string; email: string | null; place_id: string | null; place: Record<string, unknown>; sources: { key: string; value: string }[]; sources_confirmed: boolean; contact: Record<string, unknown>; status: string; report: unknown; report_draft: unknown; audit: unknown; audited_at: string | null; stage: Stage; next_contact_at: string | null; assignee_id: string | null; source_page: string | null; created_at: string }
@@ -195,4 +195,16 @@ export async function signUpStaff(name: string, email: string, password: string)
 export async function signInPlain(email: string, password: string): Promise<string | null> {
   const { error } = await (await db()).auth.signInWithPassword({ email: email.trim(), password })
   return error ? 'Неверный e-mail или пароль.' : null
+}
+
+// Eigenes Profil (Name, Position, Foto, Terminlink) — sieht der Kunde in seinem Kundenbereich.
+export async function loadMyProfile(): Promise<Profile | null> {
+  const s = await db(), uid = await myId()
+  if (!uid) return null
+  const { data } = await s.from('profiles').select('*').eq('id', uid).maybeSingle()
+  return (data as Profile | null) ?? null
+}
+export async function saveMyProfile(p: { name: string; title: string; photo: string; booking: string }): Promise<string | null> {
+  const { error } = await (await db()).rpc('update_my_staff_profile', { p_name: p.name.trim(), p_title: p.title.trim(), p_photo: p.photo.trim(), p_booking: p.booking.trim() })
+  return error ? error.message : null
 }

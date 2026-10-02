@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { DemoNote, Logo, StarsRow, useNoindex } from './CheckPage'
 import {
-  DEMO, SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, loadLatestCheck, loadLatestOrder, loadMessages, runAudit, sendMessage, signOut, updateSources,
-  type CheckRow, type MessageRow, type OrderRow, type Source,
+  DEMO, SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, loadLatestCheck, loadLatestOrder, loadMessages, loadMyManager, loadMyOffer, runAudit, sendMessage, signOut, updateSources,
+  type CheckRow, type ClientOffer, type Manager, type MessageRow, type OrderRow, type Source,
 } from './data'
 import SourcesEditor from './SourcesEditor'
 import OrderPanel, { orderStatusLabel } from './OrderPanel'
+import { ManagerCard, NextStepCard, OfferPanel, bookingLink, type NextStep } from './CabinetExtras'
 
 /** Immer alle fünf Quellen in fester Reihenfolge — auch wenn die Suche nichts geliefert hat. */
 function allSources(list: Source[] | null | undefined): Source[] {
@@ -18,8 +19,8 @@ function allSources(list: Source[] | null | undefined): Source[] {
 // Daten aus Supabase (checks, messages). Ohne Anmeldung → /login. Den Bericht trägt das Team
 // im Table Editor ein (checks.report, status = 'ready'); bis dahin gibt es einen Beispielbericht zum Ansehen.
 
-type Tab = 'overview' | 'report' | 'company' | 'messages'
-const TABS: [Tab, string][] = [['overview', 'Übersicht'], ['report', 'Bericht'], ['company', 'Unternehmen'], ['messages', 'Nachrichten']]
+type Tab = 'overview' | 'offer' | 'report' | 'company' | 'messages'
+const TABS: [Tab, string][] = [['overview', 'Übersicht'], ['offer', 'Angebot'], ['report', 'Bericht'], ['company', 'Unternehmen'], ['messages', 'Nachrichten']]
 
 type Mark = 'ok' | 'warn' | 'bad'
 type ChanKey = 'ai' | 'maps' | 'search' | 'social'
@@ -123,6 +124,8 @@ export default function CabinetPage() {
   const [order, setOrder] = useState<OrderRow | null>(null)
   const [userMeta, setUserMeta] = useState<{ name: string; phone: string }>({ name: '', phone: '' })
   const [msgs, setMsgs] = useState<MessageRow[]>([])
+  const [manager, setManager] = useState<Manager | null>(null)
+  const [offer, setOffer] = useState<ClientOffer | null>(null)
   const [tab, setTab] = useState<Tab>(() => {
     const h = window.location.hash.slice(1) as Tab
     return TABS.some(([t]) => t === h) ? h : 'overview'
@@ -144,8 +147,8 @@ export default function CabinetPage() {
       if (!u) { window.location.replace('/login?next=' + encodeURIComponent('/kabinett')); return }
       setUserEmail(u.email ?? '')
       setUserMeta({ name: (u.user_metadata?.name as string | undefined) ?? '', phone: (u.user_metadata?.phone as string | undefined) ?? '' })
-      const [c, o, m] = await Promise.all([loadLatestCheck(), loadLatestOrder(), loadMessages()])
-      setCheck(c); setOrder(o); setMsgs(m)
+      const [c, o, m, mg, of] = await Promise.all([loadLatestCheck(), loadLatestOrder(), loadMessages(), loadMyManager(), loadMyOffer()])
+      setCheck(c); setOrder(o); setMsgs(m); setManager(mg); setOffer(of)
       if (c) setConfirmDraft(allSources(c.sources))
       // Bestätigt, aber noch nicht analysiert (z. B. Tab geschlossen) → Datensammlung nachholen.
       if (c && c.sources_confirmed && c.status === 'submitted') void runAudit(c.id)
@@ -158,7 +161,7 @@ export default function CabinetPage() {
   const logout = async () => { await signOut(); window.location.href = '/' }
 
   if (loading) return <Loading />
-  if (!check && !order) return <EmptyState onLogout={logout} />
+  if (!check && !order && !offer) return <EmptyState onLogout={logout} />
 
   const ready = check?.status === 'ready'
   const confirmed = !check || check.sources_confirmed !== false
@@ -168,7 +171,7 @@ export default function CabinetPage() {
   const statusLabel = orderFirst && order ? orderStatusLabel(order) : checkLabel
   const statusDone = orderFirst ? order?.status === 'active' || order?.status === 'closed' : ready
   const statusWaiting = orderFirst ? !order?.details : !confirmed
-  const tabs = TABS.filter(([t]) => check || (t !== 'report' && t !== 'company'))
+  const tabs = TABS.filter(([t]) => (t === 'offer' ? !!offer : check || (t !== 'report' && t !== 'company')))
   const scored = ready || preview
   const chans: Channel[] = CHANNELS.map(c => {
     if (preview) return c
@@ -206,6 +209,15 @@ export default function CabinetPage() {
     if (ok) { setCheck({ ...check, sources: confirmDraft, sources_confirmed: true }); void runAudit(check.id) }
     else setConfirmError(true)
   }
+
+  // «Ihr nächster Schritt»: genau eine Aufgabe, je nach Stand (Quellen-Bestätigung und Angaben zur Anfrage haben eigene Karten).
+  const book = bookingLink(manager)
+  const write = () => setTab('messages')
+  const nextStep: NextStep | null = !confirmed || (order && !order.details) ? null
+    : offer?.status === 'sent' ? { title: 'Ihr Angebot ist da', text: 'Wir haben ein Angebot für Ihr Unternehmen zusammengestellt. Sehen Sie es sich in Ruhe an — Fragen klären wir gern im Gespräch.', action: { label: 'Angebot ansehen', onClick: () => setTab('offer') } }
+    : offer?.status === 'accepted' ? { title: 'Wir bereiten den Start vor', text: 'Danke für Ihre Zusage. Ihr Ansprechpartner meldet sich mit den nächsten Schritten und den Unterlagen, die wir von Ihnen brauchen.', action: { label: 'Nachricht schreiben', onClick: write } }
+    : ready ? { title: 'Bericht gemeinsam besprechen', text: 'In 20 Minuten gehen wir die Ergebnisse durch und zeigen, was sich für Ihr Unternehmen zuerst lohnt.', action: book ? { label: 'Termin vereinbaren', href: book } : { label: 'Bericht ansehen', onClick: () => setTab('report') } }
+    : { title: 'Kostenloses Erstgespräch vereinbaren', text: 'Während wir den Bericht vorbereiten, können Sie schon einen Termin wählen — wir besprechen Ihre Ziele und die Ergebnisse direkt im Gespräch.', action: book ? { label: 'Termin vereinbaren', href: book } : { label: 'Nachricht schreiben', onClick: write } }
 
   const statusSteps: [boolean, string, string][] = [
     [true, 'Unternehmen bestätigt', 'Google-Profil gespeichert'],
@@ -279,6 +291,12 @@ export default function CabinetPage() {
             </div>
           </section>
         )}
+
+        {tab === 'overview' && nextStep && <div style={{ marginBottom: 18 }}><NextStepCard step={nextStep} /></div>}
+        {tab === 'overview' && offer?.status === 'sent' && <div style={{ marginBottom: 18 }}><OfferPanel offer={offer} onAccepted={setOffer} /></div>}
+        {tab === 'overview' && <div style={{ marginBottom: 18 }}><ManagerCard manager={manager} onWrite={write} /></div>}
+
+        {tab === 'offer' && offer && <OfferPanel offer={offer} onAccepted={setOffer} />}
 
         {check && tab === 'overview' && !ready && confirmed && (
           <div style={{ marginBottom: 20, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -488,8 +506,10 @@ export default function CabinetPage() {
             </div>
             <div style={card}>
               <Eyebrow>Ihr Kontakt</Eyebrow>
-              <p style={{ fontWeight: 700, fontSize: 16, margin: '0 0 4px' }}>RAG-Team</p>
-              <p style={{ fontSize: 13.5, color: 'var(--muted)', margin: '0 0 14px' }}>Regionale Agentur</p>
+              <p style={{ fontWeight: 700, fontSize: 16, margin: '0 0 4px' }}>{manager?.name || 'RAG-Team'}</p>
+              <p style={{ fontSize: 13.5, color: 'var(--muted)', margin: '0 0 14px' }}>{manager ? (manager.title || 'Ihr Ansprechpartner') : 'Regionale Agentur'}</p>
+              {book && <a href={book} target="_blank" rel="noopener noreferrer" className="btn btn-md btn-electric" style={{ marginBottom: 14 }}>Termin vereinbaren</a>}
+              <br />
               <a href="mailto:hallo@rag-agentur.de" className="ul" style={{ fontSize: 14, color: 'var(--electric)', fontWeight: 600 }}>hallo@rag-agentur.de</a>
               <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--line-soft)', fontSize: 13.5, display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--muted)' }}>Status</span><strong>{ready ? 'Bericht fertig' : confirmed ? 'Check aktiv' : 'Bestätigung offen'}</strong>
