@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { getLang, setLang, dateLocale, type Lang } from './i18n'
 import CompanySearch from './check/CompanySearch'
 import CheckPage from './check/CheckPage'
@@ -5901,8 +5901,14 @@ function LandingPage() {
 // landing page; "/services/:slug" renders a standalone service page. Vite's
 // dev server (and any SPA-fallback host) serves index.html for both.
 // ─────────────────────────────────────────────────────────────────────────────
+// Admin-Bereich: eigene, nicht verlinkte Adresse; Code wird nur dort geladen.
+const AdminApp = lazy(() => import('./admin/AdminApp'))
+
 export default function App() {
   const path = typeof window !== 'undefined' ? window.location.pathname : '/'
+  if (/^\/rag-intern(\/einladung)?\/?$/.test(path)) {
+    return <Suspense fallback={null}><AdminApp /></Suspense>
+  }
   const serviceMatch = path.match(/^\/services\/([a-z0-9-]+)\/?$/)
   if (serviceMatch && SERVICE_REDIRECTS[serviceMatch[1]]) {
     window.location.replace(SERVICE_REDIRECTS[serviceMatch[1]])
@@ -5973,7 +5979,7 @@ type QuizHave = 'profile' | 'website' | 'social' | 'none'
 type QuizSource = 'referral' | 'google' | 'portals' | 'social' | 'unknown'
 type QuizGoal = 'calls' | 'service' | 'region' | 'trust'
 type QuizCapacity = 'few' | 'some' | 'many' | 'unknown'
-type QuizAnswers = { have: QuizHave[]; sources: QuizSource[]; goal: QuizGoal | null; capacity: QuizCapacity | null; branche: string; ort: string }
+type QuizAnswers = { have: QuizHave[]; sources: QuizSource[]; goal: QuizGoal | null; capacity: QuizCapacity | null; branche: string; ort: string; firma: string }
 
 type QuizOption<T extends string> = { id: T; label: string; hint?: string }
 const QUIZ_HAVE: QuizOption<QuizHave>[] = [
@@ -6034,7 +6040,7 @@ function StartQuizPage() {
   usePageMeta('In 5 Fragen zu Ihrem Plan | RAG', 'Noch keine Website oder kein Google-Profil? Beantworten Sie 5 kurze Fragen — wir zeigen, womit Sie anfangen sollten.')
   const from = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('from') ?? '' : ''
   const [step, setStep] = useState(0)
-  const [a, setA] = useState<QuizAnswers>({ have: [], sources: [], goal: null, capacity: null, branche: '', ort: '' })
+  const [a, setA] = useState<QuizAnswers>({ have: [], sources: [], goal: null, capacity: null, branche: '', ort: '', firma: '' })
   const TOTAL = 5
   const done = step >= TOTAL
   const toggle = <K extends 'have' | 'sources'>(key: K, id: QuizAnswers[K][number], exclusive?: string) => setA(prev => {
@@ -6048,8 +6054,26 @@ function StartQuizPage() {
   const canNext = [a.have.length > 0, a.sources.length > 0, !!a.goal, !!a.capacity, a.branche.trim().length > 1 && a.ort.trim().length > 1][step]
   const next = () => { setStep(s => s + 1); window.scrollTo({ top: 0, behavior: 'smooth' }) }
   const back = () => setStep(s => Math.max(0, s - 1))
-  // Später an Supabase senden: { ...a, from, createdAt }
   const recs = done ? quizRecommendations(a) : []
+  // Antworten als Lead speichern (einmal pro Auswertung) — sichtbar im Admin unter «Квиз».
+  const leadId = useRef<string | null>(null)
+  useEffect(() => {
+    if (!done || leadId.current) return
+    const id = (() => { try { return crypto.randomUUID() } catch { return null } })()
+    if (!id) return
+    leadId.current = id
+    import('./check/data').then(({ getSupabase }) => getSupabase()).then(s => s.from('leads').insert({
+      id, source: 'quiz', from_page: from || null, answers: a, recommendations: quizRecommendations(a).map(r => r.title),
+    })).catch(() => undefined)
+  }, [done]) // eslint-disable-line react-hooks/exhaustive-deps
+  const bookingClicked = () => {
+    const id = leadId.current
+    if (id) import('./check/data').then(({ getSupabase }) => getSupabase()).then(s => s.rpc('lead_booking_clicked', { lead: id })).catch(() => undefined)
+  }
+  // Wer schon ein Google-Profil oder eine Website hat, bekommt zusätzlich den Sichtbarkeits-Check angeboten.
+  const offerCheck = a.have.includes('profile') || a.have.includes('website')
+  const checkQuery = [a.firma.trim(), a.ort.trim()].filter(Boolean).join(' ')
+  const checkHref = `/check?${new URLSearchParams({ ...(a.firma.trim() ? { q: checkQuery } : {}), from: 'quiz' }).toString()}`
   const label = <T extends string>(list: QuizOption<T>[], id: T | null) => list.find(o => o.id === id)?.label ?? ''
   const field: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '15px 18px', borderRadius: 14, border: '1px solid var(--border)', fontSize: 16, fontFamily: 'inherit', color: 'var(--ink)', backgroundColor: '#fff', outline: 'none' }
 
@@ -6068,6 +6092,12 @@ function StartQuizPage() {
           <span style={{ display: 'block', fontSize: 14, fontWeight: 700, marginBottom: 8 }}>Ort oder Region</span>
           <input style={field} value={a.ort} onChange={e => setA(p => ({ ...p, ort: e.target.value }))} placeholder="z. B. Graz und Umgebung" autoComplete="address-level2" />
         </label>
+        {(a.have.includes('profile') || a.have.includes('website')) && (
+          <label style={{ display: 'block' }}>
+            <span style={{ display: 'block', fontSize: 14, fontWeight: 700, marginBottom: 8 }}>Name Ihres Unternehmens <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(optional)</span></span>
+            <input style={field} value={a.firma} onChange={e => setA(p => ({ ...p, firma: e.target.value }))} placeholder="So wie bei Google eingetragen" autoComplete="organization" />
+          </label>
+        )}
       </>
     ) },
   ]
@@ -6123,13 +6153,23 @@ function StartQuizPage() {
                     </a>
                   ))}
                 </div>
+                {offerCheck && (
+                  <div className="d-card" style={{ marginTop: 24, padding: 'clamp(24px, 3vw, 36px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
+                    <div style={{ maxWidth: 580 }}>
+                      <Kicker>Kostenlos dazu</Kicker>
+                      <h2 className="display" style={{ fontSize: 'clamp(21px, 2.2vw, 28px)', lineHeight: 1.2, margin: '12px 0 10px' }}>Prüfen Sie, wie Google und KI Ihr Unternehmen sehen</h2>
+                      <p style={{ fontSize: 15.5, lineHeight: 1.6, color: 'var(--muted)', margin: 0 }}>Sie haben schon {a.have.includes('profile') && a.have.includes('website') ? 'ein Google-Profil und eine Website' : a.have.includes('profile') ? 'ein Google-Profil' : 'eine Website'}. Im Sichtbarkeits-Check sehen Sie, wo Sie neben Betrieben aus Ihrer Region stehen — und die 3 wichtigsten nächsten Schritte.</p>
+                    </div>
+                    <a href={checkHref} className="btn btn-lg btn-electric" style={{ flexShrink: 0 }}>Mein Unternehmen prüfen <span className="arw">→</span></a>
+                  </div>
+                )}
                 <div className="d-panel on-brand" style={{ marginTop: 24, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(28px, 3.6vw, 48px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap', borderRadius: 28 }}>
                   <RingsBackdrop size={600} color="rgba(255,255,255,0.14)" style={{ right: -160, top: -220 }} />
                   <div style={{ position: 'relative', maxWidth: 560 }}>
                     <h2 className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 30px)', margin: '0 0 10px', color: '#fff' }}>Besprechen wir Ihren Plan</h2>
                     <p style={{ fontSize: 16, lineHeight: 1.6, color: '#DCD8FF', margin: 0 }}>Wählen Sie einen Termin für ein kostenloses Gespräch von 20 Minuten. Wir gehen Ihre Antworten gemeinsam durch und sagen, womit Sie anfangen sollten.</p>
                   </div>
-                  <a href={QUIZ_BOOKING_URL} target={QUIZ_BOOKING_URL.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" className="btn btn-lg btn-on-brand" style={{ position: 'relative', flexShrink: 0 }}>Termin wählen <span className="arw">→</span></a>
+                  <a href={QUIZ_BOOKING_URL} onClick={bookingClicked} target={QUIZ_BOOKING_URL.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" className="btn btn-lg btn-on-brand" style={{ position: 'relative', flexShrink: 0 }}>Termin wählen <span className="arw">→</span></a>
                 </div>
                 <p style={{ textAlign: 'center', margin: '20px 0 0' }}>
                   <button type="button" onClick={() => setStep(0)} className="d-link" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', fontWeight: 700, fontSize: 15 }}>Antworten ändern</button>

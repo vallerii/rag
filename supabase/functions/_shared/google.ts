@@ -5,6 +5,13 @@
 const BASE = 'https://places.googleapis.com/v1'
 const LANG = 'de'
 
+// Der Google-Schlüssel ist auf die Website beschränkt (HTTP-Referrer). Server senden von sich aus
+// keinen Referrer — deshalb geben wir die eigene Domain mit. Überschreibbar per Secret PLACES_REFERER.
+// Sauberer wäre ein eigener Server-Schlüssel ohne Referrer-Beschränkung (nur «Places API (New)»).
+const REFERER = (globalThis as { Deno?: { env: { get(k: string): string | undefined } } }).Deno?.env.get('PLACES_REFERER')
+  ?? (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env.PLACES_REFERER
+  ?? 'https://rag-theta-one.vercel.app/'
+
 /** Suchgebiet DACH (Deutschland, Österreich, Schweiz) — Treffer außerhalb werden ausgeschlossen. */
 const DACH = { low: { latitude: 45.8, longitude: 5.8 }, high: { latitude: 55.1, longitude: 17.2 } }
 
@@ -58,7 +65,7 @@ export class PlacesError extends Error {
 async function call<T>(key: string, path: string, init: { method: 'GET' | 'POST'; body?: unknown }, mask: string): Promise<T> {
   const res = await fetch(BASE + path, {
     method: init.method,
-    headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': key, 'X-Goog-FieldMask': mask },
+    headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': key, 'X-Goog-FieldMask': mask, 'Referer': REFERER },
     body: init.body ? JSON.stringify(init.body) : undefined,
   })
   const data = await res.json().catch(() => ({}))

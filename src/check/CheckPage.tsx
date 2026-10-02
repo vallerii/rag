@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import CompanySearch from './CompanySearch'
 import {
-  DEMO, SOURCE_ORDER, createCheck, discoverSources, getCompany, newSessionToken, searchCompanies,
+  DEMO, SOURCE_ORDER, createCheck, discoverSources, getCompany, manualPlace, newSessionToken, searchCompanies,
   type Contact, type Place, type Source, type Suggestion,
 } from './data'
 import AccountStep from './AccountStep'
@@ -90,6 +90,41 @@ function CompanyCard({ place }: { place: Place }) {
   )
 }
 
+const fieldStyle: React.CSSProperties = { width: '100%', padding: '11px 14px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14.5, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
+
+/** «Mein Unternehmen ist nicht dabei»: genauer suchen oder ohne Google-Profil prüfen lassen. */
+function NotListed({ query, nothingFound, onManual }: { query: string; nothingFound: boolean; onManual: (p: Place) => void }) {
+  const [open, setOpen] = useState(nothingFound)
+  const [f, setF] = useState({ name: query, category: '', city: '', website: '' })
+  useEffect(() => { setOpen(nothingFound); setF(x => ({ ...x, name: query })) }, [query, nothingFound])
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF(x => ({ ...x, [k]: e.target.value }))
+  const ok = f.name.trim().length > 1 && f.city.trim().length > 1
+  if (!open) return (
+    <button type="button" onClick={() => setOpen(true)} className="ul"
+      style={{ marginTop: 14, background: 'none', border: 0, padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14.5, fontWeight: 600, color: 'var(--electric)' }}>
+      Mein Unternehmen ist nicht in der Liste
+    </button>
+  )
+  return (
+    <div style={{ marginTop: 18, border: '1px solid var(--line)', borderRadius: 20, padding: 'clamp(18px, 2.4vw, 24px)', backgroundColor: '#fff' }}>
+      <p style={{ fontWeight: 700, fontSize: 16, margin: '0 0 6px' }}>{nothingFound ? 'Dazu haben wir bei Google nichts gefunden.' : 'Nicht dabei?'}</p>
+      <p style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 16px' }}>
+        Suchen Sie genauer — mit Ort oder Straße im Suchfeld oben. Ist Ihr Unternehmen nicht bei Google eingetragen, prüfen wir Website und Social Media trotzdem und zeigen, was ein Google-Profil bringen würde.
+      </p>
+      <form onSubmit={e => { e.preventDefault(); if (ok) onManual(manualPlace(f)) }} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
+        <label style={{ fontSize: 13, fontWeight: 600 }}>Firmenname<input value={f.name} onChange={set('name')} required autoComplete="organization" style={{ ...fieldStyle, marginTop: 6 }} /></label>
+        <label style={{ fontSize: 13, fontWeight: 600 }}>Branche<input value={f.category} onChange={set('category')} placeholder="z. B. Elektriker" style={{ ...fieldStyle, marginTop: 6 }} /></label>
+        <label style={{ fontSize: 13, fontWeight: 600 }}>Ort<input value={f.city} onChange={set('city')} required placeholder="z. B. München" autoComplete="address-level2" style={{ ...fieldStyle, marginTop: 6 }} /></label>
+        <label style={{ fontSize: 13, fontWeight: 600 }}>Website (falls vorhanden)<input value={f.website} onChange={set('website')} placeholder="beispiel.de" inputMode="url" style={{ ...fieldStyle, marginTop: 6 }} /></label>
+        <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}>
+          <button type="submit" className="btn btn-md btn-electric" disabled={!ok}>Ohne Google-Profil prüfen <span className="arw">→</span></button>
+          <a href="/start?from=check" className="ul" style={{ fontSize: 14, color: 'var(--electric)', fontWeight: 600 }}>Oder: 5 kurze Fragen statt Check →</a>
+        </div>
+      </form>
+    </div>
+  )
+}
+
 export default function CheckPage() {
   useNoindex('Kostenloser Sichtbarkeits-Check | RAG')
   const params = new URLSearchParams(window.location.search)
@@ -106,6 +141,8 @@ export default function CheckPage() {
   const [query, setQuery] = useState(initialQ)
   const [results, setResults] = useState<Suggestion[] | null>(null)
   const [searching, setSearching] = useState(false)
+  // Suche technisch fehlgeschlagen (z. B. Edge Function nicht deployt) — nicht als «nichts gefunden» anzeigen.
+  const [searchError, setSearchError] = useState(false)
   const token = useRef(newSessionToken())
   const topRef = useRef<HTMLDivElement>(null)
 
@@ -114,10 +151,10 @@ export default function CheckPage() {
     const q = query.trim()
     if (q.length < 2) { setResults(null); return }
     let alive = true
-    setSearching(true)
+    setSearching(true); setSearchError(false)
     searchCompanies(q, token.current)
       .then(r => { if (alive) setResults(r) })
-      .catch(() => { if (alive) setResults([]) })
+      .catch(e => { console.error('places-search', e); if (alive) { setResults(null); setSearchError(true) } })
       .finally(() => { if (alive) setSearching(false) })
     return () => { alive = false }
   }, [query]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -140,11 +177,13 @@ export default function CheckPage() {
   useEffect(() => { if (initialPlace) loadPlace(initialPlace) }, []) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { topRef.current?.scrollIntoView({ block: 'start' }) }, [step])
 
-  const goContact = () => {
-    if (!place) return
-    discovery.current = discoverSources(place).catch(() => [])
+  const goContact = (p: Place | null = place) => {
+    if (!p) return
+    discovery.current = discoverSources(p).catch(() => [])
     setStep('contact')
   }
+  // Ohne Google-Profil: Angaben des Kunden übernehmen und direkt zum Konto.
+  const goManual = (p: Place) => { setPlace(p); goContact(p) }
 
   // Nach Registrierung/Anmeldung: Check anlegen und in den Kundenbereich.
   const createAndGo = async (_user: User, contact: Contact): Promise<string | null> => {
@@ -233,13 +272,14 @@ export default function CheckPage() {
                       ))}
                     </div>
                     {DEMO && <div style={{ marginTop: 12 }}><DemoNote>Die Google-Anbindung ist noch nicht aktiv. Angezeigt werden Beispieldaten.</DemoNote></div>}
+                    <NotListed query={query} nothingFound={false} onManual={goManual} />
                   </>
                 )}
+                {!searching && searchError && (
+                  <p role="alert" style={{ fontSize: 15, lineHeight: 1.7, margin: 0, color: '#B3261E' }}>Die Suche ist gerade nicht erreichbar. Bitte versuchen Sie es in einer Minute noch einmal.</p>
+                )}
                 {!searching && results && results.length === 0 && (
-                  <>
-                    <p style={{ fontSize: 15, lineHeight: 1.7, margin: 0 }}>Dazu haben wir nichts gefunden. Versuchen Sie es mit dem Namen und dem Ort, z. B. «Elektro Becker München».</p>
-                    <p style={{ fontSize: 15, lineHeight: 1.7, margin: '10px 0 0' }}><span>Ihr Betrieb ist noch nicht bei Google?</span>{' '}<a href="/start?from=check" className="ul" style={{ color: 'var(--electric)', fontWeight: 700 }}>Starten Sie mit 5 kurzen Fragen →</a></p>
-                  </>
+                  <NotListed query={query} nothingFound onManual={goManual} />
                 )}
               </div>
               <p style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--muted)', margin: '26px 0 0' }}>
@@ -264,7 +304,7 @@ export default function CheckPage() {
                   <CompanyCard place={place} />
                   {DEMO && <div style={{ marginTop: 14 }}><DemoNote>Die Google-Anbindung ist noch nicht aktiv. Angezeigt werden Beispieldaten.</DemoNote></div>}
                   <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 26 }}>
-                    <button type="button" className="btn btn-lg btn-electric" onClick={goContact}>Ja, das ist mein Unternehmen <span className="arw">→</span></button>
+                    <button type="button" className="btn btn-lg btn-electric" onClick={() => goContact()}>Ja, das ist mein Unternehmen <span className="arw">→</span></button>
                     <button type="button" className="btn btn-lg btn-outline-light" onClick={() => setStep('find')}>Anderes Unternehmen</button>
                   </div>
                 </>
@@ -275,7 +315,7 @@ export default function CheckPage() {
           {step === 'contact' && (
             <>
               <StepHead n="Schritt 2 von 2" title="Ihr Kundenbereich" sub="Legen Sie ein Konto an oder melden Sie sich an. Währenddessen suchen wir Website und Social-Media-Profile — im Kundenbereich bestätigen Sie sie und sehen später den Bericht." />
-              <AccountStep submitLabel="Weiter zum Kundenbereich" onAuthed={createAndGo} onBack={() => setStep('confirm')} />
+              <AccountStep submitLabel="Weiter zum Kundenbereich" onAuthed={createAndGo} onBack={() => setStep(place?.manual ? 'find' : 'confirm')} />
             </>
           )}
         </section>

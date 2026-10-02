@@ -19,6 +19,8 @@ export type AuditInput = {
   site: SiteScan | null
   sources: Source[]
   now?: Date
+  /** Kein Google-Profil gefunden — Angaben stammen vom Kunden. */
+  noProfile?: boolean
 }
 
 // Ein Kriterium: erreichte Punkte, Maximum, Bewertung und Text für den Kunden.
@@ -47,8 +49,14 @@ const median = (xs: number[]) => {
 const fmt = (n: number) => n.toLocaleString('de-DE', { maximumFractionDigits: 1 })
 
 // ── 02 Google Maps ───────────────────────────────────────────────────────────
-function mapsItems({ place: p, competitors: c, now = new Date() }: AuditInput): Item[] {
+function mapsItems({ place: p, competitors: c, now = new Date(), noProfile }: AuditInput): Item[] {
   const items: Item[] = []
+  if (noProfile) {
+    items.push({ id: 'noprofile', pts: 0, max: 100, mark: 'bad', text: 'Kein Google-Unternehmensprofil gefunden — bei Google Maps und lokalen Suchen erscheinen Sie nicht' })
+    const n = (c?.list ?? []).length
+    if (c && n) items.push({ id: 'rank-noprofile', pts: 0, max: 0, mark: 'bad', text: `Bei «${c.query}» zeigt Google ${n} andere Betriebe — Sie nicht` })
+    return items
+  }
   const rating = p.rating ?? 0
   const reviews = p.userRatingCount ?? 0
   const others = (c?.list ?? []).filter(x => x.id !== p.id).slice(0, 5)
@@ -182,6 +190,7 @@ function socialItems({ sources, site }: AuditInput): Item[] {
 
 // ── Empfehlungen ─────────────────────────────────────────────────────────────
 const RECS: Record<string, [string, string]> = {
+  noprofile: ['Google-Unternehmensprofil anlegen', 'Ohne Profil erscheinen Sie weder bei Google Maps noch in lokalen Suchen. Wir richten es schlüsselfertig ein.'],
   reviews: ['Mehr Bewertungen sammeln', 'Ein fester Ablauf, um nach jedem Auftrag um eine Bewertung zu bitten — per Link oder QR-Code.'],
   fresh: ['Bewertungen regelmäßig halten', 'Neue Bewertungen jeden Monat zeigen Google und Kunden, dass Sie aktiv sind.'],
   rating: ['Bewertung verbessern', 'Auf jede Bewertung antworten, Kritik ernst nehmen und zufriedene Kunden aktiv um Feedback bitten.'],
@@ -200,7 +209,7 @@ const RECS: Record<string, [string, string]> = {
 }
 const PRIO = ['Hohe Priorität', 'Mittlere Priorität', 'Wachstumspotenzial']
 // Reihenfolge der Empfehlungen: zuerst, was am meisten Anfragen kostet.
-const REC_ORDER = ['nosite', 'down', 'noindex', 'website', 'reviews', 'rating', 'rank', 'hours', 'fresh', 'photos', 'https', 'mobile', 'title', 'schema', 'profiles']
+const REC_ORDER = ['noprofile', 'nosite', 'down', 'noindex', 'website', 'reviews', 'rating', 'rank', 'hours', 'fresh', 'photos', 'https', 'mobile', 'title', 'schema', 'profiles']
 
 export function buildReport(input: AuditInput): Report {
   const blocked = siteBlocked(input.site)
@@ -210,7 +219,7 @@ export function buildReport(input: AuditInput): Report {
   const recommendations = REC_ORDER.filter(id => open.has(id)).slice(0, 3)
     .map((id, n): [string, string, string] => [PRIO[n], RECS[id][0], RECS[id][1]])
   const channels: Report['channels'] = {
-    maps: { score: sMaps, points: points(maps), summary: summary(sMaps,
+    maps: { score: sMaps, points: points(maps), summary: input.noProfile ? 'Ihr Unternehmen hat kein Google-Profil — hier verlieren Sie die meisten Anfragen.' : summary(sMaps,
       'Das Google-Profil ist stark und gepflegt.',
       'Das Profil ist eine gute Basis, hat aber einige offensichtliche Lücken.',
       'Das Profil hat deutliche Lücken — hier verlieren Sie die meisten Anfragen.') },

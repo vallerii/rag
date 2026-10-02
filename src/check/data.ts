@@ -36,6 +36,8 @@ export type Place = {
   country?: string
   lat?: number
   lng?: number
+  /** true = kein Google-Profil gefunden, Angaben hat der Kunde selbst gemacht */
+  manual?: boolean
 }
 
 export type SourceKey = 'website' | 'instagram' | 'facebook' | 'linkedin' | 'tiktok'
@@ -78,6 +80,15 @@ function syntheticPlace(query: string): Place {
 
 function toSuggestion(p: Place): Suggestion {
   return { id: p.id, main: p.name, secondary: `${p.category} · ${p.address}` }
+}
+
+/** Unternehmen ohne Google-Profil (nicht in der Trefferliste): Angaben des Kunden. */
+export function manualPlace(input: { name: string; category: string; city: string; website: string }): Place {
+  const website = input.website.trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/$/, '') || null
+  return {
+    id: 'manual:' + newSessionToken(), name: input.name.trim(), address: input.city.trim(), city: input.city.trim(),
+    category: input.category.trim() || 'Unternehmen', rating: null, reviews: 0, website, phone: null, mapsUrl: '', manual: true,
+  }
 }
 
 /** Eine Such-Sitzung (Tippen → Auswahl). Google rechnet Vorschläge + Details pro Sitzung ab. */
