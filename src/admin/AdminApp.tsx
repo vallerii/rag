@@ -240,7 +240,8 @@ function ClientCard({ r, prof }: { r: Request; prof?: Profile }) {
   ]
   if (r.kind === 'lead') {
     const l = r.row as Lead, a = l.answers as Record<string, unknown>
-    rows.push(['Компания', str(a.firma)], ['Сфера', str(a.branche)], ['Город', str(a.ort)], ['Что есть', ql(a.have)],
+    const le = str((l as Lead & { email?: string }).email || a.email)
+    rows.push(['E-mail (квиз)', le ? <a href={`mailto:${le}`}>{le}</a> : ''], ['Компания', str(a.firma)], ['Сфера', str(a.branche)], ['Город', str(a.ort)], ['Что есть', ql(a.have)],
       ['Откуда клиенты', ql(a.sources)], ['Цель', ql(a.goal)], ['Ещё заказов/мес', ql(a.capacity)], ['Советы квиза', (l.recommendations ?? []).join('; ')],
       ['Откуда пришёл', l.from_page], ['Запись на созвон', l.booking_clicked_at ? `нажал «Выбрать время» ${fmt(l.booking_clicked_at)}` : 'не нажимал'])
     if (!prof) rows.push(['Аккаунт', 'нет — контакт будет в записи Google Calendar'])
@@ -403,6 +404,7 @@ function activityText(a: Activity, profiles: Profile[]): string {
   const d = a.detail ?? {}
   switch (a.kind) {
     case 'lead_created': return 'Прошёл квиз'
+    case 'lead_claimed': return 'Зарегистрировался — квиз привязан к аккаунту'
     case 'booking_clicked': return 'Нажал «Выбрать время» (запись на созвон)'
     case 'check_created': return `Начал проверку видимости: ${str(d.name)}`
     case 'sources_confirmed': return 'Подтвердил сайт и профили'

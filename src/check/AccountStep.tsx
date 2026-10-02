@@ -50,7 +50,7 @@ export default function AccountStep({ submitLabel, onAuthed, onBack }: {
   const canSubmit = user
     ? true
     : mode === 'register'
-      ? name.trim() !== '' && emailRe.test(email.trim()) && password.length >= 8
+      ? emailRe.test(email.trim()) && password.length >= 8
       : emailRe.test(email.trim()) && password.length > 0
 
   const contactFrom = (u: User): Contact => ({
@@ -110,8 +110,6 @@ export default function AccountStep({ submitLabel, onAuthed, onBack }: {
 
           {mode === 'register' ? (
             <div className="ck-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div><label style={labelSt} htmlFor="acc-name">Name</label><input id="acc-name" style={field} value={name} onChange={e => setName(e.target.value)} autoComplete="name" placeholder="Vor- und Nachname" /></div>
-              <div><label style={labelSt} htmlFor="acc-phone">Telefon <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(optional)</span></label><input id="acc-phone" type="tel" style={field} value={phone} onChange={e => setPhone(e.target.value)} autoComplete="tel" placeholder="Für Rückfragen" /></div>
               <div><label style={labelSt} htmlFor="acc-email">E-Mail</label><input id="acc-email" type="email" style={field} value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" placeholder="name@firma.de" /></div>
               <div>
                 <label style={labelSt} htmlFor="acc-password">Passwort</label>

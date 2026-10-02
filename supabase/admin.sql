@@ -159,9 +159,10 @@ create table if not exists public.leads (
   next_contact_at    date
 );
 alter table public.leads add column if not exists assignee_id uuid references auth.users (id) on delete set null;
+alter table public.leads add column if not exists email text;
 alter table public.leads enable row level security;
 revoke all on public.leads from anon, authenticated;
-grant insert (id, source, from_page, answers, recommendations) on public.leads to anon, authenticated;
+grant insert (id, source, from_page, email, answers, recommendations) on public.leads to anon, authenticated;
 grant select, update on public.leads to authenticated;
 drop policy if exists "leads: jeder legt an" on public.leads;
 drop policy if exists "leads: Team" on public.leads;
@@ -175,6 +176,24 @@ language sql security definer set search_path = public as $$
   where id = lead and created_at > now() - interval '2 days'
 $$;
 grant execute on function public.lead_booking_clicked(uuid) to anon, authenticated;
+-- Nach Registrierung: Quiz-Lead dem Konto zuordnen (Verlauf, Notizen, Angebot ziehen mit um)
+create or replace function public.claim_lead(p_lead uuid) returns void
+language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); old_key text := 'lead:' || p_lead; new_key text;
+begin
+  if uid is null then return; end if;
+  new_key := 'user:' || uid;
+  update leads set user_id = uid where id = p_lead and user_id is null and created_at > now() - interval '7 days';
+  if not found then return; end if;
+  update activity set client_key = new_key where client_key = old_key;
+  update notes set client_key = new_key where client_key = old_key;
+  if not exists (select 1 from offers where client_key = new_key) then
+    update offers set client_key = new_key, user_id = uid where client_key = old_key;
+  end if;
+  insert into activity (client_key, kind) values (new_key, 'lead_claimed');
+end $$;
+revoke execute on function public.claim_lead(uuid) from public, anon;
+grant execute on function public.claim_lead(uuid) to authenticated;
 drop trigger if exists leads_assign on public.leads;
 create trigger leads_assign before update on public.leads for each row execute function public.auto_assign();
 

@@ -118,7 +118,7 @@ function NotListed({ query, nothingFound, onManual }: { query: string; nothingFo
         <label style={{ fontSize: 13, fontWeight: 600 }}>Website (falls vorhanden)<input value={f.website} onChange={set('website')} placeholder="beispiel.de" inputMode="url" style={{ ...fieldStyle, marginTop: 6 }} /></label>
         <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}>
           <button type="submit" className="btn btn-md btn-electric" disabled={!ok}>Ohne Google-Profil prüfen <span className="arw">→</span></button>
-          <a href="/start?from=check" className="ul" style={{ fontSize: 14, color: 'var(--electric)', fontWeight: 600 }}>Oder: 5 kurze Fragen statt Check →</a>
+          <a href="/start?from=check" className="ul" style={{ fontSize: 14, color: 'var(--electric)', fontWeight: 600 }}>Oder: 4 kurze Fragen statt Check →</a>
         </div>
       </form>
     </div>
@@ -284,7 +284,7 @@ export default function CheckPage() {
               </div>
               <p style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--muted)', margin: '26px 0 0' }}>
                 Ihr Unternehmen ist noch nicht bei Google?{' '}
-                <a href="/start?from=check" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>Beantworten Sie 5 kurze Fragen →</a>
+                <a href="/start?from=check" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>Beantworten Sie 4 kurze Fragen →</a>
               </p>
             </>
           )}

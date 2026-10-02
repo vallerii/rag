@@ -229,12 +229,26 @@ export type CheckRow = {
 }
 export type MessageRow = { id: string; author: 'client' | 'rag'; body: string; created_at: string }
 
+// ── Quiz-Lead mit dem Konto verbinden ────────────────────────────────────────
+// Das Quiz merkt sich die Lead-ID im Tab; nach Registrierung/Anmeldung (Check oder Anfrage)
+// wird der Lead dem Konto zugeordnet — im Admin erscheint dann ein Kunde statt zwei.
+const LEAD_KEY = 'rag-lead'
+export function rememberLead(id: string) { try { sessionStorage.setItem(LEAD_KEY, id) } catch { /* privat */ } }
+export async function claimRememberedLead() {
+  let id: string | null = null
+  try { id = sessionStorage.getItem(LEAD_KEY) } catch { /* */ }
+  if (!id) return
+  const { error } = await (await getSupabase()).rpc('claim_lead', { p_lead: id })
+  if (!error) { try { sessionStorage.removeItem(LEAD_KEY) } catch { /* */ } }
+}
+
 export async function createCheck(input: { place: Place; region: string; sources: Source[]; contact: Contact; sourcePage: string | null }): Promise<string | null> {
   const { data, error } = await (await getSupabase()).from('checks').insert({
     place_id: input.place.id, place: input.place, region: input.region, sources: input.sources,
     contact: input.contact, source_page: input.sourcePage,
   }).select('id').single()
   if (error) { console.error(error); return null }
+  await claimRememberedLead().catch(() => undefined)
   return data.id as string
 }
 
@@ -309,6 +323,7 @@ export type OrderRow = {
 export async function createOrder(items: OrderItem[], sourcePage: string | null): Promise<string | null> {
   const { data, error } = await (await getSupabase()).from('orders').insert({ items, source_page: sourcePage }).select('id').single()
   if (error) { console.error(error); return null }
+  await claimRememberedLead().catch(() => undefined)
   return data.id as string
 }
 

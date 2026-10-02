@@ -61,7 +61,7 @@ export async function loadAll(): Promise<{ requests: Request[]; profiles: Profil
       kind: 'lead' as const, id: l.id, clientKey: l.user_id ? `user:${l.user_id}` : `lead:${l.id}`, userId: l.user_id, created_at: l.created_at,
       stage: l.stage, next: l.next_contact_at, assignee: l.assignee_id, row: l,
       title: quiz(l).firma || [quiz(l).branche, quiz(l).ort].filter(Boolean).join(' · ') || 'Квиз',
-      sub: l.booking_clicked_at ? 'нажал «Выбрать время»' : 'без записи на созвон',
+      sub: [(l as Lead & { email?: string }).email, l.booking_clicked_at ? 'нажал «Выбрать время»' : 'без записи на созвон'].filter(Boolean).join(' · '),
     })),
     ...((O.data ?? []) as Order[]).map(o => ({
       kind: 'order' as const, id: o.id, clientKey: `user:${o.user_id}`, userId: o.user_id, created_at: o.created_at,

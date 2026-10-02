@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import { BOOKING_URL } from './config'
+import { rememberLead } from './check/data'
 import { getLang, setLang, dateLocale, type Lang } from './i18n'
 import CompanySearch from './check/CompanySearch'
 import CheckPage from './check/CheckPage'
@@ -2075,7 +2077,7 @@ function BusinessCheck() {
               </Reveal>
               <Reveal delay={0.22}>
                 <div style={{ marginTop: 28, paddingTop: 22, borderTop: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', gap: '12px 20px', flexWrap: 'wrap' }}>
-                  <p style={{ fontSize: 15, lineHeight: 1.6, color: '#DCD8FF', margin: 0, maxWidth: 360 }}><span>Noch keine Website oder kein Google-Profil?</span>{' '}<a href="/start?from=home" style={{ color: '#fff', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3 }}>In 5 Fragen zu Ihrem Plan →</a></p>
+                  <p style={{ fontSize: 15, lineHeight: 1.6, color: '#DCD8FF', margin: 0, maxWidth: 360 }}><span>Noch keine Website oder kein Google-Profil?</span>{' '}<a href="/start?from=home" style={{ color: '#fff', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3 }}>In 4 Fragen zu Ihrem Plan →</a></p>
                   <button type="button" onClick={() => setOrder(true)} className="btn btn-md btn-on-brand">Google-Profil · 149 € einmalig <span className="arw">→</span></button>
                 </div>
               </Reveal>
@@ -5002,9 +5004,9 @@ function ServicePackages({ slug }: { slug: string }) {
 /** Zeile unter dem Check-Formular im Hero: führt je Leistungsseite zum Quiz /start. */
 const SERVICE_CONSULT: Record<string, { lead: string; link: string }> = {
   'google-maps-business-profile': { lead: 'Noch kein Google-Profil?', link: 'In 2 Minuten zu Ihrem Plan' },
-  'website-google-search': { lead: 'Noch keine Website oder unsicher, welche Sie brauchen?', link: 'Finden Sie es mit 5 kurzen Fragen heraus' },
-  'ai-search-optimization': { lead: 'Sie wissen nicht, wo Sie anfangen sollen?', link: '5 Fragen — und wir zeigen Ihnen den Startpunkt' },
-  'social-media': { lead: 'Noch kein Profil oder keine Zeit dafür?', link: 'Ihre Ausgangslage in 5 Fragen' },
+  'website-google-search': { lead: 'Noch keine Website oder unsicher, welche Sie brauchen?', link: 'Finden Sie es mit 4 kurzen Fragen heraus' },
+  'ai-search-optimization': { lead: 'Sie wissen nicht, wo Sie anfangen sollen?', link: '4 Fragen — und wir zeigen Ihnen den Startpunkt' },
+  'social-media': { lead: 'Noch kein Profil oder keine Zeit dafür?', link: 'Ihre Ausgangslage in 4 Fragen' },
 }
 
 // Beschriftung des Check-Buttons im Hero je Leistungsseite — das Formular ist überall dasselbe (/check).
@@ -5973,13 +5975,13 @@ export default function App() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Link zur Google-Kalender-Terminbuchung — Platzhalter, bis der Kalender eingerichtet ist. */
-const QUIZ_BOOKING_URL = '#termin-platzhalter'
+// Terminbuchung (Google Calendar): zentral in src/config.ts → BOOKING_URL
+const QUIZ_BOOKING_URL = BOOKING_URL
 
 type QuizHave = 'profile' | 'website' | 'social' | 'none'
 type QuizSource = 'referral' | 'google' | 'portals' | 'social' | 'unknown'
 type QuizGoal = 'calls' | 'service' | 'region' | 'trust'
-type QuizCapacity = 'few' | 'some' | 'many' | 'unknown'
-type QuizAnswers = { have: QuizHave[]; sources: QuizSource[]; goal: QuizGoal | null; capacity: QuizCapacity | null; branche: string; ort: string; firma: string }
+type QuizAnswers = { have: QuizHave[]; sources: QuizSource[]; goal: QuizGoal | null; branche: string; ort: string; firma: string; email: string }
 
 type QuizOption<T extends string> = { id: T; label: string; hint?: string }
 const QUIZ_HAVE: QuizOption<QuizHave>[] = [
@@ -6001,12 +6003,6 @@ const QUIZ_GOALS: QuizOption<QuizGoal>[] = [
   { id: 'region', label: 'Kunden in einem neuen Ort oder Gebiet' },
   { id: 'trust', label: 'Professioneller wirken als die Konkurrenz' },
 ]
-const QUIZ_CAPACITY: QuizOption<QuizCapacity>[] = [
-  { id: 'few', label: 'Bis zu 5' },
-  { id: 'some', label: '5 bis 15' },
-  { id: 'many', label: 'Mehr als 15' },
-  { id: 'unknown', label: 'Weiß ich nicht' },
-]
 
 type QuizRec = { title: string; text: string; href: string; kind: ChannelKind }
 function quizRecommendations(a: QuizAnswers): QuizRec[] {
@@ -6017,7 +6013,7 @@ function quizRecommendations(a: QuizAnswers): QuizRec[] {
   else if (a.goal === 'service' || a.goal === 'region') recs.push({ kind: 'search', title: 'Seiten für Ihre Leistungen und Orte', text: 'Ihre Website ist eine gute Basis. Mit eigenen Seiten für die Leistung oder den Ort, um den es Ihnen geht, zeigt Google Sie genau bei diesen Suchen.', href: '/services/website-google-search' })
   if (a.sources.includes('portals')) recs.push({ kind: 'maps', title: 'Weniger abhängig von Portalen', text: 'Portale nehmen Provision und zeigen Ihre Konkurrenz direkt daneben. Eigene Sichtbarkeit bei Google bringt Anfragen ohne Zwischenhändler.', href: '/services/google-maps-business-profile' })
   if (a.goal === 'trust' || (!has('social') && recs.length < 2)) recs.push({ kind: 'social', title: 'Social Media, das Vertrauen schafft', text: 'Wer Sie gefunden hat, prüft Sie. Ein lebendiges Profil mit Team und echten Arbeiten macht aus dem Klick einen Anruf.', href: '/services/social-media' })
-  if ((has('profile') && has('website')) || a.capacity === 'many') recs.push({ kind: 'ki', title: 'Sichtbar in der KI-Suche', text: 'Immer mehr Kunden fragen ChatGPT oder sehen die KI-Übersicht bei Google. Genannt wird, über wen es klare, übereinstimmende Informationen gibt.', href: '/services/ai-search-optimization' })
+  if (has('profile') && has('website')) recs.push({ kind: 'ki', title: 'Sichtbar in der KI-Suche', text: 'Immer mehr Kunden fragen ChatGPT oder sehen die KI-Übersicht bei Google. Genannt wird, über wen es klare, übereinstimmende Informationen gibt.', href: '/services/ai-search-optimization' })
   return recs.slice(0, 3)
 }
 
@@ -6037,11 +6033,11 @@ function QuizOptionTile({ label, hint, selected, multi, onClick }: { label: stri
 }
 
 function StartQuizPage() {
-  usePageMeta('In 5 Fragen zu Ihrem Plan | RAG', 'Noch keine Website oder kein Google-Profil? Beantworten Sie 5 kurze Fragen — wir zeigen, womit Sie anfangen sollten.')
+  usePageMeta('In 4 Fragen zu Ihrem Plan | RAG', 'Noch keine Website oder kein Google-Profil? Beantworten Sie 4 kurze Fragen — wir zeigen, womit Sie anfangen sollten.')
   const from = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('from') ?? '' : ''
   const [step, setStep] = useState(0)
-  const [a, setA] = useState<QuizAnswers>({ have: [], sources: [], goal: null, capacity: null, branche: '', ort: '', firma: '' })
-  const TOTAL = 5
+  const [a, setA] = useState<QuizAnswers>({ have: [], sources: [], goal: null, branche: '', ort: '', firma: '', email: '' })
+  const TOTAL = 4
   const done = step >= TOTAL
   const toggle = <K extends 'have' | 'sources'>(key: K, id: QuizAnswers[K][number], exclusive?: string) => setA(prev => {
     const cur = prev[key] as string[]
@@ -6051,7 +6047,7 @@ function StartQuizPage() {
     else next = [...cur.filter(x => x !== exclusive), id]
     return { ...prev, [key]: next }
   })
-  const canNext = [a.have.length > 0, a.sources.length > 0, !!a.goal, !!a.capacity, a.branche.trim().length > 1 && a.ort.trim().length > 1][step]
+  const canNext = [a.have.length > 0, a.sources.length > 0, !!a.goal, a.branche.trim().length > 1 && a.ort.trim().length > 1 && /^\S+@\S+\.\S+$/.test(a.email.trim())][step]
   const next = () => { setStep(s => s + 1); window.scrollTo({ top: 0, behavior: 'smooth' }) }
   const back = () => setStep(s => Math.max(0, s - 1))
   const recs = done ? quizRecommendations(a) : []
@@ -6062,8 +6058,9 @@ function StartQuizPage() {
     const id = (() => { try { return crypto.randomUUID() } catch { return null } })()
     if (!id) return
     leadId.current = id
+    rememberLead(id)
     import('./check/data').then(({ getSupabase }) => getSupabase()).then(s => s.from('leads').insert({
-      id, source: 'quiz', from_page: from || null, answers: a, recommendations: quizRecommendations(a).map(r => r.title),
+      id, source: 'quiz', from_page: from || null, email: a.email.trim().toLowerCase(), answers: a, recommendations: quizRecommendations(a).map(r => r.title),
     })).catch(() => undefined)
   }, [done]) // eslint-disable-line react-hooks/exhaustive-deps
   const bookingClicked = () => {
@@ -6081,7 +6078,6 @@ function StartQuizPage() {
     { title: 'Was haben Sie schon?', hint: 'Mehrere Antworten möglich', body: QUIZ_HAVE.map(o => <QuizOptionTile key={o.id} label={o.label} hint={o.hint} multi selected={a.have.includes(o.id)} onClick={() => toggle('have', o.id, 'none')} />) },
     { title: 'Wie kommen neue Kunden heute zu Ihnen?', hint: 'Mehrere Antworten möglich', body: QUIZ_SOURCES.map(o => <QuizOptionTile key={o.id} label={o.label} hint={o.hint} multi selected={a.sources.includes(o.id)} onClick={() => toggle('sources', o.id, 'unknown')} />) },
     { title: 'Was ist Ihnen gerade am wichtigsten?', body: QUIZ_GOALS.map(o => <QuizOptionTile key={o.id} label={o.label} multi={false} selected={a.goal === o.id} onClick={() => setA(p => ({ ...p, goal: o.id }))} />) },
-    { title: 'Wie viele neue Aufträge im Monat könnten Sie noch annehmen?', body: QUIZ_CAPACITY.map(o => <QuizOptionTile key={o.id} label={o.label} multi={false} selected={a.capacity === o.id} onClick={() => setA(p => ({ ...p, capacity: o.id }))} />) },
     { title: 'Zum Schluss: Womit und wo sind Sie tätig?', body: (
       <>
         <label style={{ display: 'block' }}>
@@ -6091,6 +6087,11 @@ function StartQuizPage() {
         <label style={{ display: 'block' }}>
           <span style={{ display: 'block', fontSize: 14, fontWeight: 700, marginBottom: 8 }}>Ort oder Region</span>
           <input style={field} value={a.ort} onChange={e => setA(p => ({ ...p, ort: e.target.value }))} placeholder="z. B. Graz und Umgebung" autoComplete="address-level2" />
+        </label>
+        <label style={{ display: 'block' }}>
+          <span style={{ display: 'block', fontSize: 14, fontWeight: 700, marginBottom: 8 }}>E-Mail</span>
+          <input style={field} type="email" value={a.email} onChange={e => setA(p => ({ ...p, email: e.target.value }))} placeholder="Ihre E-Mail-Adresse" autoComplete="email" inputMode="email" />
+          <span style={{ display: 'block', fontSize: 13, color: 'var(--muted)', marginTop: 6 }}>Damit wir Ihnen Ihren Plan zuordnen und uns vor dem Gespräch melden können. Kein Newsletter.</span>
         </label>
         {(a.have.includes('profile') || a.have.includes('website')) && (
           <label style={{ display: 'block' }}>
@@ -6112,7 +6113,7 @@ function StartQuizPage() {
             {!done ? (
               <>
                 <div style={{ textAlign: 'center', marginBottom: 28 }}>
-                  <Kicker>In 5 Fragen zu Ihrem Plan</Kicker>
+                  <Kicker>In 4 Fragen zu Ihrem Plan</Kicker>
                   <div aria-hidden style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 18 }}>
                     {Array.from({ length: TOTAL }).map((_, i) => (
                       <span key={i} style={{ width: i === step ? 36 : 18, height: 6, borderRadius: 999, backgroundColor: i <= step ? 'var(--electric)' : '#DAD8F5', transition: 'width .3s, background-color .3s' }} />
