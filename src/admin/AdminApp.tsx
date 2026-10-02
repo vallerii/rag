@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNoindex } from '../check/CheckPage'
 import {
-  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, loadAll, loadClient, loadMyProfile, loadTeam, myId, saveMyProfile, publishReport,
+  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, addAppointment, deleteAppointment, loadAll, loadClient, loadMyProfile, setAppointmentStatus, loadTeam, myId, saveMyProfile, publishReport,
   revokeInvite, saveOffer, sendStaffMessage, setAssignee, setNextContact, setRole, setStage, signInPlain, signInStaff, signOutStaff, signUpStaff, stageLabel,
   type Invite,
-  type Activity, type Check, type Lead, type Message, type Note, type Offer, type Order, type Profile, type Request, type Stage,
+  type Activity, type Appointment, type Check, type Lead, type Message, type Note, type Offer, type Order, type Profile, type Request, type Stage,
 } from './api'
 import { CATALOG, totals, type OfferItem, type Unit } from './catalog'
 
@@ -160,7 +160,7 @@ function Detail({ r, all, profiles, me, onSelect, onPatch }: { r: Request; all: 
   const staff = profiles.filter(p => p.role === 'admin' || p.role === 'manager')
   const prof = profileOf(profiles, r.userId)
   const related = all.filter(x => x.clientKey === r.clientKey && !(x.kind === r.kind && x.id === r.id))
-  const [client, setClient] = useState<{ messages: Message[]; notes: Note[]; activity: Activity[]; offer: Offer | null } | null>(null)
+  const [client, setClient] = useState<Awaited<ReturnType<typeof loadClient>> | null>(null)
   const reloadClient = () => { loadClient(r.clientKey, r.userId).then(setClient) }
   useEffect(() => { reloadClient() }, [r.clientKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -206,6 +206,9 @@ function Detail({ r, all, profiles, me, onSelect, onPatch }: { r: Request; all: 
           {client && <OfferCard clientKey={r.clientKey} userId={r.userId} initial={client.offer} preset={r.kind === 'order' ? (r.row as Order).items ?? [] : []} onSaved={reloadClient} />}
         </div>
         <div style={{ display: 'grid', gap: 16 }}>
+          {client && <AppointmentsCard r={r} list={client.appointments} onChanged={async added => {
+            if (added && (r.stage === 'new' || r.stage === 'contacted')) await changeStage('call_booked'); else reloadClient()
+          }} />}
           {client && <Chat userId={r.userId} messages={client.messages} onSent={m => setClient(c => c && { ...c, messages: [...c.messages, m] })} />}
           {client && <Notes clientKey={r.clientKey} notes={client.notes} onAdded={() => reloadClient()} />}
           {client && <History items={client.activity} profiles={profiles} />}
@@ -417,6 +420,8 @@ function activityText(a: Activity, profiles: Profile[]): string {
     case 'note': return 'Добавлена заметка'
     case 'offer_sent': return 'Предложение отмечено как отправленное'
     case 'offer_accepted': return 'Клиент принял предложение'
+    case 'appointment': return `Назначена встреча: ${str(d.title)}, ${d.at ? fmtDT(str(d.at)) : ''}`
+    case 'appointment_changed': return `Встреча «${str(d.title)}»: ${d.status === 'cancelled' ? 'отменена' : d.status === 'done' ? 'состоялась' : 'перенесена на ' + (d.at ? fmtDT(str(d.at)) : '')}`
     case 'assigned': return d.to ? `Ответственный (${TABLE_RU[str(d.type)] ?? ''}): ${staffName(profiles, str(d.to))}` : `Ответственный снят (${TABLE_RU[str(d.type)] ?? ''})`
     case 'stage': return `Статус (${TABLE_RU[str(d.type)] ?? ''}): ${stageLabel(d.stage as Stage)}`
     default: return a.kind
@@ -435,6 +440,58 @@ function History({ items, profiles }: { items: Activity[]; profiles: Profile[] }
   )
 }
 
+
+// ── Встречи с клиентом ──────────────────────────────────────────────────────
+const fmtDT = (iso: string) => new Date(iso).toLocaleString('ru-RU', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+const APPT_STATUS: [Appointment['status'], string][] = [['planned', 'Запланирована'], ['done', 'Состоялась'], ['cancelled', 'Отменена']]
+function AppointmentsCard({ r, list, onChanged }: { r: Request; list: Appointment[]; onChanged: (added: boolean) => void }) {
+  const [open, setOpen] = useState(false), [busy, setBusy] = useState(false), [err, setErr] = useState('')
+  const [f, setF] = useState({ when: '', duration: '30', title: 'Erstgespräch', location: '', note: '' })
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setF(x => ({ ...x, [k]: e.target.value }))
+  const add = async (e: React.FormEvent) => {
+    e.preventDefault(); setErr('')
+    if (!f.when) { setErr('Укажите дату и время.'); return }
+    setBusy(true)
+    const ok = await addAppointment({ client_key: r.clientKey, user_id: r.userId, starts_at: new Date(f.when).toISOString(), duration_min: Number(f.duration) || 30, title: f.title, location: f.location, note: f.note })
+    setBusy(false)
+    if (!ok) { setErr('Не удалось сохранить.'); return }
+    setOpen(false); setF({ when: '', duration: '30', title: 'Erstgespräch', location: '', note: '' }); onChanged(true)
+  }
+  return (
+    <section style={card}>
+      <h3 style={h3}>Встречи</h3>
+      {!r.userId && <p style={{ ...small, margin: '0 0 10px', color: '#B26B00' }}>У клиента ещё нет аккаунта — встречу он увидит после регистрации.</p>}
+      {list.length === 0 && !open && <p style={{ ...small, margin: '0 0 10px' }}>Встреч пока нет.</p>}
+      {list.map(a => (
+        <div key={a.id} style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', padding: '8px 0', borderTop: `1px solid ${line}`, opacity: a.status === 'cancelled' ? 0.55 : 1 }}>
+          <span style={{ flex: 1, minWidth: 180, fontSize: 14 }}><strong>{fmtDT(a.starts_at)}</strong> · {a.duration_min} мин · {a.title}
+            {a.location ? <><br /><span style={small}>{a.location}</span></> : null}</span>
+          <select value={a.status} onChange={async e => { if (await setAppointmentStatus(a.id, e.target.value as Appointment['status'])) onChanged(false) }} style={{ ...input, width: 150, padding: '5px 8px' }}>
+            {APPT_STATUS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+          </select>
+          <button type="button" style={{ ...linkBtn, fontSize: 12.5, color: '#A21C22' }} onClick={async () => { if (confirm('Удалить встречу? Клиент её больше не увидит.') && await deleteAppointment(a.id)) onChanged(false) }}>Удалить</button>
+        </div>
+      ))}
+      {open ? (
+        <form onSubmit={add} style={{ display: 'grid', gap: 8, marginTop: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 110px', gap: 8 }}>
+            <input type="datetime-local" value={f.when} onChange={set('when')} style={input} required aria-label="Дата и время" />
+            <select value={f.duration} onChange={set('duration')} style={input} aria-label="Длительность">{['15', '20', '30', '45', '60', '90'].map(m => <option key={m} value={m}>{m} мин</option>)}</select>
+          </div>
+          <input style={input} value={f.title} onChange={set('title')} placeholder="Название для клиента (по-немецки)" aria-label="Название" />
+          <input style={input} value={f.location} onChange={set('location')} placeholder="Ссылка на видеозвонок, телефон или адрес" aria-label="Где" />
+          <textarea style={{ ...input, minHeight: 60, resize: 'vertical' }} value={f.note} onChange={set('note')} placeholder="Комментарий для клиента (по-немецки, необязательно)" aria-label="Комментарий" />
+          {err && <p style={{ ...small, color: '#A21C22', margin: 0 }}>{err}</p>}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-sm btn-electric" disabled={busy}>{busy ? 'Сохранение…' : 'Добавить встречу'}</button>
+            <button type="button" className="btn btn-sm btn-outline-light" onClick={() => setOpen(false)}>Отмена</button>
+          </div>
+          <p style={{ ...small, margin: 0 }}>Клиент увидит встречу в кабинете (вкладка «Termine» и «Следующий шаг»). Статус «Новая/Связались» сменится на «Созвон назначен».</p>
+        </form>
+      ) : <button type="button" className="btn btn-sm btn-outline-light" style={{ marginTop: 8 }} onClick={() => setOpen(true)}>+ Назначить встречу</button>}
+    </section>
+  )
+}
 
 // ── Мой профиль: так менеджера видит клиент в кабинете ───────────────────────
 function MyProfile() {

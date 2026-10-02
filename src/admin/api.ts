@@ -112,15 +112,16 @@ export async function publishReport(c: Check) {
 
 export async function loadClient(clientKey: string, userId: string | null) {
   const s = await db()
-  const [M, N, A, F] = await Promise.all([
+  const [M, N, A, F, T] = await Promise.all([
     userId ? s.from('messages').select('id, author, body, created_at').eq('user_id', userId).order('created_at') : Promise.resolve({ data: [] }),
     s.from('notes').select('id, body, author_id, created_at').eq('client_key', clientKey).order('created_at', { ascending: false }),
     s.from('activity').select('id, kind, detail, actor, created_at').eq('client_key', clientKey).order('created_at', { ascending: false }).limit(200),
     s.from('offers').select('*').eq('client_key', clientKey).maybeSingle(),
+    s.from('appointments').select('*').eq('client_key', clientKey).order('starts_at', { ascending: false }),
   ])
   return {
     messages: (M.data ?? []) as Message[], notes: (N.data ?? []) as Note[], activity: (A.data ?? []) as Activity[],
-    offer: (F.data ?? null) as Offer | null,
+    offer: (F.data ?? null) as Offer | null, appointments: (T.data ?? []) as Appointment[],
   }
 }
 
@@ -207,4 +208,17 @@ export async function loadMyProfile(): Promise<Profile | null> {
 export async function saveMyProfile(p: { name: string; title: string; photo: string; booking: string }): Promise<string | null> {
   const { error } = await (await db()).rpc('update_my_staff_profile', { p_name: p.name.trim(), p_title: p.title.trim(), p_photo: p.photo.trim(), p_booking: p.booking.trim() })
   return error ? error.message : null
+}
+
+// ── Termine mit dem Kunden (sieht er im Kundenbereich unter «Termine») ──────
+export type Appointment = { id: string; client_key: string; user_id: string | null; starts_at: string; duration_min: number; title: string; location: string | null; note: string | null; status: 'planned' | 'done' | 'cancelled'; created_by: string | null }
+export async function addAppointment(a: { client_key: string; user_id: string | null; starts_at: string; duration_min: number; title: string; location: string; note: string }): Promise<boolean> {
+  const { error } = await (await db()).from('appointments').insert({ ...a, location: a.location.trim() || null, note: a.note.trim() || null, title: a.title.trim() || 'Gespräch' })
+  return !error
+}
+export async function setAppointmentStatus(id: string, status: Appointment['status']) {
+  return !(await (await db()).from('appointments').update({ status }).eq('id', id)).error
+}
+export async function deleteAppointment(id: string) {
+  return !(await (await db()).from('appointments').delete().eq('id', id)).error
 }

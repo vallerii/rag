@@ -373,3 +373,43 @@ export async function acceptOffer(id: string): Promise<boolean> {
   const { error } = await (await getSupabase()).rpc('accept_offer', { p_id: id })
   return !error
 }
+
+// ── Termine & Konto (Kundenbereich) ─────────────────────────────────────────
+export type Appointment = { id: string; starts_at: string; duration_min: number; title: string; location: string | null; note: string | null; status: 'planned' | 'done' | 'cancelled' }
+export async function loadMyAppointments(): Promise<Appointment[]> {
+  const { data, error } = await (await getSupabase()).from('appointments')
+    .select('id, starts_at, duration_min, title, location, note, status').order('starts_at', { ascending: true })
+  return error ? [] : (data as Appointment[])
+}
+
+export type MyContact = { name: string; phone: string }
+/** Name und Telefon aus profiles (Fallback: Angaben aus der Registrierung). */
+export async function loadMyContact(u: User): Promise<MyContact> {
+  const { data } = await (await getSupabase()).from('profiles').select('name, phone').eq('id', u.id).maybeSingle()
+  return {
+    name: (data?.name as string | null) ?? (u.user_metadata?.name as string | undefined) ?? '',
+    phone: (data?.phone as string | null) ?? (u.user_metadata?.phone as string | undefined) ?? '',
+  }
+}
+export async function saveMyContact(c: MyContact): Promise<boolean> {
+  const s = await getSupabase()
+  const { error } = await s.rpc('update_my_contact', { p_name: c.name, p_phone: c.phone })
+  if (error) return false
+  await s.auth.updateUser({ data: { name: c.name.trim(), phone: c.phone.trim() } })
+  return true
+}
+/** Neues Passwort — vorher das aktuelle prüfen. */
+export async function changePassword(email: string, current: string, next: string): Promise<'ok' | 'wrong' | 'error'> {
+  const s = await getSupabase()
+  const check = await s.auth.signInWithPassword({ email, password: current })
+  if (check.error) return 'wrong'
+  const { error } = await s.auth.updateUser({ password: next })
+  return error ? 'error' : 'ok'
+}
+export async function deleteMyAccount(): Promise<boolean> {
+  const s = await getSupabase()
+  const { error } = await s.rpc('delete_my_account')
+  if (error) return false
+  await s.auth.signOut()
+  return true
+}

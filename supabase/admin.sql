@@ -187,6 +187,7 @@ begin
   if not found then return; end if;
   update activity set client_key = new_key where client_key = old_key;
   update notes set client_key = new_key where client_key = old_key;
+  update appointments set client_key = new_key, user_id = uid where client_key = old_key;
   if not exists (select 1 from offers where client_key = new_key) then
     update offers set client_key = new_key, user_id = uid where client_key = old_key;
   end if;
@@ -417,3 +418,68 @@ end $$;
 
 revoke execute on function public.update_my_staff_profile(text, text, text, text), public.my_manager(), public.accept_offer(uuid) from public, anon;
 grant execute on function public.update_my_staff_profile(text, text, text, text), public.my_manager(), public.accept_offer(uuid) to authenticated;
+
+-- ── Termine (vom Team eingetragen, Kunde sieht sie unter «Termine») ─────────
+create table if not exists public.appointments (
+  id           uuid primary key default gen_random_uuid(),
+  client_key   text not null,
+  user_id      uuid references auth.users (id) on delete cascade,
+  starts_at    timestamptz not null,
+  duration_min int not null default 30 check (duration_min between 5 and 480),
+  title        text not null default 'Gespräch' check (length(title) between 1 and 200),
+  location     text check (length(location) <= 500),   -- Video-Link, Telefon oder Adresse
+  note         text check (length(note) <= 2000),
+  status       text not null default 'planned' check (status in ('planned', 'done', 'cancelled')),
+  created_by   uuid default auth.uid() references auth.users (id) on delete set null,
+  created_at   timestamptz not null default now()
+);
+create index if not exists appointments_client_idx on public.appointments (client_key, starts_at);
+create index if not exists appointments_user_idx on public.appointments (user_id, starts_at);
+alter table public.appointments enable row level security;
+revoke all on public.appointments from anon;
+grant select, insert, update, delete on public.appointments to authenticated;
+drop policy if exists "appointments: Kunde liest" on public.appointments;
+drop policy if exists "appointments: Team" on public.appointments;
+create policy "appointments: Kunde liest" on public.appointments for select to authenticated using (user_id = auth.uid());
+create policy "appointments: Team" on public.appointments for all to authenticated using (public.is_staff()) with check (public.is_staff());
+
+create or replace function public.log_appointment() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if tg_op = 'INSERT' then
+    insert into activity (client_key, kind, detail) values (new.client_key, 'appointment', jsonb_build_object('at', new.starts_at, 'title', new.title));
+  elsif old.status is distinct from new.status or old.starts_at is distinct from new.starts_at then
+    insert into activity (client_key, kind, detail) values (new.client_key, 'appointment_changed', jsonb_build_object('at', new.starts_at, 'title', new.title, 'status', new.status));
+  end if;
+  return new;
+end $$;
+drop trigger if exists appointments_log on public.appointments;
+create trigger appointments_log after insert or update on public.appointments for each row execute function public.log_appointment();
+
+-- ── Konto des Kunden: Name/Telefon ändern, Konto löschen ────────────────────
+create or replace function public.update_my_contact(p_name text, p_phone text) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'not_signed_in'; end if;
+  if length(coalesce(p_name, '')) > 120 or length(coalesce(p_phone, '')) > 40 then raise exception 'too_long'; end if;
+  update profiles set name = nullif(trim(p_name), ''), phone = nullif(trim(p_phone), '') where id = auth.uid();
+end $$;
+
+-- Löscht das eigene Konto mit allen Daten (Checks, Anfragen, Nachrichten, Angebote, Termine, Notizen, Verlauf).
+create or replace function public.delete_my_account() returns void
+language plpgsql security definer set search_path = public, auth as $$
+declare uid uuid := auth.uid(); k text;
+begin
+  if uid is null then raise exception 'not_signed_in'; end if;
+  if public.is_staff() then raise exception 'staff_account'; end if;
+  k := 'user:' || uid;
+  delete from public.activity where client_key = k;
+  delete from public.notes where client_key = k;
+  delete from public.offers where client_key = k;
+  delete from public.appointments where client_key = k;
+  delete from public.leads where user_id = uid;
+  delete from auth.users where id = uid;   -- checks, orders, messages, profiles: on delete cascade
+end $$;
+
+revoke execute on function public.update_my_contact(text, text), public.delete_my_account() from public, anon;
+grant execute on function public.update_my_contact(text, text), public.delete_my_account() to authenticated;

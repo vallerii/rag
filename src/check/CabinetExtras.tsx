@@ -76,7 +76,7 @@ export function OfferPanel({ offer, onAccepted }: { offer: ClientOffer; onAccept
   )
 }
 
-export type NextStep = { title: string; text: string; action?: { label: string; href?: string; onClick?: () => void } }
+export type NextStep = { title: string; text: React.ReactNode; action?: { label: string; href?: string; onClick?: () => void } }
 
 export function NextStepCard({ step }: { step: NextStep }) {
   return (

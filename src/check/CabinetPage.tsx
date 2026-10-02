@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { DemoNote, Logo, StarsRow, useNoindex } from './CheckPage'
 import {
-  DEMO, SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, loadLatestCheck, loadLatestOrder, loadMessages, loadMyManager, loadMyOffer, runAudit, sendMessage, signOut, updateSources,
-  type CheckRow, type ClientOffer, type Manager, type MessageRow, type OrderRow, type Source,
+  DEMO, SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, loadLatestCheck, loadLatestOrder, loadMessages, loadMyAppointments, loadMyContact, loadMyManager, loadMyOffer, runAudit, sendMessage, signOut, updateSources,
+  type Appointment, type CheckRow, type ClientOffer, type MyContact, type Manager, type MessageRow, type OrderRow, type Source,
 } from './data'
 import SourcesEditor from './SourcesEditor'
 import OrderPanel, { orderStatusLabel } from './OrderPanel'
+import { AccountPanel, AppointmentsPanel, ContactForm, fmtWhen, upcoming } from './CabinetAccount'
 import { ManagerCard, NextStepCard, OfferPanel, bookingLink, type NextStep } from './CabinetExtras'
 
 /** Immer alle fünf Quellen in fester Reihenfolge — auch wenn die Suche nichts geliefert hat. */
@@ -19,8 +20,8 @@ function allSources(list: Source[] | null | undefined): Source[] {
 // Daten aus Supabase (checks, messages). Ohne Anmeldung → /login. Den Bericht trägt das Team
 // im Table Editor ein (checks.report, status = 'ready'); bis dahin gibt es einen Beispielbericht zum Ansehen.
 
-type Tab = 'overview' | 'offer' | 'report' | 'company' | 'messages'
-const TABS: [Tab, string][] = [['overview', 'Übersicht'], ['offer', 'Angebot'], ['report', 'Bericht'], ['company', 'Unternehmen'], ['messages', 'Nachrichten']]
+type Tab = 'overview' | 'offer' | 'report' | 'company' | 'termine' | 'messages' | 'konto'
+const TABS: [Tab, string][] = [['overview', 'Übersicht'], ['offer', 'Angebot'], ['report', 'Bericht'], ['company', 'Unternehmen'], ['termine', 'Termine'], ['messages', 'Nachrichten'], ['konto', 'Konto']]
 
 type Mark = 'ok' | 'warn' | 'bad'
 type ChanKey = 'ai' | 'maps' | 'search' | 'social'
@@ -122,7 +123,8 @@ export default function CabinetPage() {
   const [userEmail, setUserEmail] = useState('')
   const [check, setCheck] = useState<CheckRow | null>(null)
   const [order, setOrder] = useState<OrderRow | null>(null)
-  const [userMeta, setUserMeta] = useState<{ name: string; phone: string }>({ name: '', phone: '' })
+  const [contact, setContact] = useState<MyContact>({ name: '', phone: '' })
+  const [appts, setAppts] = useState<Appointment[]>([])
   const [msgs, setMsgs] = useState<MessageRow[]>([])
   const [manager, setManager] = useState<Manager | null>(null)
   const [offer, setOffer] = useState<ClientOffer | null>(null)
@@ -146,9 +148,8 @@ export default function CabinetPage() {
       const u = await currentUser()
       if (!u) { window.location.replace('/login?next=' + encodeURIComponent('/kabinett')); return }
       setUserEmail(u.email ?? '')
-      setUserMeta({ name: (u.user_metadata?.name as string | undefined) ?? '', phone: (u.user_metadata?.phone as string | undefined) ?? '' })
-      const [c, o, m, mg, of] = await Promise.all([loadLatestCheck(), loadLatestOrder(), loadMessages(), loadMyManager(), loadMyOffer()])
-      setCheck(c); setOrder(o); setMsgs(m); setManager(mg); setOffer(of)
+      const [c, o, m, mg, of, ap, ct] = await Promise.all([loadLatestCheck(), loadLatestOrder(), loadMessages(), loadMyManager(), loadMyOffer(), loadMyAppointments(), loadMyContact(u)])
+      setCheck(c); setOrder(o); setMsgs(m); setManager(mg); setOffer(of); setAppts(ap); setContact(ct)
       if (c) setConfirmDraft(allSources(c.sources))
       // Bestätigt, aber noch nicht analysiert (z. B. Tab geschlossen) → Datensammlung nachholen.
       if (c && c.sources_confirmed && c.status === 'submitted') void runAudit(c.id)
@@ -182,7 +183,7 @@ export default function CabinetPage() {
   const total = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null
   const recs: [string, string, string][] = preview ? RECS : (check?.report?.recommendations ?? [])
   const place = check?.place
-  const displayName = check?.contact.name || userMeta.name || userEmail
+  const displayName = check?.contact.name || contact.name || userEmail
   const email = check?.email || userEmail
   const headTitle = place?.name || order?.details?.company || 'Ihr Kundenbereich'
   const headSub = place ? `${place.category}${check?.region ? ` · ${check.region}` : ''}` : (order ? order.items.map(i => i.name).join(' + ') : '')
@@ -213,8 +214,10 @@ export default function CabinetPage() {
   // «Ihr nächster Schritt»: genau eine Aufgabe, je nach Stand (Quellen-Bestätigung und Angaben zur Anfrage haben eigene Karten).
   const book = bookingLink(manager)
   const write = () => setTab('messages')
+  const nextAppt = upcoming(appts)
   const nextStep: NextStep | null = !confirmed || (order && !order.details) ? null
     : offer?.status === 'sent' ? { title: 'Ihr Angebot ist da', text: 'Wir haben ein Angebot für Ihr Unternehmen zusammengestellt. Sehen Sie es sich in Ruhe an — Fragen klären wir gern im Gespräch.', action: { label: 'Angebot ansehen', onClick: () => setTab('offer') } }
+    : nextAppt ? { title: 'Ihr nächster Termin', text: <><strong style={{ color: 'var(--ink)' }}>{fmtWhen(nextAppt.starts_at)}</strong> · {nextAppt.title}</>, action: nextAppt.location && /^https?:\/\//.test(nextAppt.location) ? { label: 'Zum Videogespräch', href: nextAppt.location } : { label: 'Termine ansehen', onClick: () => setTab('termine') } }
     : offer?.status === 'accepted' ? { title: 'Wir bereiten den Start vor', text: 'Danke für Ihre Zusage. Ihr Ansprechpartner meldet sich mit den nächsten Schritten und den Unterlagen, die wir von Ihnen brauchen.', action: { label: 'Nachricht schreiben', onClick: write } }
     : ready ? { title: 'Bericht gemeinsam besprechen', text: 'In 20 Minuten gehen wir die Ergebnisse durch und zeigen, was sich für Ihr Unternehmen zuerst lohnt.', action: book ? { label: 'Termin vereinbaren', href: book } : { label: 'Bericht ansehen', onClick: () => setTab('report') } }
     : { title: 'Kostenloses Erstgespräch vereinbaren', text: 'Während wir den Bericht vorbereiten, können Sie schon einen Termin wählen — wir besprechen Ihre Ziele und die Ergebnisse direkt im Gespräch.', action: book ? { label: 'Termin vereinbaren', href: book } : { label: 'Nachricht schreiben', onClick: write } }
@@ -312,7 +315,7 @@ export default function CabinetPage() {
         {tab === 'overview' && order && (
           <div style={{ marginBottom: 18 }}>
             <OrderPanel order={order} onChange={setOrder}
-              defaults={{ company: place?.name ?? '', phone: userMeta.phone, website: check?.sources.find(x => x.key === 'website')?.value ?? '', city: place?.city ?? '', industry: place?.category ?? '' }} />
+              defaults={{ company: place?.name ?? '', phone: contact.phone, website: check?.sources.find(x => x.key === 'website')?.value ?? '', city: place?.city ?? '', industry: place?.category ?? '' }} />
           </div>
         )}
 
@@ -481,6 +484,12 @@ export default function CabinetPage() {
             </div>
           </div>
         )}
+
+        {tab === 'company' && check && place && <div style={{ marginTop: 18, maxWidth: 620 }}><ContactForm contact={contact} onSaved={setContact} /></div>}
+
+        {tab === 'termine' && <AppointmentsPanel list={appts} booking={book} onWrite={write} />}
+
+        {tab === 'konto' && <AccountPanel email={userEmail} contact={contact} onContact={setContact} />}
 
         {tab === 'messages' && (
           <div className="cab-grid-msg" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: 18, alignItems: 'start' }}>
