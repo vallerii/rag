@@ -483,3 +483,18 @@ end $$;
 
 revoke execute on function public.update_my_contact(text, text), public.delete_my_account() from public, anon;
 grant execute on function public.update_my_contact(text, text), public.delete_my_account() to authenticated;
+
+-- ── Kunde entfernt eine Firma (Check + Bericht) aus seinem Kundenbereich ───
+-- Nachrichten bleiben erhalten (check_id wird gelöst), Angebot/Termine gehören zum Konto.
+create or replace function public.delete_my_check(p_id uuid) returns void
+language plpgsql security definer set search_path = public as $$
+declare c checks;
+begin
+  select * into c from checks where id = p_id and user_id = auth.uid() for update;
+  if not found then raise exception 'not_found'; end if;
+  update messages set check_id = null where check_id = p_id;
+  delete from checks where id = p_id;
+  insert into activity (client_key, kind, detail) values ('user:' || c.user_id, 'check_deleted', jsonb_build_object('name', c.place ->> 'name'));
+end $$;
+revoke execute on function public.delete_my_check(uuid) from public, anon;
+grant execute on function public.delete_my_check(uuid) to authenticated;

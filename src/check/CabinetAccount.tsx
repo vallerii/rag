@@ -1,6 +1,8 @@
 // Kundenbereich: Termine, Kontaktdaten (Name/Telefon), Konto (Passwort, Löschen).
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { dateLocale } from '../i18n'
+import { LockedBooking } from './CabinetExtras'
 import { changePassword, deleteMyAccount, saveMyContact, type Appointment, type MyContact } from './data'
 
 const card: React.CSSProperties = { backgroundColor: '#fff', borderRadius: 22, border: '1px solid var(--line-soft)', padding: 'clamp(20px, 2.6vw, 28px)' }
@@ -38,7 +40,7 @@ function AppointmentRow({ a, highlight }: { a: Appointment; highlight?: boolean 
   )
 }
 
-export function AppointmentsPanel({ list, booking, onWrite }: { list: Appointment[]; booking: string | null; onWrite: () => void }) {
+export function AppointmentsPanel({ list, booking, locked, onWrite }: { list: Appointment[]; booking: string | null; locked?: string; onWrite: () => void }) {
   const next = upcoming(list)
   const later = list.filter(a => a !== next && a.status === 'planned' && new Date(a.starts_at).getTime() > Date.now())
   const past = list.filter(a => a !== next && !later.includes(a)).reverse()
@@ -55,12 +57,13 @@ export function AppointmentsPanel({ list, booking, onWrite }: { list: Appointmen
           <>
             <p className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 28px)', margin: '0 0 8px' }}>Noch kein Termin geplant</p>
             <p style={{ fontSize: 14.5, color: 'var(--muted)', lineHeight: 1.65, margin: '0 0 18px', maxWidth: 620 }}>
-              {booking ? 'Wählen Sie eine freie Zeit — der Termin erscheint danach hier.' : 'Schreiben Sie uns, wann es Ihnen passt — wir tragen den Termin hier ein.'}
+              {locked ? 'Den Termin vereinbaren Sie mit Ihrem Ansprechpartner, sobald er Ihre Anfrage übernommen und vorbereitet hat.' : booking ? 'Wählen Sie eine freie Zeit — der Termin erscheint danach hier.' : 'Schreiben Sie uns, wann es Ihnen passt — wir tragen den Termin hier ein.'}
             </p>
           </>
         )}
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: next ? 16 : 0 }}>
-          {booking && <a href={booking} target="_blank" rel="noopener noreferrer" className={next ? 'btn btn-md btn-outline-light' : 'btn btn-md btn-electric'}>{next ? 'Weiteren Termin vereinbaren' : 'Termin vereinbaren'} <span className="arw">→</span></a>}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-start', marginTop: next ? 16 : 0 }}>
+          {locked && !next && <LockedBooking hint={locked} />}
+          {!locked && booking && <a href={booking} target="_blank" rel="noopener noreferrer" className={next ? 'btn btn-md btn-outline-light' : 'btn btn-md btn-electric'}>{next ? 'Weiteren Termin vereinbaren' : 'Termin vereinbaren'} <span className="arw">→</span></a>}
           <button type="button" onClick={onWrite} className="btn btn-md btn-outline-light">{next ? 'Termin verschieben' : 'Nachricht schreiben'}</button>
         </div>
       </section>
@@ -98,9 +101,52 @@ export function ContactForm({ contact, onSaved, title = 'Ansprechpartner' }: { c
   )
 }
 
+/** Bestätigungsfenster (z. B. vor dem Löschen). Esc / Klick daneben schließt; optional Häkchen als zweite Sicherung. */
+export function ConfirmDialog({ title, children, confirmLabel, busyLabel = 'Einen Moment…', errorText, check, onConfirm, onClose }: {
+  title: string; children: React.ReactNode; confirmLabel: string; busyLabel?: string; errorText: string; check?: string
+  onConfirm: () => Promise<boolean>; onClose: () => void
+}) {
+  const [busy, setBusy] = useState(false), [err, setErr] = useState(false), [sure, setSure] = useState(!check)
+  const cancelRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    cancelRef.current?.focus()
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape' && !busy) onClose() }
+    document.addEventListener('keydown', esc)
+    const prev = document.body.style.overflow; document.body.style.overflow = 'hidden'
+    return () => { document.removeEventListener('keydown', esc); document.body.style.overflow = prev }
+  }, [busy, onClose])
+  const go = async () => {
+    if (!sure || busy) return
+    setBusy(true); setErr(false)
+    const ok = await onConfirm()
+    if (!ok) { setBusy(false); setErr(true) }
+  }
+  return createPortal(
+    <div onMouseDown={e => { if (e.target === e.currentTarget && !busy) onClose() }}
+      style={{ position: 'fixed', inset: 0, zIndex: 200, backgroundColor: 'rgba(7,7,12,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div role="alertdialog" aria-modal="true" aria-labelledby="cd-title" style={{ ...card, width: '100%', maxWidth: 460, boxShadow: '0 24px 60px rgba(7,7,12,0.25)' }}>
+        <h2 id="cd-title" className="display" style={{ fontSize: 24, lineHeight: 1.2, margin: '0 0 10px' }}>{title}</h2>
+        <div style={{ fontSize: 14.5, color: 'var(--muted)', lineHeight: 1.6 }}>{children}</div>
+        {check && (
+          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, lineHeight: 1.5, cursor: 'pointer', marginTop: 16 }}>
+            <input type="checkbox" checked={sure} onChange={e => setSure(e.target.checked)} style={{ marginTop: 3 }} />
+            <span>{check}</span>
+          </label>
+        )}
+        {err && <div style={{ marginTop: 14 }}>{bad(errorText)}</div>}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end', marginTop: 22 }}>
+          <button ref={cancelRef} type="button" className="btn btn-md btn-outline-light" onClick={onClose} disabled={busy}>Abbrechen</button>
+          <button type="button" onClick={go} disabled={!sure || busy} className="btn btn-md btn-danger" style={{ opacity: sure ? 1 : 0.45 }}>{busy ? busyLabel : confirmLabel}</button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  )
+}
+
 export function AccountPanel({ email, contact, onContact }: { email: string; contact: MyContact; onContact: (c: MyContact) => void }) {
   const [pw, setPw] = useState({ cur: '', next: '' }), [pwBusy, setPwBusy] = useState(false), [pwMsg, setPwMsg] = useState<'' | 'ok' | 'wrong' | 'error'>('')
-  const [del, setDel] = useState(false), [sure, setSure] = useState(false), [delBusy, setDelBusy] = useState(false), [delErr, setDelErr] = useState(false)
+  const [del, setDel] = useState(false)
   const changePw = async (e: React.FormEvent) => {
     e.preventDefault()
     if (pw.next.length < 8 || pwBusy) return
@@ -110,10 +156,9 @@ export function AccountPanel({ email, contact, onContact }: { email: string; con
     if (r === 'ok') setPw({ cur: '', next: '' })
   }
   const remove = async () => {
-    setDelBusy(true); setDelErr(false)
     const r = await deleteMyAccount()
-    if (r) { window.location.href = '/'; return }
-    setDelBusy(false); setDelErr(true)
+    if (r) window.location.href = '/'
+    return r
   }
   return (
     <div className="cab-grid-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 18, alignItems: 'start' }}>
@@ -141,20 +186,13 @@ export function AccountPanel({ email, contact, onContact }: { email: string; con
         <section style={{ ...card, borderColor: '#F3C7C9' }}>
           {kick('Konto löschen', '#A21C22')}
           <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: '0 0 14px' }}>Wir löschen Ihr Konto mit allen Daten: Check, Bericht, Anfragen, Nachrichten, Angebote und Termine. Das lässt sich nicht rückgängig machen.</p>
-          {!del ? (
-            <button type="button" className="btn btn-md btn-outline-light" onClick={() => setDel(true)}>Konto löschen…</button>
-          ) : (
-            <div style={{ display: 'grid', gap: 12 }}>
-              <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, lineHeight: 1.5, cursor: 'pointer' }}>
-                <input type="checkbox" checked={sure} onChange={e => setSure(e.target.checked)} style={{ marginTop: 3 }} />
-                <span>Ja, mein Konto und alle Daten endgültig löschen.</span>
-              </label>
-              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <button type="button" onClick={remove} disabled={!sure || delBusy} className="btn btn-md" style={{ backgroundColor: '#A21C22', color: '#fff', opacity: sure ? 1 : 0.45 }}>{delBusy ? 'Wird gelöscht…' : 'Endgültig löschen'}</button>
-                <button type="button" className="btn btn-md btn-outline-light" onClick={() => { setDel(false); setSure(false) }}>Abbrechen</button>
-              </div>
-              {delErr && bad('Das Löschen hat nicht geklappt. Bitte schreiben Sie uns — wir erledigen das für Sie.')}
-            </div>
+          <button type="button" className="btn btn-md btn-outline-danger" onClick={() => setDel(true)}>Konto löschen…</button>
+          {del && (
+            <ConfirmDialog title="Konto endgültig löschen?" confirmLabel="Endgültig löschen" busyLabel="Wird gelöscht…"
+              errorText="Das Löschen hat nicht geklappt. Bitte schreiben Sie uns — wir erledigen das für Sie."
+              check="Ja, mein Konto und alle Daten endgültig löschen." onConfirm={remove} onClose={() => setDel(false)}>
+              <p style={{ margin: 0 }}>Wir löschen Ihr Konto mit allen Firmen, Berichten, Anfragen, Nachrichten, Angeboten und Terminen. Das lässt sich nicht rückgängig machen.</p>
+            </ConfirmDialog>
           )}
         </section>
       </div>

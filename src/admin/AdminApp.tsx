@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNoindex } from '../check/CheckPage'
 import {
-  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, addAppointment, deleteAppointment, loadAll, loadClient, loadMyProfile, setAppointmentStatus, loadTeam, myId, saveMyProfile, publishReport,
+  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, addAppointment, deleteAppointment, setRecommended, loadAll, loadClient, loadMyProfile, setAppointmentStatus, loadTeam, myId, saveMyProfile, publishReport,
   revokeInvite, saveOffer, sendStaffMessage, setAssignee, setNextContact, setRole, setStage, signInPlain, signInStaff, signOutStaff, signUpStaff, stageLabel,
   type Invite,
-  type Activity, type Appointment, type Check, type Lead, type Message, type Note, type Offer, type Order, type Profile, type Request, type Stage,
+  type Activity, type Appointment, type Recommended, type Check, type Lead, type Message, type Note, type Offer, type Order, type Profile, type Request, type Stage,
 } from './api'
 import { CATALOG, totals, type OfferItem, type Unit } from './catalog'
 
@@ -202,7 +202,7 @@ function Detail({ r, all, profiles, me, onSelect, onPatch }: { r: Request; all: 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16, alignItems: 'start' }}>
         <div style={{ display: 'grid', gap: 16 }}>
           <ClientCard r={r} prof={prof} />
-          {r.kind === 'check' && <ReportCard c={r.row as Check} onPublished={() => { onPatch({ row: { ...(r.row as Check), status: 'ready' } }); reloadClient() }} />}
+          {r.kind === 'check' && <ReportCard c={r.row as Check} onPublished={async report => { const assignee = r.assignee ?? await getAssignee(r.kind, r.id); onPatch({ assignee, row: { ...(r.row as Check), status: 'ready', report, assignee_id: assignee } }); reloadClient() }} />}
           {client && <OfferCard clientKey={r.clientKey} userId={r.userId} initial={client.offer} preset={r.kind === 'order' ? (r.row as Order).items ?? [] : []} onSaved={reloadClient} />}
         </div>
         <div style={{ display: 'grid', gap: 16 }}>
@@ -273,9 +273,24 @@ function ClientCard({ r, prof }: { r: Request; prof?: Profile }) {
 type Draft = { channels?: Record<string, { score: number; summary: string; points: [string, string][] }>; recommendations?: [string, string, string][] }
 const CHANNEL: Record<string, string> = { ai: 'KI-Suche', maps: 'Google Maps', search: 'Website & Search', social: 'Social Media' }
 
-function ReportCard({ c, onPublished }: { c: Check; onPublished: () => void }) {
+function ReportCard({ c, onPublished }: { c: Check; onPublished: (report: object) => void }) {
   const draft = c.report_draft as Draft | null
-  const [busy, setBusy] = useState(false)
+  const published = c.status === 'ready'
+  const current = (c.report as { recommended?: Recommended } | null)?.recommended
+  const [busy, setBusy] = useState(false), [msg, setMsg] = useState('')
+  const [pick, setPick] = useState(current?.id ?? '')
+  const [price, setPrice] = useState(current ? String(current.price) : '')
+  const [why, setWhy] = useState(current?.why ?? '')
+  const item = CATALOG.find(x => x.id === pick)
+  const choose = (id: string) => { setPick(id); const it = CATALOG.find(x => x.id === id); if (it) setPrice(String(it.price)); setMsg('') }
+  const rec = (): Recommended | null => item ? { id: item.id, name: item.name, price: Number(price) || item.price, unit: item.unit, ...(why.trim() ? { why: why.trim() } : {}) } : null
+  const run = async (mode: 'publish' | 'update') => {
+    const r = rec(); if (!r) { setMsg('Выберите рекомендуемый пакет.'); return }
+    setBusy(true); setMsg('')
+    const report = mode === 'publish' ? await publishReport(c, r) : await setRecommended(c, r)
+    setBusy(false)
+    if (report) { onPublished(report); setMsg(mode === 'publish' ? 'Опубликовано. Клиенту открылась запись на звонок.' : 'Рекомендация обновлена.') } else setMsg('Не удалось сохранить.')
+  }
   return (
     <section style={card}>
       <h3 style={h3}>Отчёт проверки</h3>
@@ -288,10 +303,24 @@ function ReportCard({ c, onPublished }: { c: Check; onPublished: () => void }) {
         </div>
       ))}
       {draft?.recommendations && <p style={{ fontSize: 13.5, margin: '8px 0 0' }}><strong>Рекомендации:</strong> {draft.recommendations.map(x => x[1]).join(' · ')}</p>}
-      {draft && c.status !== 'ready' && (
-        <div style={{ marginTop: 12 }}>
-          <p style={{ ...small, margin: '0 0 8px' }}>Блок «KI-Suche» автоматически не считается — при необходимости допишите его в Table Editor до публикации.</p>
-          <button type="button" className="btn btn-md btn-electric" disabled={busy} onClick={async () => { setBusy(true); if (await publishReport(c)) onPublished(); setBusy(false) }}>Опубликовать отчёт клиенту</button>
+      {(draft || published) && (
+        <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${line}`, display: 'grid', gap: 8 }}>
+          <strong style={{ fontSize: 14 }}>Рекомендуемый пакет {published && current ? <span style={{ ...small, fontWeight: 400 }}>· сейчас: {current.name}</span> : null}</strong>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 110px', gap: 8 }}>
+            <select value={pick} onChange={e => choose(e.target.value)} style={input} aria-label="Рекомендуемый пакет">
+              <option value="">— выберите —</option>
+              {CATALOG.map(x => <option key={x.id} value={x.id}>{x.name} · {x.price} € {x.unit === 'einmalig' ? 'разово' : '/мес'}</option>)}
+            </select>
+            <input type="number" value={price} onChange={e => setPrice(e.target.value)} style={input} aria-label="Цена" placeholder="€" />
+          </div>
+          <textarea value={why} onChange={e => setWhy(e.target.value)} style={{ ...input, minHeight: 56, resize: 'vertical' }} placeholder="Почему именно он — 1–2 предложения для клиента, по-немецки (необязательно)" aria-label="Почему" />
+          {!published && <p style={{ ...small, margin: 0 }}>Блок «KI-Suche» автоматически не считается — при необходимости допишите его в Table Editor до публикации. После публикации клиент видит отчёт, рекомендацию и может записаться на звонок.</p>}
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            {!published
+              ? <button type="button" className="btn btn-md btn-electric" disabled={busy || !draft || !item} onClick={() => run('publish')}>Опубликовать отчёт клиенту</button>
+              : <button type="button" className="btn btn-sm btn-outline-light" disabled={busy || !item} onClick={() => run('update')}>Сохранить рекомендацию</button>}
+            {msg && <span style={small}>{msg}</span>}
+          </div>
         </div>
       )}
     </section>
@@ -420,6 +449,7 @@ function activityText(a: Activity, profiles: Profile[]): string {
     case 'note': return 'Добавлена заметка'
     case 'offer_sent': return 'Предложение отмечено как отправленное'
     case 'offer_accepted': return 'Клиент принял предложение'
+    case 'check_deleted': return `Клиент удалил компанию из кабинета: ${str(d.name)}`
     case 'appointment': return `Назначена встреча: ${str(d.title)}, ${d.at ? fmtDT(str(d.at)) : ''}`
     case 'appointment_changed': return `Встреча «${str(d.title)}»: ${d.status === 'cancelled' ? 'отменена' : d.status === 'done' ? 'состоялась' : 'перенесена на ' + (d.at ? fmtDT(str(d.at)) : '')}`
     case 'assigned': return d.to ? `Ответственный (${TABLE_RU[str(d.type)] ?? ''}): ${staffName(profiles, str(d.to))}` : `Ответственный снят (${TABLE_RU[str(d.type)] ?? ''})`

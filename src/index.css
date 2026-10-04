@@ -162,12 +162,15 @@ em, i, cite, address, dfn { font-style: normal; }
 
 .btn-lg { font-size: 16px; font-weight: 700; padding: 17px 28px; border-radius: 14px; }
 .btn-md { font-size: 14.5px; font-weight: 700; padding: 13px 22px; border-radius: 12px; }
+.btn-sm { font-size: 13.5px; font-weight: 600; padding: 8px 14px; border-radius: 10px; }
 .btn-electric { background: var(--electric); color: #fff; --btn-fill: var(--electric-hover); --btn-fill-text: #fff; box-shadow: 0 10px 30px rgba(38,0,255,.28); }
 .btn-ink { background: var(--ink); color: #fff; --btn-fill: var(--electric); --btn-fill-text: #fff; }
 .btn-paper { background: #fff; color: var(--ink); border: 1px solid #DEDDEA; box-shadow: 0 4px 14px rgba(11,11,26,.06); --btn-fill: var(--ink); --btn-fill-text: #fff; }
 .btn-outline-dark { background: #fff; color: var(--ink); border: 1px solid #DEDDEA; box-shadow: 0 4px 14px rgba(11,11,26,.06); --btn-fill: var(--ink); --btn-fill-text: #fff; }
 .btn-outline-light { background: #fff; color: var(--ink); border: 1px solid #DEDDEA; --btn-fill: var(--ink); --btn-fill-text: #fff; }
 .btn-on-brand { background: #fff; color: var(--electric); --btn-fill: var(--ink); --btn-fill-text: #fff; }
+.btn-danger { background: #A21C22; color: #fff; --btn-fill: #7E1218; --btn-fill-text: #fff; box-shadow: 0 10px 30px rgba(162,28,34,.22); }
+.btn-outline-danger { background: #fff; color: #A21C22; border: 1px solid #F0C4C6; --btn-fill: #A21C22; --btn-fill-text: #fff; }
 
 /* ── Marquee ──────────────────────────────────────────────── */
 .marquee { display: flex; overflow: hidden; width: 100%; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
@@ -254,6 +257,8 @@ em, i, cite, address, dfn { font-style: normal; }
   .ck-grid { grid-template-columns: minmax(0, 1fr); }
   .ck-aside { display: none; }
   .cab-grid-2, .cab-grid-3 { grid-template-columns: minmax(0, 1fr) !important; }
+  .cab-overview { grid-template-columns: minmax(0, 1fr) !important; }
+  .cab-overview > aside { position: static !important; }
 }
 @media (max-width: 640px) {
   .ck-hide-sm { display: none !important; }

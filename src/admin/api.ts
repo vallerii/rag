@@ -105,9 +105,20 @@ export async function setNextContact(k: Kind, id: string, date: string | null) {
   const { error } = await (await db()).from(table(k)).update({ next_contact_at: date || null }).eq('id', id)
   return !error
 }
-export async function publishReport(c: Check) {
-  const { error } = await (await db()).from('checks').update({ report: c.report_draft, status: 'ready' }).eq('id', c.id)
-  return !error
+export type Recommended = { id: string; name: string; description?: string; price: number; unit: 'einmalig' | 'pro Monat'; why?: string }
+/** Bericht veröffentlichen — immer mit Empfehlung, womit der Kunde starten soll. Danach kann er einen Termin buchen. */
+export async function publishReport(c: Check, recommended: Recommended) {
+  const report = { ...((c.report_draft as object | null) ?? {}), recommended }
+  // Ohne Ansprechpartner sähe der Kunde den Bericht, könnte aber keinen Termin buchen → wer veröffentlicht, übernimmt.
+  const assignee_id = c.assignee_id ?? await myId()
+  const { error } = await (await db()).from('checks').update({ report, status: 'ready', assignee_id }).eq('id', c.id)
+  return error ? null : report
+}
+/** Empfehlung im bereits veröffentlichten Bericht ändern. */
+export async function setRecommended(c: Check, recommended: Recommended) {
+  const report = { ...((c.report as object | null) ?? {}), recommended }
+  const { error } = await (await db()).from('checks').update({ report }).eq('id', c.id)
+  return error ? null : report
 }
 
 export async function loadClient(clientKey: string, userId: string | null) {

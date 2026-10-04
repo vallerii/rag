@@ -213,6 +213,8 @@ export type ReportChannel = { score: number; summary: string; points: ['ok' | 'w
 export type Report = {
   channels?: Partial<Record<'ai' | 'maps' | 'search' | 'social', ReportChannel>>
   recommendations?: [string, string, string][]
+  /** Vom Ansprechpartner gewählter Einstiegs-Baustein (Admin → Bericht veröffentlichen). */
+  recommended?: { id: string; name: string; description?: string; price: number; unit: 'einmalig' | 'pro Monat'; why?: string }
 }
 
 export type CheckRow = {
@@ -225,6 +227,8 @@ export type CheckRow = {
   contact: Contact
   status: CheckStatus
   report: Report | null
+  /** Ansprechpartner im Team; null = noch niemand hat die Anfrage übernommen. */
+  assignee_id: string | null
   created_at: string
 }
 export type MessageRow = { id: string; author: 'client' | 'rag'; body: string; created_at: string }
@@ -254,10 +258,28 @@ export async function createCheck(input: { place: Place; region: string; sources
 
 export async function loadLatestCheck(): Promise<CheckRow | null> {
   const { data, error } = await (await getSupabase()).from('checks')
-    .select('id, email, place, region, sources, sources_confirmed, contact, status, report, created_at')
+    .select('id, email, place, region, sources, sources_confirmed, contact, status, report, assignee_id, created_at')
     .order('created_at', { ascending: false }).limit(1).maybeSingle()
   if (error) { console.error(error); return null }
   return data as CheckRow | null
+}
+
+/** Alle Checks des Kontos (neueste zuerst) — ein Konto kann mehrere Firmen prüfen lassen. */
+export async function loadMyChecks(): Promise<CheckRow[]> {
+  const { data, error } = await (await getSupabase()).from('checks')
+    .select('id, email, place, region, sources, sources_confirmed, contact, status, report, assignee_id, created_at')
+    .order('created_at', { ascending: false })
+  if (error) { console.error(error); return [] }
+  return (data ?? []) as CheckRow[]
+}
+
+const normName = (s: string | undefined) => (s ?? '').toLowerCase().replace(/[^a-z0-9äöüß]+/g, ' ').trim()
+/** Gibt es diese Firma im Konto schon? Google-Profil: gleiche place_id; ohne Profil: gleicher Name + Ort. */
+export async function findMyCheck(place: Place): Promise<string | null> {
+  const list = await loadMyChecks()
+  const hit = list.find(c => c.place?.id === place.id
+    || (!!place.manual && !!c.place?.manual && normName(c.place.name) === normName(place.name) && normName(c.place.city) === normName(place.city)))
+  return hit?.id ?? null
 }
 
 /**
@@ -317,6 +339,7 @@ export type OrderRow = {
   items: OrderItem[]
   details: OrderDetails | null
   status: OrderStatus
+  assignee_id: string | null
   created_at: string
 }
 
@@ -329,7 +352,7 @@ export async function createOrder(items: OrderItem[], sourcePage: string | null)
 
 export async function loadLatestOrder(): Promise<OrderRow | null> {
   const { data, error } = await (await getSupabase()).from('orders')
-    .select('id, items, details, status, created_at')
+    .select('id, items, details, status, assignee_id, created_at')
     .order('created_at', { ascending: false }).limit(1).maybeSingle()
   if (error) { console.error(error); return null }
   return data as OrderRow | null
@@ -412,4 +435,10 @@ export async function deleteMyAccount(): Promise<boolean> {
   if (error) return false
   await s.auth.signOut()
   return true
+}
+
+/** Firma (Check + Bericht) aus dem Kundenbereich entfernen. Nachrichten bleiben. */
+export async function deleteMyCheck(id: string): Promise<boolean> {
+  const { error } = await (await getSupabase()).rpc('delete_my_check', { p_id: id })
+  return !error
 }
