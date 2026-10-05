@@ -9,7 +9,9 @@ import { competitors, placeRaw, type GPlace } from '../_shared/google.ts'
 import { scanSite, type Source } from '../_shared/site.ts'
 import { buildReport } from '../_shared/audit.ts'
 
-const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } })
+// Server-Schlüssel: neuer Secret Key (Secret SB_SECRET_KEY, falls die alten JWT-Schlüssel abgeschaltet sind), sonst service_role.
+const SERVER_KEY = Deno.env.get('SB_SECRET_KEY') || Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const db = createClient(Deno.env.get('SUPABASE_URL')!, SERVER_KEY, { auth: { persistSession: false } })
 
 Deno.serve(handler(10, async (req, body) => {
   const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '')
@@ -17,14 +19,22 @@ Deno.serve(handler(10, async (req, body) => {
   if (!auth?.user) return json(req, { error: 'auth' }, 401)
 
   const checkId = String(body.checkId ?? '')
-  const { data: check } = await db.from('checks')
+  const { data: check, error: readErr } = await db.from('checks')
     .select('id, user_id, place_id, place, sources, sources_confirmed, status, audited_at')
     .eq('id', checkId).maybeSingle()
-  if (!check || check.user_id !== auth.user.id) return json(req, { error: 'not_found' }, 404)
+  // Gründe sichtbar machen (Logs + Antwort), statt stumm «not_found».
+  if (readErr) { console.error('checks read', readErr); return json(req, { error: 'db', detail: readErr.message }, 500) }
+  if (!check) { console.error('check missing', checkId); return json(req, { error: 'not_found', detail: 'no_row' }, 404) }
+  if (check.user_id !== auth.user.id) {
+    // Team (Admin/Manager) darf die Datensammlung für jeden Check starten — Knopf «Daten sammeln» im Admin.
+    const { data: prof } = await db.from('profiles').select('role').eq('id', auth.user.id).maybeSingle()
+    if (prof?.role !== 'admin' && prof?.role !== 'manager') return json(req, { error: 'not_found', detail: 'other_user' }, 404)
+  }
+  const force = body.force === true
   if (!check.sources_confirmed) return json(req, { error: 'not_confirmed' }, 409)
   if (check.status === 'ready') return json(req, { status: 'ready' })
   // Höchstens einmal pro 30 Minuten (Kosten bei Google).
-  if (check.audited_at && Date.now() - Date.parse(check.audited_at) < 30 * 60_000) return json(req, { status: 'cached' })
+  if (!force && check.audited_at && Date.now() - Date.parse(check.audited_at) < 30 * 60_000) return json(req, { status: 'cached' })
   if (!check.place_id || String(check.place_id).startsWith('demo')) return json(req, { error: 'demo_place' }, 400)
 
   const key = placesKey()
@@ -50,6 +60,6 @@ Deno.serve(handler(10, async (req, body) => {
     audited_at: new Date().toISOString(),
     status: 'in_review',
   }).eq('id', check.id)
-  if (error) throw error
+  if (error) { console.error('checks update', error); return json(req, { error: 'db', detail: error.message }, 500) }
   return json(req, { status: 'in_review' })
 }))

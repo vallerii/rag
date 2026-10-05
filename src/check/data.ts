@@ -173,6 +173,12 @@ export function authErrorText(e: AuthError): string {
   }
 }
 
+/** Eigene Zeilen ausdrücklich filtern: Für Team-Konten erlaubt RLS alle Zeilen — der Kundenbereich zeigt trotzdem nur die eigenen. */
+async function myUid(): Promise<string> {
+  const { data } = await (await getSupabase()).auth.getSession()
+  return data.session?.user.id ?? '00000000-0000-0000-0000-000000000000'
+}
+
 export async function currentUser(): Promise<User | null> {
   const { data } = await (await getSupabase()).auth.getSession()
   return data.session?.user ?? null
@@ -258,7 +264,7 @@ export async function createCheck(input: { place: Place; region: string; sources
 
 export async function loadLatestCheck(): Promise<CheckRow | null> {
   const { data, error } = await (await getSupabase()).from('checks')
-    .select('id, email, place, region, sources, sources_confirmed, contact, status, report, assignee_id, created_at')
+    .select('id, email, place, region, sources, sources_confirmed, contact, status, report, assignee_id, created_at').eq('user_id', await myUid())
     .order('created_at', { ascending: false }).limit(1).maybeSingle()
   if (error) { console.error(error); return null }
   return data as CheckRow | null
@@ -267,7 +273,7 @@ export async function loadLatestCheck(): Promise<CheckRow | null> {
 /** Alle Checks des Kontos (neueste zuerst) — ein Konto kann mehrere Firmen prüfen lassen. */
 export async function loadMyChecks(): Promise<CheckRow[]> {
   const { data, error } = await (await getSupabase()).from('checks')
-    .select('id, email, place, region, sources, sources_confirmed, contact, status, report, assignee_id, created_at')
+    .select('id, email, place, region, sources, sources_confirmed, contact, status, report, assignee_id, created_at').eq('user_id', await myUid())
     .order('created_at', { ascending: false })
   if (error) { console.error(error); return [] }
   return (data ?? []) as CheckRow[]
@@ -310,7 +316,7 @@ export async function updateSources(checkId: string, sources: Source[]): Promise
 
 // Ein Nachrichtenverlauf pro Kunde (egal ob Check oder Paket-Anfrage).
 export async function loadMessages(): Promise<MessageRow[]> {
-  const { data } = await (await getSupabase()).from('messages').select('id, author, body, created_at')
+  const { data } = await (await getSupabase()).from('messages').select('id, author, body, created_at').eq('user_id', await myUid())
     .order('created_at', { ascending: true })
   return (data ?? []) as MessageRow[]
 }
@@ -352,7 +358,7 @@ export async function createOrder(items: OrderItem[], sourcePage: string | null)
 
 export async function loadLatestOrder(): Promise<OrderRow | null> {
   const { data, error } = await (await getSupabase()).from('orders')
-    .select('id, items, details, status, assignee_id, created_at')
+    .select('id, items, details, status, assignee_id, created_at').eq('user_id', await myUid())
     .order('created_at', { ascending: false }).limit(1).maybeSingle()
   if (error) { console.error(error); return null }
   return data as OrderRow | null
@@ -388,7 +394,7 @@ export async function loadMyManager(): Promise<Manager | null> {
 }
 /** Vom Team gesendetes Angebot (Entwürfe sieht der Kunde nicht). */
 export async function loadMyOffer(): Promise<ClientOffer | null> {
-  const { data, error } = await (await getSupabase()).from('offers').select('id, items, note, status, sent_at, updated_at')
+  const { data, error } = await (await getSupabase()).from('offers').select('id, items, note, status, sent_at, updated_at').eq('user_id', await myUid())
     .neq('status', 'draft').order('updated_at', { ascending: false }).limit(1).maybeSingle()
   return error ? null : (data as ClientOffer | null)
 }
@@ -401,7 +407,7 @@ export async function acceptOffer(id: string): Promise<boolean> {
 export type Appointment = { id: string; starts_at: string; duration_min: number; title: string; location: string | null; note: string | null; status: 'planned' | 'done' | 'cancelled' }
 export async function loadMyAppointments(): Promise<Appointment[]> {
   const { data, error } = await (await getSupabase()).from('appointments')
-    .select('id, starts_at, duration_min, title, location, note, status').order('starts_at', { ascending: true })
+    .select('id, starts_at, duration_min, title, location, note, status').eq('user_id', await myUid()).order('starts_at', { ascending: true })
   return error ? [] : (data as Appointment[])
 }
 
