@@ -508,3 +508,59 @@ grant execute on all functions in schema public to service_role;
 alter default privileges in schema public grant all on tables to service_role;
 alter default privileges in schema public grant all on sequences to service_role;
 alter default privileges in schema public grant execute on functions to service_role;
+
+-- ── Sichtbarkeits-Check v2: Checkliste des Teams + Archiv der Berichte ──────
+-- checks.checklist: Antworten der manuellen Checkliste, Korrekturen automatischer Punkte, Suchbegriffe, Texte.
+alter table public.checks add column if not exists checklist jsonb not null default '{}'::jsonb;
+grant update (checklist) on public.checks to authenticated;
+
+-- Kunde darf checklist/report nicht selbst ändern (nur das Team)
+create or replace function public.guard_staff_fields() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null or public.is_staff() then return new; end if;
+  if new.stage is distinct from old.stage or new.next_contact_at is distinct from old.next_contact_at
+     or new.status is distinct from old.status or new.assignee_id is distinct from old.assignee_id then
+    raise exception 'not allowed';
+  end if;
+  if tg_table_name = 'checks' then
+    if new.report is distinct from old.report or new.checklist is distinct from old.checklist then raise exception 'not allowed'; end if;
+  end if;
+  return new;
+end $$;
+
+-- Jede Veröffentlichung wird als Version gespeichert → Verlauf und Vergleich «vorher / nachher».
+create table if not exists public.check_reports (
+  id         uuid primary key default gen_random_uuid(),
+  check_id   uuid not null references public.checks (id) on delete cascade,
+  user_id    uuid references auth.users (id) on delete cascade,
+  report     jsonb not null,
+  created_by uuid default auth.uid() references auth.users (id) on delete set null,
+  created_at timestamptz not null default now()
+);
+create index if not exists check_reports_check_idx on public.check_reports (check_id, created_at desc);
+alter table public.check_reports enable row level security;
+revoke all on public.check_reports from anon;
+grant select, insert, delete on public.check_reports to authenticated;
+drop policy if exists "check_reports: Kunde liest" on public.check_reports;
+drop policy if exists "check_reports: Team" on public.check_reports;
+create policy "check_reports: Kunde liest" on public.check_reports for select to authenticated using (user_id = auth.uid());
+create policy "check_reports: Team" on public.check_reports for all to authenticated using (public.is_staff()) with check (public.is_staff());
+grant all on public.check_reports to service_role;
+
+-- Verlauf: neue Version im Verlauf der Anfrage vermerken
+create or replace function public.log_check_report() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  insert into activity (client_key, kind, detail) values ('user:' || new.user_id, 'report_version', jsonb_build_object('check', new.check_id));
+  return new;
+end $$;
+drop trigger if exists check_reports_log on public.check_reports;
+create trigger check_reports_log after insert on public.check_reports for each row execute function public.log_check_report();
+
+-- Bereits veröffentlichte Berichte als erste Version übernehmen
+insert into public.check_reports (check_id, user_id, report, created_by, created_at)
+select c.id, c.user_id, c.report, null, coalesce(c.audited_at, c.created_at)
+from public.checks c
+where c.status = 'ready' and c.report is not null
+  and not exists (select 1 from public.check_reports r where r.check_id = c.id);

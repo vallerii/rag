@@ -1,12 +1,15 @@
+import LangSwitch from '../LangSwitch'
 import { useEffect, useState } from 'react'
+import { dateLocale } from '../i18n'
 import { Logo, StarsRow, useNoindex } from './CheckPage'
 import {
-  SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, loadLatestOrder, loadMyChecks, loadMessages, deleteMyCheck, loadMyAppointments, loadMyContact, loadMyManager, loadMyOffer, runAudit, sendMessage, signOut, updateSources,
-  type Appointment, type CheckRow, type ClientOffer, type MyContact, type Manager, type MessageRow, type OrderRow, type Source,
+  SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, loadLatestOrder, loadMyChecks, loadMessages, deleteMyCheck, loadReportVersions, loadMyAppointments, loadMyContact, loadMyManager, loadMyOffer, runAudit, sendMessage, signOut, updateSources,
+  type Appointment, type CheckRow, type ReportVersion, type ClientOffer, type MyContact, type Manager, type MessageRow, type OrderRow, type Source,
 } from './data'
 import SourcesEditor from './SourcesEditor'
 import OrderPanel, { orderStatusLabel } from './OrderPanel'
 import { AccountPanel, AppointmentsPanel, ConfirmDialog, ContactForm, fmtWhen, upcoming } from './CabinetAccount'
+import { AiCard, CompetitorsCard, Delta, HistoryCard, deltas } from './ReportExtras'
 import { CompanySwitcher, ManagerCard, RecommendedCard, NextStepCard, OfferPanel, bookingLink, type NextStep } from './CabinetExtras'
 
 /** Immer alle fünf Quellen in fester Reihenfolge — auch wenn die Suche nichts geliefert hat. */
@@ -63,7 +66,8 @@ function EmptyState({ onLogout, onKonto }: { onLogout: () => void; onKonto: () =
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)', display: 'flex', flexDirection: 'column' }}>
       <header style={{ padding: '0 clamp(20px, 4vw, 48px)', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--line)' }}>
         <Logo />
-        <span style={{ display: 'flex', gap: 18 }}>
+        <span style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
+          <LangSwitch />
           <button type="button" onClick={onKonto} className="ul" style={{ background: 'none', border: 'none', fontSize: 14, color: 'var(--ink)', cursor: 'pointer', fontFamily: 'inherit' }}>Konto & Einstellungen</button>
           <button type="button" onClick={onLogout} className="ul" style={{ background: 'none', border: 'none', fontSize: 14, color: 'var(--ink)', cursor: 'pointer', fontFamily: 'inherit' }}>Abmelden</button>
         </span>
@@ -110,6 +114,7 @@ export default function CabinetPage() {
   const [order, setOrder] = useState<OrderRow | null>(null)
   const [contact, setContact] = useState<MyContact>({ name: '', phone: '' })
   const [appts, setAppts] = useState<Appointment[]>([])
+  const [versions, setVersions] = useState<ReportVersion[]>([])
   const [msgs, setMsgs] = useState<MessageRow[]>([])
   const [manager, setManager] = useState<Manager | null>(null)
   const [offer, setOffer] = useState<ClientOffer | null>(null)
@@ -147,6 +152,12 @@ export default function CabinetPage() {
       setLoading(false)
     })()
   }, [])
+
+  // Versionen des Berichts (Verlauf, Vergleich mit der vorigen Prüfung)
+  useEffect(() => {
+    setVersions([])
+    if (check?.id && check.status === 'ready') void loadReportVersions(check.id).then(setVersions)
+  }, [check?.id, check?.status])
 
   useEffect(() => {
     if (loading) return
@@ -193,6 +204,7 @@ export default function CabinetPage() {
     return r ? { ...c, score: r.score, summary: r.summary, points: r.points } : { ...c, score: null, summary: '', points: [] }
   })
   const scores = chans.map(c => c.score).filter((x): x is number => typeof x === 'number')
+  const diff = deltas(check?.report, versions[1]?.report)
   const total = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null
   const recs: [string, string, string][] = check?.report?.recommendations ?? []
   const place = check?.place
@@ -264,6 +276,7 @@ export default function CabinetPage() {
               <span className="ck-hide-sm" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--muted)' }}>Kundenbereich</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <LangSwitch />
               <button type="button" onClick={() => setTab('konto')} title="Konto & Einstellungen" aria-label="Konto & Einstellungen" aria-current={tab === 'konto' ? 'page' : undefined}
                 className="cab-profile" style={{ display: 'flex', alignItems: 'center', gap: 10, background: tab === 'konto' ? '#fff' : 'none', border: 'none', borderRadius: 999, padding: '4px 12px 4px 4px', cursor: 'pointer', fontFamily: 'inherit', color: 'inherit', textAlign: 'left' }}>
                 <span style={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12.5, fontWeight: 700, color: '#fff', flexShrink: 0 }}>{initials(displayName)}</span>
@@ -376,7 +389,7 @@ export default function CabinetPage() {
               <div style={{ ...card, backgroundColor: 'var(--electric)', color: '#fff', border: 'none' }}>
                 <Eyebrow color="rgba(255,255,255,0.7)">Sichtbarkeit gesamt</Eyebrow>
                 <p className="display" style={{ fontSize: 'clamp(64px, 8vw, 96px)', lineHeight: 0.95, margin: '6px 0 4px' }}>
-                  {scored && total !== null ? total : '—'}<span style={{ fontSize: 22, fontWeight: 500, opacity: 0.6, letterSpacing: 0 }}> / 100</span>
+                  {scored && total !== null ? total : '—'}<span style={{ fontSize: 22, fontWeight: 500, opacity: 0.6, letterSpacing: 0 }}> / 100</span><Delta d={diff.total} />
                 </p>
                 <p style={{ fontSize: 14, lineHeight: 1.65, color: 'rgba(255,255,255,0.78)', margin: '12px 0 0', maxWidth: 360 }}>
                   {scored
@@ -391,7 +404,7 @@ export default function CabinetPage() {
                 <div key={c.key} style={{ ...card, display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
                     <span className="d-tile d-tile-sm" aria-hidden>{CHAN_ICON[i] ?? CHAN_ICON[0]}</span>
-                    <span className="display" style={{ fontSize: 28, lineHeight: 1 }}>{scored && c.score !== null ? c.score : '—'}</span>
+                    <span className="display" style={{ fontSize: 28, lineHeight: 1 }}>{scored && c.score !== null ? c.score : '—'}<Delta d={diff.ch(c.key)} /></span>
                   </div>
                   <p style={{ fontWeight: 700, fontSize: 16, margin: '0 0 6px', letterSpacing: '-0.01em' }}>{c.title}</p>
                   <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: 0, flex: 1 }}>{c.desc}</p>
@@ -438,6 +451,7 @@ export default function CabinetPage() {
                 <Eyebrow>Bericht</Eyebrow>
                 <p className="display" style={{ fontSize: 26, margin: '0 0 6px' }}>Sichtbarkeits-Check</p>
                 <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0 }}>Detaillierte Auswertung in vier Bereichen.</p>
+                {ready && versions[0] && <p style={{ fontSize: 13, color: 'var(--muted)', margin: '6px 0 0' }}><span>Stand:</span> <span>{new Date(versions[0].created_at).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' })}</span>{versions.length > 1 && <> · <span>Version</span> <span>{versions.length}</span></>}</p>}
               </div>
             </div>
             {!scored ? <PendingCard assigned={assigned} /> : (
@@ -446,7 +460,7 @@ export default function CabinetPage() {
                   <div key={c.key} style={card}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, marginBottom: 10 }}>
                       <p style={{ fontWeight: 800, fontSize: 17, margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}><span className="d-tile d-tile-sm" aria-hidden>{CHAN_ICON[i] ?? CHAN_ICON[0]}</span>{c.title}</p>
-                      <span className="display" style={{ fontSize: 24 }}>{c.score ?? '—'}<span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 500, letterSpacing: 0 }}> / 100</span></span>
+                      <span className="display" style={{ fontSize: 24 }}>{c.score ?? '—'}<span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 500, letterSpacing: 0 }}> / 100</span><Delta d={diff.ch(c.key)} /></span>
                     </div>
                     <p style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 14px' }}>{c.summary}</p>
                     {c.points.map(([m, t]) => (
@@ -458,6 +472,9 @@ export default function CabinetPage() {
                 ))}
               </div>
             )}
+            {scored && check.report && <CompetitorsCard report={check.report} />}
+            {scored && check.report && <AiCard report={check.report} />}
+            <HistoryCard versions={versions} />
             {rec && <RecommendedCard rec={rec} booking={book} onWrite={write} />}
           </div>
         )}

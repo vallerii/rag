@@ -1,3 +1,4 @@
+import LangSwitch from '../LangSwitch'
 import AccountStep from './AccountStep'
 import { Logo, useNoindex } from './CheckPage'
 import { createOrder, orderTotal, type OrderItem } from './data'
@@ -23,7 +24,10 @@ export default function OrderPage({ items }: { items: OrderItem[] }) {
         <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 clamp(20px, 4vw, 48px)', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <Logo />
           <p className="eyebrow ck-hide-sm" style={{ color: 'var(--muted)' }}>Paket anfragen</p>
-          <a href="/preise" className="ul" style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>Abbrechen</a>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <LangSwitch />
+            <a href="/preise" className="ul" style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>Abbrechen</a>
+          </span>
         </div>
         <div style={{ height: 3, backgroundColor: 'var(--line-soft)' }}>
           <div style={{ height: '100%', width: '100%', backgroundColor: 'var(--electric)' }} />

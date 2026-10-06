@@ -8,9 +8,13 @@ import type { SiteScan, Source } from './site.ts'
 
 type Mark = 'ok' | 'warn' | 'bad'
 export type ReportChannel = { score: number; summary: string; points: [Mark, string][] }
+export type ChannelKey = 'ai' | 'maps' | 'search' | 'social'
 export type Report = {
-  channels: Partial<Record<'ai' | 'maps' | 'search' | 'social', ReportChannel>>
+  channels: Partial<Record<ChannelKey, ReportChannel>>
   recommendations: [string, string, string][]
+  /** v2: einzelne Kriterien je Kanal — der Admin kombiniert sie mit der manuellen Checkliste. */
+  version?: number
+  items?: Record<ChannelKey, Item[]>
 }
 
 export type AuditInput = {
@@ -21,10 +25,14 @@ export type AuditInput = {
   now?: Date
   /** Kein Google-Profil gefunden — Angaben stammen vom Kunden. */
   noProfile?: boolean
+  /** Google PageSpeed (mobil, 0–100); null = nicht ermittelt → Team trägt von Hand ein. */
+  pagespeed?: { score: number | null; error?: string } | null
+  /** Weitere Suchbegriffe (Begriff 2 und 3) für die Position bei Google Maps. */
+  ranks?: { query: string; rank: number | null; total: number }[]
 }
 
 // Ein Kriterium: erreichte Punkte, Maximum, Bewertung und Text für den Kunden.
-type Item = { id: string; pts: number; max: number; mark: Mark; text: string }
+export type Item = { id: string; pts: number; max: number; mark: Mark; text: string }
 
 function score(items: Item[]): number {
   const max = items.reduce((a, i) => a + i.max, 0)
@@ -127,7 +135,8 @@ export function siteBlocked(s: SiteScan | null): boolean {
   return !!s && [401, 403, 429, 503].includes(s.status ?? 0)
 }
 
-function searchItems({ place: p, site: s }: AuditInput): Item[] {
+function searchItems(input: AuditInput): Item[] {
+  const { place: p, site: s } = input
   if (!p.websiteUri && !s) return [{ id: 'nosite', pts: 5, max: 100, mark: 'bad', text: 'Keine Website gefunden — bei Google Search und in der KI-Suche fehlt die wichtigste Quelle' }]
   if (!s || !s.status) return [{ id: 'down', pts: 5, max: 100, mark: 'bad', text: 'Die Website war bei der Prüfung nicht erreichbar' }]
   if (!s.ok) return [{ id: 'down', pts: 5, max: 100, mark: 'bad', text: `Die Website antwortet mit einem Fehler (HTTP ${s.status})` }]
@@ -163,6 +172,83 @@ function searchItems({ place: p, site: s }: AuditInput): Item[] {
     ? { id: 'content', pts: 5, max: 5, mark: 'ok', text: 'Ausreichend Text auf der Startseite' }
     : { id: 'content', pts: 0, max: 5, mark: 'warn', text: 'Sehr wenig Text auf der Startseite — zu wenig Kontext für Google und KI' })
   if (s.noindex) items.push({ id: 'noindex', pts: 0, max: 10, mark: 'bad', text: 'Die Startseite ist für Google gesperrt (noindex)' })
+  // v2: Pflichtseiten, Cookie-Banner, Sitemap, Unterseiten, Abgleich mit Google, PageSpeed
+  if (s.impressum !== undefined) {
+    items.push(s.impressum
+      ? { id: 'impressum', pts: 8, max: 8, mark: 'ok', text: 'Impressum vorhanden' }
+      : { id: 'impressum', pts: 0, max: 8, mark: 'bad', text: 'Kein Impressum gefunden — in Deutschland Pflicht und abmahnfähig' })
+    items.push(s.datenschutz
+      ? { id: 'datenschutz', pts: 8, max: 8, mark: 'ok', text: 'Datenschutzerklärung vorhanden' }
+      : { id: 'datenschutz', pts: 0, max: 8, mark: 'bad', text: 'Keine Datenschutzerklärung gefunden — Pflicht nach DSGVO' })
+    items.push(s.cookie
+      ? { id: 'cookie', pts: 4, max: 4, mark: 'ok', text: 'Cookie-Hinweis eingerichtet' }
+      : { id: 'cookie', pts: 1, max: 4, mark: 'warn', text: 'Kein Cookie-Hinweis erkannt — prüfen, ob Tracking oder externe Dienste eingebunden sind' })
+    items.push(s.sitemap?.found
+      ? { id: 'sitemap', pts: 5, max: 5, mark: 'ok', text: `Sitemap für Google vorhanden (${s.sitemap.urls} Seiten)` }
+      : { id: 'sitemap', pts: 0, max: 5, mark: 'warn', text: 'Keine Sitemap gefunden — Google findet neue Seiten langsamer' })
+    const n = (s.pages ?? []).filter(x => x !== '/' && !/impressum|datenschutz|privacy|kontakt|contact|agb/i.test(x)).length
+    items.push(n >= 5
+      ? { id: 'pages', pts: 10, max: 10, mark: 'ok', text: `Mehrere Unterseiten (${n}) — Platz für einzelne Leistungen` }
+      : n >= 2
+        ? { id: 'pages', pts: 5, max: 10, mark: 'warn', text: `Nur ${n} Unterseiten — eigene Seiten je Leistung fehlen` }
+        : { id: 'pages', pts: 0, max: 10, mark: 'bad', text: 'Praktisch nur eine Seite — Google kann einzelne Leistungen nicht zuordnen' })
+    items.push(s.form
+      ? { id: 'form', pts: 4, max: 4, mark: 'ok', text: 'Kontaktformular vorhanden' }
+      : { id: 'form', pts: 1, max: 4, mark: 'warn', text: 'Kein Kontaktformular — Anfragen nur per Telefon oder E-Mail' })
+    const nap = napCheck(p, s)
+    if (nap) items.push(nap)
+  }
+  if (input.pagespeed?.score != null) {
+    const v = input.pagespeed.score
+    items.push(v >= 90
+      ? { id: 'pagespeed', pts: 10, max: 10, mark: 'ok', text: `Google PageSpeed (mobil): ${v}/100` }
+      : v >= 50
+        ? { id: 'pagespeed', pts: 5, max: 10, mark: 'warn', text: `Google PageSpeed (mobil): ${v}/100 — auf dem Smartphone spürbar langsam` }
+        : { id: 'pagespeed', pts: 0, max: 10, mark: 'bad', text: `Google PageSpeed (mobil): ${v}/100 — sehr langsam, Besucher springen ab` })
+  }
+  return items
+}
+
+const digits = (x: string) => x.replace(/\D+/g, '')
+/** Stimmen Name, Postleitzahl und Telefon auf der Website (Startseite + Impressum) mit Google überein? */
+function napCheck(p: GPlace, s: SiteScan): Item | null {
+  const hay = (s.hay ?? '').toLowerCase()
+  if (!hay) return null
+  const miss: string[] = []
+  const phone = digits(p.nationalPhoneNumber ?? '').replace(/^0/, '')
+  if (phone.length >= 6 && !digits(hay).includes(phone)) miss.push('Telefon')
+  const zip = p.addressComponents?.find(c => c.types.includes('postal_code'))?.longText
+  if (zip && !hay.includes(zip.toLowerCase())) miss.push('Adresse')
+  const word = (p.displayName?.text ?? '').toLowerCase().split(/[^a-zäöüß0-9]+/).find(w => w.length >= 4)
+  if (word && !hay.includes(word)) miss.push('Name')
+  if (!phone && !zip) return null
+  return miss.length
+    ? { id: 'nap', pts: miss.length > 1 ? 0 : 4, max: 10, mark: miss.length > 1 ? 'bad' : 'warn', text: `Angaben auf der Website weichen von Google ab (${miss.join(', ')}) — verwirrt Google und KI` }
+    : { id: 'nap', pts: 10, max: 10, mark: 'ok', text: 'Name, Adresse und Telefon stimmen mit Google überein' }
+}
+
+// ── 01 KI-Suche: automatisch prüfbare Signale (Antworten der KI prüft das Team von Hand) ──
+function aiItems(input: AuditInput): Item[] {
+  const { place: p, site: s, noProfile } = input
+  const items: Item[] = []
+  items.push(noProfile
+    ? { id: 'ai_profile', pts: 0, max: 20, mark: 'bad', text: 'Kein Google-Profil — eine der wichtigsten Quellen für KI-Antworten fehlt' }
+    : p.editorialSummary?.text
+      ? { id: 'ai_profile', pts: 20, max: 20, mark: 'ok', text: 'Google-Profil mit Beschreibung — KI kann Ihr Angebot einordnen' }
+      : { id: 'ai_profile', pts: 12, max: 20, mark: 'warn', text: 'Google-Profil ohne Beschreibung — KI weiß wenig über Ihr Angebot' })
+  if (s?.ok) {
+    const local = s.schemaTypes.some(t => /LocalBusiness|Organization|Store|Service|Contractor|Plumber|Electrician|Roofing|Dentist|Physician|HairSalon|AutoRepair|HomeAndConstruction|ProfessionalService|MedicalBusiness/i.test(t))
+    items.push(local
+      ? { id: 'ai_schema', pts: 15, max: 15, mark: 'ok', text: 'Unternehmensdaten für Maschinen lesbar ausgezeichnet' }
+      : { id: 'ai_schema', pts: 0, max: 15, mark: 'warn', text: 'Keine maschinenlesbaren Unternehmensdaten auf der Website' })
+    if (s.faq !== undefined) items.push(s.faq
+      ? { id: 'ai_faq', pts: 15, max: 15, mark: 'ok', text: 'Antworten auf häufige Fragen auf der Website' }
+      : { id: 'ai_faq', pts: 0, max: 15, mark: 'warn', text: 'Keine Antworten auf typische Kundenfragen — genau danach fragen Kunden die KI' })
+    const nap = napCheck(p, s)
+    if (nap) items.push({ ...nap, id: 'ai_nap', text: nap.mark === 'ok' ? 'Einheitliche Unternehmensdaten auf Website und Google' : 'Unterschiedliche Unternehmensdaten auf Website und Google — KI vertraut widersprüchlichen Angaben weniger' })
+  } else {
+    items.push({ id: 'ai_site', pts: 0, max: 30, mark: 'bad', text: 'Ohne erreichbare Website fehlt der KI die wichtigste Quelle' })
+  }
   return items
 }
 
@@ -184,7 +270,6 @@ function socialItems({ sources, site }: AuditInput): Item[] {
       ? { id: 'linked', pts: 15, max: 15, mark: 'ok', text: 'Profile sind auf der Website verlinkt' }
       : { id: 'linked', pts: 5, max: 15, mark: 'warn', text: 'Nicht alle Profile sind auf der Website verlinkt' })
   }
-  items.push({ id: 'activity', pts: 8, max: 15, mark: 'warn', text: 'Wie aktiv die Profile sind, prüft unser Team persönlich' })
   return items
 }
 
@@ -206,16 +291,29 @@ const RECS: Record<string, [string, string]> = {
   schema: ['Unternehmensdaten auszeichnen', 'Strukturierte Daten helfen Google und KI-Assistenten, Sie richtig einzuordnen.'],
   profiles: ['Social-Media-Profil aufbauen', 'Ein aktives Profil mit echten Projekten und Menschen schafft Vertrauen.'],
   noindex: ['Sperre für Google entfernen', 'Die Startseite ist für Google gesperrt — sie kann so nicht gefunden werden.'],
+  impressum: ['Impressum ergänzen', 'Ein fehlendes Impressum ist abmahnfähig und kostet Vertrauen bei Kunden und Google.'],
+  datenschutz: ['Datenschutzerklärung ergänzen', 'Pflicht nach DSGVO — sonst drohen Abmahnungen.'],
+  nap: ['Unternehmensdaten vereinheitlichen', 'Name, Adresse und Telefon überall gleich — auf Website, Google und in Verzeichnissen.'],
+  pages: ['Eine Seite pro Leistung', 'Eigene Seiten je Leistung und Ort bringen Anfragen genau zu dem, was Sie anbieten.'],
+  pagespeed: ['Website schneller machen', 'Auf dem Smartphone zählt jede Sekunde — langsame Seiten verlieren Anfragen.'],
+  ai_faq: ['Antworten auf Kundenfragen', 'Kurze Antworten auf typische Fragen helfen Kunden, Google und KI-Assistenten.'],
 }
 const PRIO = ['Hohe Priorität', 'Mittlere Priorität', 'Wachstumspotenzial']
 // Reihenfolge der Empfehlungen: zuerst, was am meisten Anfragen kostet.
-const REC_ORDER = ['noprofile', 'nosite', 'down', 'noindex', 'website', 'reviews', 'rating', 'rank', 'hours', 'fresh', 'photos', 'https', 'mobile', 'title', 'schema', 'profiles']
+const REC_ORDER = ['noprofile', 'nosite', 'down', 'noindex', 'impressum', 'datenschutz', 'website', 'reviews', 'rating', 'rank', 'nap', 'hours', 'pages', 'fresh', 'photos', 'https', 'mobile', 'pagespeed', 'title', 'schema', 'ai_faq', 'profiles']
 
 export function buildReport(input: AuditInput): Report {
   const blocked = siteBlocked(input.site)
-  const maps = mapsItems(input), search = blocked ? [] : searchItems(input), social = socialItems(input)
+  const maps = mapsItems(input), search = blocked ? [] : searchItems(input), social = socialItems(input), ai = aiItems(input)
+  // Weitere Suchbegriffe: Position bei Google Maps
+  if (!input.noProfile) (input.ranks ?? []).forEach((r, i) => {
+    const q = `«${r.query}»`, id = `rank${i + 2}`
+    maps.push(r.rank && r.rank <= 3 ? { id, pts: 10, max: 10, mark: 'ok', text: `Bei ${q} unter den ersten 3 (Platz ${r.rank})` }
+      : r.rank && r.rank <= 10 ? { id, pts: 5, max: 10, mark: 'warn', text: `Bei ${q} auf Platz ${r.rank}` }
+      : { id, pts: 0, max: 10, mark: 'bad', text: r.rank ? `Bei ${q} erst auf Platz ${r.rank}` : `Bei ${q} nicht unter den ersten ${r.total} Treffern` })
+  })
   const sMaps = score(maps), sSearch = score(search), sSocial = score(social)
-  const open = new Set([...maps, ...search, ...social].filter(i => i.mark !== 'ok').map(i => i.id))
+  const open = new Set([...maps, ...search, ...social, ...ai].filter(i => i.mark !== 'ok').map(i => i.id))
   const recommendations = REC_ORDER.filter(id => open.has(id)).slice(0, 3)
     .map((id, n): [string, string, string] => [PRIO[n], RECS[id][0], RECS[id][1]])
   const channels: Report['channels'] = {
@@ -235,5 +333,5 @@ export function buildReport(input: AuditInput): Report {
     // ai (KI-Suche) ergänzt das Team.
   }
   if (!channels.search) delete channels.search
-  return { channels, recommendations }
+  return { channels, recommendations, version: 2, items: { ai, maps, search, social } }
 }

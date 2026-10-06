@@ -1,3 +1,4 @@
+import LangSwitch from '../LangSwitch'
 import { useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import CompanySearch from './CompanySearch'
@@ -8,10 +9,13 @@ import {
 import AccountStep from './AccountStep'
 
 // /check — Onboarding nach der Unternehmenssuche (Prototyp «rag_client_cabinet_v1», 25.09.2026).
-// Reihenfolge: 1 Unternehmen suchen (Trefferliste) und bestätigen → 2 Konto anlegen oder anmelden
-// → Kundenbereich. Website und Social-Profile bestätigt der Kunde dort.
+// Reihenfolge: 1 Unternehmen suchen (Trefferliste) → 2 Konto anlegen oder anmelden → Kundenbereich.
+// Seit 06.10.2026 ohne eigenen Bestätigungsschritt: Treffer wählen führt direkt zu Schritt 2,
+// die gewählte Firma steht dort oben (mit «Ändern»). ?place=<id> öffnet direkt Schritt 2,
+// ?manual=1 öffnet Schritt 1 direkt mit dem Formular «nicht in der Liste» (ohne Google-Suche).
+// Website und Social-Profile bestätigt der Kunde im Kundenbereich.
 
-type Step = 'find' | 'confirm' | 'contact'
+type Step = 'find' | 'contact'
 
 export function useNoindex(title: string) {
   useEffect(() => {
@@ -66,26 +70,27 @@ function Spinner({ label }: { label: string }) {
   )
 }
 
-function CompanyCard({ place }: { place: Place }) {
+/** Gewählte Firma oben in Schritt 2 — kompakt, mit «Ändern». */
+function SelectedCompany({ place, loading, onChange }: { place: Place | null; loading: boolean; onChange: () => void }) {
   return (
-    <div style={{ border: '1px solid var(--line)', borderRadius: 20, padding: 'clamp(18px, 2.4vw, 24px)', display: 'flex', gap: 18, alignItems: 'flex-start', backgroundColor: '#fff' }}>
-      <span style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: 'var(--electric)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
+    <div style={{ display: 'flex', gap: 14, alignItems: 'center', border: '1px solid var(--line)', borderRadius: 18, padding: '14px 16px', backgroundColor: '#FAFAFD', marginBottom: 24 }}>
+      <span style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: 'var(--electric)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
       </span>
-      <div style={{ minWidth: 0, flex: 1 }}>
-        <p className="display" style={{ fontSize: 21, lineHeight: 1.2, margin: '2px 0 6px', letterSpacing: '-0.025em' }}>{place.name}</p>
-        <p style={{ fontSize: 14, color: 'var(--muted)', margin: '0 0 4px', lineHeight: 1.55 }}>{place.address}</p>
-        <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, lineHeight: 1.55 }}>{place.category}{place.website ? ` · ${place.website}` : ''}</p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--line-soft)', flexWrap: 'wrap' }}>
-          {place.rating !== null ? (
-            <>
-              <StarsRow rating={place.rating} />
-              <strong style={{ fontSize: 14 }}>{place.rating.toLocaleString('de-DE', { minimumFractionDigits: 1 })}</strong>
-              <span style={{ fontSize: 14, color: 'var(--muted)' }}>· {place.reviews} Bewertungen</span>
-            </>
-          ) : <span style={{ fontSize: 14, color: 'var(--muted)' }}>Noch keine Bewertungen gefunden</span>}
-        </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {loading || !place ? (
+          <span style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--muted)', fontSize: 14 }}><span className="ck-spin" aria-hidden="true" />Wir laden das Profil…</span>
+        ) : (
+          <>
+            <span style={{ display: 'block', fontWeight: 700, fontSize: 15.5, lineHeight: 1.3 }}>{place.name}</span>
+            <span style={{ display: 'block', fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>
+              {[place.category, place.address || place.city].filter(Boolean).join(' · ')}
+              {place.rating !== null && !place.manual ? ` · ★ ${place.rating.toLocaleString('de-DE', { minimumFractionDigits: 1 })} (${place.reviews})` : ''}
+            </span>
+          </>
+        )}
       </div>
+      <button type="button" onClick={onChange} className="ul" style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, color: 'var(--electric)', flexShrink: 0 }}>Ändern</button>
     </div>
   )
 }
@@ -93,10 +98,10 @@ function CompanyCard({ place }: { place: Place }) {
 const fieldStyle: React.CSSProperties = { width: '100%', padding: '11px 14px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14.5, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
 
 /** «Mein Unternehmen ist nicht dabei»: genauer suchen oder ohne Google-Profil prüfen lassen. */
-function NotListed({ query, nothingFound, onManual }: { query: string; nothingFound: boolean; onManual: (p: Place) => void }) {
-  const [open, setOpen] = useState(nothingFound)
+function NotListed({ query, nothingFound, startOpen = false, onManual }: { query: string; nothingFound: boolean; startOpen?: boolean; onManual: (p: Place) => void }) {
+  const [open, setOpen] = useState(nothingFound || startOpen)
   const [f, setF] = useState({ name: query, category: '', city: '', website: '' })
-  useEffect(() => { setOpen(nothingFound); setF(x => ({ ...x, name: query })) }, [query, nothingFound])
+  useEffect(() => { setOpen(nothingFound || startOpen); setF(x => ({ ...x, name: query })) }, [query, nothingFound, startOpen])
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF(x => ({ ...x, [k]: e.target.value }))
   const ok = f.name.trim().length > 1 && f.city.trim().length > 1
   if (!open) return (
@@ -130,8 +135,10 @@ export default function CheckPage() {
   const params = new URLSearchParams(window.location.search)
   const initialPlace = params.get('place')
   const initialQ = params.get('q') ?? ''
+  // Von der Startseite über «Mein Unternehmen ist nicht in der Liste»: Formular sofort offen, keine neue Google-Suche.
+  const [manualMode, setManualMode] = useState(params.get('manual') === '1')
 
-  const [step, setStep] = useState<Step>(initialPlace ? 'confirm' : 'find')
+  const [step, setStep] = useState<Step>(initialPlace ? 'contact' : 'find')
   const [place, setPlace] = useState<Place | null>(null)
   const [loadingPlace, setLoadingPlace] = useState(!!initialPlace)
   const [notFound, setNotFound] = useState(false)
@@ -149,7 +156,7 @@ export default function CheckPage() {
   // Suche erst nach Klick auf «Finden» (keine Vorschläge beim Tippen): eine Anfrage pro Suche.
   useEffect(() => {
     const q = query.trim()
-    if (q.length < 2) { setResults(null); return }
+    if (q.length < 2 || manualMode) { setResults(null); return }
     let alive = true
     setSearching(true); setSearchError(false)
     searchCompanies(q, token.current)
@@ -157,21 +164,35 @@ export default function CheckPage() {
       .catch(e => { console.error('places-search', e); if (alive) { setResults(null); setSearchError(true) } })
       .finally(() => { if (alive) setSearching(false) })
     return () => { alive = false }
-  }, [query]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [query, manualMode]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const newSearch = (q: string) => {
     const sp = new URLSearchParams(window.location.search)
-    sp.set('q', q); sp.delete('place')
+    sp.set('q', q); sp.delete('place'); sp.delete('manual')
     history.replaceState(null, '', `/check?${sp.toString()}`)
-    setStep('find'); setQuery(q)
+    setManualMode(false); setStep('find'); setQuery(q)
   }
 
+  // Treffer gewählt → sofort Schritt 2; das Profil lädt dort oben, die Quellensuche startet, sobald es da ist.
   const loadPlace = (id: string) => {
-    setStep('confirm'); setLoadingPlace(true); setNotFound(false)
+    setPlace(null); setStep('contact'); setLoadingPlace(true); setNotFound(false)
+    discovery.current = null
     getCompany(id, token.current)
-      .then(p => { setPlace(p); setNotFound(!p) })
+      .then(p => {
+        setPlace(p); setNotFound(!p)
+        if (p) discovery.current = discoverSources(p).catch(() => [])
+      })
       .catch(() => setNotFound(true))
       .finally(() => setLoadingPlace(false))
+  }
+
+  // Zurück zur Suche (z. B. «Ändern» in Schritt 2).
+  const backToFind = () => {
+    const sp = new URLSearchParams(window.location.search)
+    sp.delete('place')
+    if (query) sp.set('q', query)
+    history.replaceState(null, '', `/check?${sp.toString()}`)
+    setStep('find')
   }
 
   useEffect(() => { if (initialPlace) loadPlace(initialPlace) }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -187,7 +208,7 @@ export default function CheckPage() {
 
   // Nach Registrierung/Anmeldung: Check anlegen und in den Kundenbereich.
   const createAndGo = async (user: User, contact: Contact): Promise<string | null> => {
-    if (!place) return 'Bitte wählen Sie zuerst Ihr Unternehmen.'
+    if (!place) return loadingPlace ? 'Das Profil lädt noch — bitte einen Moment.' : 'Bitte wählen Sie zuerst Ihr Unternehmen.'
     // Diese Firma ist im Konto schon geprüft → keinen zweiten Check anlegen, den vorhandenen öffnen.
     const existing = await findMyCheck(place).catch(() => null)
     if (existing) { window.location.href = `/kabinett?firma=${existing}&bereits=1`; return null }
@@ -205,8 +226,8 @@ export default function CheckPage() {
     return null
   }
 
-  const stepIdx = step === 'find' || step === 'confirm' ? 0 : 1
-  const STEPS = [['Unternehmen', 'Profil bei Google finden und bestätigen'], ['Kundenbereich', 'Konto anlegen — danach Website und Profile bestätigen']]
+  const stepIdx = step === 'find' ? 0 : 1
+  const STEPS = [['Unternehmen', 'Profil bei Google finden und auswählen'], ['Kundenbereich', 'Konto anlegen — danach Website und Profile bestätigen']]
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)' }}>
@@ -214,7 +235,10 @@ export default function CheckPage() {
         <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 clamp(20px, 4vw, 48px)', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <Logo />
           <p className="eyebrow ck-hide-sm" style={{ color: 'var(--muted)' }}>Kostenloser Sichtbarkeits-Check</p>
-          <a href="/" className="ul" style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>Abbrechen</a>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <LangSwitch />
+            <a href="/" className="ul" style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>Abbrechen</a>
+          </span>
         </div>
         {(
           <div style={{ height: 3, backgroundColor: 'var(--line-soft)' }}>
@@ -257,6 +281,7 @@ export default function CheckPage() {
               <StepHead n="Schritt 1 von 2" title="Welches Unternehmen sollen wir prüfen?" sub="Geben Sie den Namen oder die Adresse ein und klicken Sie auf «Mein Unternehmen finden». Danach wählen Sie Ihr Unternehmen aus der Liste." />
               <CompanySearch variant="plain" initial={initialQ} autoFocus={!initialQ} onSubmitQuery={newSearch} />
               <div style={{ marginTop: 22 }}>
+                {manualMode && <NotListed query={query} nothingFound={false} startOpen onManual={goManual} />}
                 {searching && <Spinner label="Wir suchen bei Google…" />}
                 {!searching && results && results.length > 0 && (
                   <>
@@ -294,33 +319,21 @@ export default function CheckPage() {
             </>
           )}
 
-          {step === 'confirm' && (
-            <>
-              <StepHead n="Schritt 1 von 2" title="Ist das Ihr Unternehmen?" sub="Bitte prüfen Sie, ob wir das richtige Profil gefunden haben. Diese Daten sind die Grundlage für Ihren Bericht." />
-              {loadingPlace && <Spinner label="Wir laden das Profil…" />}
-              {!loadingPlace && notFound && (
-                <>
-                  <p style={{ fontSize: 15, lineHeight: 1.7, margin: '0 0 18px' }}>Dieses Profil konnten wir nicht laden. Bitte suchen Sie noch einmal.</p>
-                  <button type="button" className="btn btn-md btn-ink" onClick={() => setStep('find')}>Neu suchen</button>
-                </>
-              )}
-              {!loadingPlace && place && (
-                <>
-                  <CompanyCard place={place} />
-                  {DEMO && <div style={{ marginTop: 14 }}><DemoNote>Die Google-Anbindung ist noch nicht aktiv. Angezeigt werden Beispieldaten.</DemoNote></div>}
-                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 26 }}>
-                    <button type="button" className="btn btn-lg btn-electric" onClick={() => goContact()}>Ja, das ist mein Unternehmen <span className="arw">→</span></button>
-                    <button type="button" className="btn btn-lg btn-outline-light" onClick={() => setStep('find')}>Anderes Unternehmen</button>
-                  </div>
-                </>
-              )}
-            </>
-          )}
-
           {step === 'contact' && (
             <>
               <StepHead n="Schritt 2 von 2" title="Ihr Kundenbereich" sub="Legen Sie ein Konto an oder melden Sie sich an. Währenddessen suchen wir Website und Social-Media-Profile — im Kundenbereich bestätigen Sie sie und sehen später den Bericht." />
-              <AccountStep submitLabel="Weiter zum Kundenbereich" onAuthed={createAndGo} onBack={() => setStep(place?.manual ? 'find' : 'confirm')} />
+              {!loadingPlace && notFound ? (
+                <>
+                  <p style={{ fontSize: 15, lineHeight: 1.7, margin: '0 0 18px' }}>Dieses Profil konnten wir nicht laden. Bitte suchen Sie noch einmal.</p>
+                  <button type="button" className="btn btn-md btn-ink" onClick={backToFind}>Neu suchen</button>
+                </>
+              ) : (
+                <>
+                  <SelectedCompany place={place} loading={loadingPlace} onChange={backToFind} />
+                  {DEMO && !place?.manual && <div style={{ margin: '-10px 0 20px' }}><DemoNote>Die Google-Anbindung ist noch nicht aktiv. Angezeigt werden Beispieldaten.</DemoNote></div>}
+                  <AccountStep submitLabel="Weiter zum Kundenbereich" onAuthed={createAndGo} onBack={backToFind} />
+                </>
+              )}
             </>
           )}
         </section>

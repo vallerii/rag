@@ -135,9 +135,13 @@ export function toPlace(p: GPlace): Place {
 export type Competitor = { id: string; name: string; rating: number | null; reviews: number; website: boolean }
 
 /** Wer erscheint bei «<Branche> <Ort>»? Liefert die Liste und die eigene Position (1-basiert, null = nicht in den Top 20). */
-export async function competitors(key: string, p: GPlace): Promise<{ query: string; list: Competitor[]; rank: number | null }> {
+export function defaultQuery(p: GPlace): string {
   const city = component(p, 'locality', 'postal_town')?.longText ?? ''
-  const query = [p.primaryTypeDisplayName?.text, city].filter(Boolean).join(' ')
+  return [p.primaryTypeDisplayName?.text, city].filter(Boolean).join(' ')
+}
+
+export async function competitors(key: string, p: GPlace, q?: string): Promise<{ query: string; list: Competitor[]; rank: number | null }> {
+  const query = q?.trim() || defaultQuery(p)
   const body: Record<string, unknown> = { textQuery: query, languageCode: LANG, pageSize: 20 }
   if (p.location) body.locationBias = { circle: { center: p.location, radius: 15000 } }
   const data = await call<{ places?: GPlace[] }>(key, '/places:searchText', { method: 'POST', body }, MASK_COMPETITORS)

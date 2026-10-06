@@ -1,3 +1,4 @@
+import LangSwitch from '../LangSwitch'
 import { useEffect, useState } from 'react'
 import { Logo, useNoindex } from './CheckPage'
 import { authErrorText, currentUser, getSupabase, sendPasswordReset, setNewPassword, signIn, type AuthError } from './data'
@@ -20,7 +21,10 @@ function AuthShell({ eyebrow, title, sub, children }: { eyebrow: string; title: 
       <header style={{ borderBottom: '1px solid var(--line)' }}>
         <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 clamp(20px, 4vw, 48px)', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Logo />
-          <a href="/" className="ul" style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>Zur Website</a>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <LangSwitch />
+            <a href="/" className="ul" style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>Zur Website</a>
+          </span>
         </div>
       </header>
       <main id="inhalt" style={{ flex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 'clamp(40px, 8vh, 96px) 20px 80px' }}>

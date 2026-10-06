@@ -51,9 +51,25 @@ let dict = new Map<string, string>()
 
 const norm = (s: string) => s.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim()
 
+// Admin (/rag-intern): Quelltext ist Russisch, Deutsch ist die Übersetzung (admin-de.json).
+// Dort werden auch zusammengesetzte Texte übersetzt: bekannte Teile werden ersetzt (längste zuerst).
+let adminMode = false
+let partsRe: RegExp | null = null
+const CYR = /[А-Яа-яЁё]/
+const SRC_LETTERS = () => (adminMode ? CYR : /[A-Za-zÄÖÜäöüß]/)
+export const isAdminPath = () => typeof window !== 'undefined' && window.location.pathname.startsWith('/rag-intern')
+
 function lookup(key: string): string | undefined {
   const direct = dict.get(key)
   if (direct !== undefined) return direct
+  if (adminMode && partsRe) {
+    const out = key
+      .replace(/клиент на (\d+) месте/g, 'Kunde auf Platz $1')
+      .replace(/(\d+) место/g, 'Platz $1')
+      .replace(/нет в топ-(\d+)/g, 'nicht in den Top $1')
+      .replace(partsRe, m => dict.get(m) ?? m)
+    return out !== key ? out : undefined
+  }
   for (const [re, fn] of patterns) {
     const m = key.match(re)
     if (m) {
@@ -75,7 +91,7 @@ const patterns: [RegExp, (m: RegExpMatchArray) => string | undefined][] = [
 
 function translateString(s: string): string | undefined {
   const key = norm(s)
-  if (!key || !/[A-Za-zÄÖÜäöüß]/.test(key)) return undefined
+  if (!key || !SRC_LETTERS().test(key)) return undefined
   const t = lookup(key)
   if (t === undefined) return undefined
   const lead = s.match(/^\s*/)![0]
@@ -137,21 +153,31 @@ function walk(root: Node) {
  * visitors don't download it and Russian visitors never see a German flash.
  */
 export async function startTranslator(): Promise<void> {
-  if (typeof window === 'undefined' || getLang() !== 'ru') return
+  if (typeof window === 'undefined') return
+  // Admin: Standard Deutsch (Übersetzung aus dem Russischen), RU = Original für die Testphase.
+  adminMode = isAdminPath()
+  const target = adminMode ? (getLang() === 'ru' ? null : 'de') : (getLang() === 'ru' ? 'ru' : null)
+  if (!target) return
   try {
-    const mod = await import('./ru.json')
+    const mod = adminMode ? await import('./admin-de.json') : await import('./ru.json')
     dict = new Map(Object.entries(mod.default as Record<string, string>))
   } catch {
-    return // chunk failed to load — show the German original
+    return // chunk failed to load — show the original
+  }
+  if (adminMode) {
+    const esc = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const keys = [...dict.keys()].filter(k => CYR.test(k) && k.length >= 2).sort((a, b) => b.length - a.length)
+    partsRe = new RegExp(`(?<![А-Яа-яЁё])(?:${keys.map(esc).join('|')})(?![А-Яа-яЁё])`, 'g')
   }
   const html = document.documentElement
-  html.lang = 'ru'
+  const lang = target
+  html.lang = lang
   const observer = new MutationObserver(muts => {
     for (const m of muts) {
       if (m.type === 'characterData') doText(m.target as Text)
       else if (m.type === 'attributes') {
         if (m.attributeName === 'lang') {
-          if (m.target === html && html.lang !== 'ru') html.lang = 'ru'
+          if (m.target === html && html.lang !== lang) html.lang = lang
         } else if (m.attributeName) doAttr(m.target as Element, m.attributeName)
       } else m.addedNodes.forEach(walk)
     }

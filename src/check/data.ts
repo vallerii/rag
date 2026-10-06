@@ -215,13 +215,21 @@ export async function signOut() {
 }
 
 // ── Check + Nachrichten (Supabase-Tabellen) ──────────────────────────────────
-export type ReportChannel = { score: number; summary: string; points: ['ok' | 'warn' | 'bad', string][] }
+export type ReportChannel = { score: number | null; summary: string; points: ['ok' | 'warn' | 'bad', string][] }
 export type Report = {
   channels?: Partial<Record<'ai' | 'maps' | 'search' | 'social', ReportChannel>>
   recommendations?: [string, string, string][]
   /** Vom Ansprechpartner gewählter Einstiegs-Baustein (Admin → Bericht veröffentlichen). */
   recommended?: { id: string; name: string; description?: string; price: number; unit: 'einmalig' | 'pro Monat'; why?: string }
+  // v2 (Admin-Checkliste): Wettbewerber, Positionen, KI-Antworten, Datum
+  version?: number
+  competitors?: { query: string; rank: number | null; you: Competitor; list: Competitor[] }
+  ranks?: { query: string; rank: number | null; total: number }[]
+  ai?: { asked: number; mentioned: number; named: string }
+  collected_at?: string
+  published_at?: string
 }
+export type Competitor = { name: string; rating: number | null; reviews: number; website: boolean }
 
 export type CheckRow = {
   id: string
@@ -447,4 +455,16 @@ export async function deleteMyAccount(): Promise<boolean> {
 export async function deleteMyCheck(id: string): Promise<boolean> {
   const { error } = await (await getSupabase()).rpc('delete_my_check', { p_id: id })
   return !error
+}
+
+/** Veröffentlichte Versionen des Berichts (neueste zuerst) — für Verlauf und Vergleich. */
+export type ReportVersion = { id: string; report: Report; created_at: string }
+export async function loadReportVersions(checkId: string): Promise<ReportVersion[]> {
+  const { data, error } = await (await getSupabase()).from('check_reports').select('id, report, created_at')
+    .eq('check_id', checkId).eq('user_id', await myUid()).order('created_at', { ascending: false })
+  return error ? [] : (data as ReportVersion[])
+}
+export function reportTotal(r: Report | null | undefined): number | null {
+  const v = Object.values(r?.channels ?? {}).map(c => c?.score).filter((x): x is number => typeof x === 'number')
+  return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null
 }

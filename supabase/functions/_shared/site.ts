@@ -24,6 +24,19 @@ export type SiteScan = {
   words: number
   social: Partial<Record<Exclude<SourceKey, 'website'>, string>>
   error?: string
+  // Erweiterte Prüfung (Sichtbarkeits-Check v2) — fehlt bei älteren Scans.
+  impressum?: string | null      // Link zur Impressum-Seite
+  datenschutz?: string | null    // Link zur Datenschutzerklärung
+  cookie?: boolean               // Cookie-Banner / Consent-Tool erkannt
+  sitemap?: { found: boolean; urls: number } | null
+  robots?: boolean
+  faq?: boolean                  // FAQ-Bereich oder FAQPage-Auszeichnung
+  form?: boolean                 // Kontaktformular
+  mapsEmbed?: boolean            // eingebettete Google-Karte
+  reviewsWidget?: boolean        // Bewertungs-Widget (ProvenExpert, Trustindex …)
+  pages?: string[]               // Unterseiten aus Sitemap/Navigation (max. 60, Pfade)
+  /** Nur zur Laufzeit: Text von Startseite + Impressum für den Abgleich Name/Adresse/Telefon. Wird nicht gespeichert. */
+  hay?: string
 }
 
 const UA = 'Mozilla/5.0 (compatible; RAG-Sichtbarkeits-Check/1.0; +https://rag.agency)'
@@ -86,8 +99,23 @@ async function get(url: string, timeoutMs: number) {
   }
 }
 
+function linkTo(html: string, base: string, re: RegExp): string | null {
+  for (const m of html.matchAll(/<a\b[^>]*href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+    const href = m[1], label = m[2].replace(/<[^>]+>/g, ' ')
+    if (re.test(href) || re.test(label)) { try { return new URL(href, base).toString() } catch { /* ungültig */ } }
+  }
+  return null
+}
+
+async function tryGet(url: string, timeoutMs: number): Promise<string | null> {
+  try { const r = await get(url, timeoutMs); return r.res.ok ? r.html : null } catch { return null }
+}
+
+const COOKIE_RE = /cookiebot|usercentrics|borlabs|complianz|cookieyes|klaro|onetrust|cookie-?consent|cookie-?banner|cookie-?notice|ccm19|consentmanager|real-cookie-banner|iubenda/i
+const REVIEWS_RE = /provenexpert|trustindex|elfsight|trustpilot|reviews-widget|google-reviews|ausgezeichnet\.org|wer-kennt-wen/i
+
 /** Lädt die Startseite (erst https, dann http). Wirft nie — Fehler stehen in `error`. */
-export async function scanSite(website: string, timeoutMs = 6000): Promise<SiteScan> {
+export async function scanSite(website: string, timeoutMs = 6000, deep = false): Promise<SiteScan> {
   const bare = website.replace(/^https?:\/\//i, '').replace(/\/$/, '')
   const empty: SiteScan = { ok: false, url: bare, finalUrl: null, status: null, https: false, ms: null, title: null, description: null, h1: 0, viewport: false, noindex: false, lang: null, schemaTypes: [], telLink: false, words: 0, social: {} }
   let r: Awaited<ReturnType<typeof get>> | null = null
@@ -117,6 +145,36 @@ export async function scanSite(website: string, timeoutMs = 6000): Promise<SiteS
     words: body.split(/\s+/).filter(w => w.length > 1).length,
     social: socialLinks(html),
     error: res.ok ? undefined : `HTTP ${res.status}`,
+    ...(deep ? await extras(html, res.url || `https://${bare}`, body) : {}),
+  }
+}
+
+/** Impressum, Datenschutz, Cookie-Banner, Sitemap, FAQ, Formular … (zusätzliche Abrufe mit kurzer Zeitgrenze). */
+async function extras(html: string, base: string, body: string): Promise<Partial<SiteScan>> {
+  const origin = (() => { try { return new URL(base).origin } catch { return base } })()
+  const impressum = linkTo(html, base, /impressum|imprint/i)
+  const datenschutz = linkTo(html, base, /datenschutz|privacy|dsgvo/i)
+  const [impHtml, sm, robots] = await Promise.all([
+    impressum ? tryGet(impressum, 4000) : Promise.resolve(null),
+    tryGet(`${origin}/sitemap.xml`, 4000).then(x => x ?? tryGet(`${origin}/sitemap_index.xml`, 3000)),
+    tryGet(`${origin}/robots.txt`, 3000),
+  ])
+  const locs = sm ? [...sm.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)].map(m => m[1]) : []
+  const navPaths = [...html.matchAll(/<a\b[^>]*href=["'](\/[^"'#?]*|https?:\/\/[^"'#?]+)["']/gi)].map(m => m[1])
+  const toPath = (u: string) => { try { const x = new URL(u, origin); return x.origin === origin ? x.pathname.replace(/\/$/, '') || '/' : null } catch { return null } }
+  const pages = [...new Set([...locs, ...navPaths].map(toPath).filter((x): x is string => !!x && !/\.(jpg|jpeg|png|webp|svg|pdf|xml|css|js)$/i.test(x)))].slice(0, 60)
+  const impText = impHtml ? impHtml.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ') : ''
+  return {
+    impressum, datenschutz,
+    cookie: COOKIE_RE.test(html),
+    sitemap: sm ? { found: true, urls: locs.length } : { found: false, urls: 0 },
+    robots: !!robots,
+    faq: /FAQPage/.test(html) || /\b(FAQ|Häufige Fragen|Haeufige Fragen|Fragen und Antworten|Fragen & Antworten)\b/i.test(body),
+    form: /<form\b[\s\S]{0,4000}?(type=["']email["']|name=["'][^"']*(mail|nachricht|message|telefon|phone)[^"']*["'])/i.test(html),
+    mapsEmbed: /google\.[a-z.]+\/maps\/embed|maps\.google\.[a-z.]+\/maps|google\.com\/maps\?/i.test(html),
+    reviewsWidget: REVIEWS_RE.test(html),
+    pages,
+    hay: decode(body + ' ' + impText).slice(0, 200_000),
   }
 }
 

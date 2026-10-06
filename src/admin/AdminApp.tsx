@@ -1,11 +1,13 @@
+import LangSwitch from '../LangSwitch'
 import { useEffect, useMemo, useState } from 'react'
 import { useNoindex } from '../check/CheckPage'
 import {
-  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, addAppointment, deleteAppointment, setRecommended, loadAll, loadClient, loadMyProfile, setAppointmentStatus, loadTeam, myId, saveMyProfile, publishReport,
+  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, addAppointment, deleteAppointment, loadAll, loadClient, loadMyProfile, setAppointmentStatus, loadTeam, myId, saveMyProfile,
   revokeInvite, saveOffer, sendStaffMessage, setAssignee, setNextContact, setRole, setStage, signInPlain, signInStaff, signOutStaff, signUpStaff, stageLabel,
   type Invite,
-  type Activity, type Appointment, type Recommended, type Check, type Lead, type Message, type Note, type Offer, type Order, type Profile, type Request, type Stage,
+  type Activity, type Appointment, type Check, type Lead, type Message, type Note, type Offer, type Order, type Profile, type Request, type Stage,
 } from './api'
+import ReportEditor from './ReportEditor'
 import { CATALOG, totals, type OfferItem, type Unit } from './catalog'
 
 // Admin-Bereich unter einer nicht verlinkten Adresse (/rag-intern), noindex.
@@ -64,7 +66,7 @@ function Login({ onDone }: { onDone: () => void }) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bone)', padding: 20 }}>
       <form onSubmit={submit} style={{ ...card, width: '100%', maxWidth: 380, padding: 28, display: 'grid', gap: 12 }}>
-        <p style={{ fontWeight: 800, fontSize: 20, margin: 0 }}>RAG<span style={{ color: accent }}>.</span> · вход для команды</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 800, fontSize: 20, margin: 0 }}>RAG<span style={{ color: accent }}>.</span> · вход для команды</p><LangSwitch /></div>
         <input style={input} type="email" placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)} autoComplete="username" required />
         <input style={input} type="password" placeholder="Пароль" value={pw} onChange={e => setPw(e.target.value)} autoComplete="current-password" required />
         {err && <p role="alert" style={{ color: '#B3261E', fontSize: 14, margin: 0 }}>{err}</p>}
@@ -103,6 +105,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', borderBottom: `1px solid ${line}`, backgroundColor: '#fff', position: 'sticky', top: 0, zIndex: 5 }}>
         <span style={{ fontWeight: 800, fontSize: 18 }}>RAG<span style={{ color: accent }}>.</span> <span style={{ fontWeight: 500, color: muted, fontSize: 14 }}>· заявки</span></span>
         <span style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+          <LangSwitch />
           {view !== 'requests' && <button type="button" onClick={() => setView('requests')} style={linkBtn}>← Заявки</button>}
           {admin && view !== 'team' && <button type="button" onClick={() => setView('team')} style={linkBtn}>Команда</button>}
           {view !== 'profile' && <button type="button" onClick={() => setView('profile')} style={linkBtn}>Мой профиль</button>}
@@ -202,7 +205,7 @@ function Detail({ r, all, profiles, me, onSelect, onPatch }: { r: Request; all: 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16, alignItems: 'start' }}>
         <div style={{ display: 'grid', gap: 16 }}>
           <ClientCard r={r} prof={prof} />
-          {r.kind === 'check' && <ReportCard c={r.row as Check} onPublished={async report => { const assignee = r.assignee ?? await getAssignee(r.kind, r.id); onPatch({ assignee, row: { ...(r.row as Check), status: 'ready', report, assignee_id: assignee } }); reloadClient() }} />}
+          {r.kind === 'check' && <ReportEditor c={r.row as Check} onPublished={async report => { const assignee = r.assignee ?? await getAssignee(r.kind, r.id); onPatch({ assignee, row: { ...(r.row as Check), status: 'ready', report, assignee_id: assignee } }); reloadClient() }} />}
           {client && <OfferCard clientKey={r.clientKey} userId={r.userId} initial={client.offer} preset={r.kind === 'order' ? (r.row as Order).items ?? [] : []} onSaved={reloadClient} />}
         </div>
         <div style={{ display: 'grid', gap: 16 }}>
@@ -270,62 +273,6 @@ function ClientCard({ r, prof }: { r: Request; prof?: Profile }) {
   return <section style={card}><h3 style={h3}>Клиент и компания</h3><Rows rows={rows} /></section>
 }
 
-type Draft = { channels?: Record<string, { score: number; summary: string; points: [string, string][] }>; recommendations?: [string, string, string][] }
-const CHANNEL: Record<string, string> = { ai: 'KI-Suche', maps: 'Google Maps', search: 'Website & Search', social: 'Social Media' }
-
-function ReportCard({ c, onPublished }: { c: Check; onPublished: (report: object) => void }) {
-  const draft = c.report_draft as Draft | null
-  const published = c.status === 'ready'
-  const current = (c.report as { recommended?: Recommended } | null)?.recommended
-  const [busy, setBusy] = useState(false), [msg, setMsg] = useState('')
-  const [pick, setPick] = useState(current?.id ?? '')
-  const [price, setPrice] = useState(current ? String(current.price) : '')
-  const [why, setWhy] = useState(current?.why ?? '')
-  const item = CATALOG.find(x => x.id === pick)
-  const choose = (id: string) => { setPick(id); const it = CATALOG.find(x => x.id === id); if (it) setPrice(String(it.price)); setMsg('') }
-  const rec = (): Recommended | null => item ? { id: item.id, name: item.name, price: Number(price) || item.price, unit: item.unit, ...(why.trim() ? { why: why.trim() } : {}) } : null
-  const run = async (mode: 'publish' | 'update') => {
-    const r = rec(); if (!r) { setMsg('Выберите рекомендуемый пакет.'); return }
-    setBusy(true); setMsg('')
-    const report = mode === 'publish' ? await publishReport(c, r) : await setRecommended(c, r)
-    setBusy(false)
-    if (report) { onPublished(report); setMsg(mode === 'publish' ? 'Опубликовано. Клиенту открылась запись на звонок.' : 'Рекомендация обновлена.') } else setMsg('Не удалось сохранить.')
-  }
-  return (
-    <section style={card}>
-      <h3 style={h3}>Отчёт проверки</h3>
-      <p style={{ ...small, margin: '0 0 10px' }}>{checkState(c)}{c.audited_at ? ` · данные собраны ${fmt(c.audited_at)}` : ''}</p>
-      {!draft && <p style={{ fontSize: 14, margin: 0 }}>Черновика пока нет: он появится, когда клиент подтвердит сайт и профили.</p>}
-      {draft?.channels && Object.entries(draft.channels).map(([k, ch]) => (
-        <div key={k} style={{ padding: '8px 0', borderTop: `1px solid ${line}` }}>
-          <strong>{CHANNEL[k] ?? k}: {ch.score}/100</strong> <span style={small}>— {ch.summary}</span>
-          <ul style={{ margin: '4px 0 0', paddingLeft: 18, fontSize: 13.5 }}>{ch.points.map(([m, t]) => <li key={t}>{m === 'ok' ? '✓' : m === 'warn' ? '!' : '✗'} {t}</li>)}</ul>
-        </div>
-      ))}
-      {draft?.recommendations && <p style={{ fontSize: 13.5, margin: '8px 0 0' }}><strong>Рекомендации:</strong> {draft.recommendations.map(x => x[1]).join(' · ')}</p>}
-      {(draft || published) && (
-        <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${line}`, display: 'grid', gap: 8 }}>
-          <strong style={{ fontSize: 14 }}>Рекомендуемый пакет {published && current ? <span style={{ ...small, fontWeight: 400 }}>· сейчас: {current.name}</span> : null}</strong>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 110px', gap: 8 }}>
-            <select value={pick} onChange={e => choose(e.target.value)} style={input} aria-label="Рекомендуемый пакет">
-              <option value="">— выберите —</option>
-              {CATALOG.map(x => <option key={x.id} value={x.id}>{x.name} · {x.price} € {x.unit === 'einmalig' ? 'разово' : '/мес'}</option>)}
-            </select>
-            <input type="number" value={price} onChange={e => setPrice(e.target.value)} style={input} aria-label="Цена" placeholder="€" />
-          </div>
-          <textarea value={why} onChange={e => setWhy(e.target.value)} style={{ ...input, minHeight: 56, resize: 'vertical' }} placeholder="Почему именно он — 1–2 предложения для клиента, по-немецки (необязательно)" aria-label="Почему" />
-          {!published && <p style={{ ...small, margin: 0 }}>Блок «KI-Suche» автоматически не считается — при необходимости допишите его в Table Editor до публикации. После публикации клиент видит отчёт, рекомендацию и может записаться на звонок.</p>}
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-            {!published
-              ? <button type="button" className="btn btn-md btn-electric" disabled={busy || !draft || !item} onClick={() => run('publish')}>Опубликовать отчёт клиенту</button>
-              : <button type="button" className="btn btn-sm btn-outline-light" disabled={busy || !item} onClick={() => run('update')}>Сохранить рекомендацию</button>}
-            {msg && <span style={small}>{msg}</span>}
-          </div>
-        </div>
-      )}
-    </section>
-  )
-}
 
 function OfferCard({ clientKey, userId, initial, preset, onSaved }: { clientKey: string; userId: string | null; initial: Offer | null; preset: OfferItem[]; onSaved: () => void }) {
   const [items, setItems] = useState<OfferItem[]>(initial?.items ?? preset)
@@ -449,6 +396,7 @@ function activityText(a: Activity, profiles: Profile[]): string {
     case 'note': return 'Добавлена заметка'
     case 'offer_sent': return 'Предложение отмечено как отправленное'
     case 'offer_accepted': return 'Клиент принял предложение'
+    case 'report_version': return 'Опубликована версия отчёта'
     case 'check_deleted': return `Клиент удалил компанию из кабинета: ${str(d.name)}`
     case 'appointment': return `Назначена встреча: ${str(d.title)}, ${d.at ? fmtDT(str(d.at)) : ''}`
     case 'appointment_changed': return `Встреча «${str(d.title)}»: ${d.status === 'cancelled' ? 'отменена' : d.status === 'done' ? 'состоялась' : 'перенесена на ' + (d.at ? fmtDT(str(d.at)) : '')}`
@@ -663,7 +611,7 @@ function AcceptInvite() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bone)', padding: 20, color: ink }}>
       <div style={{ ...card, width: '100%', maxWidth: 420, padding: 28, display: 'grid', gap: 12 }}>
-        <p style={{ fontWeight: 800, fontSize: 20, margin: 0 }}>RAG<span style={{ color: accent }}>.</span> · приглашение в команду</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 800, fontSize: 20, margin: 0 }}>RAG<span style={{ color: accent }}>.</span> · приглашение в команду</p><LangSwitch /></div>
         {!token && <p style={{ margin: 0 }}>В ссылке нет кода приглашения. Попросите новую ссылку.</p>}
         {token && email === undefined && <p style={small}>Загрузка…</p>}
         {token && email && (

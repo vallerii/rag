@@ -233,3 +233,41 @@ export async function setAppointmentStatus(id: string, status: Appointment['stat
 export async function deleteAppointment(id: string) {
   return !(await (await db()).from('appointments').delete().eq('id', id)).error
 }
+
+// ── Sichtbarkeits-Check v2: Checkliste, Neu-Sammeln, Versionen ──────────────
+export type CheckFull = Check & { checklist: Record<string, unknown> | null }
+export async function loadCheckFull(id: string): Promise<CheckFull | null> {
+  const { data } = await (await db()).from('checks').select('*').eq('id', id).maybeSingle()
+  return (data as CheckFull | null) ?? null
+}
+export async function saveChecklist(id: string, checklist: object): Promise<boolean> {
+  return !(await (await db()).from('checks').update({ checklist }).eq('id', id)).error
+}
+/** Daten neu sammeln (Google, Website, PageSpeed). Läuft bis zu ~1 Minute. */
+export async function recollect(checkId: string): Promise<{ ok: boolean; message: string }> {
+  const proxy = (import.meta.env.VITE_PLACES_PROXY as string | undefined)?.replace(/\/$/, '')
+  if (!proxy) return { ok: false, message: 'VITE_PLACES_PROXY не задан' }
+  const { data } = await (await db()).auth.getSession()
+  const token = data.session?.access_token
+  if (!token) return { ok: false, message: 'Нет сессии' }
+  try {
+    const res = await fetch(`${proxy}/audit-collect`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ checkId, force: true }) })
+    const j = await res.json().catch(() => ({})) as { status?: string; error?: string; detail?: string; pagespeed?: number | null }
+    if (!res.ok) return { ok: false, message: `${j.error ?? res.status}${j.detail ? `: ${j.detail}` : ''}` }
+    return { ok: true, message: j.pagespeed == null ? 'Данные собраны. PageSpeed не ответил — впишите вручную.' : `Данные собраны. PageSpeed: ${j.pagespeed}/100` }
+  } catch (e) { return { ok: false, message: e instanceof Error ? e.message : 'Ошибка сети' } }
+}
+export type ReportVersion = { id: string; report: Record<string, unknown>; created_at: string; created_by: string | null }
+export async function loadVersions(checkId: string): Promise<ReportVersion[]> {
+  const { data } = await (await db()).from('check_reports').select('id, report, created_at, created_by').eq('check_id', checkId).order('created_at', { ascending: false })
+  return (data ?? []) as ReportVersion[]
+}
+/** Neue Version veröffentlichen: checks.report + Eintrag im Archiv. Wer veröffentlicht, übernimmt eine freie Anfrage. */
+export async function publishVersion(c: Check, report: object): Promise<object | null> {
+  const s = await db()
+  const assignee_id = c.assignee_id ?? await myId()
+  const { error } = await s.from('checks').update({ report, status: 'ready', assignee_id }).eq('id', c.id)
+  if (error) return null
+  await s.from('check_reports').insert({ check_id: c.id, user_id: c.user_id, report })
+  return report
+}
