@@ -1375,7 +1375,10 @@ function LegalPage({ kind }: { kind: LegalKind }) {
       <main id="inhalt">
         <ContentHero crumbs={[{ label: 'Start', href: '/' }, { label: title }]} kicker="RECHTLICHES" title={title} sub={`Stand: ${LEGAL_UPDATED}`} />
         <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(48px, 6vw, 80px) clamp(20px,4vw,48px)' }}>
-          <div style={{ ...SHELL, maxWidth: 1240 }}><div style={{ maxWidth: 780 }}><Body /></div></div>
+          <div style={{ ...SHELL, maxWidth: 1240 }}><div style={{ maxWidth: 780 }}>
+            {!isServer && getLang() === 'ru' && <p style={{ fontSize: 14, fontWeight: 600, margin: '0 0 24px' }}>Die Texte unten sind rechtlich nur auf Deutsch verbindlich.</p>}
+            <Body />
+          </div></div>
         </section>
       </main>
       <Footer />

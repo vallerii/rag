@@ -150,3 +150,6 @@ public/fonts/*.woff2 -filter -diff -merge binary
 
 # Vorschaubild für Link-Vorschauen — ohne LFS, damit es auch ohne LFS-Unterstützung ausgeliefert wird
 public/og-image.png -filter -diff -merge binary
+# Favicons, Icons und Bilder der Seite ohne LFS — Vercel liefert sonst LFS-Zeigerdateien statt Bildern aus
+public/*.png -filter -diff -merge binary
+public/*.ico -filter -diff -merge binary
