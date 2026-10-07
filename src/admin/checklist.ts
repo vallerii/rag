@@ -5,7 +5,7 @@
 
 export type Mark = 'ok' | 'warn' | 'bad'
 export type Chan = 'ai' | 'maps' | 'search' | 'social'
-export const CHANS: [Chan, string][] = [['ai', 'ИИ-поиск'], ['maps', 'Google Maps'], ['search', 'Сайт и поиск Google'], ['social', 'Соцсети']]
+export const CHANS: [Chan, string][] = [['ai', 'KI-Suche'], ['maps', 'Google Maps'], ['search', 'Website & Google Search'], ['social', 'Social Media']]
 const FACTOR: Record<Mark, number> = { ok: 1, warn: 0.5, bad: 0 }
 
 export type Item = { id: string; pts: number; max: number; mark: Mark; text: string }
@@ -29,33 +29,33 @@ export type Checklist = {
 
 export type ManualDef = { id: string; chan: Chan; label: string; weight: number; texts: Partial<Record<Mark, string>>; hint?: string }
 export const MANUAL: ManualDef[] = [
-  { id: 'maps_claimed', chan: 'maps', label: 'Профиль подтверждён владельцем', weight: 10, hint: 'В Google Maps нет кнопки «Inhaber dieses Unternehmens?»',
+  { id: 'maps_claimed', chan: 'maps', label: 'Profil vom Inhaber bestätigt', weight: 10, hint: 'In Google Maps fehlt der Button «Inhaber dieses Unternehmens?»',
     texts: { ok: 'Profil ist vom Inhaber bestätigt', bad: 'Profil ist nicht vom Inhaber bestätigt — Dritte können Änderungen vorschlagen' } },
-  { id: 'maps_desc', chan: 'maps', label: 'Описание профиля', weight: 8,
+  { id: 'maps_desc', chan: 'maps', label: 'Profilbeschreibung', weight: 8,
     texts: { ok: 'Beschreibung im Profil gepflegt', warn: 'Beschreibung zu kurz oder ohne Leistungen und Ort', bad: 'Keine Beschreibung im Profil' } },
-  { id: 'maps_services', chan: 'maps', label: 'Услуги / продукты в профиле', weight: 8,
+  { id: 'maps_services', chan: 'maps', label: 'Leistungen / Produkte im Profil', weight: 8,
     texts: { ok: 'Leistungen im Profil eingetragen', warn: 'Nur wenige Leistungen eingetragen', bad: 'Keine Leistungen im Profil eingetragen' } },
-  { id: 'maps_posts', chan: 'maps', label: 'Посты (обновления) в профиле', weight: 8, hint: 'ok — пост за последние 30 дней',
+  { id: 'maps_posts', chan: 'maps', label: 'Beiträge (Updates) im Profil', weight: 8, hint: 'ok — Beitrag in den letzten 30 Tagen',
     texts: { ok: 'Regelmäßige Beiträge im Profil', warn: 'Letzter Beitrag ist älter als einen Monat', bad: 'Keine Beiträge im Profil' } },
-  { id: 'maps_replies', chan: 'maps', label: 'Ответы на отзывы', weight: 8,
+  { id: 'maps_replies', chan: 'maps', label: 'Antworten auf Bewertungen', weight: 8,
     texts: { ok: 'Auf Bewertungen wird geantwortet', warn: 'Nur auf einen Teil der Bewertungen geantwortet', bad: 'Auf Bewertungen wird nicht geantwortet' } },
-  { id: 'search_positions', chan: 'search', label: 'Позиции в обычном поиске Google по ключевым запросам', weight: 15, hint: 'Проверить в режиме инкогнито, в заметке — запрос и место',
+  { id: 'search_positions', chan: 'search', label: 'Positionen in der normalen Google-Suche für wichtige Suchbegriffe', weight: 15, hint: 'Im Inkognito-Modus prüfen, in der Notiz: Suchbegriff und Platz',
     texts: { ok: 'Bei wichtigen Suchanfragen auf Seite 1 bei Google', warn: 'Bei wichtigen Suchanfragen nur auf Seite 2–3', bad: 'Bei wichtigen Suchanfragen nicht unter den ersten 30 Treffern' } },
-  { id: 'search_firstscreen', chan: 'search', label: 'Первый экран: понятно что, где и как связаться', weight: 8,
+  { id: 'search_firstscreen', chan: 'search', label: 'Erster Bildschirm: klar, was, wo und wie erreichbar', weight: 8,
     texts: { ok: 'Auf den ersten Blick klar: was, wo und wie erreichbar', warn: 'Angebot und Region erst nach dem Scrollen erkennbar', bad: 'Unklar, was angeboten wird und wo' } },
-  { id: 'social_bio', chan: 'social', label: 'Оформление профиля (описание, город, ссылка, кнопки)', weight: 10,
+  { id: 'social_bio', chan: 'social', label: 'Profilgestaltung (Beschreibung, Ort, Link, Buttons)', weight: 10,
     texts: { ok: 'Profil vollständig: Beschreibung mit Leistung, Ort und Link', warn: 'Profil unvollständig — Leistung, Ort oder Link fehlen', bad: 'Profil ohne Beschreibung und Kontakt' } },
-  { id: 'social_active', chan: 'social', label: 'Регулярность постов', weight: 15, hint: 'В заметке: дата последнего поста, постов за 30 дней',
+  { id: 'social_active', chan: 'social', label: 'Regelmäßigkeit der Beiträge', weight: 15, hint: 'In der Notiz: Datum des letzten Beitrags, Beiträge in 30 Tagen',
     texts: { ok: 'Regelmäßige Beiträge (mehrmals pro Woche)', warn: 'Unregelmäßige Beiträge', bad: 'Seit über einem Monat keine Beiträge' } },
-  { id: 'social_real', chan: 'social', label: 'Реальный контент: работы, команда, люди', weight: 10,
+  { id: 'social_real', chan: 'social', label: 'Echte Inhalte: Projekte, Team, Menschen', weight: 10,
     texts: { ok: 'Echte Projekte, Team und Menschen', warn: 'Kaum eigene Fotos — überwiegend Stockbilder oder Werbung', bad: 'Keine eigenen Inhalte' } },
-  { id: 'social_consistent', chan: 'social', label: 'Единые имя и логотип везде', weight: 5,
+  { id: 'social_consistent', chan: 'social', label: 'Einheitlicher Name und Logo überall', weight: 5,
     texts: { ok: 'Name und Logo überall einheitlich', warn: 'Name oder Logo nicht einheitlich' } },
 ]
 
 export const DIRECTORIES: [string, string][] = [
   ['gelbeseiten', 'Gelbe Seiten'], ['dasoertliche', 'Das Örtliche'], ['11880', '11880.com'], ['goyellow', 'GoYellow'],
-  ['cylex', 'Cylex'], ['bing', 'Bing Places'], ['apple', 'Apple Maps'], ['provenexpert', 'ProvenExpert'], ['branche', 'Отраслевой каталог'],
+  ['cylex', 'Cylex'], ['bing', 'Bing Places'], ['apple', 'Apple Maps'], ['provenexpert', 'ProvenExpert'], ['branche', 'Branchenverzeichnis'],
 ]
 
 export function defaultQuestions(category: string, city: string): string[] {

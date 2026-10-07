@@ -17,5 +17,5 @@ export const CATALOG: CatalogItem[] = [
 export function totals(items: OfferItem[]): string {
   const once = items.filter(i => i.unit === 'einmalig').reduce((a, i) => a + (Number(i.price) || 0), 0)
   const monthly = items.filter(i => i.unit === 'pro Monat').reduce((a, i) => a + (Number(i.price) || 0), 0)
-  return [once ? `${once} € разово` : '', monthly ? `${monthly} € в месяц` : ''].filter(Boolean).join(' + ') || '—'
+  return [once ? `${once} € einmalig` : '', monthly ? `${monthly} € pro Monat` : ''].filter(Boolean).join(' + ') || '—'
 }

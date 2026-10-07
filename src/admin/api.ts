@@ -6,8 +6,8 @@ import type { OfferItem } from './catalog'
 
 export type Stage = 'new' | 'contacted' | 'call_booked' | 'call_done' | 'offer_sent' | 'won' | 'lost'
 export const STAGES: [Stage, string][] = [
-  ['new', 'Новая'], ['contacted', 'Связались'], ['call_booked', 'Созвон назначен'], ['call_done', 'Созвон прошёл'],
-  ['offer_sent', 'Предложение отправлено'], ['won', 'Клиент'], ['lost', 'Отказ'],
+  ['new', 'Neu'], ['contacted', 'Kontaktiert'], ['call_booked', 'Gespräch vereinbart'], ['call_done', 'Gespräch geführt'],
+  ['offer_sent', 'Angebot gesendet'], ['won', 'Kunde'], ['lost', 'Absage'],
 ]
 export const stageLabel = (s: Stage) => STAGES.find(x => x[0] === s)?.[1] ?? s
 export const OPEN: Stage[] = ['new', 'contacted', 'call_booked', 'call_done', 'offer_sent']
@@ -28,8 +28,8 @@ const db = () => getSupabase()
 export async function signInStaff(email: string, password: string): Promise<string | null> {
   const s = await db()
   const { error } = await s.auth.signInWithPassword({ email: email.trim(), password, options: { captchaToken: (await turnstileToken().catch(() => null)) ?? undefined } })
-  if (error) return 'Неверный e-mail или пароль.'
-  if (!(await isStaff())) { await s.auth.signOut(); return 'У этого аккаунта нет доступа.' }
+  if (error) return 'E-Mail oder Passwort falsch.'
+  if (!(await isStaff())) { await s.auth.signOut(); return 'Dieses Konto hat keinen Zugang.' }
   return null
 }
 
@@ -61,19 +61,19 @@ export async function loadAll(): Promise<{ requests: Request[]; profiles: Profil
     ...((L.data ?? []) as Lead[]).map(l => ({
       kind: 'lead' as const, id: l.id, clientKey: l.user_id ? `user:${l.user_id}` : `lead:${l.id}`, userId: l.user_id, created_at: l.created_at,
       stage: l.stage, next: l.next_contact_at, assignee: l.assignee_id, row: l,
-      title: quiz(l).firma || [quiz(l).branche, quiz(l).ort].filter(Boolean).join(' · ') || 'Квиз',
-      sub: [(l as Lead & { email?: string }).email, l.booking_clicked_at ? 'нажал «Выбрать время»' : 'без записи на созвон'].filter(Boolean).join(' · '),
+      title: quiz(l).firma || [quiz(l).branche, quiz(l).ort].filter(Boolean).join(' · ') || 'Quiz',
+      sub: [(l as Lead & { email?: string }).email, l.booking_clicked_at ? 'hat «Termin wählen» geklickt' : 'ohne Terminbuchung'].filter(Boolean).join(' · '),
     })),
     ...((O.data ?? []) as Order[]).map(o => ({
       kind: 'order' as const, id: o.id, clientKey: `user:${o.user_id}`, userId: o.user_id, created_at: o.created_at,
       stage: o.stage, next: o.next_contact_at, assignee: o.assignee_id, row: o,
-      title: String((o.details as { company?: string } | null)?.company || who(o.user_id)?.name || o.email || 'Заявка'),
-      sub: (o.items ?? []).map(i => i.name).join(' + ') + (o.details ? '' : ' · анкета не заполнена'),
+      title: String((o.details as { company?: string } | null)?.company || who(o.user_id)?.name || o.email || 'Anfrage'),
+      sub: (o.items ?? []).map(i => i.name).join(' + ') + (o.details ? '' : ' · Fragebogen nicht ausgefüllt'),
     })),
     ...((C.data ?? []) as Check[]).map(c => ({
       kind: 'check' as const, id: c.id, clientKey: `user:${c.user_id}`, userId: c.user_id, created_at: c.created_at,
       stage: c.stage, next: c.next_contact_at, assignee: c.assignee_id, row: c,
-      title: place(c).name || 'Проверка',
+      title: place(c).name || 'Check',
       sub: [place(c).category, place(c).city].filter(Boolean).join(' · ') + ' · ' + checkState(c),
     })),
   ].sort((a, b) => b.created_at.localeCompare(a.created_at))
@@ -81,10 +81,10 @@ export async function loadAll(): Promise<{ requests: Request[]; profiles: Profil
 }
 
 export function checkState(c: Check): string {
-  if (c.status === 'ready') return 'отчёт опубликован'
-  if (!c.sources_confirmed) return 'ждёт подтверждения источников'
-  if (c.report_draft) return 'черновик отчёта готов'
-  return 'идёт сбор данных'
+  if (c.status === 'ready') return 'Bericht veröffentlicht'
+  if (!c.sources_confirmed) return 'wartet auf Bestätigung der Quellen'
+  if (c.report_draft) return 'Berichtsentwurf fertig'
+  return 'Daten werden gesammelt'
 }
 
 const table = (k: Kind) => (k === 'lead' ? 'leads' : k === 'order' ? 'orders' : 'checks')
@@ -173,11 +173,11 @@ export async function loadTeam(): Promise<{ staff: Profile[]; invites: Invite[] 
   return { staff: (P.data ?? []) as Profile[], invites: (I.data ?? []) as Invite[] }
 }
 const ERR: Record<string, string> = {
-  not_admin: 'Это может только админ.', bad_role: 'Неверная роль.', bad_email: 'Проверьте e-mail.', self: 'Свою роль менять нельзя.',
-  invalid: 'Ссылка недействительна или отменена.', used: 'Эта ссылка уже использована.', expired: 'Срок ссылки истёк — попросите новую.',
-  wrong_email: 'Приглашение выписано на другой e-mail. Войдите под тем адресом, на который оно выписано.', not_signed_in: 'Сначала войдите.',
+  not_admin: 'Das kann nur ein Admin.', bad_role: 'Ungültige Rolle.', bad_email: 'Bitte E-Mail prüfen.', self: 'Die eigene Rolle kann nicht geändert werden.',
+  invalid: 'Der Link ist ungültig oder wurde widerrufen.', used: 'Dieser Link wurde bereits verwendet.', expired: 'Der Link ist abgelaufen — bitten Sie um einen neuen.',
+  wrong_email: 'Die Einladung gilt für eine andere E-Mail. Melden Sie sich mit dieser Adresse an.', not_signed_in: 'Bitte zuerst anmelden.',
 }
-const errText = (m?: string) => ERR[Object.keys(ERR).find(k => m?.includes(k)) ?? ''] ?? 'Что-то пошло не так. Попробуйте ещё раз.'
+const errText = (m?: string) => ERR[Object.keys(ERR).find(k => m?.includes(k)) ?? ''] ?? 'Etwas ist schiefgelaufen. Bitte erneut versuchen.'
 
 export async function createInvite(email: string, role: 'manager' | 'admin'): Promise<{ link?: string; error?: string }> {
   const { data, error } = await (await db()).rpc('create_staff_invite', { p_email: email, p_role: role })
@@ -201,13 +201,13 @@ export async function currentEmail(): Promise<string | null> {
 export async function signUpStaff(name: string, email: string, password: string): Promise<string | null> {
   const s = await db()
   const { data, error } = await s.auth.signUp({ email: email.trim(), password, options: { data: { name: name.trim() }, captchaToken: (await turnstileToken().catch(() => null)) ?? undefined } })
-  if (error) return /already|exists|registered/i.test(error.message) ? 'exists' : /password/i.test(error.message) ? 'Пароль слишком простой — минимум 8 символов.' : 'Не удалось создать аккаунт.'
+  if (error) return /already|exists|registered/i.test(error.message) ? 'exists' : /password/i.test(error.message) ? 'Passwort zu einfach — mindestens 8 Zeichen.' : 'Konto konnte nicht angelegt werden.'
   if (!data.session) return 'exists'
   return null
 }
 export async function signInPlain(email: string, password: string): Promise<string | null> {
   const { error } = await (await db()).auth.signInWithPassword({ email: email.trim(), password, options: { captchaToken: (await turnstileToken().catch(() => null)) ?? undefined } })
-  return error ? 'Неверный e-mail или пароль.' : null
+  return error ? 'E-Mail oder Passwort falsch.' : null
 }
 
 // Eigenes Profil (Name, Position, Foto, Terminlink) — sieht der Kunde in seinem Kundenbereich.
@@ -247,16 +247,16 @@ export async function saveChecklist(id: string, checklist: object): Promise<bool
 /** Daten neu sammeln (Google, Website, PageSpeed). Läuft bis zu ~1 Minute. */
 export async function recollect(checkId: string): Promise<{ ok: boolean; message: string }> {
   const proxy = (import.meta.env.VITE_PLACES_PROXY as string | undefined)?.replace(/\/$/, '')
-  if (!proxy) return { ok: false, message: 'VITE_PLACES_PROXY не задан' }
+  if (!proxy) return { ok: false, message: 'VITE_PLACES_PROXY ist nicht gesetzt' }
   const { data } = await (await db()).auth.getSession()
   const token = data.session?.access_token
-  if (!token) return { ok: false, message: 'Нет сессии' }
+  if (!token) return { ok: false, message: 'Keine Sitzung' }
   try {
     const res = await fetch(`${proxy}/audit-collect`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ checkId, force: true }) })
     const j = await res.json().catch(() => ({})) as { status?: string; error?: string; detail?: string; pagespeed?: number | null }
     if (!res.ok) return { ok: false, message: `${j.error ?? res.status}${j.detail ? `: ${j.detail}` : ''}` }
-    return { ok: true, message: j.pagespeed == null ? 'Данные собраны. PageSpeed не ответил — впишите вручную.' : `Данные собраны. PageSpeed: ${j.pagespeed}/100` }
-  } catch (e) { return { ok: false, message: e instanceof Error ? e.message : 'Ошибка сети' } }
+    return { ok: true, message: j.pagespeed == null ? 'Daten erfasst. PageSpeed hat nicht geantwortet — bitte manuell eintragen.' : `Daten erfasst. PageSpeed: ${j.pagespeed}/100` }
+  } catch (e) { return { ok: false, message: e instanceof Error ? e.message : 'Netzwerkfehler' } }
 }
 export type ReportVersion = { id: string; report: Record<string, unknown>; created_at: string; created_by: string | null }
 export async function loadVersions(checkId: string): Promise<ReportVersion[]> {
@@ -291,11 +291,11 @@ export async function mfaEnroll(): Promise<{ factorId: string; qr: string; secre
   const { data: f } = await s.auth.mfa.listFactors()
   for (const x of f?.all ?? []) if (x.status !== 'verified') await s.auth.mfa.unenroll({ factorId: x.id })
   const { data, error } = await s.auth.mfa.enroll({ factorType: 'totp', friendlyName: `RAG ${new Date().toISOString().slice(0, 16)}` })
-  if (error || !data || data.type !== 'totp') return 'Не удалось включить 2FA. Проверьте, что MFA (TOTP) включён в Supabase → Authentication.'
+  if (error || !data || data.type !== 'totp') return '2FA konnte nicht eingerichtet werden. Prüfen Sie, ob MFA (TOTP) in Supabase → Authentication aktiviert ist.'
   return { factorId: data.id, qr: data.totp.qr_code, secret: data.totp.secret }
 }
 
 export async function mfaVerify(factorId: string, code: string): Promise<string | null> {
   const { error } = await (await db()).auth.mfa.challengeAndVerify({ factorId, code: code.replace(/\s/g, '') })
-  return error ? 'Неверный код. Проверьте время на телефоне и попробуйте снова.' : null
+  return error ? 'Falscher Code. Prüfen Sie die Uhrzeit auf dem Handy und versuchen Sie es erneut.' : null
 }

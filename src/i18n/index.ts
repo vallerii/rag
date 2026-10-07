@@ -51,12 +51,12 @@ let dict = new Map<string, string>()
 
 const norm = (s: string) => s.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim()
 
-// Admin (/rag-intern): Quelltext ist Russisch, Deutsch ist die Übersetzung (admin-de.json).
+// Admin (/rag-intern): Quelltext ist Deutsch wie auf der ganzen Website. Russisch (admin-ru.json)
+// ist nur eine Übersetzung für das Team während der Entwicklung und wird vor dem Release entfernt.
 // Dort werden auch zusammengesetzte Texte übersetzt: bekannte Teile werden ersetzt (längste zuerst).
 let adminMode = false
 let partsRe: RegExp | null = null
-const CYR = /[А-Яа-яЁё]/
-const SRC_LETTERS = () => (adminMode ? CYR : /[A-Za-zÄÖÜäöüß]/)
+const SRC_LETTERS = () => /[A-Za-zÄÖÜäöüß]/
 export const isAdminPath = () => typeof window !== 'undefined' && window.location.pathname.startsWith('/rag-intern')
 
 function lookup(key: string): string | undefined {
@@ -64,9 +64,9 @@ function lookup(key: string): string | undefined {
   if (direct !== undefined) return direct
   if (adminMode && partsRe) {
     const out = key
-      .replace(/клиент на (\d+) месте/g, 'Kunde auf Platz $1')
-      .replace(/(\d+) место/g, 'Platz $1')
-      .replace(/нет в топ-(\d+)/g, 'nicht in den Top $1')
+      .replace(/Kunde auf Platz (\d+)/g, 'клиент на $1 месте')
+      .replace(/nicht in den Top (\d+)/g, 'нет в топ-$1')
+      .replace(/Platz (\d+)/g, '$1 место')
       .replace(partsRe, m => dict.get(m) ?? m)
     return out !== key ? out : undefined
   }
@@ -154,20 +154,20 @@ function walk(root: Node) {
  */
 export async function startTranslator(): Promise<void> {
   if (typeof window === 'undefined') return
-  // Admin: Standard Deutsch (Übersetzung aus dem Russischen), RU = Original für die Testphase.
+  // Überall Deutsch als Original; Russisch nur auf Wunsch (Umschalter) für das Team in der Entwicklung.
   adminMode = isAdminPath()
-  const target = adminMode ? (getLang() === 'ru' ? null : 'de') : (getLang() === 'ru' ? 'ru' : null)
+  const target = getLang() === 'ru' ? 'ru' : null
   if (!target) return
   try {
-    const mod = adminMode ? await import('./admin-de.json') : await import('./ru.json')
+    const mod = adminMode ? await import('./admin-ru.json') : await import('./ru.json')
     dict = new Map(Object.entries(mod.default as Record<string, string>))
   } catch {
     return // chunk failed to load — show the original
   }
   if (adminMode) {
     const esc = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const keys = [...dict.keys()].filter(k => CYR.test(k) && k.length >= 2).sort((a, b) => b.length - a.length)
-    partsRe = new RegExp(`(?<![А-Яа-яЁё])(?:${keys.map(esc).join('|')})(?![А-Яа-яЁё])`, 'g')
+    const keys = [...dict.keys()].filter(k => k.length >= 2).sort((a, b) => b.length - a.length)
+    partsRe = new RegExp(`(?<![A-Za-zÄÖÜäöüß])(?:${keys.map(esc).join('|')})(?![A-Za-zÄÖÜäöüß])`, 'g')
   }
   const html = document.documentElement
   const lang = target
