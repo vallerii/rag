@@ -29,6 +29,10 @@ export const COMPANY = {
   smallBusiness: false,
   /** Verantwortlich für redaktionelle Inhalte (§ 18 Abs. 2 MStV) — meist dieselbe Person wie oben. */
   contentResponsible: '',
+  /** TODO: Bankverbindung für Rechnungen — sieht der Kunde im Kundenbereich bei offener Rechnung. */
+  bankName: '',
+  iban: '',
+  bic: '',
   /** Profile für JSON-LD `sameAs` (Google-Profil-Link, LinkedIn, Instagram, Branchenbücher) — sobald angelegt. */
   sameAs: [] as string[],
   /** Erst auf true setzen, wenn alles oben echt ausgefüllt ist. */

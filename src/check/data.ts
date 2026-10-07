@@ -397,7 +397,7 @@ export function initials(name: string): string {
 // ── Ansprechpartner & Angebot (Kundenbereich) ────────────────────────────────
 export type Manager = { name: string | null; title: string | null; photo_url: string | null; booking_url: string | null }
 export type OfferLine = { id: string; name: string; description?: string; price: number; unit: 'einmalig' | 'pro Monat' }
-export type ClientOffer = { id: string; items: OfferLine[]; note: string | null; status: 'sent' | 'accepted'; sent_at: string | null; updated_at: string }
+export type ClientOffer = { id: string; request_kind: 'check' | 'order' | 'lead' | null; request_id: string | null; items: OfferLine[]; note: string | null; status: 'sent' | 'accepted'; sent_at: string | null; updated_at: string }
 
 /** Wer betreut den Kunden (Verantwortlicher im Admin). null = noch niemand zugeteilt. */
 export async function loadMyManager(): Promise<Manager | null> {
@@ -405,11 +405,11 @@ export async function loadMyManager(): Promise<Manager | null> {
   if (error || !Array.isArray(data) || !data.length) return null
   return data[0] as Manager
 }
-/** Vom Team gesendetes Angebot (Entwürfe sieht der Kunde nicht). */
-export async function loadMyOffer(): Promise<ClientOffer | null> {
-  const { data, error } = await (await getSupabase()).from('offers').select('id, items, note, status, sent_at, updated_at').eq('user_id', await myUid())
-    .neq('status', 'draft').order('updated_at', { ascending: false }).limit(1).maybeSingle()
-  return error ? null : (data as ClientOffer | null)
+/** Vom Team gesendete Angebote — eins je Unternehmen/Anfrage (Entwürfe sieht der Kunde nicht). */
+export async function loadMyOffers(): Promise<ClientOffer[]> {
+  const { data, error } = await (await getSupabase()).from('offers').select('id, request_kind, request_id, items, note, status, sent_at, updated_at').eq('user_id', await myUid())
+    .neq('status', 'draft').order('updated_at', { ascending: false })
+  return error ? [] : (data as ClientOffer[])
 }
 export async function acceptOffer(id: string): Promise<boolean> {
   const { error } = await (await getSupabase()).rpc('accept_offer', { p_id: id })
@@ -461,6 +461,22 @@ export async function deleteMyCheck(id: string): Promise<boolean> {
   const { error } = await (await getSupabase()).rpc('delete_my_check', { p_id: id })
   return !error
 }
+
+// ── Projekt nach angenommenem Angebot (supabase/project.sql) ─────────────────
+export type ProjectStatus = 'awaiting_payment' | 'paid' | 'in_progress' | 'result' | 'support' | 'done'
+export type ClientProject = {
+  id: string; offer_id: string | null; status: ProjectStatus
+  invoice_number: string | null; invoice_amount: number | null; invoice_due: string | null; invoice_url: string | null; invoice_sent_at: string | null
+  note: string | null; paid_at: string | null; started_at: string | null; result_at: string | null
+}
+/** Projekte des Kunden — eins je angenommenem Angebot (also je Unternehmen/Anfrage). */
+export async function loadMyProjects(): Promise<ClientProject[]> {
+  const { data, error } = await (await getSupabase()).from('projects')
+    .select('id, offer_id, status, invoice_number, invoice_amount, invoice_due, invoice_url, invoice_sent_at, note, paid_at, started_at, result_at')
+    .eq('user_id', await myUid())
+  return error ? [] : (data as ClientProject[])
+}
+export const resultVisible = (p: ClientProject | null) => !!p && ['result', 'support', 'done'].includes(p.status)
 
 /** Veröffentlichte Versionen des Berichts (neueste zuerst) — für Verlauf und Vergleich. */
 export type ReportVersion = { id: string; report: Report; created_at: string }

@@ -3,8 +3,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNoindex } from '../check/CheckPage'
 import {
   OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, addAppointment, deleteAppointment, loadAll, loadClient, loadMyProfile, setAppointmentStatus, loadTeam, myId, saveMyProfile,
-  revokeInvite, saveOffer, sendStaffMessage, setAssignee, setNextContact, setRole, setStage, signInPlain, signInStaff, mfaEnroll, mfaState, mfaVerify, signOutStaff, signUpStaff, stageLabel,
-  type Invite,
+  revokeInvite, saveOffer, saveProject, projectLabel, versionTotal, sendStaffMessage, setAssignee, setNextContact, setRole, setStage, signInPlain, signInStaff, mfaEnroll, mfaState, mfaVerify, signOutStaff, signUpStaff, stageLabel,
+  type Invite, type Kind, type Project, type ProjectStatus, type ReportVersionRow,
   type Activity, type Appointment, type Check, type Lead, type Message, type Note, type Offer, type Order, type Profile, type Request, type Stage,
 } from './api'
 import ReportEditor from './ReportEditor'
@@ -21,15 +21,17 @@ const small: React.CSSProperties = { fontSize: 12.5, color: muted }
 const linkBtn: React.CSSProperties = { background: 'none', border: 0, cursor: 'pointer', font: 'inherit', fontSize: 14, color: accent, padding: 0 }
 const fmt = (d: string) => new Date(d).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
 const KIND: Record<Request['kind'], [string, string]> = { lead: ['Quiz', '#E8F3EC'], order: ['Paket', '#EEEBFF'], check: ['Check', '#FFF3DC'] }
-const STAGE_COLOR: Partial<Record<Stage, string>> = { new: '#D93A3A', won: '#1F7A4A', lost: '#8A8A8A' }
+const STAGE_COLOR: Partial<Record<Stage, string>> = { new: '#D93A3A', report_sent: '#5B4BDB', won: '#1F7A4A', lost: '#8A8A8A' }
 
-type Queue = 'mine' | 'free' | 'new' | 'quiz' | 'order' | 'check' | 'today' | 'all'
+type Queue = 'mine' | 'free' | 'new' | 'quiz' | 'order' | 'check' | 'today' | 'clients' | 'all'
 const QUEUES: [Queue, string][] = [
-  ['mine', 'Meine Anfragen'], ['free', 'Ohne Verantwortlichen'], ['new', 'Neu'], ['quiz', 'Quiz → Gespräch'], ['order', 'Paket → warten auf Gespräch'], ['check', 'Check → wartet auf Analyse'], ['today', 'Heute kontaktieren'], ['all', 'Alle Anfragen'],
+  ['mine', 'Meine Anfragen'], ['free', 'Ohne Verantwortlichen'], ['new', 'Neu'], ['quiz', 'Quiz → Gespräch'], ['order', 'Paket → warten auf Gespräch'], ['check', 'Check → wartet auf Analyse'], ['today', 'Heute kontaktieren'], ['clients', 'Kunden (Projekt)'], ['all', 'Alle Anfragen'],
 ]
 const today = () => new Date().toISOString().slice(0, 10)
 function inQueue(r: Request, q: Queue, me: string | null): boolean {
   if (q === 'all') return true
+  // Kunden mit angenommenem Angebot: Rechnung, Umsetzung, Ergebnis — fallen aus den Vertriebs-Warteschlangen heraus.
+  if (q === 'clients') return r.stage === 'won'
   if (q === 'mine') return !!me && r.assignee === me && OPEN.includes(r.stage)
   if (q === 'free') return !r.assignee && OPEN.includes(r.stage)
   if (q === 'new') return r.stage === 'new'
@@ -47,10 +49,16 @@ export default function AdminApp() {
   return <AdminRoot />
 }
 
+const MFA_ON = (import.meta.env.VITE_ADMIN_2FA as string | undefined) === 'on'
+
 function AdminRoot() {
   const [state, setState] = useState<'loading' | 'login' | 'mfa' | 'ok'>('loading')
-  // Nach dem Passwort immer noch der zweite Faktor (TOTP) — sonst kein Zugriff.
-  const afterPassword = () => mfaState().then(m => setState(m.status === 'ok' ? 'ok' : 'mfa')).catch(() => setState('login'))
+  // Zwei-Faktor-Anmeldung (TOTP) erst, wenn sie eingeschaltet ist: VITE_ADMIN_2FA=on (Vercel bzw. .env.local).
+  // Ohne die Variable reicht das Passwort — so sperrt sich niemand aus, bevor 2FA eingerichtet ist.
+  const afterPassword = () => {
+    if (!MFA_ON) { setState('ok'); return }
+    mfaState().then(m => setState(m.status === 'ok' ? 'ok' : 'mfa')).catch(() => setState('login'))
+  }
   useEffect(() => { isStaff().then(ok => (ok ? afterPassword() : setState('login'))).catch(() => setState('login')) }, [])
   const logout = async () => { await signOutStaff(); setState('login') }
   if (state === 'loading') return <div style={{ padding: 40, color: muted }}>Wird geladen…</div>
@@ -211,8 +219,8 @@ function Detail({ r, all, profiles, me, onSelect, onPatch }: { r: Request; all: 
   const prof = profileOf(profiles, r.userId)
   const related = all.filter(x => x.clientKey === r.clientKey && !(x.kind === r.kind && x.id === r.id))
   const [client, setClient] = useState<Awaited<ReturnType<typeof loadClient>> | null>(null)
-  const reloadClient = () => { loadClient(r.clientKey, r.userId).then(setClient) }
-  useEffect(() => { reloadClient() }, [r.clientKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  const reloadClient = () => { loadClient(r.clientKey, r.userId, r.kind, r.id).then(setClient) }
+  useEffect(() => { setClient(null); reloadClient() }, [r.clientKey, r.kind, r.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Erster Statuswechsel an einer freien Anfrage → sie gehört dem, der ihn macht (Trigger in der DB).
   const changeStage = async (s: Stage) => { if (await setStage(r.kind, r.id, s)) { onPatch({ stage: s, assignee: r.assignee ?? await getAssignee(r.kind, r.id) }); reloadClient() } }
@@ -251,17 +259,21 @@ function Detail({ r, all, profiles, me, onSelect, onPatch }: { r: Request; all: 
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16, alignItems: 'start' }}>
         <div style={{ display: 'grid', gap: 16 }}>
+          {client?.project && <InvoiceCard key={'inv' + client.project.id + client.project.status} project={client.project} offer={client.offer} onSaved={reloadClient} />}
+          {client?.project && <WorkCard key={'work' + client.project.id} project={client.project} versions={client.versions} onSaved={reloadClient}
+            onGoToReport={r.kind === 'check' ? () => document.getElementById('pruefbericht')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) : undefined} />}
           <ClientCard r={r} prof={prof} />
+          {r.kind === 'check' && <div id="pruefbericht" style={{ scrollMarginTop: 16 }} />}
           {r.kind === 'check' && <ReportEditor c={r.row as Check} onPublished={async report => { const assignee = r.assignee ?? await getAssignee(r.kind, r.id); onPatch({ assignee, row: { ...(r.row as Check), status: 'ready', report, assignee_id: assignee } }); reloadClient() }} />}
-          {client && <OfferCard clientKey={r.clientKey} userId={r.userId} initial={client.offer} preset={r.kind === 'order' ? (r.row as Order).items ?? [] : []} onSaved={reloadClient} />}
+          {client && <OfferCard key={r.kind + r.id} clientKey={r.clientKey} userId={r.userId} kind={r.kind} requestId={r.id} title={r.title} initial={client.offer} preset={r.kind === 'order' ? (r.row as Order).items ?? [] : []} onSaved={reloadClient} />}
         </div>
         <div style={{ display: 'grid', gap: 16 }}>
           {client && <AppointmentsCard r={r} list={client.appointments} onChanged={async added => {
-            if (added && (r.stage === 'new' || r.stage === 'contacted')) await changeStage('call_booked'); else reloadClient()
+            if (added && ['new', 'contacted', 'report_sent'].includes(r.stage)) await changeStage('call_booked'); else reloadClient()
           }} />}
           {client && <Chat userId={r.userId} messages={client.messages} onSent={m => setClient(c => c && { ...c, messages: [...c.messages, m] })} />}
           {client && <Notes clientKey={r.clientKey} notes={client.notes} onAdded={() => reloadClient()} />}
-          {client && <History items={client.activity} profiles={profiles} />}
+          {client && <History items={client.activity} profiles={profiles} current={`${r.kind}:${r.id}`} />}
         </div>
       </div>
     </div>
@@ -321,7 +333,7 @@ function ClientCard({ r, prof }: { r: Request; prof?: Profile }) {
 }
 
 
-function OfferCard({ clientKey, userId, initial, preset, onSaved }: { clientKey: string; userId: string | null; initial: Offer | null; preset: OfferItem[]; onSaved: () => void }) {
+function OfferCard({ clientKey, userId, kind, requestId, title, initial, preset, onSaved }: { clientKey: string; userId: string | null; kind: Kind; requestId: string; title: string; initial: Offer | null; preset: OfferItem[]; onSaved: () => void }) {
   const [items, setItems] = useState<OfferItem[]>(initial?.items ?? preset)
   const [note, setNote] = useState(initial?.note ?? '')
   const [status, setStatus] = useState<Offer['status']>(initial?.status ?? 'draft')
@@ -336,14 +348,26 @@ function OfferCard({ clientKey, userId, initial, preset, onSaved }: { clientKey:
     setCustom({ name: '', description: '', price: '', unit: 'pro Monat' })
   }
   const save = async (next: Offer['status']) => {
-    const r = await saveOffer({ client_key: clientKey, user_id: userId, items, note: note || null, status: next })
+    const r = await saveOffer({ client_key: clientKey, user_id: userId, request_kind: kind, request_id: requestId, items, note: note || null, status: next })
     if (r) { setStatus(r.status); setMsg(next === 'sent' ? 'Als gesendet markiert.' : 'Gespeichert.'); onSaved() } else setMsg('Speichern fehlgeschlagen.')
   }
   const groups = [...new Set(CATALOG.map(c => c.group))]
   const priceOf = (id: string) => items.find(i => i.id === id)?.price ?? 0
+  if (status === 'accepted') return (
+    <section style={card}>
+      <h3 style={h3}>Angebot <span style={{ color: '#1F7A4A' }}>· angenommen</span></h3>
+      <p style={{ ...small, margin: '-6px 0 10px' }}>Für <strong style={{ color: ink }}>{title}</strong>. Vom Kunden angenommen — nicht mehr änderbar. Weitere Leistungen: neue Anfrage bzw. neues Angebot.</p>
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 4 }}>
+        {items.map(i => <li key={i.id} style={{ display: 'flex', gap: 8, fontSize: 14 }}><span style={{ flex: 1 }}>{i.name}</span><span>{i.price} € {i.unit === 'einmalig' ? 'einmalig' : '/Monat'}</span></li>)}
+      </ul>
+      <p style={{ fontSize: 15, fontWeight: 700, margin: '10px 0 0' }}>Summe: {totals(items)}</p>
+      {note && <p style={{ ...small, marginTop: 6 }} data-no-translate>{note}</p>}
+    </section>
+  )
   return (
     <section style={card}>
       <h3 style={h3}>Angebot {status !== 'draft' && <span style={{ color: '#1F7A4A' }}>· {status === 'sent' ? 'gesendet' : 'angenommen'}</span>}</h3>
+      <p style={{ ...small, margin: '-6px 0 12px' }}>Nur für diese Anfrage: <strong style={{ color: ink }}>{title}</strong>. Andere Unternehmen des Kunden haben eigene Angebote.</p>
       {groups.map(g => (
         <div key={g} style={{ marginBottom: 10 }}>
           <p style={{ ...small, fontWeight: 700, margin: '0 0 4px' }}>{g}</p>
@@ -385,6 +409,155 @@ function OfferCard({ clientKey, userId, initial, preset, onSaved }: { clientKey:
   )
 }
 
+// ── Nach angenommenem Angebot: zwei getrennte Blöcke ─────────────────────────
+// «Rechnung»: nur Rechnung und Zahlung (Wartet auf Zahlung → Bezahlt).
+// «Umsetzung»: erst nach der Zahlung — Arbeit beginnen → neuen Bericht veröffentlichen → Ergebnis freigeben.
+// «Ergebnis» heißt: Der Kunde sieht im Kundenbereich (Tab «Ergebnis») den Vergleich seines ersten Berichts
+// mit dem neuesten. Verschickt wird nichts — die Freigabe schaltet nur diesen Tab frei.
+const stepDot = (state: 'done' | 'now' | 'todo') => ({
+  width: 24, height: 24, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700,
+  color: state === 'done' ? '#fff' : state === 'now' ? accent : muted,
+  backgroundColor: state === 'done' ? '#1F7A4A' : state === 'now' ? '#EEEBFF' : '#F1F1F4',
+} as React.CSSProperties)
+
+function InvoiceCard({ project, offer, onSaved }: { project: Project; offer: Offer | null; onSaved: () => void }) {
+  const once = (offer?.items ?? []).filter(i => i.unit === 'einmalig').reduce((a, i) => a + i.price, 0)
+  const monthly = (offer?.items ?? []).filter(i => i.unit !== 'einmalig').reduce((a, i) => a + i.price, 0)
+  const paid = project.status !== 'awaiting_payment'
+  const sent = !!project.invoice_sent_at
+  const [edit, setEdit] = useState(!paid)
+  const [f, setF] = useState({
+    invoice_number: project.invoice_number ?? '',
+    invoice_amount: project.invoice_amount != null ? String(project.invoice_amount) : String(once + monthly || ''),
+    invoice_due: project.invoice_due ?? '',
+    invoice_url: project.invoice_url ?? '',
+  })
+  const [msg, setMsg] = useState(''), [busy, setBusy] = useState(false)
+  const urlOk = !f.invoice_url || /^https:\/\//.test(f.invoice_url)
+  const ready = !!f.invoice_number.trim() && Number(f.invoice_amount) > 0 && urlOk
+  const save = async (extra: Partial<Project> = {}, done = 'Gespeichert.') => {
+    if (!urlOk) { setMsg('Links müssen mit https:// beginnen'); return }
+    setBusy(true)
+    const r = await saveProject(project.id, {
+      invoice_number: f.invoice_number.trim() || null,
+      invoice_amount: f.invoice_amount ? Number(f.invoice_amount) : null,
+      invoice_due: f.invoice_due || null,
+      invoice_url: f.invoice_url.trim() || null,
+      ...extra,
+    })
+    setBusy(false)
+    if (r) { setMsg(done); onSaved() } else setMsg('Speichern fehlgeschlagen.')
+  }
+
+  if (paid && !edit) {
+    return (
+      <section style={card}>
+        <h3 style={h3}>Rechnung</h3>
+        <p style={{ fontSize: 14.5, margin: 0, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <span style={stepDot('done')}>✓</span>
+          <span><strong>Bezahlt</strong>{project.paid_at ? ` ${fmt(project.paid_at)}` : ''} · {project.invoice_number || '—'} · {project.invoice_amount != null ? `${project.invoice_amount} €` : '—'}</span>
+          <button type="button" style={{ ...linkBtn, fontSize: 13 }} onClick={() => setEdit(true)}>Ändern</button>
+        </p>
+      </section>
+    )
+  }
+
+  return (
+    <section style={card}>
+      <h3 style={h3}>Rechnung</h3>
+      <ol style={{ listStyle: 'none', margin: '0 0 14px', padding: 0, display: 'flex', gap: 18, flexWrap: 'wrap', fontSize: 14 }}>
+        <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={stepDot(sent ? 'done' : 'now')}>{sent ? '✓' : '1'}</span>An den Kunden senden</li>
+        <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={stepDot(paid ? 'done' : sent ? 'now' : 'todo')}>{paid ? '✓' : '2'}</span>Zahlung erhalten</li>
+      </ol>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        <label style={{ ...small, display: 'grid', gap: 3 }}>Rechnungsnummer<input style={input} value={f.invoice_number} onChange={e => setF({ ...f, invoice_number: e.target.value })} placeholder="RE-2026-001" /></label>
+        <label style={{ ...small, display: 'grid', gap: 3 }}>Betrag, €<input style={input} type="number" value={f.invoice_amount} onChange={e => setF({ ...f, invoice_amount: e.target.value })} /></label>
+        <label style={{ ...small, display: 'grid', gap: 3 }}>Zahlbar bis<input style={input} type="date" value={f.invoice_due} onChange={e => setF({ ...f, invoice_due: e.target.value })} /></label>
+        <label style={{ ...small, display: 'grid', gap: 3 }}>Link zur Rechnung (PDF, optional)<input style={input} placeholder="https://…" value={f.invoice_url} onChange={e => setF({ ...f, invoice_url: e.target.value })} /></label>
+      </div>
+      <p style={{ ...small, margin: '8px 0 0' }}>Laut Angebot: {once ? `${once} € einmalig` : ''}{once && monthly ? ' + ' : ''}{monthly ? `${monthly} € pro Monat` : ''}{!once && !monthly ? '—' : ''}. Der Kunde sieht Betrag, Bankverbindung und Verwendungszweck in seinem Kundenbereich.</p>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12, alignItems: 'center' }}>
+        {!sent && <button type="button" className="btn btn-sm btn-electric" disabled={busy || !ready} onClick={() => save({ invoice_sent_at: new Date().toISOString() }, 'Der Kunde sieht die Rechnung jetzt im Kundenbereich.')}>Rechnung an den Kunden senden</button>}
+        {sent && !paid && <button type="button" className="btn btn-sm btn-electric" disabled={busy} onClick={() => save({ status: 'paid' }, 'Als bezahlt markiert.')}>Zahlung erhalten</button>}
+        <button type="button" className="btn btn-sm btn-outline-light" disabled={busy} onClick={async () => { await save(); if (paid) setEdit(false) }}>Speichern</button>
+        {msg && <span style={small}>{msg}</span>}
+      </div>
+      {!sent && !ready && <p style={{ ...small, margin: '8px 0 0' }}>Zum Senden: Rechnungsnummer und Betrag eintragen.</p>}
+      {sent && !paid && <p style={{ ...small, margin: '8px 0 0' }}>Gesendet {fmt(project.invoice_sent_at!)}. Sobald das Geld auf dem Konto ist: «Zahlung erhalten».</p>}
+    </section>
+  )
+}
+
+function WorkCard({ project, versions, onSaved, onGoToReport }: { project: Project; versions: ReportVersionRow[]; onSaved: () => void; onGoToReport?: () => void }) {
+  const [msg, setMsg] = useState(''), [busy, setBusy] = useState(false)
+  const [note, setNote] = useState(project.note ?? '')
+  if (project.status === 'awaiting_payment') return null
+  const started = project.status !== 'paid'
+  const shown = ['result', 'support', 'done'].includes(project.status)
+  const first = versions[0], latest = versions[versions.length - 1]
+  const newReport = !!project.started_at && !!latest && new Date(latest.created_at) > new Date(project.started_at)
+  const before = versionTotal(first), after = versionTotal(latest)
+  const set = async (patch: Partial<Project>, done: string) => {
+    setBusy(true)
+    const r = await saveProject(project.id, patch)
+    setBusy(false)
+    if (r) { setMsg(done); onSaved() } else setMsg('Speichern fehlgeschlagen.')
+  }
+  const row = (state: 'done' | 'now' | 'todo', n: string, title: string, body: React.ReactNode) => (
+    <li style={{ display: 'flex', gap: 12, padding: '12px 0', borderTop: `1px solid ${line}` }}>
+      <span style={stepDot(state)}>{state === 'done' ? '✓' : n}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ margin: 0, fontWeight: 600, fontSize: 14.5, color: state === 'todo' ? muted : ink }}>{title}</p>
+        {state === 'now' && <div style={{ marginTop: 6 }}>{body}</div>}
+      </div>
+    </li>
+  )
+  return (
+    <section style={card}>
+      <h3 style={h3}>Umsetzung</h3>
+      <ol style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+        {row(started ? 'done' : 'now', '1', started && project.started_at ? `Arbeit begonnen ${fmt(project.started_at)}` : 'Arbeit beginnen', (
+          <>
+            <p style={{ ...small, margin: '0 0 8px' }}>Der Kunde sieht dann «Wir arbeiten an Ihrer Sichtbarkeit».</p>
+            <button type="button" className="btn btn-sm btn-electric" disabled={busy} onClick={() => set({ status: 'in_progress' }, 'Arbeit begonnen.')}>Arbeit beginnen</button>
+          </>
+        ))}
+        {row(!started ? 'todo' : newReport || shown ? 'done' : 'now', '2', newReport || shown ? 'Neuer Bericht veröffentlicht' : 'Nach der Arbeit: neuen Bericht veröffentlichen', (
+          <>
+            <p style={{ ...small, margin: '0 0 8px', lineHeight: 1.6 }}>Im Block «Prüfbericht» dieser Anfrage: «Daten neu sammeln» → Checkliste aktualisieren → «Neue Version veröffentlichen». Der Haken hier erscheint danach automatisch.</p>
+            {onGoToReport && <button type="button" className="btn btn-sm btn-outline-light" onClick={onGoToReport}>Zum Prüfbericht</button>}
+          </>
+        ))}
+        {row(shown ? 'done' : newReport ? 'now' : 'todo', '3', shown && project.result_at ? `Ergebnis für den Kunden freigegeben ${fmt(project.result_at)}` : 'Ergebnis für den Kunden freigeben', (
+          <>
+            <p style={{ ...small, margin: '0 0 8px', lineHeight: 1.6 }}>Der Kunde sieht im Kundenbereich den Tab «Ergebnis»: erster Bericht im Vergleich zum neuen. Verschickt wird nichts.</p>
+            {before !== null && after !== null && <p style={{ fontSize: 15, margin: '0 0 10px' }}>Gesamt: {before} → <strong>{after}</strong> Punkte</p>}
+            <button type="button" className="btn btn-sm btn-electric" disabled={busy} onClick={() => set({ status: 'result' }, 'Der Kunde sieht jetzt den Tab «Ergebnis».')}>Ergebnis freigeben</button>
+          </>
+        ))}
+      </ol>
+      {shown && (
+        <div style={{ borderTop: `1px solid ${line}`, paddingTop: 12 }}>
+          {before !== null && after !== null && <p style={{ fontSize: 15, margin: '0 0 10px' }}>Ergebnis: {before} → <strong>{after}</strong> Punkte</p>}
+          {project.status === 'result' ? (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button type="button" className="btn btn-sm btn-outline-light" disabled={busy} onClick={() => set({ status: 'support' }, 'Betreuung läuft.')}>Monatliche Betreuung läuft weiter</button>
+              <button type="button" className="btn btn-sm btn-outline-light" disabled={busy} onClick={() => set({ status: 'done' }, 'Projekt abgeschlossen.')}>Projekt abschließen</button>
+            </div>
+          ) : <p style={{ ...small, margin: 0 }}>{project.status === 'support' ? 'Status: monatliche Betreuung.' : 'Projekt abgeschlossen.'}</p>}
+        </div>
+      )}
+      <label style={{ ...small, display: 'grid', gap: 4, marginTop: 12 }}>Hinweis für den Kunden (sieht er im Kundenbereich unter «Ihr Projekt»)
+        <textarea style={{ ...input, minHeight: 50 }} value={note} onChange={e => setNote(e.target.value)} placeholder="z. B. «Bitte schicken Sie uns bis Freitag Fotos Ihres Teams.»" />
+      </label>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
+        <button type="button" className="btn btn-sm btn-outline-light" disabled={busy || note === (project.note ?? '')} onClick={() => set({ note: note.trim() || null }, 'Hinweis gespeichert.')}>Hinweis speichern</button>
+        {msg && <span style={small}>{msg}</span>}
+      </div>
+    </section>
+  )
+}
+
 function Chat({ userId, messages, onSent }: { userId: string | null; messages: Message[]; onSent: (m: Message) => void }) {
   const [text, setText] = useState(''), [busy, setBusy] = useState(false)
   if (!userId) return <section style={card}><h3 style={h3}>Nachrichten</h3><p style={{ fontSize: 14, margin: 0 }}>Der Kunde hat kein Konto — Nachrichten erscheinen nach der Registrierung.</p></section>
@@ -402,7 +575,8 @@ function Chat({ userId, messages, onSent }: { userId: string | null; messages: M
         {messages.length === 0 && <p style={small}>Keine Nachrichten.</p>}
         {messages.map(m => (
           <div key={m.id} style={{ justifySelf: m.author === 'rag' ? 'end' : 'start', maxWidth: '85%', padding: '8px 11px', borderRadius: 12, backgroundColor: m.author === 'rag' ? '#EEEBFF' : '#F2F1EC', fontSize: 14, whiteSpace: 'pre-wrap' }}>
-            {m.body}<div style={{ ...small, fontSize: 11.5, marginTop: 3 }}>{m.author === 'rag' ? 'Team' : 'Kunde'} · {fmt(m.created_at)}</div>
+            {/* Nachrichtentext nicht übersetzen — er ist Inhalt, keine Oberfläche */}
+            <span data-no-translate>{m.body}</span><div style={{ ...small, fontSize: 11.5, marginTop: 3 }}>{m.author === 'rag' ? 'Team' : 'Kunde'} · {fmt(m.created_at)}</div>
           </div>
         ))}
       </div>
@@ -421,7 +595,7 @@ function Notes({ clientKey, notes, onAdded }: { clientKey: string; notes: Note[]
       <textarea style={{ ...input, minHeight: 56 }} placeholder="Zum Beispiel: nach 17:00 anrufen" value={text} onChange={e => setText(e.target.value)} />
       <button type="button" className="btn btn-sm btn-outline-light" style={{ marginTop: 8 }} onClick={add} disabled={!text.trim()}>Notiz hinzufügen</button>
       <div style={{ display: 'grid', gap: 8, marginTop: 12 }}>
-        {notes.map(n => <div key={n.id} style={{ fontSize: 14, borderTop: `1px solid ${line}`, paddingTop: 8, whiteSpace: 'pre-wrap' }}>{n.body}<div style={small}>{fmt(n.created_at)}</div></div>)}
+        {notes.map(n => <div key={n.id} style={{ fontSize: 14, borderTop: `1px solid ${line}`, paddingTop: 8, whiteSpace: 'pre-wrap' }}><span data-no-translate>{n.body}</span><div style={small}>{fmt(n.created_at)}</div></div>)}
       </div>
     </section>
   )
@@ -449,17 +623,32 @@ function activityText(a: Activity, profiles: Profile[]): string {
     case 'appointment_changed': return `Termin «${str(d.title)}»: ${d.status === 'cancelled' ? 'abgesagt' : d.status === 'done' ? 'stattgefunden' : 'verschoben auf ' + (d.at ? fmtDT(str(d.at)) : '')}`
     case 'assigned': return d.to ? `Verantwortlich (${TABLE_RU[str(d.type)] ?? ''}): ${staffName(profiles, str(d.to))}` : `Verantwortlicher entfernt (${TABLE_RU[str(d.type)] ?? ''})`
     case 'stage': return `Status (${TABLE_RU[str(d.type)] ?? ''}): ${stageLabel(d.stage as Stage)}`
+    case 'project': return `Projekt: ${projectLabel(d.status as ProjectStatus)}`
+    case 'invoice_sent': return `Rechnung ${str(d.number)} für den Kunden freigegeben${d.amount != null ? ` (${str(d.amount)} €)` : ''}`
     default: return a.kind
   }
 }
 
-function History({ items, profiles }: { items: Activity[]; profiles: Profile[] }) {
+const NAME_IN_TEXT = new Set(['check_created', 'check_deleted'])
+function History({ items, profiles, current }: { items: Activity[]; profiles: Profile[]; current: string }) {
+  // Verlauf gilt für die Person; Einträge anderer Unternehmen derselben Person werden markiert und abgeblendet.
   return (
     <section style={card}>
       <h3 style={h3}>Verlauf</h3>
+      <p style={{ ...small, marginTop: -4 }}>Alle Ereignisse dieser Person. Grau — andere Unternehmen.</p>
       {items.length === 0 && <p style={small}>Noch leer.</p>}
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 6 }}>
-        {items.map(a => <li key={a.id} style={{ fontSize: 13.5 }}><span style={small}>{fmt(a.created_at)}</span> — {activityText(a, profiles)}{a.actor ? <span style={small}> · {staffName(profiles, a.actor)}</span> : null}</li>)}
+        {items.map(a => {
+          const d = a.detail ?? {}, req = typeof d.req === 'string' ? d.req : null, name = typeof d.name === 'string' ? d.name : ''
+          const other = req !== null && req !== current
+          return (
+            <li key={a.id} style={{ fontSize: 13.5, opacity: other ? 0.5 : 1 }}>
+              <span style={small}>{fmt(a.created_at)}</span> — {activityText(a, profiles)}
+              {name && !NAME_IN_TEXT.has(a.kind) ? <b data-no-translate style={{ fontWeight: 600 }}> · {name}</b> : null}
+              {a.actor ? <span style={small}> · {staffName(profiles, a.actor)}</span> : null}
+            </li>
+          )
+        })}
       </ul>
     </section>
   )

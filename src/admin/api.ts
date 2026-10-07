@@ -4,13 +4,37 @@ import { turnstileToken } from '../check/turnstile'
 import { getSupabase } from '../check/data'
 import type { OfferItem } from './catalog'
 
-export type Stage = 'new' | 'contacted' | 'call_booked' | 'call_done' | 'offer_sent' | 'won' | 'lost'
+// Vertrieb (je Anfrage). Automatisch (supabase/project.sql): Bericht veröffentlicht → «Bericht gesendet»,
+// Angebot gesendet → «Angebot gesendet», Kunde nimmt an → «Kunde» + Projekt.
+export type Stage = 'new' | 'contacted' | 'report_sent' | 'call_booked' | 'call_done' | 'offer_sent' | 'won' | 'lost'
 export const STAGES: [Stage, string][] = [
-  ['new', 'Neu'], ['contacted', 'Kontaktiert'], ['call_booked', 'Gespräch vereinbart'], ['call_done', 'Gespräch geführt'],
+  ['new', 'Neu'], ['contacted', 'Kontaktiert'], ['report_sent', 'Bericht gesendet'], ['call_booked', 'Gespräch vereinbart'], ['call_done', 'Gespräch geführt'],
   ['offer_sent', 'Angebot gesendet'], ['won', 'Kunde'], ['lost', 'Absage'],
 ]
 export const stageLabel = (s: Stage) => STAGES.find(x => x[0] === s)?.[1] ?? s
-export const OPEN: Stage[] = ['new', 'contacted', 'call_booked', 'call_done', 'offer_sent']
+export const OPEN: Stage[] = ['new', 'contacted', 'report_sent', 'call_booked', 'call_done', 'offer_sent']
+
+// Projekt (je Kunde, nach angenommenem Angebot): Rechnung → Zahlung → Umsetzung → Ergebnis.
+export type ProjectStatus = 'awaiting_payment' | 'paid' | 'in_progress' | 'result' | 'support' | 'done'
+export const PROJECT_STEPS: [ProjectStatus, string][] = [
+  ['awaiting_payment', 'Rechnung offen'], ['paid', 'Bezahlt'], ['in_progress', 'In Arbeit'], ['result', 'Ergebnis gezeigt'], ['support', 'Betreuung (monatlich)'], ['done', 'Abgeschlossen'],
+]
+export const projectLabel = (s: ProjectStatus) => PROJECT_STEPS.find(x => x[0] === s)?.[1] ?? s
+export type Project = {
+  id: string; client_key: string; user_id: string | null; offer_id: string | null; status: ProjectStatus
+  invoice_number: string | null; invoice_amount: number | null; invoice_due: string | null; invoice_url: string | null; invoice_sent_at: string | null
+  note: string | null; paid_at: string | null; started_at: string | null; result_at: string | null; finished_at: string | null; created_at: string; updated_at: string
+}
+export type ReportVersionRow = { report: { channels?: Record<string, { score: number | null } | undefined> } | null; created_at: string }
+/** Gesamtpunktzahl einer Berichtsversion (Mittel der Kanäle) — wie im Kundenbereich. */
+export function versionTotal(v: ReportVersionRow | undefined): number | null {
+  const xs = Object.values(v?.report?.channels ?? {}).map(c => c?.score).filter((x): x is number => typeof x === 'number')
+  return xs.length ? Math.round(xs.reduce((a, b) => a + b, 0) / xs.length) : null
+}
+export async function saveProject(id: string, patch: Partial<Project>): Promise<Project | null> {
+  const { data, error } = await (await db()).from('projects').update(patch).eq('id', id).select('*').single()
+  return error ? null : (data as Project)
+}
 
 export type Kind = 'lead' | 'order' | 'check'
 export type Profile = { id: string; email: string | null; name: string | null; phone: string | null; role: string; created_at: string; title?: string | null; photo_url?: string | null; booking_url?: string | null }
@@ -21,7 +45,8 @@ export type Request = { kind: Kind; id: string; clientKey: string; userId: strin
 export type Message = { id: string; author: 'client' | 'rag'; body: string; created_at: string }
 export type Note = { id: string; body: string; author_id: string | null; created_at: string }
 export type Activity = { id: string; kind: string; detail: Record<string, unknown>; actor: string | null; created_at: string }
-export type Offer = { id?: string; client_key: string; user_id: string | null; items: OfferItem[]; note: string | null; status: 'draft' | 'sent' | 'accepted'; sent_at?: string | null; updated_at?: string }
+// Angebot gehört zu EINER Anfrage (Unternehmen / Paket-Anfrage / Quiz), nicht zum ganzen Konto.
+export type Offer = { id?: string; client_key: string; user_id: string | null; request_kind: Kind; request_id: string; items: OfferItem[]; note: string | null; status: 'draft' | 'sent' | 'accepted'; sent_at?: string | null; updated_at?: string }
 
 const db = () => getSupabase()
 
@@ -122,18 +147,25 @@ export async function setRecommended(c: Check, recommended: Recommended) {
   return error ? null : report
 }
 
-export async function loadClient(clientKey: string, userId: string | null) {
+/** Daten zur Karte: Verlauf/Notizen/Termine/Nachrichten je Kunde; Angebot, Projekt, Berichte je Anfrage. */
+export async function loadClient(clientKey: string, userId: string | null, kind: Kind, requestId: string) {
   const s = await db()
-  const [M, N, A, F, T] = await Promise.all([
+  const [M, N, A, F, T, P, V] = await Promise.all([
     userId ? s.from('messages').select('id, author, body, created_at').eq('user_id', userId).order('created_at') : Promise.resolve({ data: [] }),
     s.from('notes').select('id, body, author_id, created_at').eq('client_key', clientKey).order('created_at', { ascending: false }),
     s.from('activity').select('id, kind, detail, actor, created_at').eq('client_key', clientKey).order('created_at', { ascending: false }).limit(200),
-    s.from('offers').select('*').eq('client_key', clientKey).maybeSingle(),
+    s.from('offers').select('*').eq('request_kind', kind).eq('request_id', requestId).maybeSingle(),
     s.from('appointments').select('*').eq('client_key', clientKey).order('starts_at', { ascending: false }),
+    s.from('projects').select('*').eq('request_kind', kind).eq('request_id', requestId).maybeSingle(),
+    // Berichte: bei einem Check genau dieses Unternehmen; bei Paket-Anfrage/Quiz die Checks des Kunden (falls vorhanden).
+    kind === 'check' ? s.from('check_reports').select('report, created_at').eq('check_id', requestId).order('created_at', { ascending: true })
+      : userId ? s.from('check_reports').select('report, created_at').eq('user_id', userId).order('created_at', { ascending: true }) : Promise.resolve({ data: [] }),
   ])
   return {
     messages: (M.data ?? []) as Message[], notes: (N.data ?? []) as Note[], activity: (A.data ?? []) as Activity[],
     offer: (F.data ?? null) as Offer | null, appointments: (T.data ?? []) as Appointment[],
+    project: (P.data ?? null) as Project | null,
+    versions: (V.data ?? []) as ReportVersionRow[],
   }
 }
 
@@ -146,8 +178,8 @@ export async function addNote(clientKey: string, body: string) {
   return error ? null : (data as Note)
 }
 export async function saveOffer(o: Offer) {
-  const row = { client_key: o.client_key, user_id: o.user_id, items: o.items, note: o.note, status: o.status, sent_at: o.status === 'sent' ? new Date().toISOString() : null, updated_at: new Date().toISOString() }
-  const { data, error } = await (await db()).from('offers').upsert(row, { onConflict: 'client_key' }).select('*').single()
+  const row = { client_key: o.client_key, user_id: o.user_id, request_kind: o.request_kind, request_id: o.request_id, items: o.items, note: o.note, status: o.status, sent_at: o.status === 'sent' ? new Date().toISOString() : null, updated_at: new Date().toISOString() }
+  const { data, error } = await (await db()).from('offers').upsert(row, { onConflict: 'request_kind,request_id' }).select('*').single()
   return error ? null : (data as Offer)
 }
 
@@ -286,16 +318,28 @@ export async function mfaState(): Promise<MfaState> {
   return totp ? { status: 'verify', factorId: totp.id } : { status: 'enroll' }
 }
 
-export async function mfaEnroll(): Promise<{ factorId: string; qr: string; secret: string } | string> {
-  const s = await db()
-  const { data: f } = await s.auth.mfa.listFactors()
-  for (const x of f?.all ?? []) if (x.status !== 'verified') await s.auth.mfa.unenroll({ factorId: x.id })
-  const { data, error } = await s.auth.mfa.enroll({ factorType: 'totp', friendlyName: `RAG ${new Date().toISOString().slice(0, 16)}` })
-  if (error || !data || data.type !== 'totp') return '2FA konnte nicht eingerichtet werden. Prüfen Sie, ob MFA (TOTP) in Supabase → Authentication aktiviert ist.'
-  return { factorId: data.id, qr: data.totp.qr_code, secret: data.totp.secret }
+// Nur eine Einrichtung gleichzeitig: React (StrictMode) startet Effekte in der Entwicklung doppelt —
+// ein zweiter Aufruf würde den eben angezeigten QR-Code wieder löschen.
+let enrolling: Promise<{ factorId: string; qr: string; secret: string } | string> | null = null
+
+export function mfaEnroll(): Promise<{ factorId: string; qr: string; secret: string } | string> {
+  enrolling ??= (async () => {
+    const s = await db()
+    const { data: f } = await s.auth.mfa.listFactors()
+    for (const x of f?.all ?? []) if (x.status !== 'verified') await s.auth.mfa.unenroll({ factorId: x.id })
+    const name = `RAG ${new Date().toISOString().slice(0, 10)} ${Math.random().toString(36).slice(2, 6)}`
+    const { data, error } = await s.auth.mfa.enroll({ factorType: 'totp', friendlyName: name })
+    if (error || !data || data.type !== 'totp') {
+      enrolling = null
+      return `2FA konnte nicht eingerichtet werden (${error?.message ?? 'unbekannter Fehler'}).`
+    }
+    return { factorId: data.id, qr: data.totp.qr_code, secret: data.totp.secret }
+  })()
+  return enrolling
 }
 
 export async function mfaVerify(factorId: string, code: string): Promise<string | null> {
   const { error } = await (await db()).auth.mfa.challengeAndVerify({ factorId, code: code.replace(/\s/g, '') })
+  if (!error) enrolling = null
   return error ? 'Falscher Code. Prüfen Sie die Uhrzeit auf dem Handy und versuchen Sie es erneut.' : null
 }

@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react'
 import { dateLocale } from '../i18n'
 import { Logo, StarsRow, useNoindex } from './CheckPage'
 import {
-  SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, loadLatestOrder, loadMyChecks, loadMessages, deleteMyCheck, loadReportVersions, loadMyAppointments, loadMyContact, loadMyManager, loadMyOffer, runAudit, sendMessage, signOut, updateSources,
-  type Appointment, type CheckRow, type ReportVersion, type ClientOffer, type MyContact, type Manager, type MessageRow, type OrderRow, type Source,
+  SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, loadLatestOrder, loadMyChecks, loadMessages, deleteMyCheck, loadReportVersions, loadMyAppointments, loadMyContact, loadMyManager, loadMyOffers, loadMyProjects, resultVisible, runAudit, sendMessage, signOut, updateSources,
+  type Appointment, type ClientProject, type CheckRow, type ReportVersion, type ClientOffer, type MyContact, type Manager, type MessageRow, type OrderRow, type Source,
 } from './data'
 import SourcesEditor from './SourcesEditor'
 import OrderPanel, { orderStatusLabel } from './OrderPanel'
 import { AccountPanel, AppointmentsPanel, ConfirmDialog, ContactForm, fmtWhen, upcoming } from './CabinetAccount'
 import { AiCard, CompetitorsCard, Delta, HistoryCard, deltas } from './ReportExtras'
+import { ProjectPanel, ResultView, projectHeadline } from './ProjectView'
 import { CompanySwitcher, ManagerCard, RecommendedCard, NextStepCard, OfferPanel, bookingLink, type NextStep } from './CabinetExtras'
 
 /** Immer alle fünf Quellen in fester Reihenfolge — auch wenn die Suche nichts geliefert hat. */
@@ -24,8 +25,8 @@ function allSources(list: Source[] | null | undefined): Source[] {
 // Daten aus Supabase (checks, messages). Ohne Anmeldung → /login. Den Bericht trägt das Team
 // im Table Editor ein (checks.report, status = 'ready'); bis dahin gibt es einen Beispielbericht zum Ansehen.
 
-type Tab = 'overview' | 'offer' | 'report' | 'company' | 'termine' | 'messages' | 'konto'
-const TABS: [Tab, string][] = [['overview', 'Übersicht'], ['offer', 'Angebot'], ['report', 'Bericht'], ['company', 'Unternehmen'], ['termine', 'Termine'], ['messages', 'Nachrichten'], ['konto', 'Konto']]
+type Tab = 'overview' | 'ergebnis' | 'offer' | 'report' | 'company' | 'termine' | 'messages' | 'konto'
+const TABS: [Tab, string][] = [['overview', 'Übersicht'], ['ergebnis', 'Ergebnis'], ['offer', 'Angebot'], ['report', 'Bericht'], ['company', 'Unternehmen'], ['termine', 'Termine'], ['messages', 'Nachrichten'], ['konto', 'Konto']]
 
 type Mark = 'ok' | 'warn' | 'bad'
 type ChanKey = 'ai' | 'maps' | 'search' | 'social'
@@ -118,7 +119,9 @@ export default function CabinetPage() {
   const [versions, setVersions] = useState<ReportVersion[]>([])
   const [msgs, setMsgs] = useState<MessageRow[]>([])
   const [manager, setManager] = useState<Manager | null>(null)
-  const [offer, setOffer] = useState<ClientOffer | null>(null)
+  // Angebot und Projekt gehören zu EINEM Unternehmen (bzw. Paket-Anfrage) — nicht zum ganzen Konto.
+  const [offers, setOffers] = useState<ClientOffer[]>([])
+  const [projects, setProjects] = useState<ClientProject[]>([])
   const [tab, setTab] = useState<Tab>(() => {
     const h = window.location.hash.slice(1) as Tab
     return TABS.some(([t]) => t === h) ? h : 'overview'
@@ -142,11 +145,11 @@ export default function CabinetPage() {
       const u = await currentUser()
       if (!u) { window.location.replace('/login?next=' + encodeURIComponent('/kabinett')); return }
       setUserEmail(u.email ?? '')
-      const [c, o, m, mg, of, ap, ct] = await Promise.all([loadMyChecks(), loadLatestOrder(), loadMessages(), loadMyManager(), loadMyOffer(), loadMyAppointments(), loadMyContact(u)])
+      const [c, o, m, mg, of, ap, ct, pj] = await Promise.all([loadMyChecks(), loadLatestOrder(), loadMessages(), loadMyManager(), loadMyOffers(), loadMyAppointments(), loadMyContact(u), loadMyProjects()])
       // Gewählte Firma: ?firma=<id>, sonst die zuletzt geprüfte.
       const want = new URLSearchParams(window.location.search).get('firma')
       const sel = c.find(x => x.id === want) ?? c[0] ?? null
-      setChecks(c); setCheck(sel); setOrder(o); setMsgs(m); setManager(mg); setOffer(of); setAppts(ap); setContact(ct)
+      setChecks(c); setCheck(sel); setOrder(o); setMsgs(m); setManager(mg); setOffers(of); setAppts(ap); setContact(ct); setProjects(pj)
       if (sel) setConfirmDraft(allSources(sel.sources))
       // Bestätigt, aber noch nicht analysiert (z. B. Tab geschlossen) → Datensammlung nachholen.
       for (const x of c) if (x.sources_confirmed && x.status === 'submitted') void runAudit(x.id)
@@ -182,10 +185,20 @@ export default function CabinetPage() {
     const c = checks.find(x => x.id === id)
     if (!c || c.id === check?.id) return
     setCheck(c); setConfirmDraft(allSources(c.sources)); setEditing(false); setConfirmError(false)
+    // Angebot und Ergebnis gehören zum jeweiligen Unternehmen — beim Wechsel nicht die Ansicht des vorherigen zeigen.
+    if (tab === 'ergebnis' || tab === 'offer') setTab('overview')
     if (tab === 'report' || tab === 'company' || tab === 'overview') window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const logout = async () => { await signOut(); window.location.href = '/' }
+
+  // Angebot/Projekt zum gewählten Unternehmen. Paket-Anfrage oder Quiz nur, wenn es keine anderen Unternehmen gibt.
+  const offerFor = (kind: string, id: string | undefined) => offers.find(o => o.request_kind === kind && o.request_id === id) ?? null
+  const offer: ClientOffer | null = check
+    ? offerFor('check', check.id) ?? (checks.length <= 1 ? (order ? offerFor('order', order.id) : null) ?? offers.find(o => o.request_kind === 'lead') ?? null : null)
+    : (order ? offerFor('order', order.id) : null) ?? offers.find(o => o.request_kind === 'lead') ?? null
+  const project: ClientProject | null = offer ? projects.find(p => p.offer_id === offer.id) ?? null : null
+  const onAccepted = (o: ClientOffer) => { setOffers(list => list.map(x => (x.id === o.id ? o : x))); void loadMyProjects().then(setProjects) }
 
   if (loading) return <Loading />
   if (!check && !order && !offer && tab !== 'konto') return <EmptyState onLogout={logout} onKonto={() => setTab('konto')} />
@@ -198,7 +211,7 @@ export default function CabinetPage() {
   const statusLabel = orderFirst && order ? orderStatusLabel(order) : checkLabel
   const statusDone = orderFirst ? order?.status === 'active' || order?.status === 'closed' : ready
   const statusWaiting = orderFirst ? !order?.details : !confirmed
-  const tabs = TABS.filter(([t]) => t !== 'konto' && (t === 'offer' ? !!offer : check || (t !== 'report' && t !== 'company')))
+  const tabs = TABS.filter(([t]) => t !== 'konto' && (t === 'ergebnis' ? resultVisible(project) && !!check : t === 'offer' ? !!offer : check || (t !== 'report' && t !== 'company')))
   const scored = ready
   const chans: Channel[] = CHANNELS.map(c => {
     const r = check?.report?.channels?.[c.key]
@@ -247,7 +260,9 @@ export default function CabinetPage() {
   const book = canBook ? bookingLink(manager) : null
   const write = () => setTab('messages')
   const chat = { label: 'Im Chat schreiben', onClick: write }
+  const ph = project ? projectHeadline(project) : null
   const nextStep: NextStep | null = !confirmed || (order && !order.details) ? null
+    : project && ph ? { title: ph.title, text: ph.text, links: resultVisible(project) && check ? [{ label: 'Ergebnis ansehen', onClick: () => setTab('ergebnis') }, chat] : project.invoice_url && project.invoice_sent_at && project.status === 'awaiting_payment' ? [{ label: 'Rechnung öffnen', href: project.invoice_url }, chat] : [chat] }
     : offer?.status === 'sent' ? { title: 'Ihr Angebot ist da', text: 'Wir haben ein Angebot für Ihr Unternehmen zusammengestellt. Sehen Sie es sich in Ruhe an — Fragen klären wir gern im Gespräch.', links: [{ label: 'Angebot ansehen', onClick: () => setTab('offer') }] }
     : nextAppt ? { title: 'Ihr nächster Termin', text: <><strong style={{ color: 'var(--ink)' }}>{fmtWhen(nextAppt.starts_at)}</strong> · {nextAppt.title}</>, links: [nextAppt.location && /^https?:\/\//.test(nextAppt.location) ? { label: 'Zum Videogespräch', href: nextAppt.location } : { label: 'Termine ansehen', onClick: () => setTab('termine') }] }
     : offer?.status === 'accepted' ? { title: 'Wir bereiten den Start vor', text: 'Danke für Ihre Zusage. Ihr Ansprechpartner meldet sich mit den nächsten Schritten und den Unterlagen, die wir von Ihnen brauchen.', links: [chat] }
@@ -336,7 +351,9 @@ export default function CabinetPage() {
           </div>
         )}
 
-        {tab === 'offer' && offer && <OfferPanel offer={offer} onAccepted={setOffer} />}
+        {tab === 'offer' && offer && <OfferPanel offer={offer} onAccepted={onAccepted} />}
+
+        {tab === 'ergebnis' && check && <ResultView versions={versions} />}
 
         {tab === 'overview' && (
           <div className={check ? 'cab-overview' : undefined} style={check ? { display: 'grid', gridTemplateColumns: 'minmax(260px, 340px) minmax(0, 1fr)', gap: 18, alignItems: 'start' } : undefined}>
@@ -378,7 +395,8 @@ export default function CabinetPage() {
           </section>
             )}
             {nextStep && <NextStepCard step={nextStep} />}
-            {offer?.status === 'sent' && <OfferPanel offer={offer} onAccepted={setOffer} />}
+            {project && <ProjectPanel project={project} />}
+            {offer?.status === 'sent' && <OfferPanel offer={offer} onAccepted={onAccepted} />}
             <ManagerCard manager={manager} onWrite={write} canBook={canBook} lockedHint={lockedHint} />
             {order && (
           <div>
