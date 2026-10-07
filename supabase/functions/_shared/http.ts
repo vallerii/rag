@@ -1,4 +1,5 @@
-// HTTP-Helfer für die Edge Functions (Deno): CORS, erlaubte Domains, einfache Drossel.
+// HTTP-Helfer für die Edge Functions (Deno): CORS, erlaubte Domains, einfache Drossel, Bot-Schutz.
+import { humanCheck } from './human.ts'
 
 const ALLOWED = (Deno.env.get('ALLOWED_ORIGINS') ?? '').split(',').map(s => s.trim()).filter(Boolean)
 
@@ -13,7 +14,8 @@ function allowOrigin(origin: string | null): string {
 export function cors(req: Request): Record<string, string> {
   return {
     'Access-Control-Allow-Origin': allowOrigin(req.headers.get('origin')) || 'null',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-turnstile, x-rag-pass',
+    'Access-Control-Expose-Headers': 'x-rag-pass',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Vary': 'Origin',
   }
@@ -34,16 +36,27 @@ function limited(req: Request, perMinute: number): boolean {
   return list.length > perMinute
 }
 
-/** Gemeinsamer Rahmen: OPTIONS, nur POST, Domain-Prüfung, Drossel, Fehler als JSON. */
-export function handler(perMinute: number, fn: (req: Request, body: Record<string, unknown>) => Promise<Response>) {
+/**
+ * Gemeinsamer Rahmen: OPTIONS, nur POST, Domain-Prüfung, Drossel, Fehler als JSON.
+ * `opts.human`: Anfrage muss Turnstile bestanden haben (öffentliche Google-Abfragen ohne Login).
+ */
+export function handler(perMinute: number, fn: (req: Request, body: Record<string, unknown>) => Promise<Response>, opts: { human?: boolean } = {}) {
   return async (req: Request): Promise<Response> => {
     if (req.method === 'OPTIONS') return new Response('ok', { headers: cors(req) })
     if (req.method !== 'POST') return json(req, { error: 'method' }, 405)
     if (req.headers.get('origin') && !allowOrigin(req.headers.get('origin'))) return json(req, { error: 'origin' }, 403)
     if (limited(req, perMinute)) return json(req, { error: 'rate' }, 429)
+    let extra: Record<string, string> = {}
+    if (opts.human) {
+      const ok = await humanCheck(req)
+      if (!ok) return json(req, { error: 'human' }, 403)
+      extra = ok
+    }
     try {
       const body = await req.json().catch(() => ({}))
-      return await fn(req, body)
+      const res = await fn(req, body)
+      for (const [k, v] of Object.entries(extra)) res.headers.set(k, v)
+      return res
     } catch (e) {
       console.error(e)
       const status = (e as { status?: number }).status

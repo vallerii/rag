@@ -7,4 +7,4 @@ Deno.serve(handler(20, async (req, body) => {
   if (!website) return json(req, sourcesFrom(null, null))
   const scan = await scanSite(website, 3500) // der Client wartet höchstens 4 s
   return json(req, sourcesFrom(website, scan))
-}))
+}, { human: true }))

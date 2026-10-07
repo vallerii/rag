@@ -3,6 +3,9 @@ import { BOOKING_URL } from './config'
 import { rememberLead } from './check/data'
 import { getLang, dateLocale } from './i18n'
 import LangSwitch from './LangSwitch'
+import { currentPath, isServer, siteOrigin, ssr } from './ssr'
+import { COMPANY, phoneHref } from './company'
+import { AgbBody, DatenschutzBody, ImpressumBody, LEGAL_UPDATED, PRICE_FACTS } from './legal/LegalPages'
 import CompanySearch from './check/CompanySearch'
 import CheckPage from './check/CheckPage'
 import CabinetPage from './check/CabinetPage'
@@ -1327,7 +1330,53 @@ function PreisePage() {
         sub="Starten Sie mit dem Google-Profil, wählen Sie eine Website als Monatspaket — und nehmen Sie Social Media dazu oder einzeln."
       />
       <Pricing />
+      <PriceFacts />
       <ContentCTA />
+      </main>
+      <Footer />
+    </>
+  )
+}
+
+// «Gut zu wissen» unter den Preisen: USt., Laufzeit, was dem Kunden gehört (Quelle: src/company.ts → TERMS).
+function PriceFacts() {
+  return (
+    <section id="gut-zu-wissen" style={{ backgroundColor: 'var(--bone)', padding: '0 clamp(20px,4vw,48px) clamp(40px, 5vw, 64px)' }}>
+      <div style={{ ...SHELL }}>
+        <Kicker>Gut zu wissen</Kicker>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginTop: 18 }}>
+          {PRICE_FACTS.map(([t, b]) => (
+            <div key={t} className="d-card" style={{ padding: 'clamp(20px, 2.4vw, 28px)' }}>
+              <h2 className="display" style={{ fontSize: 18, margin: '0 0 8px' }}>{t}</h2>
+              <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: 0 }}>{b}</p>
+            </div>
+          ))}
+        </div>
+        <p style={{ fontSize: 14, color: 'var(--muted)', margin: '16px 0 0' }}>Alle Details in unseren <a href="/agb" className="d-link">AGB</a>.</p>
+      </div>
+    </section>
+  )
+}
+
+// Impressum, Datenschutz, AGB — Texte in src/legal/LegalPages.tsx, Firmendaten in src/company.ts.
+const LEGAL = {
+  impressum: { title: 'Impressum', meta: 'Impressum von RAG — Regionale Agentur: Anbieter, Kontakt, Registerangaben.', Body: ImpressumBody },
+  datenschutz: { title: 'Datenschutzerklärung', meta: 'Welche Daten RAG auf der Website und im Kundenbereich verarbeitet, wozu — und welche Rechte Sie haben. Keine Tracking-Cookies.', Body: DatenschutzBody },
+  agb: { title: 'Allgemeine Geschäftsbedingungen', meta: 'AGB von RAG für Unternehmen: Vertragsschluss, Laufzeit, Preise, was Ihnen bei Vertragsende gehört.', Body: AgbBody },
+} as const
+type LegalKind = keyof typeof LEGAL
+
+function LegalPage({ kind }: { kind: LegalKind }) {
+  const { title, meta, Body } = LEGAL[kind]
+  usePageMeta(`${title} | RAG`, meta)
+  return (
+    <>
+      <Nav />
+      <main id="inhalt">
+        <ContentHero crumbs={[{ label: 'Start', href: '/' }, { label: title }]} kicker="RECHTLICHES" title={title} sub={`Stand: ${LEGAL_UPDATED}`} />
+        <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(48px, 6vw, 80px) clamp(20px,4vw,48px)' }}>
+          <div style={{ ...SHELL, maxWidth: 1240 }}><div style={{ maxWidth: 780 }}><Body /></div></div>
+        </section>
       </main>
       <Footer />
     </>
@@ -1441,7 +1490,7 @@ function Nav() {
           ))}
           <LangSwitch fg={fg} border="var(--border)" />
           <span className="nav-phone" style={{ width: 1, height: 18, backgroundColor: 'var(--border)' }} />
-          <a href="tel:+493012345678" className="ul nav-phone" style={{ fontWeight: 500, fontSize: 14, color: fg, opacity: 0.75, transition: 'color 0.4s ease' }}>+49 30 12345678</a>
+          {COMPANY.phone && <a href={phoneHref()} className="ul nav-phone" style={{ fontWeight: 500, fontSize: 14, color: fg, opacity: 0.75, transition: 'color 0.4s ease' }}>{COMPANY.phone}</a>}
           <a href={homeHref('audit-quiz')} className="btn btn-md btn-electric" style={{ whiteSpace: 'nowrap' }}>
             Sichtbarkeits-Check starten
             <span className="arw">→</span>
@@ -1465,7 +1514,7 @@ function Nav() {
           {[['Wo man Sie sucht', '/services'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar']].map(([l, target]) => (
             <a key={l} href={linkHref(target)} style={{ fontWeight: 600, fontSize: 22, letterSpacing: '-0.03em', color: '#07070C', textDecoration: 'none', padding: '10px 0', borderBottom: '1px solid var(--line-soft)' }} onClick={() => setOpen(false)}>{l}</a>
           ))}
-          <span style={{ fontWeight: 500, fontSize: 14, color: 'var(--muted)', padding: '14px 0 10px' }}>+49 30 12345678</span>
+          {COMPANY.phone && <a href={phoneHref()} style={{ fontWeight: 500, fontSize: 14, color: 'var(--muted)', padding: '14px 0 10px' }}>{COMPANY.phone}</a>}
           <a href={homeHref('audit-quiz')} className="btn btn-lg btn-electric" style={{ width: '100%' }} onClick={() => setOpen(false)}>Sichtbarkeits-Check starten</a>
           <a href="/kabinett" className="btn btn-lg btn-outline-light" style={{ width: '100%', marginTop: 10 }} onClick={() => setOpen(false)}>Login</a>
         </nav>
@@ -1935,6 +1984,7 @@ function ChannelSocial() {
           <Reveal><Kicker icon="social">Social Media</Kicker></Reveal>
           <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '20px 0 18px' }}>In sozialen Netzwerken sehen Kunden <span className="serif italic-serif">Menschen.</span></h2></Reveal>
           <Reveal delay={0.1}><p className="lead" style={{ color: 'var(--muted)', margin: 0 }}>Team, Arbeitsweise und echte Ergebnisse machen Ihr Unternehmen vertraut — schon vor dem ersten Anruf. Dafür müssen Sie kein Influencer werden.</p></Reveal>
+          <Reveal delay={0.12}><a href="/ratgeber/brauchen-handwerker-instagram" className="d-link" style={{ display: 'inline-block', marginTop: 16, fontSize: 15 }}>Im Ratgeber: {articleTitle('brauchen-handwerker-instagram')} <span className="arw">→</span></a></Reveal>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 24, marginTop: 'clamp(40px, 4.4vw, 56px)' }}>
           {pillars.map(([t, d, bg, fg], i) => (
@@ -3432,23 +3482,23 @@ function Footer() {
           ))}
           <div>
             <p style={{ fontWeight: 800, fontSize: 15, margin: '0 0 16px' }}>Rechtliches</p>
-            {['Impressum', 'Datenschutz', 'DSGVO-Konformität', 'AGB'].map(l => (
-              <a key={l} href="#" className="ul" style={linkStyle}>{l}</a>
+            {[['Impressum', '/impressum'], ['Datenschutz', '/datenschutz'], ['AGB', '/agb']].map(([l, href]) => (
+              <a key={l} href={href} className="ul" style={linkStyle}>{l}</a>
             ))}
           </div>
           <div>
             <p style={{ fontWeight: 800, fontSize: 15, margin: '0 0 16px' }}>Kontakt</p>
             <p style={{ fontSize: 15, color: 'var(--muted)', lineHeight: 1.9, margin: 0 }}>
-              Musterstraße 12<br />10115 Berlin, Deutschland<br />
-              <a href="tel:+493012345678" className="ul" style={{ color: 'inherit' }}>+49 30 12345678</a><br />
-              <a href="mailto:hallo@rag-agentur.de" className="ul" style={{ color: 'inherit' }}>hallo@rag-agentur.de</a>
+              {COMPANY.street && <>{COMPANY.street}<br />{COMPANY.zip} {COMPANY.city}, {COMPANY.country}<br /></>}
+              {COMPANY.phone && <><a href={phoneHref()} className="ul" style={{ color: 'inherit' }}>{COMPANY.phone}</a><br /></>}
+              <a href={`mailto:${COMPANY.email}`} className="ul" style={{ color: 'inherit' }}>{COMPANY.email}</a>
             </p>
           </div>
         </div>
 
         <div style={{ borderTop: '1px solid var(--divider)', paddingTop: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
           <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>© 2026 RAG, Regionale Agentur. Alle Rechte vorbehalten.</p>
-          <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>DSGVO-konform · Made in Deutschland</p>
+          <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>Keine Tracking-Cookies · Schriften und Daten in der EU</p>
         </div>
       </div>
     </footer>
@@ -4231,6 +4281,72 @@ const ratgeberArticles: RatgeberArticle[] = [
     serviceSlug: 'ai-search-optimization',
     serviceNote: 'Wir strukturieren Ihre Unternehmensdaten und beobachten, wie KI-Systeme Sie wiedergeben.',
   },
+  {
+    slug: 'brauchen-handwerker-instagram',
+    title: 'Brauchen Handwerker Instagram?',
+    teaser: 'Instagram bringt selten von allein Aufträge — aber es entscheidet oft, ob jemand anruft. Wann sich ein Profil lohnt, welcher Kanal passt und was mindestens drin sein muss.',
+    minutes: 6,
+    intro: 'Die ehrliche Antwort: Nicht jeder Handwerksbetrieb braucht Instagram. Aber fast jeder wird dort gesucht. Wer Sie bei Google gefunden hat, schaut oft noch kurz in Ihr Profil, bevor er anruft — und ein Profil, dessen letzter Beitrag zwei Jahre alt ist, wirkt wie ein Betrieb, der aufgegeben hat. In diesem Artikel geht es darum, wann sich der Aufwand lohnt, welcher Kanal zu Ihnen passt und was ein Profil mindestens braucht.',
+    sections: [
+      {
+        h: 'Wofür Instagram im Handwerk wirklich da ist',
+        p: [
+          'Die meisten Aufträge im Handwerk beginnen mit einer Suche: „Elektriker in der Nähe“, „Bad sanieren Freiburg“ — bei Google, in Google Maps oder inzwischen auch in ChatGPT. Instagram ist selten der Ort, an dem jemand einen Betrieb zum ersten Mal entdeckt.',
+          'Seine Stärke liegt im zweiten Schritt: Der Kunde hat Sie gefunden und prüft jetzt, ob er Ihnen vertraut. Er will sehen, wer dahintersteht, ob der Betrieb gerade arbeitet und wie Ihre Arbeiten aussehen. Genau das zeigt ein gepflegtes Profil besser als jede Website.',
+          'Dazu kommt ein Grund, der mit Kunden gar nichts zu tun hat: Nachwuchs. Azubis und junge Fachkräfte schauen sich einen Betrieb zuerst in sozialen Netzwerken an. Für viele Betriebe ist das inzwischen der wichtigere Grund, überhaupt ein Profil zu pflegen.',
+        ],
+      },
+      {
+        h: 'Wann sich ein Profil lohnt — und wann nicht',
+        p: [
+          'Es lohnt sich, wenn Ihre Arbeit sichtbar ist: Bäder, Küchen, Dächer, Gärten, Fassaden, Malerarbeiten, Möbel. Vorher-nachher-Bilder sind hier das stärkste Argument, das es gibt. Es lohnt sich auch, wenn Sie Privatkunden haben, die zwischen mehreren Angeboten abwägen, oder wenn Sie Personal suchen.',
+          'Weniger wichtig ist Instagram, wenn Sie fast nur für Hausverwaltungen, Bauträger oder Industrie arbeiten. Dort entscheidet eher ein gepflegtes LinkedIn-Profil des Inhabers — oder schlicht die Empfehlung.',
+          'Und: Kein Profil ist besser als ein totes. Wer keine Zeit für regelmäßige Beiträge hat, sollte lieber das Google-Unternehmensprofil mit aktuellen Fotos pflegen, als ein Instagram-Konto anzulegen, das nach drei Wochen verstummt.',
+        ],
+      },
+      {
+        h: 'Instagram, Facebook, TikTok oder LinkedIn?',
+        p: [
+          'Ein Kanal, der gepflegt wird, bringt mehr als vier, die halb gepflegt werden. Wählen Sie den Hauptkanal danach, wo Ihre Kunden sind:',
+          'Instagram passt für Privatkunden zwischen etwa 25 und 55 und für sichtbare Arbeiten. Facebook erreicht eher ältere Hausbesitzer und lokale Gruppen im Ort — Beiträge lassen sich aus Instagram automatisch dorthin mitveröffentlichen. TikTok und kurze Videos funktionieren vor allem für die Suche nach Azubis. LinkedIn ist der richtige Ort, wenn Ihre Auftraggeber selbst Unternehmen sind.',
+        ],
+      },
+      {
+        h: 'Was ein Profil mindestens braucht',
+        p: [
+          'Eine klare Kopfzeile: Wer sind Sie, was machen Sie, wo — zum Beispiel „Sanitär & Heizung · Bad komplett aus einer Hand · Freiburg und 30 km Umkreis“. Dazu ein Knopf zum Anrufen oder für WhatsApp und ein Link zur Website oder zum Google-Profil.',
+          'Ein Impressum: Auch für Instagram-Profile von Betrieben gilt die Impressumspflicht. Ein Link in der Profilbeschreibung auf das Impressum Ihrer Website genügt — fehlt er, sind Abmahnungen möglich.',
+          'Dieselben Angaben wie überall: Name, Adresse und Telefonnummer sollten genau so geschrieben sein wie im Google-Profil und auf der Website. Google und KI-Assistenten gleichen diese Angaben ab; Widersprüche kosten Vertrauen.',
+          'Hervorgehobene Stories (Highlights) für das, was Kunden zuerst wissen wollen: Leistungen, Referenzen, Team, Kontakt.',
+        ],
+      },
+      {
+        h: 'Was Sie posten können, ohne Influencer zu werden',
+        p: [
+          'Niemand erwartet, dass Sie tanzen. Im Handwerk funktionieren Inhalte, die ohnehin bei der Arbeit entstehen: Vorher und nachher. Ein kurzer Blick in die Baustelle. Ein Detail, das man nur sieht, wenn man vom Fach ist — und eine Erklärung dazu. Das Team bei der Arbeit. Antworten auf Fragen, die Kunden immer wieder stellen: „Was kostet ein neues Bad ungefähr?“, „Lohnt sich eine Wärmepumpe im Altbau?“',
+          'Wenn Sie nicht vor die Kamera möchten, zeigen Sie Ihre Hände, Ihr Werkzeug, Ihre Ergebnisse. Gesichter schaffen mehr Vertrauen, aber Pflicht sind sie nicht.',
+          'Rechtlich wichtig: Fotos aus der Wohnung eines Kunden und Bilder von Mitarbeitern nur mit deren Einverständnis veröffentlichen — am besten kurz schriftlich festhalten. Hausnummern, Kennzeichen und persönliche Gegenstände nicht zeigen.',
+        ],
+      },
+      {
+        h: 'Wie oft — und wie viel Zeit kostet das?',
+        p: [
+          'Als Richtwert reichen drei Beiträge pro Woche und kurze Stories an Arbeitstagen. Wichtiger als die Menge ist, dass es nicht abreißt.',
+          'Der eigentliche Aufwand ist nicht das Fotografieren — das dauert auf der Baustelle zwei Minuten —, sondern Planen, Texten und Veröffentlichen. Genau diesen Teil geben viele Betriebe ab: Das Team schickt Fotos und kurze Videos in einen Chat, jemand anderes macht daraus Beiträge und legt einmal im Monat den Plan zur Freigabe vor.',
+        ],
+      },
+      {
+        h: 'Wie Instagram mit Google und KI zusammenspielt',
+        p: [
+          'Instagram ersetzt weder Google-Profil noch Website, aber es stärkt beide. Öffentliche Beiträge von Business-Konten können in der Google-Suche erscheinen, und Ihr Profil ist eine weitere Quelle, die bestätigt, dass es Ihren Betrieb gibt und er aktiv ist. Die besten Fotos gehören außerdem ins Google-Unternehmensprofil — dort sehen sie die Menschen, die gerade nach einem Betrieb wie Ihrem suchen.',
+          'Die Reihenfolge ist deshalb klar: zuerst ein vollständiges Google-Profil und echte Bewertungen, dann eine Website, die Ihre Leistungen erklärt — und Instagram als Schaufenster, das zeigt, dass hinter all dem echte Menschen und echte Arbeit stehen.',
+        ],
+      },
+    ],
+    terms: ['Google-Unternehmensprofil', 'NAP-Konsistenz', 'Bewertungen', 'Lokale Sichtbarkeit'],
+    serviceSlug: 'social-media',
+    serviceNote: 'Wir betreuen Ihren Hauptkanal: Profil einrichten, Plan zur Freigabe, Beiträge und Stories aus Ihren Fotos — 199 € im Monat, auch ohne Website.',
+  },
 ]
 
 type Crumb = { label: string; href?: string }
@@ -4238,7 +4354,7 @@ type Crumb = { label: string; href?: string }
 function Breadcrumbs({ items, tone = 'dark' }: { items: Crumb[]; tone?: 'dark' | 'light' }) {
   const dim = tone === 'dark' || tone === 'light' ? 'var(--muted)' : 'var(--muted)'
   const current = 'var(--ink)'
-  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  const origin = siteOrigin()
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -4275,6 +4391,7 @@ function JsonLd({ data }: { data: object }) {
 // Seitentitel, Description, Canonical und Social-Tags pro Route —
 // index.html ist statisch und liefert sonst überall dieselben Angaben.
 function usePageMeta(title: string, description: string, ogType: 'website' | 'article' = 'website') {
+  if (isServer) ssr.meta = { title, description, ogType }
   useEffect(() => {
     document.documentElement.lang = 'de'
     document.title = title
@@ -4366,7 +4483,7 @@ function RatgeberIndex() {
         crumbs={[{ label: 'Start', href: '/' }, { label: 'Ratgeber' }]}
         kicker="RATGEBER"
         title={<>Lokale Sichtbarkeit, <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>ohne Fachchinesisch</span></>}
-        sub="Die drei Fragen, die uns Inhaberinnen und Inhaber am häufigsten stellen — ausführlich beantwortet, ohne Versprechen, die niemand halten kann."
+        sub="Die Fragen, die uns Inhaberinnen und Inhaber am häufigsten stellen — ausführlich beantwortet, ohne Versprechen, die niemand halten kann."
       />
       <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 4vw, 56px) clamp(20px,4vw,48px) clamp(56px, 6vw, 88px)' }}>
         <div style={{ ...SHELL, display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -4441,7 +4558,7 @@ function RatgeberArticlePage({ slug }: { slug: string }) {
         inLanguage: 'de',
         author: { '@type': 'Organization', name: SITE_NAME },
         publisher: { '@type': 'Organization', name: SITE_NAME },
-        mainEntityOfPage: (typeof window !== 'undefined' ? window.location.origin : '') + '/ratgeber/' + a.slug,
+        mainEntityOfPage: siteOrigin() + '/ratgeber/' + a.slug,
       }} />
       <ContentHero
         crumbs={[{ label: 'Start', href: '/' }, { label: 'Ratgeber', href: '/ratgeber' }, { label: a.title }]}
@@ -4521,7 +4638,7 @@ const glossarLetter = (term: string) => {
   const c = term.charAt(0).toUpperCase()
   return ({ 'Ä': 'A', 'Ö': 'O', 'Ü': 'U' } as Record<string, string>)[c] ?? c
 }
-const glossarOrigin = () => (typeof window !== 'undefined' ? window.location.origin : '')
+const glossarOrigin = () => siteOrigin()
 
 const glossarCSS = `
 .gl-az a{transition:background-color .2s,color .2s,border-color .2s}
@@ -4825,7 +4942,7 @@ function ServicesIndex() {
           '@type': 'ListItem',
           position: i + 1,
           name: m.label,
-          url: (typeof window !== 'undefined' ? window.location.origin : '') + '/services/' + m.slug,
+          url: siteOrigin() + '/services/' + m.slug,
         })),
       }} />
       <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
@@ -5115,6 +5232,7 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
       outro: 'Social Media bringt selten von allein Aufträge. Aber es entscheidet, ob jemand anruft, der Sie bei Google schon gefunden hat.',
       visual: 'social',
     },
+    article: { href: '/ratgeber/brauchen-handwerker-instagram', label: 'Brauchen Handwerker überhaupt Instagram? Im Ratgeber erklärt' },
     needsTitle: 'Was Ihr Profil braucht, damit man Sie anruft — und wobei wir helfen',
     needs: [
       { need: 'Ein lebendiges Profil', why: 'Regelmäßige Beiträge zeigen: Der Betrieb arbeitet.', help: 'Jeden Monat ein Plan zur Freigabe, dann täglich Stories und dreimal pro Woche ein Beitrag oder ein kurzes Video.' },
@@ -5881,13 +5999,32 @@ function LandingPage() {
 // Admin-Bereich: eigene, nicht verlinkte Adresse; Code wird nur dort geladen.
 const AdminApp = lazy(() => import('./admin/AdminApp'))
 
+/** Öffentliche Seiten, die beim Build als statisches HTML vorgerendert werden (+ Sitemap). */
+export function prerenderRoutes(): string[] {
+  return [
+    '/',
+    '/services',
+    ...modules.map(m => `/services/${m.slug}`),
+    '/preise',
+    '/ratgeber',
+    ...ratgeberArticles.map(a => `/ratgeber/${a.slug}`),
+    '/glossar',
+    ...glossarEntries.map(g => `/glossar/${g.slug}`),
+    '/start',
+    '/impressum',
+    '/datenschutz',
+    '/agb',
+  ]
+}
+
 export default function App() {
-  const path = typeof window !== 'undefined' ? window.location.pathname : '/'
+  const path = currentPath()
   if (/^\/rag-intern(\/einladung)?\/?$/.test(path)) {
     return <Suspense fallback={null}><AdminApp /></Suspense>
   }
   const serviceMatch = path.match(/^\/services\/([a-z0-9-]+)\/?$/)
   if (serviceMatch && SERVICE_REDIRECTS[serviceMatch[1]]) {
+    if (isServer) return null
     window.location.replace(SERVICE_REDIRECTS[serviceMatch[1]])
     return null
   }
@@ -5934,6 +6071,10 @@ export default function App() {
   }
   if (/^\/glossar\/?$/.test(path)) {
     return <GlossarPage />
+  }
+  const legalMatch = path.match(/^\/(impressum|datenschutz|agb)\/?$/)
+  if (legalMatch) {
+    return <LegalPage kind={legalMatch[1] as LegalKind} />
   }
   if (path === '/' || path === '/index.html') {
     return <LandingPage />
@@ -6164,6 +6305,7 @@ function StartQuizPage() {
 // Unknown URL — real "not found" instead of silently rendering the landing page.
 function NotFoundPage() {
   usePageMeta('Seite nicht gefunden | RAG', 'Diese Seite existiert nicht.')
+  if (isServer && ssr.meta) ssr.meta.noindex = true
   useEffect(() => {
     let robots = document.head.querySelector('meta[name="robots"]') as HTMLMetaElement | null
     if (!robots) {

@@ -16,6 +16,7 @@
 // Beispieldaten (DEMO). Wert: https://<projekt>.supabase.co/functions/v1 (siehe .env.example). Konto, Check und Nachrichten laufen bereits über Supabase.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { humanFetch, turnstileToken } from './turnstile'
 import type { User } from '@supabase/supabase-js'
 // Supabase erst bei Bedarf laden — die Startseite (Suchfeld) bleibt so klein.
 export const getSupabase = () => import('./supabase').then(m => m.supabase)
@@ -101,7 +102,7 @@ export async function searchCompanies(query: string, _sessionToken?: string): Pr
   const q = query.trim()
   if (q.length < 2) return []
   if (PROXY) {
-    const res = await fetch(`${PROXY}/places-search`, {
+    const res = await humanFetch(`${PROXY}/places-search`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: q }),
     })
@@ -117,7 +118,7 @@ export async function searchCompanies(query: string, _sessionToken?: string): Pr
 /** Details zum gewählten Unternehmen (Places Details). */
 export async function getCompany(id: string, _sessionToken?: string): Promise<Place | null> {
   if (PROXY && !id.startsWith('demo')) {
-    const res = await fetch(`${PROXY}/places-details`, {
+    const res = await humanFetch(`${PROXY}/places-details`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ placeId: id }),
     })
@@ -132,7 +133,7 @@ export async function getCompany(id: string, _sessionToken?: string): Promise<Pl
 /** Website + Social-Profile (Edge Function liest die Website und sucht Links). */
 export async function discoverSources(place: Place): Promise<Source[]> {
   if (PROXY) {
-    const res = await fetch(`${PROXY}/discover-sources`, {
+    const res = await humanFetch(`${PROXY}/discover-sources`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ website: place.website }),
     })
@@ -185,9 +186,13 @@ export async function currentUser(): Promise<User | null> {
 }
 
 /** Neues Konto (ohne E-Mail-Bestätigung). Existiert die E-Mail schon → error 'exists'. */
-export async function signUp(email: string, password: string, name: string, phone: string): Promise<{ user: User | null; error?: AuthError }> {
+export async function signUp(email: string, password: string, name: string, phone: string, marketingOptIn = false): Promise<{ user: User | null; error?: AuthError }> {
   const { data, error } = await (await getSupabase()).auth.signUp({
-    email: email.trim(), password, options: { data: { name: name.trim(), phone: phone.trim() } },
+    email: email.trim(), password, options: {
+      // Werbe-Einwilligung mit Zeitpunkt und Wortlaut speichern (Nachweispflicht Art. 7 Abs. 1 DSGVO).
+      data: { name: name.trim(), phone: phone.trim(), ...(marketingOptIn ? { marketing_opt_in_at: new Date().toISOString(), marketing_opt_in_text: 'Tipps zur lokalen Sichtbarkeit per E-Mail' } : {}) },
+      captchaToken: await captcha(),
+    },
   })
   if (error) return { user: null, error: mapAuthError(error) }
   // Je nach Supabase-Einstellung kommt bei vorhandener Adresse kein Fehler, aber auch keine Sitzung.
@@ -196,12 +201,12 @@ export async function signUp(email: string, password: string, name: string, phon
 }
 
 export async function signIn(email: string, password: string): Promise<{ user: User | null; error?: AuthError }> {
-  const { data, error } = await (await getSupabase()).auth.signInWithPassword({ email: email.trim(), password })
+  const { data, error } = await (await getSupabase()).auth.signInWithPassword({ email: email.trim(), password, options: { captchaToken: await captcha() } })
   return error ? { user: null, error: mapAuthError(error) } : { user: data.user }
 }
 
 export async function sendPasswordReset(email: string): Promise<AuthError | null> {
-  const { error } = await (await getSupabase()).auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/passwort-neu` })
+  const { error } = await (await getSupabase()).auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/passwort-neu`, captchaToken: await captcha() })
   return error ? mapAuthError(error) : null
 }
 
@@ -438,7 +443,7 @@ export async function saveMyContact(c: MyContact): Promise<boolean> {
 /** Neues Passwort — vorher das aktuelle prüfen. */
 export async function changePassword(email: string, current: string, next: string): Promise<'ok' | 'wrong' | 'error'> {
   const s = await getSupabase()
-  const check = await s.auth.signInWithPassword({ email, password: current })
+  const check = await s.auth.signInWithPassword({ email, password: current, options: { captchaToken: await captcha() } })
   if (check.error) return 'wrong'
   const { error } = await s.auth.updateUser({ password: next })
   return error ? 'error' : 'ok'
@@ -467,4 +472,9 @@ export async function loadReportVersions(checkId: string): Promise<ReportVersion
 export function reportTotal(r: Report | null | undefined): number | null {
   const v = Object.values(r?.channels ?? {}).map(c => c?.score).filter((x): x is number => typeof x === 'number')
   return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null
+}
+
+/** Turnstile-Token für Supabase Auth (Registrierung, Login, Passwort vergessen); undefined, wenn aus. */
+async function captcha(): Promise<string | undefined> {
+  return (await turnstileToken().catch(() => null)) ?? undefined
 }

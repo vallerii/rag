@@ -6,4 +6,4 @@ Deno.serve(handler(20, async (req, body) => {
   const query = String(body.query ?? body.input ?? '').trim().slice(0, 120)
   if (query.length < 2) return json(req, [])
   return json(req, await searchPlaces(placesKey(), query))
-}))
+}, { human: true }))

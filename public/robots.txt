@@ -1,24 +1,28 @@
 # robots.txt — RAG
-# Die Domain unten muss vor dem Livegang auf die echte Domain geaendert werden.
+# Die Domain in der Sitemap-Zeile setzt der Build (VITE_SITE_URL) automatisch.
 
-User-agent: *
-Allow: /
-
-# Suchsysteme mit KI-Funktionen ausdruecklich zugelassen —
+# Suchmaschinen und KI-Assistenten ausdrücklich zugelassen —
 # ohne diesen Zugriff kann kein KI-System das Unternehmen korrekt wiedergeben.
+# Kundenbereich und Admin sind gesperrt (zusätzlich per X-Robots-Tag: noindex).
+User-agent: *
 User-agent: Googlebot
-Allow: /
-
 User-agent: Google-Extended
-Allow: /
-
+User-agent: Bingbot
 User-agent: OAI-SearchBot
-Allow: /
-
 User-agent: ChatGPT-User
-Allow: /
-
+User-agent: GPTBot
 User-agent: PerplexityBot
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Applebot
+User-agent: Applebot-Extended
 Allow: /
+Disallow: /rag-intern
+Disallow: /kabinett
+Disallow: /check
+Disallow: /anfrage
+Disallow: /login
+Disallow: /passwort-vergessen
+Disallow: /passwort-neu
 
 Sitemap: https://rag-agentur.de/sitemap.xml

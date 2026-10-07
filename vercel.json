@@ -5,11 +5,36 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/(check|kabinett|anfrage|login|passwort-vergessen|passwort-neu|rag-intern)(/.*)?",
+      "destination": "/app.html"
     }
   ],
   "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        }
+      ]
+    },
     {
       "source": "/rag-intern/:path*",
       "headers": [
@@ -31,6 +56,52 @@
           "value": "noindex, nofollow"
         }
       ]
+    },
+    {
+      "source": "/(check|kabinett|anfrage|login|passwort-vergessen|passwort-neu)(/.*)?",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ],
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/services/reviews",
+      "destination": "/services/google-maps-business-profile",
+      "permanent": true
+    },
+    {
+      "source": "/services/local-citations",
+      "destination": "/services/ai-search-optimization",
+      "permanent": true
+    },
+    {
+      "source": "/services/google-meta-ads",
+      "destination": "/services",
+      "permanent": true
+    },
+    {
+      "source": "/services/offline-advertising",
+      "destination": "/services",
+      "permanent": true
+    },
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": true
     }
   ]
 }

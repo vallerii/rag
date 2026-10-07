@@ -1,6 +1,7 @@
 // Kundenbereich: Ansprechpartner, Angebot des Teams, «Ihr nächster Schritt».
 import { useEffect, useRef, useState } from 'react'
 import { BOOKING_READY, BOOKING_URL } from '../config'
+import { priceNote } from '../company'
 import { acceptOffer, initials, orderTotal, type CheckRow, type ClientOffer, type Manager, type Report } from './data'
 
 const card: React.CSSProperties = { backgroundColor: '#fff', borderRadius: 22, border: '1px solid var(--line-soft)', padding: 'clamp(20px, 2.6vw, 28px)' }
@@ -80,6 +81,9 @@ export function OfferPanel({ offer, onAccepted }: { offer: ClientOffer; onAccept
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 20 }}>
           <button type="button" className="btn btn-lg btn-electric" onClick={accept} disabled={busy}>{busy ? 'Einen Moment…' : 'Angebot annehmen'} <span className="arw">→</span></button>
           <span style={{ fontSize: 13, color: 'var(--muted)' }}>Fragen dazu? Schreiben Sie uns oder vereinbaren Sie einen Termin.</span>
+          <p style={{ flexBasis: '100%', fontSize: 12.5, lineHeight: 1.6, color: 'var(--muted)', margin: '4px 0 0' }}>
+            Mit «Angebot annehmen» beauftragen Sie die Leistungen verbindlich. Es gelten unsere <a href="/agb" target="_blank" rel="noopener" className="ul">AGB</a>; {priceNote()}
+          </p>
         </div>
       )}
       {err && <p role="alert" style={{ color: '#A21C22', fontSize: 14, margin: '12px 0 0' }}>Das hat nicht geklappt. Bitte versuchen Sie es noch einmal.</p>}

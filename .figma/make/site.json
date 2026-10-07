@@ -8,8 +8,5 @@
   "accessibility": {
     "addBypassLinks": true,
     "ignoreReducedMotion": false
-  },
-  "customScripts": {
-    "headEnd": "<script type=\"application/ld+json\">{\"@context\":\"https://schema.org\",\"@type\":\"ProfessionalService\",\"name\":\"RAG — Regionale Agentur\",\"description\":\"System für lokale Sichtbarkeit in Deutschland, Österreich und der Schweiz: Google Maps und Unternehmensprofil, Website und Google Search, KI-Suche, Bewertungen, lokale Verzeichnisse, Social Media, Anzeigen und Offline-Werbung.\",\"areaServed\":[\"Germany\",\"Austria\",\"Switzerland\"],\"address\":{\"@type\":\"PostalAddress\",\"streetAddress\":\"Musterstraße 12\",\"postalCode\":\"10115\",\"addressLocality\":\"Berlin\",\"addressCountry\":\"DE\"},\"telephone\":\"+49 30 12345678\",\"email\":\"hallo@rag-agentur.de\"}</script>"
   }
 }

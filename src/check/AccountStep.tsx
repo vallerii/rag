@@ -39,6 +39,7 @@ export default function AccountStep({ submitLabel, onAuthed, onBack }: {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [okEmail, setOkEmail] = useState(true)
+  const [okTips, setOkTips] = useState(false) // Werbe-Einwilligung: nie vorausgewählt (DSGVO/UWG)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -69,7 +70,7 @@ export default function AccountStep({ submitLabel, onAuthed, onBack }: {
       let u = user
       if (!u) {
         const r: { user: User | null; error?: AuthError } = mode === 'register'
-          ? await signUp(email, password, name, phone)
+          ? await signUp(email, password, name, phone, okTips)
           : await signIn(email, password)
         if (r.error === 'exists') {
           setMode('login'); setNotice(authErrorText('exists')); return
@@ -135,7 +136,13 @@ export default function AccountStep({ submitLabel, onAuthed, onBack }: {
           {mode === 'register' && (
             <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, lineHeight: 1.5, cursor: 'pointer', marginTop: 18 }}>
               <input type="checkbox" checked={okEmail} onChange={() => setOkEmail(v => !v)} style={{ width: 18, height: 18, marginTop: 1, accentColor: '#2600FF', flexShrink: 0 }} />
-              <span>Ergebnisse und Empfehlungen dürfen per E-Mail kommen.</span>
+              <span>Ergebnisse und Empfehlungen zu meinem Check dürfen per E-Mail kommen.</span>
+            </label>
+          )}
+          {mode === 'register' && (
+            <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, lineHeight: 1.5, cursor: 'pointer', marginTop: 10 }}>
+              <input type="checkbox" checked={okTips} onChange={() => setOkTips(v => !v)} style={{ width: 18, height: 18, marginTop: 1, accentColor: '#2600FF', flexShrink: 0 }} />
+              <span>Optional: Ich möchte gelegentlich Tipps zur lokalen Sichtbarkeit per E-Mail erhalten. Abmeldung jederzeit möglich.</span>
             </label>
           )}
         </>
@@ -150,7 +157,7 @@ export default function AccountStep({ submitLabel, onAuthed, onBack }: {
         {onBack && <button type="button" className="btn btn-lg btn-outline-light" onClick={onBack}>Zurück</button>}
       </div>
       <p style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--muted)', margin: '18px 0 0' }}>
-        Wir nutzen Ihre Angaben nur für Ihre Anfrage und die Rückmeldung dazu. Details in der Datenschutzerklärung.
+        Wir nutzen Ihre Angaben nur für Ihre Anfrage und die Rückmeldung dazu. Details in der <a href="/datenschutz" target="_blank" rel="noopener" className="ul">Datenschutzerklärung</a>.
       </p>
     </form>
   )

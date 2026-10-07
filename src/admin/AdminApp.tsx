@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNoindex } from '../check/CheckPage'
 import {
   OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, addAppointment, deleteAppointment, loadAll, loadClient, loadMyProfile, setAppointmentStatus, loadTeam, myId, saveMyProfile,
-  revokeInvite, saveOffer, sendStaffMessage, setAssignee, setNextContact, setRole, setStage, signInPlain, signInStaff, signOutStaff, signUpStaff, stageLabel,
+  revokeInvite, saveOffer, sendStaffMessage, setAssignee, setNextContact, setRole, setStage, signInPlain, signInStaff, mfaEnroll, mfaState, mfaVerify, signOutStaff, signUpStaff, stageLabel,
   type Invite,
   type Activity, type Appointment, type Check, type Lead, type Message, type Note, type Offer, type Order, type Profile, type Request, type Stage,
 } from './api'
@@ -48,11 +48,58 @@ export default function AdminApp() {
 }
 
 function AdminRoot() {
-  const [state, setState] = useState<'loading' | 'login' | 'ok'>('loading')
-  useEffect(() => { isStaff().then(ok => setState(ok ? 'ok' : 'login')).catch(() => setState('login')) }, [])
+  const [state, setState] = useState<'loading' | 'login' | 'mfa' | 'ok'>('loading')
+  // Nach dem Passwort immer noch der zweite Faktor (TOTP) — sonst kein Zugriff.
+  const afterPassword = () => mfaState().then(m => setState(m.status === 'ok' ? 'ok' : 'mfa')).catch(() => setState('login'))
+  useEffect(() => { isStaff().then(ok => (ok ? afterPassword() : setState('login'))).catch(() => setState('login')) }, [])
+  const logout = async () => { await signOutStaff(); setState('login') }
   if (state === 'loading') return <div style={{ padding: 40, color: muted }}>Загрузка…</div>
-  if (state === 'login') return <Login onDone={() => setState('ok')} />
-  return <Dashboard onLogout={async () => { await signOutStaff(); setState('login') }} />
+  if (state === 'login') return <Login onDone={afterPassword} />
+  if (state === 'mfa') return <MfaGate onDone={() => setState('ok')} onCancel={logout} />
+  return <Dashboard onLogout={logout} />
+}
+
+function MfaGate({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
+  const [mode, setMode] = useState<{ factorId: string; qr?: string; secret?: string } | null>(null)
+  const [code, setCode] = useState(''), [err, setErr] = useState(''), [busy, setBusy] = useState(false)
+  useEffect(() => {
+    mfaState().then(async m => {
+      if (m.status === 'ok') return onDone()
+      if (m.status === 'verify') return setMode({ factorId: m.factorId })
+      const r = await mfaEnroll()
+      if (typeof r === 'string') setErr(r)
+      else setMode(r)
+    })
+  }, [])
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!mode) return
+    setBusy(true); setErr('')
+    const r = await mfaVerify(mode.factorId, code)
+    setBusy(false)
+    if (r) setErr(r)
+    else onDone()
+  }
+  return (
+    <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 20, backgroundColor: 'var(--bone)' }}>
+      <form onSubmit={submit} style={{ ...card, width: '100%', maxWidth: 380 }}>
+        <h1 style={{ fontSize: 20, margin: '0 0 8px' }}>Двухфакторный вход</h1>
+        {mode?.qr ? (
+          <>
+            <p style={{ ...small, margin: '0 0 12px', lineHeight: 1.6 }}>Один раз: отсканируйте QR-код в Google Authenticator, 1Password или Microsoft Authenticator и введите 6-значный код.</p>
+            <img src={mode.qr} alt="QR-код для приложения-аутентификатора" width={180} height={180} style={{ display: 'block', margin: '0 auto 10px' }} />
+            <p style={{ ...small, margin: '0 0 14px', wordBreak: 'break-all' }}>Ключ вручную: <code>{mode.secret}</code></p>
+          </>
+        ) : (
+          <p style={{ ...small, margin: '0 0 14px' }}>Введите 6-значный код из приложения-аутентификатора.</p>
+        )}
+        <input value={code} onChange={e => setCode(e.target.value)} inputMode="numeric" autoComplete="one-time-code" placeholder="123 456" autoFocus style={{ ...input, fontSize: 18, letterSpacing: '0.2em', textAlign: 'center' }} />
+        {err && <p style={{ color: '#D93A3A', fontSize: 13.5, margin: '10px 0 0' }}>{err}</p>}
+        <button type="submit" disabled={busy || !mode || code.replace(/\s/g, '').length < 6} className="btn btn-md btn-electric" style={{ width: '100%', marginTop: 14 }}>{busy ? 'Проверка…' : 'Подтвердить'}</button>
+        <button type="button" onClick={onCancel} style={{ ...linkBtn, marginTop: 12 }}>Выйти</button>
+      </form>
+    </div>
+  )
 }
 
 function Login({ onDone }: { onDone: () => void }) {

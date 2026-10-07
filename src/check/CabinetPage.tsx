@@ -1,3 +1,4 @@
+import { COMPANY } from '../company'
 import LangSwitch from '../LangSwitch'
 import { useEffect, useState } from 'react'
 import { dateLocale } from '../i18n'
@@ -574,7 +575,7 @@ export default function CabinetPage() {
               <p style={{ fontSize: 13.5, color: 'var(--muted)', margin: '0 0 14px' }}>{manager ? (manager.title || 'Ihr Ansprechpartner') : 'Regionale Agentur'}</p>
               {book && <a href={book} target="_blank" rel="noopener noreferrer" className="btn btn-md btn-electric" style={{ marginBottom: 14 }}>Termin vereinbaren</a>}
               <br />
-              <a href="mailto:hallo@rag-agentur.de" className="ul" style={{ fontSize: 14, color: 'var(--electric)', fontWeight: 600 }}>hallo@rag-agentur.de</a>
+              <a href={`mailto:${COMPANY.email}`} className="ul" style={{ fontSize: 14, color: 'var(--electric)', fontWeight: 600 }}>{COMPANY.email}</a>
               <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--line-soft)', fontSize: 13.5, display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--muted)' }}>Status</span><strong>{ready ? 'Bericht fertig' : confirmed ? 'Check aktiv' : 'Bestätigung offen'}</strong>
               </div>

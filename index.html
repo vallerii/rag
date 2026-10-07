@@ -13,6 +13,10 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#07070C" />
+    <link rel="preload" href="/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- Russische Besucher: vorgerenderten deutschen Text verbergen, bis die Übersetzung steht (kein Aufblitzen). -->
+    <script>try{var l=new URLSearchParams(location.search).get('lang')||localStorage.getItem('rag-lang');if(l==='ru')document.documentElement.className+=' i18n-wait'}catch(e){}</script>
+    <style>.i18n-wait #root{visibility:hidden}</style>
   </head>
   <body>
     <!-- figma:body-start -->

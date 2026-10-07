@@ -1,5 +1,6 @@
 // Datenzugriff für den Admin-Bereich. Rechte regelt die Datenbank (RLS, supabase/admin.sql):
 // nur Konten mit Rolle manager/admin sehen fremde Daten.
+import { turnstileToken } from '../check/turnstile'
 import { getSupabase } from '../check/data'
 import type { OfferItem } from './catalog'
 
@@ -26,7 +27,7 @@ const db = () => getSupabase()
 
 export async function signInStaff(email: string, password: string): Promise<string | null> {
   const s = await db()
-  const { error } = await s.auth.signInWithPassword({ email: email.trim(), password })
+  const { error } = await s.auth.signInWithPassword({ email: email.trim(), password, options: { captchaToken: (await turnstileToken().catch(() => null)) ?? undefined } })
   if (error) return 'Неверный e-mail или пароль.'
   if (!(await isStaff())) { await s.auth.signOut(); return 'У этого аккаунта нет доступа.' }
   return null
@@ -199,13 +200,13 @@ export async function currentEmail(): Promise<string | null> {
 }
 export async function signUpStaff(name: string, email: string, password: string): Promise<string | null> {
   const s = await db()
-  const { data, error } = await s.auth.signUp({ email: email.trim(), password, options: { data: { name: name.trim() } } })
+  const { data, error } = await s.auth.signUp({ email: email.trim(), password, options: { data: { name: name.trim() }, captchaToken: (await turnstileToken().catch(() => null)) ?? undefined } })
   if (error) return /already|exists|registered/i.test(error.message) ? 'exists' : /password/i.test(error.message) ? 'Пароль слишком простой — минимум 8 символов.' : 'Не удалось создать аккаунт.'
   if (!data.session) return 'exists'
   return null
 }
 export async function signInPlain(email: string, password: string): Promise<string | null> {
-  const { error } = await (await db()).auth.signInWithPassword({ email: email.trim(), password })
+  const { error } = await (await db()).auth.signInWithPassword({ email: email.trim(), password, options: { captchaToken: (await turnstileToken().catch(() => null)) ?? undefined } })
   return error ? 'Неверный e-mail или пароль.' : null
 }
 
@@ -270,4 +271,31 @@ export async function publishVersion(c: Check, report: object): Promise<object |
   if (error) return null
   await s.from('check_reports').insert({ check_id: c.id, user_id: c.user_id, report })
   return report
+}
+
+// ── Zwei-Faktor-Anmeldung (TOTP, z. B. Google Authenticator / 1Password) ─────
+// Pflicht für das Team. Die Datenbank prüft zusätzlich aal2 in is_staff() (supabase/mfa.sql).
+export type MfaState = { status: 'ok' } | { status: 'enroll' } | { status: 'verify'; factorId: string }
+
+export async function mfaState(): Promise<MfaState> {
+  const s = await db()
+  const { data } = await s.auth.mfa.getAuthenticatorAssuranceLevel()
+  if (data?.currentLevel === 'aal2') return { status: 'ok' }
+  const { data: f } = await s.auth.mfa.listFactors()
+  const totp = f?.totp?.find(x => x.status === 'verified')
+  return totp ? { status: 'verify', factorId: totp.id } : { status: 'enroll' }
+}
+
+export async function mfaEnroll(): Promise<{ factorId: string; qr: string; secret: string } | string> {
+  const s = await db()
+  const { data: f } = await s.auth.mfa.listFactors()
+  for (const x of f?.all ?? []) if (x.status !== 'verified') await s.auth.mfa.unenroll({ factorId: x.id })
+  const { data, error } = await s.auth.mfa.enroll({ factorType: 'totp', friendlyName: `RAG ${new Date().toISOString().slice(0, 16)}` })
+  if (error || !data || data.type !== 'totp') return 'Не удалось включить 2FA. Проверьте, что MFA (TOTP) включён в Supabase → Authentication.'
+  return { factorId: data.id, qr: data.totp.qr_code, secret: data.totp.secret }
+}
+
+export async function mfaVerify(factorId: string, code: string): Promise<string | null> {
+  const { error } = await (await db()).auth.mfa.challengeAndVerify({ factorId, code: code.replace(/\s/g, '') })
+  return error ? 'Неверный код. Проверьте время на телефоне и попробуйте снова.' : null
 }

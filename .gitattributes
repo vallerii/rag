@@ -147,3 +147,6 @@
 
 # Self-hosted web fonts are served as-is (no LFS), so hosting works without LFS support
 public/fonts/*.woff2 -filter -diff -merge binary
+
+# Vorschaubild für Link-Vorschauen — ohne LFS, damit es auch ohne LFS-Unterstützung ausgeliefert wird
+public/og-image.png -filter -diff -merge binary
