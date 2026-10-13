@@ -119,7 +119,7 @@ export function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <AuthShell eyebrow="Passwort vergessen" title="Bitte prüfen Sie Ihr Postfach." sub="Wenn es für diese Adresse ein Konto gibt, haben wir einen Link zum Zurücksetzen geschickt. Der Link ist nur kurze Zeit gültig — schauen Sie auch im Spam-Ordner nach.">
+      <AuthShell eyebrow="Passwort vergessen" title="Bitte prüfen Sie Ihr Postfach" sub="Wenn es für diese Adresse ein Konto gibt, haben wir einen Link zum Zurücksetzen geschickt. Der Link ist nur kurze Zeit gültig — schauen Sie auch im Spam-Ordner nach.">
         <a href="/login" className="btn btn-lg btn-outline-light" style={{ width: '100%' }}>Zurück zur Anmeldung</a>
       </AuthShell>
     )
@@ -181,14 +181,14 @@ export function ResetPasswordPage() {
 
   if (ready === 'invalid') {
     return (
-      <AuthShell eyebrow="Passwort zurücksetzen" title="Der Link ist abgelaufen." sub="Links zum Zurücksetzen gelten nur kurze Zeit und nur einmal. Fordern Sie einfach einen neuen an.">
+      <AuthShell eyebrow="Passwort zurücksetzen" title="Der Link ist abgelaufen" sub="Links zum Zurücksetzen gelten nur kurze Zeit und nur einmal. Fordern Sie einfach einen neuen an.">
         <a href="/passwort-vergessen" className="btn btn-lg btn-electric" style={{ width: '100%' }}>Neuen Link anfordern <span className="arw">→</span></a>
       </AuthShell>
     )
   }
   if (done) {
     return (
-      <AuthShell eyebrow="Passwort zurücksetzen" title="Passwort geändert." sub="Wir leiten Sie zu Ihrem Kundenbereich weiter …">
+      <AuthShell eyebrow="Passwort zurücksetzen" title="Passwort geändert" sub="Wir leiten Sie zu Ihrem Kundenbereich weiter …">
         <a href="/kabinett" className="btn btn-lg btn-electric" style={{ width: '100%' }}>Zum Kundenbereich <span className="arw">→</span></a>
       </AuthShell>
     )

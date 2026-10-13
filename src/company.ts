@@ -72,11 +72,9 @@ export function organizationJsonLd(siteUrl: string) {
     url: `${siteUrl}/`,
     logo: `${siteUrl}/icon-512.png`,
     image: `${siteUrl}/og-image.png`,
-    description: 'System für lokale Sichtbarkeit in Deutschland, Österreich und der Schweiz: Google Maps und Unternehmensprofil, Website und Google Search, KI-Suche (ChatGPT, Perplexity, Google AI Overviews), Bewertungen und Social Media.',
+    description: 'System für lokale Sichtbarkeit in Deutschland: Google Maps und Unternehmensprofil, Website und Google Search, KI-Suche (ChatGPT, Perplexity, Google AI Overviews), Bewertungen und Social Media.',
     areaServed: [
       { '@type': 'Country', name: 'Deutschland' },
-      { '@type': 'Country', name: 'Österreich' },
-      { '@type': 'Country', name: 'Schweiz' },
     ],
     knowsLanguage: ['de', 'ru'],
     email: c.email,

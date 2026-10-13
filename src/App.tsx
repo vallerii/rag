@@ -966,23 +966,127 @@ type PackageOrder = { pkg: PackageId | null; social: boolean }
 
 const PROFILE_PRICE = '149 €'
 
-const WEBSITE_PACKAGES: { id: PackageId; tag: string; name: string; price: number; thesis: string; includes: string[] }[] = [
+const WEBSITE_PACKAGES: { id: PackageId; tag: string; name: string; price: number; thesis: string; forWhom: string; includes: string[] }[] = [
   {
     id: 'onepager', tag: 'Einstieg', name: 'One Pager', price: 30,
-    thesis: 'Ein professioneller Auftritt im Netz — schnell und günstig.',
+    thesis: 'Ein professioneller Auftritt im Netz: schnell und günstig.',
+    forWhom: 'Für Sie, wenn es noch gar keine Website gibt.',
     includes: ['Website auf einer Seite', 'Leistungen und Kontakt klar aufgebaut', 'Optimiert für das Smartphone', 'Hosting und technische Betreuung'],
   },
   {
     id: 'local', tag: 'Standard', name: 'Local Website', price: 299,
-    thesis: 'Ihre Website bringt Anfragen aus Ihrer Stadt und Region.',
-    includes: ['Mehrseitige lokale Website', 'Seiten für Leistungen und Orte', 'Google-Unternehmensprofil', 'Lokales SEO (Grundlagen)', 'Regelmäßige Updates und Betreuung'],
+    thesis: 'Ihre Website bringt jeden Monat mehr Anfragen über Google aus Ihrer Stadt und Region.',
+    forWhom: 'Für Sie, wenn Kunden Sie über Google finden sollen.',
+    includes: [
+      'Ihre jetzige Website verbessert oder neu gebaut',
+      'Website mit einer Seite pro Leistung und Ort',
+      '3 neue Artikel jeden Monat: Antworten auf Fragen Ihrer Kunden',
+      'SEO laufend aktualisiert: Texte, Titel, Struktur und Technik',
+      'Google-Unternehmensprofil eingerichtet',
+      'Änderungen und Betreuung jeden Monat',
+      'Bericht jedes Quartal: Besucher und Anfragen',
+    ],
   },
   {
     id: 'aiplus', tag: 'Premium', name: 'AI Plus', price: 499,
-    thesis: 'Maximale Sichtbarkeit — bei Google, in Karten, Verzeichnissen und der KI-Suche.',
-    includes: ['Alles aus Local Website', 'Erweiterte Optimierung des Google-Profils', 'Verzeichnisse und einheitliche Unternehmensdaten', 'Inhalte für Google und die KI-Suche', 'Monitoring und Empfehlungen'],
+    thesis: 'Wir arbeiten auch außerhalb Ihrer Website, damit Google, Karten und KI-Assistenten Sie empfehlen.',
+    forWhom: 'Für Sie, wenn Konkurrenten öfter empfohlen werden als Sie.',
+    includes: [
+      '5 neue Artikel jeden Monat für Google und KI-Assistenten',
+      'Erwähnungen und Links auf anderen Seiten: Branchenportale, Partner, lokale Presse',
+      'Google-Profil laufend gepflegt: Beiträge, Antworten auf Bewertungen',
+      'Automatische Bitte um Bewertung nach jedem Auftrag',
+      'Verzeichnisse inkl. Bing Places und Apple Maps, überall mit gleichen Daten',
+      'KI-Monitor: jeden Monat 10 Kundenfragen an ChatGPT',
+      'Monatsbericht: in wie vielen KI-Antworten Sie genannt werden',
+      'Dazu alles aus Local Website',
+    ],
   },
 ]
+
+// Vergleichstabelle unter den Website-Paketen (/preise).
+// Idee: Local Website arbeitet an Ihrer Website, AI Plus zusätzlich überall außerhalb.
+type CompareCell = boolean | string
+const PACKAGE_COMPARE: { group: string; rows: { label: string; cells: [CompareCell, CompareCell, CompareCell] }[] }[] = [
+  {
+    group: 'Ihre Website',
+    rows: [
+      { label: 'Ihre jetzige Website', cells: ['neu gebaut', 'verbessert oder neu gebaut', 'verbessert oder neu gebaut'] },
+      { label: 'Seiten', cells: ['1 Seite', 'pro Leistung und Ort', 'pro Leistung und Ort'] },
+      { label: 'Neue Artikel', cells: [false, '3 pro Monat', '5 pro Monat'] },
+      { label: 'SEO laufend aktualisiert', cells: [false, true, true] },
+      { label: 'Hosting und Technik', cells: [true, true, true] },
+    ],
+  },
+  {
+    group: 'Außerhalb Ihrer Website',
+    rows: [
+      { label: 'Google-Unternehmensprofil', cells: [false, 'eingerichtet', 'laufend gepflegt'] },
+      { label: 'Bewertungen sammeln', cells: [false, false, 'nach jedem Auftrag'] },
+      { label: 'Links und Erwähnungen auf anderen Seiten', cells: [false, false, true] },
+      { label: 'Verzeichnisse, überall gleiche Daten', cells: [false, false, true] },
+      { label: 'KI-Monitor: 10 Fragen an ChatGPT im Monat', cells: [false, false, true] },
+    ],
+  },
+  {
+    group: 'Was Sie sehen',
+    rows: [
+      { label: 'Bericht', cells: [false, 'jedes Quartal', 'jeden Monat, mit KI-Antworten'] },
+    ],
+  },
+]
+
+function PackageCompare() {
+  const cell = (v: CompareCell) => v === true ? checkIcon() : v === false ? <span style={{ color: 'var(--muted)', opacity: 0.6 }}>—</span> : <span style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.35 }}>{v}</span>
+  const cols = 'minmax(180px, 1.4fr) repeat(3, minmax(120px, 1fr))'
+  const hi = (i: number) => i === 2 ? { backgroundColor: 'var(--brand-soft)' } : {}
+  return (
+    <Reveal delay={0.08}>
+      <style>{`@media (max-width: 640px) {
+  .cmp-table { min-width: 0 !important; }
+  .cmp-row { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .cmp-label { grid-column: 1 / -1; padding: 12px 0 4px !important; }
+  .cmp-cell { border-top: none !important; padding: 4px 8px 12px !important; }
+  .cmp-cell span { font-size: 13px !important; }
+  .cmp-blank { display: none; }
+  .cmp-head { padding: 10px 8px !important; }
+}`}</style>
+      <div className="d-card-flat" style={{ marginTop: 'clamp(12px, 1.4vw, 18px)', padding: 'clamp(22px, 2.4vw, 32px)', border: '1px solid var(--border)' }}>
+        <h2 className="display" style={{ fontSize: 'clamp(21px, 1.9vw, 27px)', lineHeight: 1.2, margin: '0 0 8px' }}>Pakete im Vergleich</h2>
+        <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)', margin: '0 0 20px', maxWidth: 640 }}>Local Website arbeitet an Ihrer Website. AI Plus arbeitet zusätzlich überall dort, wo man Sie sonst noch sucht: im Google-Profil, in Verzeichnissen, auf anderen Seiten und in der KI-Suche.</p>
+        <div style={{ overflowX: 'auto', margin: '0 -4px' }}>
+          <div role="table" aria-label="Pakete im Vergleich" className="cmp-table" style={{ minWidth: 620, padding: '0 4px' }}>
+            <div role="row" className="cmp-row" style={{ display: 'grid', gridTemplateColumns: cols, alignItems: 'end' }}>
+              <span role="columnheader" className="cmp-blank" />
+              {WEBSITE_PACKAGES.map((p, i) => (
+                <div role="columnheader" key={p.id} className="cmp-head" style={{ padding: '12px 14px', borderRadius: '14px 14px 0 0', ...hi(i) }}>
+                  <div style={{ fontWeight: 700, fontSize: 15 }}>{p.name}</div>
+                  <div style={{ fontSize: 13, color: 'var(--muted)' }}>{p.price} € / Monat</div>
+                </div>
+              ))}
+            </div>
+            {PACKAGE_COMPARE.map(g => (
+              <div key={g.group} role="rowgroup">
+                <div role="row" className="cmp-row" style={{ display: 'grid', gridTemplateColumns: cols }}>
+                  <span role="cell" className="eyebrow cmp-label" style={{ fontSize: 11, color: 'var(--electric)', padding: '18px 0 8px' }}>{g.group}</span>
+                  {[0, 1, 2].map(i => <span key={i} role="cell" className="cmp-blank" style={hi(i)} />)}
+                </div>
+                {g.rows.map(r => (
+                  <div role="row" key={r.label} className="cmp-row" style={{ display: 'grid', gridTemplateColumns: cols, alignItems: 'stretch' }}>
+                    <span role="rowheader" className="cmp-label" style={{ fontSize: 14.5, lineHeight: 1.45, padding: '11px 12px 11px 0', borderTop: '1px solid var(--line)' }}>{r.label}</span>
+                    {r.cells.map((v, i) => (
+                      <span role="cell" key={i} className="cmp-cell" style={{ display: 'flex', alignItems: 'center', padding: '11px 14px', borderTop: '1px solid var(--line)', ...hi(i) }}>{cell(v)}</span>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Reveal>
+  )
+}
 
 const SOCIAL_ADDON = {
   name: 'Social-Media-Betreuung', price: 199,
@@ -1264,7 +1368,8 @@ function Pricing() {
                       <span className="display" style={{ fontSize: 'clamp(34px, 3.2vw, 44px)', lineHeight: 1 }}>{p.price} €</span>
                       <span style={{ fontSize: 14, color: dark ? 'rgba(255,255,255,0.55)' : 'var(--muted)' }}>/ Monat</span>
                     </div>
-                    <p style={{ fontSize: 15, lineHeight: 1.6, color: dark ? 'rgba(255,255,255,0.7)' : 'var(--muted)', margin: '0 0 18px' }}>{p.thesis}</p>
+                    <p style={{ fontSize: 15, lineHeight: 1.6, color: dark ? 'rgba(255,255,255,0.7)' : 'var(--muted)', margin: '0 0 12px' }}>{p.thesis}</p>
+                    <p style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.45, color: 'var(--electric)', margin: '0 0 18px' }}>{p.forWhom}</p>
                     <div style={{ marginBottom: 22 }}>
                       {p.includes.map(it => (
                         <div key={it} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '9px 0', borderTop: `1px solid ${dark ? 'var(--line-dark)' : 'var(--line)'}` }}>
@@ -1280,6 +1385,8 @@ function Pricing() {
               )
             })}
           </div>
+
+          <PackageCompare />
 
           {/* + — Social Media, Add-on oder einzeln */}
           <Reveal delay={0.1}>
@@ -1658,7 +1765,7 @@ function Hero() {
 
             <h1 className="display h-xl" style={{ marginBottom: 28 }}>
               <span className="mask-line"><span style={{ ['--d' as any]: '0.08s' }}>Werden Sie zur <span style={{ color: 'var(--electric)' }}>ersten Wahl</span></span></span>
-              <span className="mask-line"><span style={{ ['--d' as any]: '0.16s' }}>in Ihrer Region.</span></span>
+              <span className="mask-line"><span style={{ ['--d' as any]: '0.16s' }}>in Ihrer Region</span></span>
             </h1>
 
             <div className="mask-line" style={{ marginBottom: 36 }}>
@@ -1713,7 +1820,7 @@ function ChannelOverview() {
           <MaskHeading
             className="h-lg"
             style={{ marginTop: 18 }}
-            lines={[<>Ihre Kunden suchen Sie nicht mehr an einem Ort.</>]}
+            lines={[<>Ihre Kunden suchen Sie nicht mehr an einem Ort</>]}
           />
           <Reveal delay={0.1}>
             <p className="lead" style={{ color: 'var(--muted)', maxWidth: 680, margin: '20px auto 0' }}>
@@ -1818,7 +1925,7 @@ function ChannelAI() {
   return (
     <ChannelBlock
       id="ki" label="KI-Suche"
-      title={<>Lokale Suche beginnt immer öfter mit einer <span className="serif italic-serif">Frage an die KI.</span></>}
+      title={<>Lokale Suche beginnt immer öfter mit einer <span className="serif italic-serif">Frage an die KI</span></>}
       body="ChatGPT, Perplexity und die KI-Übersichten bei Google nennen nur wenige Anbieter — und zwar die, die sie eindeutig verstehen und für vertrauenswürdig halten."
       actions={<>
         <a href="#audit-quiz" className="btn btn-md btn-electric">Prüfen, wie die KI mich sieht <span className="arw">→</span></a>
@@ -1829,11 +1936,11 @@ function ChannelAI() {
           <div aria-hidden className="d-card d-hide-md" style={{ position: 'absolute', inset: '44px -8px 0 28px', transform: 'rotate(-2deg)', opacity: 0.55 }} />
           <div className="d-card" style={{ position: 'relative', padding: 'clamp(22px, 2.6vw, 30px)', display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ alignSelf: 'flex-end', maxWidth: 340, backgroundColor: 'var(--ink)', color: '#fff', borderRadius: '18px 18px 4px 18px', padding: '13px 17px', fontSize: 15, lineHeight: 1.5 }}>
-              Welcher Elektriker in Wien ist zuverlässig und hat einen Notdienst?
+              Welcher Elektriker in Leipzig ist zuverlässig und hat einen Notdienst?
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
               <IconTile kind="ki" small />
-              <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6 }}>In Wien wird häufig <strong>Muster Elektrotechnik</strong> empfohlen: Installation, Smart Home und Notdienst, sehr gute Bewertungen bei Google.</p>
+              <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6 }}>In Leipzig wird häufig <strong>Muster Elektrotechnik</strong> empfohlen: Installation, Smart Home und Notdienst, sehr gute Bewertungen bei Google.</p>
             </div>
             <div style={{ borderTop: '1px solid var(--divider)', paddingTop: 14 }}>
               <p className="eyebrow" style={{ color: 'var(--muted)', fontSize: 11.5, marginBottom: 10 }}>Die KI muss verstehen</p>
@@ -1872,7 +1979,7 @@ function ChannelMaps() {
       <ChannelBlock
         id="maps" label="Google Maps" tone="soft"
         backdrop={<PanelMapBackdrop />}
-        title={<>Google Maps ist <span className="serif italic-serif">Pflicht</span> für lokale Unternehmen.</>}
+        title={<>Google Maps ist <span className="serif italic-serif">Pflicht</span> für lokale Unternehmen</>}
         body="Menschen suchen in der Nähe, lesen Bewertungen und rufen direkt an. Für ein lokales Unternehmen ist das einer der kürzesten Wege von der Suche zur Anfrage."
         actions={<>
           <a href="/services/google-maps-business-profile" className="btn btn-md btn-paper">Mehr zu Google Maps <span className="arw">→</span></a>
@@ -1912,7 +2019,7 @@ function ChannelSearch() {
       {order && <PackageOrderModal initial={order} onClose={() => setOrder(null)} />}
       <ChannelBlock
         id="search" label="Google Search" tone="bone"
-        title={<>Google Search schaut nicht nur auf <span className="serif italic-serif">Ihre Website.</span></>}
+        title={<>Google Search schaut <span className="serif italic-serif">nicht nur auf Ihre Website</span></>}
         body="Über den Links stehen heute eine KI-Antwort und eine Karte mit drei Betrieben. Google sammelt Informationen über Sie im ganzen Netz: auf Ihrer Website, im Google-Profil, in Bewertungen und sozialen Netzwerken. Wir sorgen dafür, dass Google Sie findet und jede Kundenfrage beantworten kann."
         actions={<>
           <a href="/services/website-google-search" className="btn btn-md btn-ink">Mehr zu Website & Google Search <span className="arw">→</span></a>
@@ -1925,7 +2032,7 @@ function ChannelSearch() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 'clamp(16px, 2vw, 22px) clamp(18px, 2.4vw, 28px)', borderBottom: '1px solid var(--divider)' }}>
                 <GLogo />
                 <span style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '11px 18px', borderRadius: 999, border: '1px solid var(--border)', fontSize: 15, color: 'var(--ink)' }}>
-                  Elektriker in Zürich
+                  Elektriker in Stuttgart
                   <ChannelIcon kind="search" size={17} />
                 </span>
               </div>
@@ -1939,7 +2046,7 @@ function ChannelSearch() {
                       muster-elektro.de › leistungen
                     </span>
                   </div>
-                  <p style={{ fontSize: 'clamp(17px, 1.5vw, 19px)', lineHeight: 1.3, color: 'var(--electric)', margin: '0 0 6px', fontWeight: 800 }}>Elektriker in Zürich — Installation, Smart Home & Notdienst</p>
+                  <p style={{ fontSize: 'clamp(17px, 1.5vw, 19px)', lineHeight: 1.3, color: 'var(--electric)', margin: '0 0 6px', fontWeight: 800 }}>Elektriker in Stuttgart — Installation, Smart Home & Notdienst</p>
                   <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--muted)', margin: '0 0 12px' }}>Was wir tun, wo wir arbeiten und welche Projekte wir in der Region umgesetzt haben — klar erklärt.</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {['Leistungen', 'Region', 'Referenzen', 'Kontakt'].map(t => (
@@ -1985,7 +2092,7 @@ function ChannelSocial() {
       <div style={{ ...SHELL, position: 'relative' }}>
         <div style={{ textAlign: 'center', maxWidth: 820, margin: '0 auto' }}>
           <Reveal><Kicker icon="social">Social Media</Kicker></Reveal>
-          <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '20px 0 18px' }}>In sozialen Netzwerken sehen Kunden <span className="serif italic-serif">Menschen.</span></h2></Reveal>
+          <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '20px 0 18px' }}>In sozialen Netzwerken <span className="serif italic-serif">sehen Kunden Menschen</span></h2></Reveal>
           <Reveal delay={0.1}><p className="lead" style={{ color: 'var(--muted)', margin: 0 }}>Team, Arbeitsweise und echte Ergebnisse machen Ihr Unternehmen vertraut — schon vor dem ersten Anruf. Dafür müssen Sie kein Influencer werden.</p></Reveal>
           <Reveal delay={0.12}><a href="/ratgeber/brauchen-handwerker-instagram" className="d-link" style={{ display: 'inline-block', marginTop: 16, fontSize: 15 }}>Im Ratgeber: {articleTitle('brauchen-handwerker-instagram')} <span className="arw">→</span></a></Reveal>
         </div>
@@ -2043,7 +2150,7 @@ function ChannelSummary() {
           <MaskHeading
             className="h-md"
             style={{ marginTop: 18 }}
-            lines={[<>Alle Kanäle sollten eine <span className="serif italic-serif">klare Geschichte</span> über Ihr Unternehmen erzählen.</>]}
+            lines={[<>Alle Kanäle sollten eine <span className="serif italic-serif">klare Geschichte</span> über Ihr Unternehmen erzählen</>]}
           />
         </div>
 
@@ -2093,7 +2200,7 @@ function BusinessCheck() {
               <MaskHeading
                 className="h-md"
                 style={{ margin: '18px 0 20px', color: '#fff' }}
-                lines={[<>Finden Sie Ihr Unternehmen —</>, <>wir zeigen, wie Google und KI Sie sehen.</>]}
+                lines={[<>Finden Sie Ihr Unternehmen —</>, <>wir zeigen, wie Google und KI Sie sehen</>]}
               />
               <Reveal delay={0.1}>
                 <p style={{ fontSize: 17, lineHeight: 1.65, color: '#DCD8FF', margin: '0 0 28px', maxWidth: 540 }}>
@@ -2159,7 +2266,7 @@ function MarketShift() {
         <div style={{ marginTop: 28, maxWidth: 1000 }}>
           <MaskHeading
             className="h-lg"
-            lines={[<>Ihre Kunden suchen nicht</>, <>mehr <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>nur bei Google.</span></>]}
+            lines={[<>Ihre Kunden suchen nicht</>, <>mehr <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>nur bei Google</span></>]}
           />
           <Reveal delay={0.1}>
             <p className="lead" style={{ color: 'var(--muted)', maxWidth: 620, margin: '22px 0 0' }}>
@@ -2425,7 +2532,7 @@ function LocalPromotion() {
             <MaskHeading
               className="h-md"
               style={{ marginTop: 22 }}
-              lines={[<>Aus einzelnen Kanälen</>, <>wird ein <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>klares Bild</span></>, <>Ihres Unternehmens.</>]}
+              lines={[<>Aus einzelnen Kanälen</>, <>wird ein <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>klares Bild</span></>, <>Ihres Unternehmens</>]}
             />
             <Reveal delay={0.12}>
               <a href="/services" className="btn btn-lg btn-ink" style={{ marginTop: 32 }}>
@@ -2665,7 +2772,7 @@ function ServiceSelector() {
             <MaskHeading
               className="h-lg"
               style={{ maxWidth: 1080 }}
-              lines={[<>Vier Kanäle —</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>ein System.</span></>]}
+              lines={[<>Vier Kanäle —</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>ein System</span></>]}
             />
             <Reveal delay={0.12}>
               <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '26px 0 0', maxWidth: 600 }}>
@@ -2822,7 +2929,7 @@ function TwoRoutes() {
               <div style={{ borderTop: '1px solid var(--line-dark)', paddingTop: 24, height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <span className="eyebrow" style={{ fontSize: 10, color: 'var(--electric-2)' }}>Variante 02</span>
                 <h3 className="display" style={{ fontSize: 'clamp(20px, 1.8vw, 26px)', lineHeight: 1.2, margin: '12px 0 10px' }}>
-                  Sie starten gerade? Beginnen Sie mit Google Maps.
+                  Sie starten gerade? Beginnen Sie mit Google Maps
                 </h3>
                 <p style={{ fontSize: 15, lineHeight: 1.65, color: 'rgba(255,255,255,0.55)', margin: '0 0 16px' }}>
                   Wir erstellen und optimieren Ihr Google-Unternehmensprofil — die professionelle Grundlage für Ihre lokale Sichtbarkeit.
@@ -3277,7 +3384,7 @@ function AuditQuiz() {
           <MaskHeading
             className="h-md"
             style={{ marginBottom: 24, color: '#fff' }}
-            lines={[<>Wir sagen Ihnen,</>, <><span className="serif italic-serif">was jetzt zu tun ist.</span></>]}
+            lines={[<>Wir sagen Ihnen,</>, <><span className="serif italic-serif">was jetzt zu tun ist</span></>]}
           />
           <Reveal delay={0.12}>
             <p style={{ fontSize: 16, lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', marginBottom: 34, maxWidth: 460 }}>
@@ -3576,8 +3683,8 @@ const servicePages: ServicePageData[] = [
     howTitle: 'Drei Pakete — je nachdem, wo Sie stehen',
     howItems: [
       { title: 'One Pager', body: 'Eine Seite mit Leistungen und Kontakt, optimiert für das Smartphone — Hosting und Technik inklusive. Der schnelle Einstieg.' },
-      { title: 'Local Website', body: 'Mehrere Seiten: eine pro Leistung und pro Ort, dazu Google-Unternehmensprofil, lokales SEO und regelmäßige Updates.' },
-      { title: 'AI Plus', body: 'Alles aus Local Website, dazu Verzeichnisse, Inhalte für Google und die KI-Suche sowie Monitoring und Empfehlungen.' },
+      { title: 'Local Website', body: 'Eine Seite pro Leistung und Ort, jeden Monat 3 neue Artikel, laufend aktualisiertes SEO und ein eingerichtetes Google-Unternehmensprofil.' },
+      { title: 'AI Plus', body: 'Alles aus Local Website und dazu Arbeit außerhalb Ihrer Website: Links und Erwähnungen auf anderen Seiten, gepflegtes Google-Profil, Bewertungen, Verzeichnisse und monatlicher KI-Monitor.' },
       { title: 'Technik in jedem Paket', body: 'Ladezeiten, mobile Darstellung und strukturierte Daten, damit Ihre Inhalte gefunden und richtig verstanden werden.' },
     ],
     receiveTitle: 'Was Sie erhalten',
@@ -3589,7 +3696,7 @@ const servicePages: ServicePageData[] = [
     whyTitle: 'Warum die Website die Basis bleibt',
     whyBody: 'Google-Profil, Bewertungen und soziale Netzwerke verweisen alle auf einen Punkt: Ihre Website. Fehlen dort klare Antworten, brechen Interessenten genau in dem Moment ab, in dem sie sich entscheiden wollten – und KI-Systeme haben keine verlässliche Quelle über Sie.',
     faq: [
-      { q: 'Welches Paket passt zu mir?', a: 'One Pager, wenn Sie schnell einen professionellen Auftritt brauchen. Local Website, wenn Sie mehrere Leistungen oder Orte haben und Anfragen aus der Region bekommen wollen. AI Plus, wenn Sie zusätzlich in Verzeichnissen und in der KI-Suche sichtbar werden möchten.' },
+      { q: 'Welches Paket passt zu mir?', a: 'One Pager, wenn Sie schnell einen professionellen Auftritt brauchen. Local Website, wenn Kunden Sie über Google finden sollen: Seiten für Leistungen und Orte, 3 neue Artikel im Monat und laufendes SEO. AI Plus mit 5 Artikeln im Monat, wenn Konkurrenten öfter empfohlen werden als Sie: Dann arbeiten wir auch außerhalb Ihrer Website: Links und Erwähnungen auf anderen Seiten, Google-Profil, Bewertungen, Verzeichnisse und KI-Suche.' },
       { q: 'Können Sie meine bestehende Website optimieren?', a: 'In den meisten Fällen ja. Wir prüfen Struktur, Inhalte und Technik Ihrer bestehenden Website und verbessern gezielt das, was Sichtbarkeit und Anfragen blockiert. Nur wenn die technische Basis eine sinnvolle Weiterentwicklung nicht zulässt, empfehlen wir einen Neuaufbau.' },
       { q: 'Brauche ich unbedingt eine Website?', a: 'Für den Start reicht ein gut gepflegtes Google-Unternehmensprofil oft aus. Sobald Sie aber mehrere Leistungen, mehrere Regionen oder erklärungsbedürftige Angebote haben, ist die Website der Ort, an dem all das verständlich zusammenkommt – auch für KI-Systeme.' },
     ],
@@ -3622,7 +3729,7 @@ const servicePages: ServicePageData[] = [
     faq: [
       { q: 'Wie unterscheidet sich das von klassischem SEO?', a: 'Die Grundlagen sind dieselben: klare Inhalte, saubere Technik, einheitliche Angaben. Der Unterschied: Eine KI zeigt keine Trefferliste, sondern nennt wenige Anbieter — deshalb zählt, wie eindeutig und vertrauenswürdig Ihr Unternehmen beschrieben ist.' },
       { q: 'Können Sie eine Empfehlung durch ChatGPT garantieren?', a: 'Nein. Niemand kontrolliert, was eine KI antwortet. Wir sorgen dafür, dass alles, was sie über Sie finden kann, klar, aktuell und stimmig ist — und prüfen regelmäßig, wie Sie dargestellt werden.' },
-      { q: 'In welchem Paket ist das enthalten?', a: 'Im Paket AI Plus für 499 € im Monat: Website, erweiterte Optimierung des Google-Profils, Verzeichnisse, Inhalte für Google und die KI-Suche sowie Monitoring und Empfehlungen.' },
+      { q: 'In welchem Paket ist das enthalten?', a: 'Im Paket AI Plus für 499 € im Monat: Website mit monatlich neuen Artikeln, Links und Erwähnungen auf anderen Seiten, laufend gepflegtes Google-Profil, Bewertungen, Verzeichnisse mit überall gleichen Daten und der KI-Monitor: jeden Monat 10 Kundenfragen an ChatGPT, mit Bericht.' },
     ],
     ctaTitle: 'Kostenloser Check Ihrer KI-Sichtbarkeit',
     ctaBody: 'Wir sagen Ihnen, was Sie zuerst verbessern sollten.',
@@ -3993,7 +4100,7 @@ const glossarEntries: GlossarEntry[] = [
         "„Was kostet eine Heizungswartung\" und „Heizungsnotdienst in meiner Nähe\" sind zwei völlig verschiedene Situationen. Inhalte funktionieren dann, wenn sie zur Absicht passen: Ratgeber und Glossar bedienen die Recherche, Leistungs- und Regionenseiten die Entscheidung.",
       ] },
       { h: "Die drei typischen Absichten", p: [
-        "Informieren: Der Kunde will ein Problem verstehen („warum tropft der Heizkörper“). Vergleichen: Er sucht Optionen und Preise („Heizungswartung Kosten Graz“). Handeln: Er will jetzt einen Anbieter („Heizungsnotdienst in meiner Nähe“).",
+        "Informieren: Der Kunde will ein Problem verstehen („warum tropft der Heizkörper“). Vergleichen: Er sucht Optionen und Preise („Heizungswartung Kosten Nürnberg“). Handeln: Er will jetzt einen Anbieter („Heizungsnotdienst in meiner Nähe“).",
       ] },
       { h: "Was das für Ihre Website bedeutet", p: [
         "Jede Absicht braucht eine passende Seite: Ratgeber-Inhalte für Fragen, Leistungs- und Preisseiten für den Vergleich und klare Regionen- und Kontaktseiten mit Telefonnummer für die Entscheidung.",
@@ -4250,7 +4357,7 @@ const ratgeberArticles: RatgeberArticle[] = [
       {
         h: 'Klare Inhalte statt Werbesprache',
         p: [
-          'Ein Sprachmodell kann nur wiedergeben, was eindeutig formuliert ist. „Ganzheitliche Lösungen für Ihren Erfolg" ist für ein KI-System wertlos. „Wir reparieren Gasheizungen in Basel und im Umkreis von 30 Kilometern, Notdienst rund um die Uhr" ist eine Aussage, die zitiert werden kann.',
+          'Ein Sprachmodell kann nur wiedergeben, was eindeutig formuliert ist. „Ganzheitliche Lösungen für Ihren Erfolg" ist für ein KI-System wertlos. „Wir reparieren Gasheizungen in Freiburg und im Umkreis von 30 Kilometern, Notdienst rund um die Uhr" ist eine Aussage, die zitiert werden kann.',
           'Deshalb ist die Website die Grundlage: Sie ist der einzige Ort, an dem Sie vollständig bestimmen, welche Informationen über Sie im Umlauf sind.',
         ],
       },
@@ -4973,10 +5080,15 @@ function ServicesIndex() {
 
 // Pakete auf den Leistungsseiten — dieselben Preise wie auf /preise (25.09.2026).
 type PriceItemId = 'profile' | PackageId | 'social'
-const SERVICE_PACKAGES: Record<string, { intro: string; items: PriceItemId[]; highlight: PriceItemId; combo?: boolean }> = {
+const SERVICE_PACKAGES: Record<string, { title?: string; intro: string; items: PriceItemId[]; highlight: PriceItemId; combo?: boolean; fromYou?: string }> = {
   'google-maps-business-profile': { intro: 'Google-Profil schlüsselfertig für 149 € einmalig, ohne Abo. Social Media können Sie für 199 €/Monat dazunehmen. In Local Website und AI Plus ist das Profil schon enthalten — in AI Plus laufen die Bitten um Bewertungen nach jedem Auftrag automatisch.', items: ['profile', 'local', 'aiplus'], highlight: 'profile' },
-  'website-google-search': { intro: 'Welches Paket passt, hängt davon ab, wie viel von dem, was Google zeigt, wir für Sie übernehmen. One Pager: die Website als Visitenkarte. Local Website: Website mit Leistungsseiten und Google-Profil — für Suche und Karte. AI Plus: dazu Bewertungen, Verzeichnisse und die KI-Übersicht.', items: ['onepager', 'local', 'aiplus'], highlight: 'local' },
-  'ai-search-optimization': { intro: 'Die KI-Sichtbarkeit steckt in AI Plus: Google-Profil, Website mit bis zu 10 Leistungsseiten und monatlich neuen Artikeln, Bewertungen, Verzeichnisse und der monatliche KI-Check. Nur eine Website ohne KI? Local Website.', items: ['local', 'aiplus'], highlight: 'aiplus' },
+  'website-google-search': { intro: 'Welches Paket passt, hängt davon ab, wie viel von dem, was Google zeigt, wir für Sie übernehmen. One Pager: die Website als Visitenkarte. Local Website: Website mit Leistungsseiten, 3 neuen Artikeln im Monat und laufendem SEO. AI Plus: dazu Arbeit außerhalb der Website: Links auf anderen Seiten, Google-Profil, Bewertungen, Verzeichnisse und KI-Suche.', items: ['onepager', 'local', 'aiplus'], highlight: 'local' },
+  'ai-search-optimization': {
+    title: 'Wir sorgen dafür, dass die KI Sie kennt',
+    intro: 'Wir kümmern uns darum, damit Sie sich auf Ihre Aufträge konzentrieren können. Was sich verändert, sehen Sie im Bericht.',
+    items: ['local', 'aiplus'], highlight: 'aiplus',
+    fromYou: 'Von Ihnen: ein Gespräch von 30–45 Minuten und Fotos Ihrer Arbeiten. Den Rest machen wir.',
+  },
   'social-media': { intro: 'Einzeln oder zu jedem Paket. Sie wählen Ihren Hauptkanal — dort, wo Ihre Kunden sind. Weitere Kanäle kommen auf Wunsch gegen Aufpreis dazu. Zusammen mit dem Google-Profil oder einer Website wirkt Social Media besser: Man findet Sie bei Google und sieht sofort, wer hinter dem Betrieb steht.', items: ['social'], highlight: 'social', combo: true },
 }
 
@@ -5004,12 +5116,11 @@ function ServicePackages({ slug }: { slug: string }) {
       {profileOrder && <ProfileOrderModal initialSocial={profileOrder.social} onClose={() => setProfileOrder(null)} />}
       <section id="pakete" style={{ backgroundColor: 'var(--bone)', padding: '0 clamp(20px,4vw,48px) var(--sec-y, 110px)', scrollMarginTop: 80 }}>
         <div style={{ ...SHELL }}>
-          <div style={{ textAlign: 'center', maxWidth: 760, margin: '0 auto' }}>
-            <Reveal><Kicker>Pakete & Preise</Kicker></Reveal>
-            <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 16px' }}>Was es kostet</h2></Reveal>
-            <Reveal delay={0.1}><p style={{ fontSize: 'clamp(16px, 1.3vw, 18px)', lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>{cfg.intro}</p></Reveal>
+          <div style={{ textAlign: 'center', maxWidth: 1120, margin: '0 auto' }}>
+            <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 16px' }}>{cfg.title ?? 'Was es kostet'}</h2></Reveal>
+            <Reveal delay={0.1}><p style={{ fontSize: 'clamp(16px, 1.3vw, 18px)', lineHeight: 1.65, color: 'var(--muted)', margin: '0 auto', maxWidth: 760 }}>{cfg.intro}</p></Reveal>
           </div>
-          <div className="svc-pk" style={{ display: 'grid', gridTemplateColumns: `repeat(${cfg.items.length}, minmax(0, 1fr))`, gap: 'clamp(16px, 2vw, 28px)', maxWidth: cfg.items.length === 2 ? 1040 : undefined, margin: 'clamp(40px, 5vw, 64px) auto 0', alignItems: 'stretch' }}>
+          <div className="svc-pk" style={{ display: 'grid', gridTemplateColumns: `repeat(${cfg.items.length}, minmax(0, 1fr))`, gap: 'clamp(16px, 2vw, 28px)', margin: 'clamp(40px, 5vw, 64px) auto 0', alignItems: 'stretch' }}>
             {cfg.items.map((id, i) => {
               const it = priceItem(id)
               const hi = id === cfg.highlight
@@ -5074,6 +5185,9 @@ function ServicePackages({ slug }: { slug: string }) {
               )
             })}
           </div>
+          {cfg.fromYou && (
+            <p style={{ fontSize: 15.5, lineHeight: 1.6, fontWeight: 600, margin: '28px auto 0', textAlign: 'center', maxWidth: 720 }}>{cfg.fromYou}</p>
+          )}
           {cfg.combo && (
             <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: '24px auto 0', textAlign: 'center', maxWidth: 720 }}>
               Kombinierbar mit: Google-Profil schlüsselfertig (149 € einmalig) · One Pager (30 €/Monat) · Local Website (299 €/Monat) · AI Plus (499 €/Monat).
@@ -5121,47 +5235,85 @@ type ServiceContent = {
   article?: { href: string; label: string }
   layers?: { title: string; intro: string; items: { kind: 'ads' | 'ai' | 'map' | 'links'; name: string; what: string; source: string }[] }
   needsTitle: string
-  needs: ServiceNeed[]
-  fromYou: string
+  needs?: ServiceNeed[]
+  // Variante ohne «Wobei wir helfen»: nur, was nötig ist (KI-Seite). Unsere Hilfe steht dann im Preisblock.
+  needsIntro?: string
+  factors?: { title: string; items: { name: string; why: string }[] }[]
+  factorsNote?: string
+  fromYou?: string
   faq: { q: string; a: string }[]
   final: { text: string; button: string }
 }
 
 const SERVICE_CONTENT: Record<string, ServiceContent> = {
   'ai-search-optimization': {
-    title: 'Lokale Suche beginnt immer öfter mit einer Frage an die KI.',
+    title: 'Lokale Suche beginnt immer öfter mit einer Frage an die KI',
     sub: 'Wer etwas sucht, bekommt die Antwort immer öfter von ChatGPT, Perplexity oder den KI-Übersichten bei Google. Sie nennen und beschreiben die Betriebe, über die es im Netz die meisten verständlichen Informationen gibt. Wir sorgen dafür, dass Sie dabei sind.',
     priceLink: 'Paket und Preis',
     problem: {
-      title: 'Ihr nächster Kunde fragt nicht den Nachbarn, sondern ChatGPT.',
+      title: 'Ihr nächster Kunde sucht über ChatGPT und andere KI',
       text: 'In so einer Antwort gibt es keine Werbung und keine zweite Seite. Die KI nennt die Betriebe, über die sie vier Dinge sicher weiß:',
       points: ['was der Betrieb macht', 'wo er arbeitet', 'was Kunden über ihn sagen', 'ob seine Angaben auf der Website, bei Google und in Verzeichnissen übereinstimmen'],
-      outro: 'Fehlt etwas davon, empfiehlt die KI einen anderen Betrieb — auch wenn Sie besser arbeiten.',
+      outro: 'Fehlt etwas davon, empfiehlt die KI einen anderen Betrieb, auch wenn Sie besser arbeiten.',
       visual: 'chat',
     },
     article: { href: '/ratgeber/in-chatgpt-und-perplexity-gefunden-werden', label: 'Warum empfiehlt die KI andere? Im Ratgeber erklärt' },
-    needsTitle: 'Was Sie brauchen, damit die KI Sie nennt — und wobei wir helfen',
-    needs: [
-      { need: 'Eine eigene Seite für jede Leistung', why: 'Damit die KI etwas über Sie hat, das sie zitieren kann.', help: 'Wir schreiben die Seiten und jeden Monat Artikel zu den Fragen Ihrer Kunden.' },
-      { need: 'Überall dieselben Angaben', why: 'Name, Adresse, Telefon und Einsatzgebiet gleich auf der Website, bei Google und in Verzeichnissen.', help: 'Wir tragen Sie in die wichtigen Verzeichnisse ein und korrigieren Abweichungen.' },
-      { need: 'Frische, echte Bewertungen', why: 'Die KI liest, was Kunden über Sie schreiben.', help: 'Wir richten ein, dass nach jedem Auftrag eine Bitte um Bewertung verschickt wird.' },
-      { need: 'Einen Blick auf die Antworten der KI', why: 'Sonst wissen Sie nicht, ob es wirkt.', help: 'Einmal im Monat stellen wir ChatGPT zehn Fragen, die Ihre Kunden stellen würden, und zeigen im Bericht, in wie vielen Antworten Sie genannt wurden.' },
+    needsTitle: 'Was die KI über Sie wissen muss, um Sie zu empfehlen',
+    needsIntro: 'Die KI empfiehlt nicht nach Werbung, sondern nach dem, was sie im Netz über Sie findet.',
+    factors: [
+      {
+        title: 'Was Sie anbieten',
+        items: [
+          { name: 'Eine eigene Seite für jede Leistung', why: 'Mit Ablauf, Dauer und Preis ab. Daraus zitiert die KI.' },
+          { name: 'Antworten auf Fragen Ihrer Kunden', why: 'Artikel und FAQ dazu, was Kunden wirklich fragen: Kosten, Dauer, Förderung.' },
+          { name: 'Fotos und Beispiele echter Arbeiten', why: 'Sie zeigen, dass es Sie und Ihre Arbeit wirklich gibt.' },
+          { name: 'Eine Website, die die KI lesen kann', why: 'Texte als Text und nicht im Bild, eine schnelle Seite, kein gesperrter Zugang für ChatGPT, Perplexity und Google.' },
+        ],
+      },
+      {
+        title: 'Wo Sie arbeiten',
+        items: [
+          { name: 'Ein klar benanntes Einsatzgebiet', why: 'Orte und Stadtteile auf der Website, für wichtige Orte eine eigene Seite.' },
+          { name: 'Google-Unternehmensprofil', why: 'Daraus lesen die KI-Übersichten bei Google und Gemini.' },
+          { name: 'Bing Places', why: 'ChatGPT stützt sich bei der Suche unter anderem auf Bing.' },
+          { name: 'Apple Business Connect', why: 'Daraus antworten Siri und Apple Karten.' },
+        ],
+      },
+      {
+        title: 'Was Kunden und andere über Sie sagen',
+        items: [
+          { name: 'Viele frische Bewertungen mit Text', why: 'Die KI übernimmt Formulierungen wie „schnell da, sauber gearbeitet“.' },
+          { name: 'Antworten auf Bewertungen', why: 'Sie zeigen, dass der Betrieb aktiv ist und sich kümmert.' },
+          { name: 'Erwähnungen auf anderen Seiten', why: 'Lokale Presse, Partner, Branchenportale, Innung: Je mehr unabhängige Quellen Sie nennen, desto sicherer ist sich die KI.' },
+          { name: 'Nachweise', why: 'Meisterbrief, Zertifikate, Mitgliedschaften, Jahre am Markt.' },
+        ],
+      },
+      {
+        title: 'Ob Ihre Angaben übereinstimmen',
+        items: [
+          { name: 'Gleicher Name, Adresse und Telefon überall', why: 'Auf der Website, im Impressum, bei Google und in Verzeichnissen. Sonst ist die KI nicht sicher, dass es derselbe Betrieb ist.' },
+          { name: 'Gleiche Kategorie und Leistungen', why: 'Wer bei Google „Elektriker“ heißt und auf der Website „Haustechnik“, wirkt wie zwei Betriebe.' },
+          { name: 'Einträge in Verzeichnissen', why: 'Gelbe Seiten, Das Örtliche, 11880 und die Portale Ihrer Branche.' },
+          { name: 'Strukturierte Daten auf der Website', why: 'Eine maschinenlesbare Visitenkarte im Code der Seite.' },
+          { name: 'Aktuelle Angaben', why: 'Öffnungszeiten, Telefonnummer, Leistungen. Veraltete Daten kosten Vertrauen.' },
+        ],
+      },
     ],
-    fromYou: 'Von Ihnen: ein Gespräch von 30–45 Minuten und Fotos Ihrer Arbeiten. Den Rest machen wir.',
+    factorsNote: 'Je mehr davon stimmt, desto öfter nennt die KI Sie. Garantieren kann das niemand: Die Antworten ändern sich von Frage zu Frage.',
     faq: [
-      { q: 'Garantieren Sie, dass ChatGPT mich empfiehlt?', a: 'Nein — und glauben Sie niemandem, der das verspricht. Wir versprechen, dass es mehr und verständlichere Informationen über Sie gibt als über Ihre Mitbewerber. Im Bericht sehen Sie jeden Monat, wie sich die Antworten verändern.' },
+      { q: 'Garantieren Sie, dass ChatGPT mich empfiehlt?', a: 'Nein. Und glauben Sie niemandem, der das verspricht. Wir versprechen, dass es mehr und verständlichere Informationen über Sie gibt als über Ihre Mitbewerber. Im Bericht sehen Sie jeden Monat, wie sich die Antworten verändern.' },
       { q: 'Wann sehe ich Ergebnisse?', a: 'Erste Veränderungen nach einigen Wochen, stabile Ergebnisse nach einigen Monaten.' },
       { q: 'Ich habe schon eine Website.', a: 'Dann prüfen wir sie zuerst. Meistens lässt sie sich weiter nutzen und verbessern.' },
       { q: 'Meine Kunden nutzen kein ChatGPT.', a: 'Alles, was wir für die KI tun, wirkt auch in der normalen Google-Suche. Und Google zeigt KI-Antworten inzwischen selbst über den Links.' },
     ],
-    final: { text: 'Sehen wir nach, was die KI schon über Sie weiß.', button: 'In der KI prüfen' },
+    final: { text: 'Sehen wir nach, was die KI schon über Sie weiß', button: 'In der KI prüfen' },
   },
   'google-maps-business-profile': {
-    title: 'Google Maps ist Pflicht für lokale Unternehmen.',
+    title: 'Google Maps ist Pflicht für lokale Unternehmen',
     sub: 'Wenn man schnell etwas in der Nähe braucht, öffnet man die Karte und entscheidet nach dem Profil. Wir richten Ihr Google-Profil so ein, dass die Wahl auf Sie fällt.',
     priceLink: 'Google-Profil schlüsselfertig — 149 €',
     problem: {
-      title: 'Kunden entscheiden in einer halben Minute. Nach dem Profil.',
+      title: 'Kunden entscheiden in einer halben Minute. Nach dem Profil',
       text: 'Abends fliegt die Sicherung raus. Jemand tippt „Elektriker Frankfurt“ und sieht drei Betriebe. Angerufen wird der, bei dem im Profil sofort zu sehen ist:',
       points: ['echte Fotos vom Betrieb und von Arbeiten', 'frische Bewertungen', 'aktuelle Öffnungszeiten und Telefonnummer', 'welche Leistungen es gibt'],
       outro: 'Sie können der beste Betrieb der Stadt sein. Ist Ihr Profil leer oder steht dort eine alte Nummer, ruft man den Nachbarn an.',
@@ -5183,14 +5335,14 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
       { q: 'Kann ich Bewertungen kaufen, damit es schneller geht?', a: 'Nein. Für gefälschte Bewertungen kann Google das Profil sperren. Es hilft nur eines: echte Kunden regelmäßig fragen.' },
       { q: 'Muss ich danach etwas zahlen?', a: 'Nein. Ein Abo gibt es nur, wenn Sie eine Website oder Social Media möchten.' },
     ],
-    final: { text: 'Prüfen Sie, wie man Sie auf der Karte sieht.', button: 'Mein Profil prüfen' },
+    final: { text: 'Prüfen Sie, wie man Sie auf der Karte sieht', button: 'Mein Profil prüfen' },
   },
   'website-google-search': {
-    title: 'Google baut seine Antwort aus allem, was es über Sie findet.',
+    title: 'Google baut seine Antwort aus allem, was es über Sie findet',
     sub: 'Über den Links stehen heute eine KI-Antwort und eine Karte mit drei Betrieben. Google sammelt Informationen über Sie im ganzen Netz: auf Ihrer Website, im Google-Profil, in Bewertungen und sozialen Netzwerken. Wir sorgen dafür, dass Google Sie findet und jede Kundenfrage beantworten kann.',
     priceLink: 'Website ab 30 € im Monat',
     problem: {
-      title: 'Google zeigt den, über den es sich am sichersten ist.',
+      title: 'Google zeigt den, über den es sich am sichersten ist',
       text: 'Google sammelt alles, was es über einen Betrieb findet: Website, Google-Profil, Bewertungen, Verzeichnisse. Hat Ihre Website nur eine Seite „Alle Elektroarbeiten“, weiß Google nicht, dass Sie Wallboxen installieren. Nach oben kommt, bei wem Google vier Dinge sicher versteht:',
       points: ['welche Leistungen es gibt — jede auf eigener Seite', 'in welchem Ort und welcher Region', 'dass die Angaben überall gleich sind', 'dass der Betrieb aktiv ist und man ihm trauen kann'],
       outro: 'Eine Website, die einmal gebaut und dann vergessen wurde, liefert Google keine Antworten — dann zeigt Google den Nachbarn, auch wenn Ihre Seite schön aussieht.',
@@ -5222,14 +5374,14 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
       { q: 'Wann sehe ich Ergebnisse?', a: 'Die ersten Seiten erscheinen nach einigen Wochen in der Suche, spürbar mehr Anfragen kommen nach einigen Monaten.' },
       { q: 'Wohin gehen die Anfragen?', a: 'Direkt an Ihre E-Mail-Adresse.' },
     ],
-    final: { text: 'Prüfen Sie, ob Google Ihre Website findet.', button: 'Meine Website prüfen' },
+    final: { text: 'Prüfen Sie, ob Google Ihre Website findet', button: 'Meine Website prüfen' },
   },
   'social-media': {
-    title: 'In sozialen Netzwerken sehen Kunden Menschen.',
+    title: 'In sozialen Netzwerken sehen Kunden Menschen',
     sub: 'Bevor jemand einen Betrieb beauftragt, will er wissen, wer dahintersteht. Wir betreuen Ihre Social-Media-Kanäle und zeigen Ihr Team und Ihre Arbeit: Wir richten Ihre Profile so ein, dass man Sie in den sozialen Netzwerken und bei Google findet, und erarbeiten Ihre Inhalte.',
     priceLink: '199 € im Monat, auch ohne Website',
     problem: {
-      title: 'Der Kunde hat Sie schon gefunden. Jetzt prüft er Sie.',
+      title: 'Der Kunde hat Sie schon gefunden. Jetzt prüft er Sie',
       text: 'Jemand findet Sie auf Instagram — und dort ist der letzte Beitrag von vorletztem Jahr. Bevor man anruft, will man im Profil sehen:',
       points: ['eine klare Kopfzeile: wer Sie sind, was Sie machen, wo und wie man Sie erreicht', 'dass der Betrieb gerade arbeitet', 'wer dahintersteht', 'echte Arbeiten und Ergebnisse', 'dasselbe Bild wie bei Google und auf der Website'],
       outro: 'Social Media bringt selten von allein Aufträge. Aber es entscheidet, ob jemand anruft, der Sie bei Google schon gefunden hat.',
@@ -5254,14 +5406,14 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
       { q: 'Geht auch nur Social Media, ohne Website?', a: 'Ja, für 199 € im Monat.' },
       { q: 'Und wenn wir nichts zu zeigen haben?', a: 'Doch: Jeder Einsatz ist ein „Vorher und nachher“, jede Kundenfrage ein Thema für einen Beitrag.' },
     ],
-    final: { text: 'Menschen wählen Menschen. Zeigen Sie Ihre.', button: 'Meine Kanäle prüfen' },
+    final: { text: 'Menschen wählen Menschen. Zeigen Sie Ihre', button: 'Meine Kanäle prüfen' },
   },
 }
 
 /** Icons der Karten „Was Sie brauchen“ — je Leistungsseite in der Reihenfolge von `needs`. */
 type NeedIconKind = 'page' | 'data' | 'star' | 'chart' | 'list' | 'camera' | 'shield' | 'chat' | 'refresh' | 'calendar' | 'users'
 const NEED_ICONS: Record<string, NeedIconKind[]> = {
-  'ai-search-optimization': ['page', 'data', 'star', 'chart'],
+  'ai-search-optimization': ['page', 'list', 'star', 'data'],
   'google-maps-business-profile': ['list', 'camera', 'star', 'shield'],
   'website-google-search': ['page', 'chat', 'shield', 'refresh'],
   'social-media': ['calendar', 'users', 'camera', 'data'],
@@ -5396,13 +5548,13 @@ function ProblemVisual({ kind }: { kind: ServiceContent['problem']['visual'] }) 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', borderBottom: '1px solid var(--divider)' }}>
           <GLogo />
           <span style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 16px', borderRadius: 999, border: '1px solid var(--border)', fontSize: 14.5 }}>
-            Wallbox installieren Bern <ChannelIcon kind="search" size={16} />
+            Wallbox installieren Bremen <ChannelIcon kind="search" size={16} />
           </span>
         </div>
         <div style={{ padding: 'clamp(16px, 2vw, 22px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ padding: '14px 16px', borderRadius: 14, backgroundColor: 'var(--bone)' }}>
             <div style={muted}>voltwerk-bern.ch › wallbox</div>
-            <div style={{ fontWeight: 800, fontSize: 16.5, color: 'var(--electric)', margin: '2px 0 4px' }}>Wallbox-Installation in Bern: Kosten, Ablauf, Förderung</div>
+            <div style={{ fontWeight: 800, fontSize: 16.5, color: 'var(--electric)', margin: '2px 0 4px' }}>Wallbox-Installation in Bremen: Kosten, Ablauf, Förderung</div>
             <div style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.5 }}>Mitbewerber mit einer eigenen Seite genau zu dieser Leistung.</div>
           </div>
           <div aria-hidden style={{ padding: '4px 16px' }}>
@@ -5481,7 +5633,7 @@ function ServicePage({ slug }: { slug: string }) {
         name: moduleLabel ?? content.title,
         description: content.sub,
         serviceType: data.kicker,
-        areaServed: ['Germany', 'Austria', 'Switzerland'],
+        areaServed: ['Germany'],
         provider: { '@type': 'ProfessionalService', name: SITE_NAME },
         offers: (SERVICE_PACKAGES[slug]?.items ?? []).map(id => {
           const it = priceItem(id)
@@ -5502,7 +5654,6 @@ function ServicePage({ slug }: { slug: string }) {
           <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Wo man Sie sucht', href: '/services' }, { label: moduleLabel ?? content.title }]} tone="light" />
           <div className="svc-hero" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 0.9fr)', gap: 'clamp(32px, 5vw, 72px)', alignItems: 'center' }}>
             <div>
-              <div style={{ marginBottom: 20 }}><Kicker icon={channelKindOf(slug)}>{moduleLabel ?? data.kicker}</Kicker></div>
               <h1 className="display h-lg" style={{ marginBottom: 22, maxWidth: 720 }}>{content.title}</h1>
               <p className="lead" style={{ color: 'var(--muted)', maxWidth: 600, margin: '0 0 26px' }}>{content.sub}</p>
               {SERVICE_PACKAGES[slug] && <a href="#pakete" className="d-link" style={{ fontSize: 15.5 }}>{content.priceLink} <span className="arw">↓</span></a>}
@@ -5531,7 +5682,6 @@ function ServicePage({ slug }: { slug: string }) {
         <DotsCorner style={{ right: -80, top: -60 }} />
         <div style={{ ...SHELL, position: 'relative' }}>
           <div style={{ textAlign: 'center', maxWidth: 900, margin: '0 auto' }}>
-            <Reveal><Kicker>Das Problem</Kicker></Reveal>
             <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 0' }}>{content.problem.title}</h2></Reveal>
           </div>
           <div className="svc-two" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'clamp(36px, 6vw, 88px)', alignItems: 'center', marginTop: 'clamp(40px, 5vw, 72px)' }}>
@@ -5571,7 +5721,6 @@ function ServicePage({ slug }: { slug: string }) {
         <section style={{ ...sec, backgroundColor: 'var(--bone)', paddingBottom: 0 }}>
           <div style={{ ...SHELL, position: 'relative' }}>
             <div style={{ textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
-              <Reveal><Kicker icon="search">Wie Google heute antwortet</Kicker></Reveal>
               <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 16px' }}>{content.layers.title}</h2></Reveal>
               <Reveal delay={0.1}><p style={{ fontSize: 'clamp(16px, 1.3vw, 18px)', lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>{content.layers.intro}</p></Reveal>
             </div>
@@ -5608,10 +5757,30 @@ function ServicePage({ slug }: { slug: string }) {
           </div>
           <div style={{ position: 'relative' }}>
             <div style={{ textAlign: 'center', maxWidth: 920, margin: '0 auto' }}>
-              <Reveal><Kicker icon={channelKindOf(slug)}>So kommen Sie dahin</Kicker></Reveal>
               <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 0' }}>{content.needsTitle}</h2></Reveal>
+              {content.needsIntro && <Reveal delay={0.08}><p style={{ fontSize: 'clamp(16px, 1.3vw, 18px)', lineHeight: 1.65, color: 'var(--muted)', margin: '16px auto 0', maxWidth: 720 }}>{content.needsIntro}</p></Reveal>}
             </div>
-            <div className="svc-needs" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 'clamp(14px, 1.8vw, 24px)', marginTop: 'clamp(36px, 4.4vw, 64px)' }}>
+            {content.factors && (
+              <div className="svc-needs" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 'clamp(14px, 1.8vw, 24px)', marginTop: 'clamp(36px, 4.4vw, 64px)' }}>
+                {content.factors.map((g, i) => (
+                  <Reveal key={g.title} delay={0.05 * i} style={{ display: 'flex' }}>
+                    <div className="d-card" style={{ flex: 1, padding: 'clamp(24px, 2.6vw, 34px)' }}>
+                      <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14 }}>
+                        <span className="d-tile" aria-hidden><NeedIcon kind={NEED_ICONS[slug]?.[i] ?? 'page'} /></span>
+                        <h3 className="display" style={{ fontSize: 'clamp(19px, 1.7vw, 22px)', lineHeight: 1.25, margin: 0 }}>{g.title}</h3>
+                      </div>
+                      {g.items.map(f => (
+                        <div key={f.name} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '13px 0', borderTop: '1px solid var(--divider)' }}>
+                          {checkIcon()}
+                          <p style={{ fontSize: 15, lineHeight: 1.55, margin: 0 }}><strong>{f.name}.</strong> <span style={{ color: 'var(--muted)' }}>{f.why}</span></p>
+                        </div>
+                      ))}
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+            )}
+            {content.needs && <div className="svc-needs" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 'clamp(14px, 1.8vw, 24px)', marginTop: 'clamp(36px, 4.4vw, 64px)' }}>
               {content.needs.map((n, i) => (
                 <Reveal key={n.need} delay={0.05 * i} style={{ display: 'flex' }}>
                   <div className="d-card" style={{ flex: 1, padding: 'clamp(24px, 2.6vw, 34px)', display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -5629,12 +5798,12 @@ function ServicePage({ slug }: { slug: string }) {
                   </div>
                 </Reveal>
               ))}
-            </div>
+            </div>}
             <Reveal delay={0.1}>
               <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'clamp(24px, 3vw, 40px)' }}>
                 <div className="d-card-flat" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 22px 12px 12px', borderRadius: 28, maxWidth: 900, boxShadow: '0 10px 30px rgba(11,11,26,0.06)' }}>
-                  <span className="d-tile d-tile-sm" aria-hidden style={{ borderRadius: 999 }}><ChannelIcon kind="social" size={18} /></span>
-                  <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.55, fontWeight: 600 }}>{content.fromYou}</p>
+                  <span className="d-tile d-tile-sm" aria-hidden style={{ borderRadius: 999 }}><ChannelIcon kind={content.fromYou ? 'social' : 'ki'} size={18} /></span>
+                  <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.55, fontWeight: 600 }}>{content.fromYou ?? content.factorsNote}</p>
                 </div>
               </div>
             </Reveal>
@@ -5649,7 +5818,6 @@ function ServicePage({ slug }: { slug: string }) {
       <section style={{ ...sec, backgroundColor: 'var(--paper)' }}>
         <div style={{ ...SHELL, maxWidth: 900 }}>
           <div style={{ textAlign: 'center', marginBottom: 'clamp(32px, 4vw, 56px)' }}>
-            <Reveal><Kicker>FAQ</Kicker></Reveal>
             <Reveal delay={0.05}><h2 className="display h-md" style={{ marginTop: 16 }}>Häufige Fragen</h2></Reveal>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -5960,7 +6128,7 @@ function LandingPage() {
   }, [])
   usePageMeta(
     'RAG — System für lokale Sichtbarkeit bei Google Maps, Google & KI-Suche',
-    'Wir machen lokale Unternehmen in Deutschland, Österreich und der Schweiz dort sichtbar, wo Kunden heute suchen: Google Maps, Google, ChatGPT, Perplexity, Bewertungen und soziale Netzwerke. Kostenloser Sichtbarkeits-Check.',
+    'Wir machen lokale Unternehmen in Deutschland dort sichtbar, wo Kunden heute suchen: Google Maps, Google, ChatGPT, Perplexity, Bewertungen und soziale Netzwerke. Kostenloser Sichtbarkeits-Check.',
   )
   const widgetSentinel = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -6205,7 +6373,7 @@ function StartQuizPage() {
         </label>
         <label style={{ display: 'block' }}>
           <span style={{ display: 'block', fontSize: 14, fontWeight: 700, marginBottom: 8 }}>Ort oder Region</span>
-          <input style={field} value={a.ort} onChange={e => setA(p => ({ ...p, ort: e.target.value }))} placeholder="z. B. Graz und Umgebung" autoComplete="address-level2" />
+          <input style={field} value={a.ort} onChange={e => setA(p => ({ ...p, ort: e.target.value }))} placeholder="z. B. Hannover und Umgebung" autoComplete="address-level2" />
         </label>
         <label style={{ display: 'block' }}>
           <span style={{ display: 'block', fontSize: 14, fontWeight: 700, marginBottom: 8 }}>E-Mail</span>
@@ -6256,7 +6424,7 @@ function StartQuizPage() {
               <>
                 <div style={{ textAlign: 'center', maxWidth: 760, margin: '0 auto' }}>
                   <Kicker>Ihre Ausgangslage</Kicker>
-                  <h1 className="display h-md" style={{ margin: '18px 0 14px' }}>Das ist Ihr Startpunkt.</h1>
+                  <h1 className="display h-md" style={{ margin: '18px 0 14px' }}>Das ist Ihr Startpunkt</h1>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
                     {[`${a.branche.trim()} · ${a.ort.trim()}`, ...a.have.map(h => label(QUIZ_HAVE, h)), label(QUIZ_GOALS, a.goal)].filter(Boolean).map(t => (
                       <span key={t} style={{ padding: '7px 14px', borderRadius: 999, backgroundColor: '#fff', border: '1px solid var(--border)', fontSize: 14, fontWeight: 700 }}>{t}</span>

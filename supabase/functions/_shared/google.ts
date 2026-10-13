@@ -12,8 +12,10 @@ const REFERER = (globalThis as { Deno?: { env: { get(k: string): string | undefi
   ?? (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env.PLACES_REFERER
   ?? 'https://rag-theta-one.vercel.app/'
 
-/** Suchgebiet DACH (Deutschland, Österreich, Schweiz) — Treffer außerhalb werden ausgeschlossen. */
-const DACH = { low: { latitude: 45.8, longitude: 5.8 }, high: { latitude: 55.1, longitude: 17.2 } }
+/** Suchgebiet Deutschland. Das Rechteck schneidet Randgebiete der Nachbarländer an — die filtert onlyDE() unten heraus. */
+const DE = { low: { latitude: 47.27, longitude: 5.86 }, high: { latitude: 55.06, longitude: 15.05 } }
+/** Nur Treffer mit Adresse in Deutschland (languageCode 'de' → Adresse endet auf «Deutschland»). */
+const onlyDE = (p: GPlace) => !p.formattedAddress || /(^|,\s*)Deutschland$/.test(p.formattedAddress.trim())
 
 export type Suggestion = { id: string; main: string; secondary: string }
 
@@ -87,9 +89,9 @@ const MASK_COMPETITORS = 'places.id,places.displayName,places.rating,places.user
 export async function searchPlaces(key: string, query: string): Promise<Suggestion[]> {
   const data = await call<{ places?: GPlace[] }>(key, '/places:searchText', {
     method: 'POST',
-    body: { textQuery: query, languageCode: LANG, pageSize: 8, locationRestriction: { rectangle: DACH } },
+    body: { textQuery: query, languageCode: LANG, regionCode: 'de', pageSize: 8, locationRestriction: { rectangle: DE } },
   }, MASK_SEARCH)
-  return (data.places ?? []).map(p => ({
+  return (data.places ?? []).filter(onlyDE).map(p => ({
     id: p.id,
     main: p.displayName?.text ?? '',
     secondary: [p.primaryTypeDisplayName?.text, p.formattedAddress].filter(Boolean).join(' · '),

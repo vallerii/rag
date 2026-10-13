@@ -60,7 +60,7 @@ export function OfferPanel({ offer, onAccepted }: { offer: ClientOffer; onAccept
     <section style={{ ...card, borderLeft: accepted ? '4px solid #3DDC84' : '4px solid var(--electric)' }}>
       {kick(accepted ? 'Angebot angenommen' : 'Ihr Angebot')}
       <h2 className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 30px)', lineHeight: 1.15, margin: '0 0 16px' }}>
-        {accepted ? 'Danke — wir starten mit der Umsetzung.' : 'Das schlagen wir Ihnen vor'}
+        {accepted ? 'Danke, wir starten mit der Umsetzung' : 'Das schlagen wir Ihnen vor'}
       </h2>
       <div>
         {offer.items.map(i => (

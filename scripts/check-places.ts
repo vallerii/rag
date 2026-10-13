@@ -27,7 +27,7 @@ const icon = { ok: '\x1b[32m✓\x1b[0m', warn: '\x1b[33m!\x1b[0m', bad: '\x1b[31
 try {
   h(`1. Treffer für «${query}»  (places-search)`)
   const hits = await searchPlaces(key, query)
-  if (!hits.length) { console.log('Keine Treffer in DE/AT/CH.'); process.exit(0) }
+  if (!hits.length) { console.log('Keine Treffer in Deutschland.'); process.exit(0) }
   hits.forEach((x, i) => console.log(`${i + 1 === pick ? '→' : ' '} ${i + 1}. ${x.main}\n     ${x.secondary}`))
 
   const chosen = hits[Math.min(pick, hits.length) - 1]

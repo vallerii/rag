@@ -88,7 +88,7 @@ export default function OrderPanel({ order, onChange, defaults }: {
           <div className="ck-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div><label style={labelSt} htmlFor="od-company">Unternehmen</label><input id="od-company" style={field} value={d.company} onChange={e => set('company', e.target.value)} autoComplete="organization" /></div>
             <div><label style={labelSt} htmlFor="od-industry">Branche <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(z. B. Dachdecker)</span></label><input id="od-industry" style={field} value={d.industry} onChange={e => set('industry', e.target.value)} /></div>
-            <div><label style={labelSt} htmlFor="od-city">Ort / Region</label><input id="od-city" style={field} value={d.city} onChange={e => set('city', e.target.value)} placeholder="z. B. Graz" /></div>
+            <div><label style={labelSt} htmlFor="od-city">Ort / Region</label><input id="od-city" style={field} value={d.city} onChange={e => set('city', e.target.value)} placeholder="z. B. Hannover" /></div>
             <div><label style={labelSt} htmlFor="od-website">Website <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(falls vorhanden)</span></label><input id="od-website" style={field} value={d.website} onChange={e => set('website', e.target.value)} placeholder="www.…" /></div>
           </div>
 
@@ -135,7 +135,7 @@ export default function OrderPanel({ order, onChange, defaults }: {
       ) : (
         <div style={card}>
           <Eyebrow>Ihre Anfrage</Eyebrow>
-          <h2 className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 30px)', lineHeight: 1.15, margin: '0 0 10px' }}>{s === 'new' ? 'Wir melden uns bei Ihnen.' : orderStatusLabel(order)}</h2>
+          <h2 className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 30px)', lineHeight: 1.15, margin: '0 0 10px' }}>{s === 'new' ? 'Wir melden uns bei Ihnen' : orderStatusLabel(order)}</h2>
           <p style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 18px', maxWidth: 560 }}>
             {s === 'new'
               ? 'Danke für Ihre Angaben. Wir sehen uns Ihr Unternehmen an und rufen Sie innerhalb eines Werktags an, um alles Weitere zu besprechen.'

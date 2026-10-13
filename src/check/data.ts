@@ -58,16 +58,16 @@ export const SOURCE_LABELS: Record<SourceKey, string> = {
 }
 export const SOURCE_ORDER: SourceKey[] = ['website', 'instagram', 'facebook', 'linkedin', 'tiktok']
 
-// ── Beispieldaten (erfundene Betriebe in DACH) ─────────────────────────────────
+// ── Beispieldaten (erfundene Betriebe in Deutschland) ─────────────────────────────────
 const DEMO_PLACES: Place[] = [
   { id: 'demo-1', name: 'Schneider Dachtechnik GmbH', address: 'Eppendorfer Weg 48, 20259 Hamburg', city: 'Hamburg', category: 'Dachdecker', rating: 4.7, reviews: 38, website: 'schneider-dachtechnik.de', phone: '040 1234500', mapsUrl: '' },
   { id: 'demo-2', name: 'Elektro Becker', address: 'Leopoldstraße 120, 80802 München', city: 'München', category: 'Elektriker', rating: 4.9, reviews: 112, website: 'elektro-becker-muenchen.de', phone: '089 2233440', mapsUrl: '' },
-  { id: 'demo-3', name: 'Friseursalon Haarwerk', address: 'Mariahilfer Straße 22, 1070 Wien', city: 'Wien', category: 'Friseur', rating: 4.6, reviews: 214, website: 'haarwerk-wien.at', phone: '+43 1 9988770', mapsUrl: '' },
-  { id: 'demo-4', name: 'Malerbetrieb Klein & Sohn', address: 'Badenerstrasse 70, 8004 Zürich', city: 'Zürich', category: 'Malerbetrieb', rating: 4.4, reviews: 27, website: null, phone: '+41 44 4455660', mapsUrl: '' },
+  { id: 'demo-3', name: 'Friseursalon Haarwerk', address: 'Königsbrücker Straße 22, 01099 Dresden', city: 'Dresden', category: 'Friseur', rating: 4.6, reviews: 214, website: 'haarwerk-dresden.de', phone: '0351 9988770', mapsUrl: '' },
+  { id: 'demo-4', name: 'Malerbetrieb Klein & Sohn', address: 'Böblinger Straße 70, 70199 Stuttgart', city: 'Stuttgart', category: 'Malerbetrieb', rating: 4.4, reviews: 27, website: null, phone: '0711 4455660', mapsUrl: '' },
   { id: 'demo-5', name: 'Physiotherapie am Ring', address: 'Hohenzollernring 5, 50672 Köln', city: 'Köln', category: 'Physiotherapeut', rating: 4.8, reviews: 96, website: 'physio-am-ring.de', phone: '0221 5566770', mapsUrl: '' },
-  { id: 'demo-6', name: 'Autowerkstatt Weber', address: 'Kärntner Straße 200, 8020 Graz', city: 'Graz', category: 'Autowerkstatt', rating: 4.3, reviews: 151, website: 'kfz-weber-graz.at', phone: '+43 316 667788', mapsUrl: '' },
-  { id: 'demo-7', name: 'Sanitär Hoffmann', address: 'Freiburgerstrasse 30, 4057 Basel', city: 'Basel', category: 'Sanitärinstallateur', rating: 4.5, reviews: 64, website: 'sanitaer-hoffmann.ch', phone: '+41 61 7788990', mapsUrl: '' },
-  { id: 'demo-8', name: 'Gartenbau Alpenland', address: 'Amraser Straße 15, 6020 Innsbruck', city: 'Innsbruck', category: 'Garten- und Landschaftsbau', rating: 4.9, reviews: 41, website: 'gartenbau-alpenland.at', phone: '+43 512 123450', mapsUrl: '' },
+  { id: 'demo-6', name: 'Autowerkstatt Weber', address: 'Fürther Straße 200, 90429 Nürnberg', city: 'Nürnberg', category: 'Autowerkstatt', rating: 4.3, reviews: 151, website: 'kfz-weber-nuernberg.de', phone: '0911 667788', mapsUrl: '' },
+  { id: 'demo-7', name: 'Sanitär Hoffmann', address: 'Lister Meile 30, 30161 Hannover', city: 'Hannover', category: 'Sanitärinstallateur', rating: 4.5, reviews: 64, website: 'sanitaer-hoffmann.de', phone: '0511 7788990', mapsUrl: '' },
+  { id: 'demo-8', name: 'Gartenbau Grünwerk', address: 'Wilhelmshöher Allee 15, 34117 Kassel', city: 'Kassel', category: 'Garten- und Landschaftsbau', rating: 4.9, reviews: 41, website: 'gartenbau-gruenwerk.de', phone: '0561 123450', mapsUrl: '' },
 ]
 
 const wait = (ms: number) => new Promise(r => setTimeout(r, ms))
@@ -97,7 +97,7 @@ export function newSessionToken(): string {
   try { return crypto.randomUUID() } catch { return Math.random().toString(36).slice(2) + Date.now().toString(36) }
 }
 
-/** Trefferliste nach Klick auf «Finden» (Places Text Search, Gebiet DACH). */
+/** Trefferliste nach Klick auf «Finden» (Places Text Search, nur Deutschland). */
 export async function searchCompanies(query: string, _sessionToken?: string): Promise<Suggestion[]> {
   const q = query.trim()
   if (q.length < 2) return []
