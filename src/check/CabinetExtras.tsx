@@ -23,9 +23,28 @@ export function LockedBooking({ hint, size = 'md' }: { hint: string; size?: 'md'
   )
 }
 
-export function ManagerCard({ manager, onWrite, canBook, lockedHint }: { manager: Manager | null; onWrite: () => void; canBook: boolean; lockedHint: string }) {
+export function ManagerCard({ manager, onWrite, canBook, lockedHint, compact = false }: { manager: Manager | null; onWrite: () => void; canBook: boolean; lockedHint: string; compact?: boolean }) {
   const link = canBook ? bookingLink(manager) : null
   const name = manager?.name || 'Ihr RAG-Team'
+  if (compact) return (
+    <section style={{ ...card, padding: 20 }}>
+      {kick(manager ? (manager.title || 'Ihr Ansprechpartner') : 'Ihr Ansprechpartner')}
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', margin: '4px 0 14px' }}>
+        {manager?.photo_url
+          ? <img src={manager.photo_url} alt="" width={44} height={44} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+          : <span aria-hidden style={{ width: 44, height: 44, borderRadius: '50%', backgroundColor: 'var(--brand-soft)', color: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, flexShrink: 0 }}>{manager?.name ? initials(manager.name) : 'R'}</span>}
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontWeight: 700, fontSize: 15.5, margin: 0 }}>{name}</p>
+          <p style={{ fontSize: 13, color: 'var(--muted)', margin: '2px 0 0', lineHeight: 1.45 }}>{manager ? 'Betreut Ihr Projekt persönlich' : 'Wird in der Regel innerhalb von 1 Werktag zugeteilt'}</p>
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {link && <a href={link} target="_blank" rel="noopener noreferrer" className="btn btn-md btn-electric" style={{ justifyContent: 'center', fontSize: 14 }}>Termin vereinbaren <span className="arw">→</span></a>}
+        <button type="button" onClick={onWrite} className="btn btn-md btn-outline-light" style={{ justifyContent: 'center', fontSize: 14 }}>Nachricht schreiben</button>
+        {!link && !canBook && <p style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.5, margin: '2px 0 0' }}>Termine: {lockedHint}</p>}
+      </div>
+    </section>
+  )
   return (
     <section style={{ ...card, display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap' }}>
       {manager?.photo_url

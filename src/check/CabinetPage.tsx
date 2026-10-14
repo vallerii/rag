@@ -356,6 +356,8 @@ export default function CabinetPage() {
         {tab === 'ergebnis' && check && <ResultView versions={versions} />}
 
         {tab === 'overview' && (
+          <>
+          <style>{`@keyframes cab-skel { 0%, 100% { opacity: 0.45 } 50% { opacity: 1 } } .cab-skel { animation: cab-skel 1.6s ease-in-out infinite; background-color: #E6E3FB; border-radius: 6px; } @media (prefers-reduced-motion: reduce) { .cab-skel { animation: none; } }`}</style>
           <div className={check ? 'cab-overview' : undefined} style={check ? { display: 'grid', gridTemplateColumns: 'minmax(260px, 340px) minmax(0, 1fr)', gap: 18, alignItems: 'start' } : undefined}>
             {check && (
               <aside style={{ position: 'sticky', top: 20 }}>
@@ -373,6 +375,9 @@ export default function CabinetPage() {
                     </span>
                   </div>
                 ))}
+              </div>
+              <div style={{ marginTop: 18 }}>
+                <ManagerCard manager={manager} onWrite={write} canBook={canBook} lockedHint={lockedHint} compact />
               </div>
               </aside>
             )}
@@ -397,38 +402,41 @@ export default function CabinetPage() {
             {nextStep && <NextStepCard step={nextStep} />}
             {project && <ProjectPanel project={project} />}
             {offer?.status === 'sent' && <OfferPanel offer={offer} onAccepted={onAccepted} />}
-            <ManagerCard manager={manager} onWrite={write} canBook={canBook} lockedHint={lockedHint} />
+            {!check && <ManagerCard manager={manager} onWrite={write} canBook={canBook} lockedHint={lockedHint} />}
             {order && (
           <div>
             <OrderPanel order={order} onChange={setOrder}
               defaults={{ company: place?.name ?? '', phone: contact.phone, website: check?.sources.find(x => x.key === 'website')?.value ?? '', city: place?.city ?? '', industry: place?.category ?? '' }} />
           </div>
             )}
-            {ready && (
+            {check && (
               <div style={{ ...card, backgroundColor: 'var(--electric)', color: '#fff', border: 'none' }}>
                 <Eyebrow color="rgba(255,255,255,0.7)">Sichtbarkeit gesamt</Eyebrow>
                 <p className="display" style={{ fontSize: 'clamp(64px, 8vw, 96px)', lineHeight: 0.95, margin: '6px 0 4px' }}>
-                  {scored && total !== null ? total : '—'}<span style={{ fontSize: 22, fontWeight: 500, opacity: 0.6, letterSpacing: 0 }}> / 100</span><Delta d={diff.total} />
+                  {scored ? (total ?? '—') : <span className="cab-skel" aria-label="Wird ermittelt" style={{ display: 'inline-block', width: '1.6em', height: '0.62em', marginRight: 10, verticalAlign: 'baseline', borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.3)' }} />}<span style={{ fontSize: 22, fontWeight: 500, opacity: 0.6, letterSpacing: 0 }}> / 100</span><Delta d={diff.total} />
                 </p>
                 <p style={{ fontSize: 14, lineHeight: 1.65, color: 'rgba(255,255,255,0.78)', margin: '12px 0 0', maxWidth: 360 }}>
                   {scored
                     ? 'Kein SEO-Score, sondern ein Arbeitsbild: wo Ihr Unternehmen schon gut dasteht und wo die größten Lücken sind.'
-                    : 'Wir sammeln noch Daten. Nach der Prüfung durch unser Team sehen Sie hier die Gesamtbewertung und später die Entwicklung.'}
+                    : 'Wird gerade ermittelt. Sobald Ihr Bericht fertig ist, sehen Sie hier die Gesamtbewertung und später die Entwicklung.'}
                 </p>
               </div>
             )}
-            {ready && (
+            {check && (
             <div className="cab-grid-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 18 }}>
               {chans.map((c, i) => (
                 <div key={c.key} style={{ ...card, display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
                     <span className="d-tile d-tile-sm" aria-hidden>{CHAN_ICON[i] ?? CHAN_ICON[0]}</span>
-                    <span className="display" style={{ fontSize: 28, lineHeight: 1 }}>{scored && c.score !== null ? c.score : '—'}<Delta d={diff.ch(c.key)} /></span>
+                    {scored ? <span className="display" style={{ fontSize: 28, lineHeight: 1 }}>{c.score !== null ? c.score : '—'}<Delta d={diff.ch(c.key)} /></span>
+                      : <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--electric)', backgroundColor: '#EEEBFF', borderRadius: 999, padding: '5px 10px' }}>Wird geprüft</span>}
                   </div>
                   <p style={{ fontWeight: 700, fontSize: 16, margin: '0 0 6px', letterSpacing: '-0.01em' }}>{c.title}</p>
                   <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: 0, flex: 1 }}>{c.desc}</p>
                   <div style={{ height: 5, borderRadius: 3, backgroundColor: '#EEEBFF', marginTop: 18 }}>
-                    <div style={{ width: scored && c.score !== null ? `${c.score}%` : '0%', height: '100%', borderRadius: 3, backgroundColor: 'var(--electric)', transition: 'width 0.9s var(--ease)' }} />
+                    {scored
+                      ? <div style={{ width: c.score !== null ? `${c.score}%` : '0%', height: '100%', borderRadius: 3, backgroundColor: 'var(--electric)', transition: 'width 0.9s var(--ease)' }} />
+                      : <div className="cab-skel" style={{ width: `${[38, 52, 30, 45][i] ?? 40}%`, height: '100%', borderRadius: 3, animationDelay: `${i * 0.2}s` }} />}
                   </div>
                 </div>
               ))}
@@ -447,6 +455,23 @@ export default function CabinetPage() {
                   ))}
                 </div>
               </div>
+            ) : check && !scored ? (
+              <div style={card}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+                  <Eyebrow>Was wir zuerst empfehlen</Eyebrow>
+                  <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>Erscheint mit Ihrem Bericht</span>
+                </div>
+                <div className="cab-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 18, marginTop: 8 }} aria-hidden>
+                  {[0, 1, 2].map(i => (
+                    <div key={i} style={{ paddingTop: 16, borderTop: `2px solid ${i === 0 ? 'var(--electric)' : 'var(--line)'}` }}>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? 'var(--electric)' : 'var(--muted)', margin: '0 0 10px' }}>{i + 1}</p>
+                      <div className="cab-skel" style={{ height: 14, width: '70%', marginBottom: 12, animationDelay: `${i * 0.2}s` }} />
+                      <div className="cab-skel" style={{ height: 9, width: '100%', marginBottom: 7, animationDelay: `${i * 0.2 + 0.1}s` }} />
+                      <div className="cab-skel" style={{ height: 9, width: '85%', animationDelay: `${i * 0.2 + 0.2}s` }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : null}
             {rec && <RecommendedCard rec={rec} booking={book} onWrite={write} />}
             {!check && (
@@ -461,6 +486,7 @@ export default function CabinetPage() {
             )}
             </div>
           </div>
+          </>
         )}
 
         {tab === 'report' && check && (
