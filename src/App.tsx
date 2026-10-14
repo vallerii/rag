@@ -5478,7 +5478,7 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
   },
   'website-google-search': {
     title: 'Google baut seine Antwort aus allem, was es über Sie findet',
-    sub: 'Über den Links stehen heute eine KI-Antwort und eine Karte mit drei Betrieben. Google sammelt Informationen über Sie im ganzen Netz: auf Ihrer Website, im Google-Profil, in Bewertungen und sozialen Netzwerken. Wir sorgen dafür, dass Google Sie findet und jede Kundenfrage beantworten kann.',
+    sub: 'Wir sorgen dafür, dass Google Sie findet und jede Kundenfrage beantworten kann.',
     priceLink: 'Website ab 30 € im Monat',
     problem: {
       title: 'Google zeigt den, über den es sich am sichersten ist',
@@ -5550,7 +5550,7 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
   },
   'social-media': {
     title: 'In sozialen Netzwerken sehen Kunden Menschen',
-    sub: 'Bevor jemand einen Betrieb beauftragt, will er wissen, wer dahintersteht. Wir betreuen Ihre Social-Media-Kanäle und zeigen Ihr Team und Ihre Arbeit: Wir richten Ihre Profile so ein, dass man Sie in den sozialen Netzwerken und bei Google findet, und erarbeiten Ihre Inhalte.',
+    sub: 'Wir erarbeiten Ihre Inhalte und betreuen Ihre Social-Media-Kanäle, zeigen Ihr Team und Ihre Arbeit: Wir richten Ihre Profile so ein, dass man Sie in den sozialen Netzwerken und bei Google findet.',
     priceLink: 'Betreuung Ihres Kanals mit 3 Beiträgen pro Woche: 199 € im Monat',
     problem: {
       title: 'Der Kunde hat Sie schon gefunden. Jetzt prüft er Sie',
