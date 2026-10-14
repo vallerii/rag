@@ -5,6 +5,7 @@ import { getLang, dateLocale } from './i18n'
 import LangSwitch from './LangSwitch'
 import { currentPath, isServer, siteOrigin, ssr } from './ssr'
 import { COMPANY, phoneHref } from './company'
+import { BRAND_ICONS } from './brandIcons'
 import { AgbBody, DatenschutzBody, ImpressumBody, LEGAL_UPDATED, PRICE_FACTS } from './legal/LegalPages'
 import CompanySearch from './check/CompanySearch'
 import CheckPage from './check/CheckPage'
@@ -966,24 +967,25 @@ type PackageOrder = { pkg: PackageId | null; social: boolean }
 
 const PROFILE_PRICE = '149 €'
 
-const WEBSITE_PACKAGES: { id: PackageId; tag: string; name: string; price: number; thesis: string; forWhom: string; includes: string[] }[] = [
+const WEBSITE_PACKAGES: { id: PackageId; tag: string; name: string; price: number; thesis: string; forWhom: string; highlightsTitle: string; highlights: string[]; includes: string[] }[] = [
   {
     id: 'onepager', tag: 'Einstieg', name: 'One Pager', price: 30,
     thesis: 'Ein professioneller Auftritt im Netz: schnell und günstig.',
     forWhom: 'Für Sie, wenn es noch gar keine Website gibt.',
-    includes: ['Website auf einer Seite', 'Leistungen und Kontakt klar aufgebaut', 'Optimiert für das Smartphone', 'Hosting und technische Betreuung'],
+    highlightsTitle: 'Für den Start',
+    highlights: ['Website auf einer Seite', 'Hosting und Technik inklusive'],
+    includes: ['Leistungen und Kontakt klar aufgebaut', 'Optimiert für das Smartphone'],
   },
   {
     id: 'local', tag: 'Standard', name: 'Local Website', price: 299,
     thesis: 'Ihre Website bringt jeden Monat mehr Anfragen über Google aus Ihrer Stadt und Region.',
     forWhom: 'Für Sie, wenn Kunden Sie über Google finden sollen.',
+    highlightsTitle: 'Jeden Monat',
+    highlights: ['3 neue Artikel zu Fragen Ihrer Kunden', 'SEO laufend aktualisiert', 'Änderungen und Betreuung'],
     includes: [
       'Ihre jetzige Website verbessert oder neu gebaut',
       'Website mit einer Seite pro Leistung und Ort',
-      '3 neue Artikel jeden Monat: Antworten auf Fragen Ihrer Kunden',
-      'SEO laufend aktualisiert: Texte, Titel, Struktur und Technik',
       'Google-Unternehmensprofil eingerichtet',
-      'Änderungen und Betreuung jeden Monat',
       'Bericht jedes Quartal: Besucher und Anfragen',
     ],
   },
@@ -991,18 +993,32 @@ const WEBSITE_PACKAGES: { id: PackageId; tag: string; name: string; price: numbe
     id: 'aiplus', tag: 'Premium', name: 'AI Plus', price: 499,
     thesis: 'Wir arbeiten auch außerhalb Ihrer Website, damit Google, Karten und KI-Assistenten Sie empfehlen.',
     forWhom: 'Für Sie, wenn Konkurrenten öfter empfohlen werden als Sie.',
+    highlightsTitle: 'Zusätzlich zu Local Website',
+    highlights: ['5 statt 3 Artikel im Monat', 'Erwähnungen und Links auf anderen Seiten', 'Google-Profil laufend gepflegt, Antworten auf Bewertungen', 'KI-Monitor und Monatsbericht'],
     includes: [
-      '5 neue Artikel jeden Monat für Google und KI-Assistenten',
-      'Erwähnungen und Links auf anderen Seiten: Branchenportale, Partner, lokale Presse',
-      'Google-Profil laufend gepflegt: Beiträge, Antworten auf Bewertungen',
       'Automatische Bitte um Bewertung nach jedem Auftrag',
       'Verzeichnisse inkl. Bing Places und Apple Maps, überall mit gleichen Daten',
-      'KI-Monitor: jeden Monat 10 Kundenfragen an ChatGPT',
-      'Monatsbericht: in wie vielen KI-Antworten Sie genannt werden',
+      'Jeden Monat 10 Kundenfragen an ChatGPT',
       'Dazu alles aus Local Website',
     ],
   },
 ]
+
+// Was ein Paket ausmacht: hervorgehoben über dem Trenner, der Rest darunter.
+function PackageHighlights({ title, items, strong = false }: { title: string; items: string[]; strong?: boolean }) {
+  return (
+    <div style={{ padding: '16px 18px', borderRadius: 16, backgroundColor: strong ? 'var(--brand-soft)' : 'var(--bone)', border: `1px solid ${strong ? '#C9C5F7' : 'var(--border)'}` }}>
+      <p className="kick" style={{ fontSize: 11.5, margin: '0 0 10px', color: strong ? 'var(--electric)' : 'var(--muted)' }}>{title}</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {items.map(x => (
+          <div key={x} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            {checkIcon()}<span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.45 }}>{x}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 // Vergleichstabelle unter den Website-Paketen (/preise).
 // Idee: Local Website arbeitet an Ihrer Website, AI Plus zusätzlich überall außerhalb.
@@ -1090,14 +1106,14 @@ function PackageCompare() {
 
 const SOCIAL_ADDON = {
   name: 'Social-Media-Betreuung', price: 199,
-  thesis: 'Regelmäßig präsent in sozialen Netzwerken — ohne selbst planen und posten zu müssen.',
+  thesis: 'Regelmäßig präsent in sozialen Netzwerken, ohne selbst planen und posten zu müssen.',
   includes: [
-    'Ein Hauptkanal nach Wahl — dort, wo Ihre Kunden sind',
+    'Ein Hauptkanal nach Wahl: dort, wo Ihre Kunden sind',
     'Beratungsgespräch zum Start: Ziele, Leistungen, Einsatzgebiet',
     'Zielgruppenanalyse: wer Ihre Kunden sind und was sie sehen wollen',
     'Positionierung: wofür man Ihren Betrieb kennen soll',
-    'Analyse Ihres bestehenden Profils — oder Aufbau von null',
-    'Profil-Optimierung: Name, Bio, Kategorie, Kontakt-Buttons und Highlights — damit man Sie in der Suche findet und sofort versteht, wer Sie sind',
+    'Analyse Ihres bestehenden Profils oder Aufbau von null',
+    'Profil-Optimierung: Name, Bio, Kategorie, Kontakt-Buttons und Highlights, damit man Sie in der Suche findet und sofort versteht, wer Sie sind',
     'Redaktionsplan jeden Monat zur Freigabe',
     '3 Beiträge pro Woche und 3 Stories am Tag (wo der Kanal Stories hat)',
     'Weitere Kanäle auf Wunsch gegen Aufpreis',
@@ -1168,9 +1184,10 @@ function SendButton({ enabled, onSend, label = 'Anfrage senden' }: { enabled: bo
 }
 
 // Schritt 2 einer Paket-Anfrage: Konto anlegen/anmelden auf /anfrage (src/check/OrderPage.tsx).
-function goToOrder(pkg: PackageId | 'profile' | null, social: boolean) {
+function goToOrder(pkg: PackageId | 'profile' | null, social: boolean, web?: PackageId) {
   const sp = new URLSearchParams()
   if (pkg) sp.set('pkg', pkg)
+  if (web) sp.set('web', web)
   if (social) sp.set('social', '1')
   sp.set('from', window.location.pathname)
   window.location.href = `/anfrage?${sp.toString()}`
@@ -1182,19 +1199,22 @@ function orderItemsFromUrl(): OrderItem[] {
   const pkg = sp.get('pkg')
   const items: OrderItem[] = []
   if (pkg === 'profile') items.push({ id: 'profile', name: PROFILE_PACKAGE.name, price: PROFILE_PACKAGE.price, unit: 'einmalig' })
-  const web = WEBSITE_PACKAGES.find(p => p.id === pkg)
+  const web = WEBSITE_PACKAGES.find(p => p.id === pkg) ?? (pkg === 'profile' ? WEBSITE_PACKAGES.find(p => p.id === sp.get('web')) : undefined)
   if (web) items.push({ id: web.id, name: web.name, price: web.price, unit: 'pro Monat' })
   if (sp.get('social') === '1') items.push({ id: 'social', name: SOCIAL_ADDON.name, price: SOCIAL_ADDON.price, unit: 'pro Monat' })
   return items
 }
 
 // Google-Unternehmensprofil — einmalige Einrichtung, ohne Website-Kopplung.
-function ProfileOrderModal({ onClose, initialSocial = false }: { onClose: () => void; initialSocial?: boolean }) {
+function ProfileOrderModal({ onClose, initialSocial = false, initialWeb = false }: { onClose: () => void; initialSocial?: boolean; initialWeb?: boolean }) {
   const [social, setSocial] = useState(initialSocial)
+  const [web, setWeb] = useState(initialWeb)
+  const onePager = WEBSITE_PACKAGES.find(w => w.id === 'onepager')!
   const summary = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, backgroundColor: '#F7F6FF', border: '1px solid #E4DFFF', borderRadius: 14, padding: '12px 16px' }}>
       <OrderRow label="Google-Unternehmensprofil" value={PROFILE_PRICE} unit="einmalig" />
       {social && <OrderRow label={SOCIAL_ADDON.name} value={`${SOCIAL_ADDON.price} €`} unit="pro Monat" />}
+      {web && <OrderRow label={onePager.name} value={`${onePager.price} €`} unit="pro Monat" />}
     </div>
   )
   return (
@@ -1203,7 +1223,7 @@ function ProfileOrderModal({ onClose, initialSocial = false }: { onClose: () => 
           <p className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)', marginBottom: 10 }}>Einmalige Einrichtung</p>
           <h2 id="order-title" style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-0.02em', margin: '0 0 6px', paddingRight: 28 }}>Google-Unternehmensprofil einrichten</h2>
           <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: '0 0 18px' }}>
-            <strong style={{ color: 'var(--ink)' }}>{PROFILE_PRICE} einmalig</strong> — wir erstellen oder optimieren Ihr Profil. Im nächsten Schritt legen Sie Ihren Kundenbereich an oder melden sich an.
+            <strong style={{ color: 'var(--ink)' }}>{PROFILE_PRICE} einmalig</strong>. Wir erstellen oder optimieren Ihr Profil. Im nächsten Schritt legen Sie Ihren Kundenbereich an oder melden sich an.
           </p>
           <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(7,7,12,0.45)', marginBottom: 8 }}>Optional dazu · monatlich</p>
           <label style={{ display: 'flex', gap: 12, alignItems: 'flex-start', cursor: 'pointer', padding: '11px 14px', borderRadius: 14, marginBottom: 14, border: `1px solid ${social ? '#2600FF' : 'rgba(7,7,12,0.12)'}`, backgroundColor: social ? '#F4F2FF' : '#fff', transition: 'all 0.2s ease' }}>
@@ -1216,12 +1236,22 @@ function ProfileOrderModal({ onClose, initialSocial = false }: { onClose: () => 
               <span style={{ display: 'block', fontSize: 12.5, lineHeight: 1.55, color: 'var(--muted)', marginTop: 3 }}>{SOCIAL_ADDON.thesis}</span>
             </span>
           </label>
+          <label style={{ display: 'flex', gap: 12, alignItems: 'flex-start', cursor: 'pointer', padding: '11px 14px', borderRadius: 14, marginBottom: 14, border: `1px solid ${web ? '#2600FF' : 'rgba(7,7,12,0.12)'}`, backgroundColor: web ? '#F4F2FF' : '#fff', transition: 'all 0.2s ease' }}>
+            <input type="checkbox" checked={web} onChange={() => setWeb(!web)} style={{ width: 18, height: 18, marginTop: 1, accentColor: '#2600FF', flexShrink: 0 }} />
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+                <span style={{ fontWeight: 600, fontSize: 14.5 }}>{onePager.name}</span>
+                <span style={{ fontWeight: 700, fontSize: 14.5, whiteSpace: 'nowrap' }}>{onePager.price} € <span style={{ fontWeight: 500, fontSize: 12.5, color: 'var(--muted)' }}>pro Monat</span></span>
+              </span>
+              <span style={{ display: 'block', fontSize: 12.5, lineHeight: 1.55, color: 'var(--muted)', marginTop: 3 }}>{onePager.thesis}</span>
+            </span>
+          </label>
           {summary}
           <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: '12px 0 0' }}>
             Tipp: In den Website-Paketen Local Website und AI Plus ist das Google-Profil bereits enthalten.{' '}
             <a href={'/preise'} onClick={onClose} className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>Pakete ansehen →</a>
           </p>
-          <SendButton enabled label="Weiter" onSend={() => goToOrder('profile', social)} />
+          <SendButton enabled label="Weiter" onSend={() => goToOrder('profile', social, web ? 'onepager' : undefined)} />
         </>
     </OrderShell>
   )
@@ -1287,8 +1317,16 @@ function PackageOrderModal({ initial, onClose }: { initial: PackageOrder; onClos
 // Google-Profil als eigenes Einmal-Paket in der Preisliste.
 const PROFILE_PACKAGE = {
   tag: 'Einmalig', name: 'Google-Profil schlüsselfertig', price: 149,
-  thesis: 'Ihr Google-Unternehmensprofil — fertig eingerichtet, ohne Abo.',
-  includes: ['Erstellung oder Einrichtung des Profils', 'Auswahl der Hauptkategorie', 'Unternehmensbeschreibung und Leistungen', 'Kontaktdaten, Öffnungszeiten, Verbindung zur Website', 'Link und Vorlage für die ersten Bewertungen'],
+  thesis: 'Ihr Profil bei Google Maps und in der Google-Suche: fertig eingerichtet, ohne Abo.',
+  includes: [
+    'Neues Profil anlegen oder bestehendes übernehmen und bereinigen',
+    'Bestätigung bei Google: das Profil gehört Ihnen',
+    'Haupt- und Zusatzkategorien',
+    'Leistungen mit Beschreibung und Einsatzgebiet',
+    'Beschreibung, Öffnungszeiten, Telefon und Link zur Website',
+    'Logo, Titelbild und Ihre ersten Fotos',
+    'Link und QR-Code, mit denen Kunden Sie bewerten',
+  ],
 }
 
 // Kontur-Nummer wie in den Kanalblöcken der Startseite (01 KI-Suche … 04 Social Media).
@@ -1370,10 +1408,12 @@ function Pricing() {
                     </div>
                     <p style={{ fontSize: 15, lineHeight: 1.6, color: dark ? 'rgba(255,255,255,0.7)' : 'var(--muted)', margin: '0 0 12px' }}>{p.thesis}</p>
                     <p style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.45, color: 'var(--electric)', margin: '0 0 18px' }}>{p.forWhom}</p>
-                    <div style={{ marginBottom: 22 }}>
+                    <PackageHighlights title={p.highlightsTitle} items={p.highlights} strong={top} />
+                    <div style={{ margin: '16px 0 22px' }}>
+                      <p className="kick" style={{ fontSize: 11.5, margin: '0 0 4px', color: 'var(--muted)' }}>Außerdem enthalten</p>
                       {p.includes.map(it => (
                         <div key={it} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '9px 0', borderTop: `1px solid ${dark ? 'var(--line-dark)' : 'var(--line)'}` }}>
-                          {checkIcon(dark)}<span style={{ fontSize: 14, lineHeight: 1.5 }}>{it}</span>
+                          {checkIcon(dark)}<span style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--muted)' }}>{it}</span>
                         </div>
                       ))}
                     </div>
@@ -5080,32 +5120,49 @@ function ServicesIndex() {
 
 // Pakete auf den Leistungsseiten — dieselben Preise wie auf /preise (25.09.2026).
 type PriceItemId = 'profile' | PackageId | 'social'
-const SERVICE_PACKAGES: Record<string, { title?: string; intro: string; items: PriceItemId[]; highlight: PriceItemId; combo?: boolean; fromYou?: string }> = {
-  'google-maps-business-profile': { intro: 'Google-Profil schlüsselfertig für 149 € einmalig, ohne Abo. Social Media können Sie für 199 €/Monat dazunehmen. In Local Website und AI Plus ist das Profil schon enthalten — in AI Plus laufen die Bitten um Bewertungen nach jedem Auftrag automatisch.', items: ['profile', 'local', 'aiplus'], highlight: 'profile' },
-  'website-google-search': { intro: 'Welches Paket passt, hängt davon ab, wie viel von dem, was Google zeigt, wir für Sie übernehmen. One Pager: die Website als Visitenkarte. Local Website: Website mit Leistungsseiten, 3 neuen Artikeln im Monat und laufendem SEO. AI Plus: dazu Arbeit außerhalb der Website: Links auf anderen Seiten, Google-Profil, Bewertungen, Verzeichnisse und KI-Suche.', items: ['onepager', 'local', 'aiplus'], highlight: 'local' },
+const SERVICE_PACKAGES: Record<string, { title?: string; intro: string; items: PriceItemId[]; highlight: PriceItemId; combo?: boolean; fromYou?: string; addons?: ('social' | 'onepager')[] }> = {
+  'google-maps-business-profile': {
+    title: 'Wir richten Ihr Profil bei Google Maps ein',
+    intro: 'Wir machen das für Sie, einmal und richtig. Danach gehört das Profil Ihnen, ganz ohne Abo.',
+    items: ['profile'], highlight: 'profile', addons: ['social', 'onepager'],
+    fromYou: 'Von Ihnen: 15 Minuten für ein paar Fragen, 10–15 Fotos vom Handy und der Bestätigungscode von Google.',
+  },
+  'website-google-search': {
+    title: 'Wir bauen Ihre Website so, dass Google sie versteht',
+    intro: 'Sie kümmern sich um Ihre Kunden, wir um Ihre Website und darum, dass Google sie richtig liest.',
+    items: ['onepager', 'local', 'aiplus'], highlight: 'local',
+    fromYou: 'Von Ihnen: ein Gespräch von 30–45 Minuten und Fotos Ihrer Arbeiten. Die Texte schreiben wir, Sie geben nur frei.',
+  },
   'ai-search-optimization': {
     title: 'Wir sorgen dafür, dass die KI Sie kennt',
     intro: 'Wir kümmern uns darum, damit Sie sich auf Ihre Aufträge konzentrieren können. Was sich verändert, sehen Sie im Bericht.',
     items: ['local', 'aiplus'], highlight: 'aiplus',
     fromYou: 'Von Ihnen: ein Gespräch von 30–45 Minuten und Fotos Ihrer Arbeiten. Den Rest machen wir.',
   },
-  'social-media': { intro: 'Einzeln oder zu jedem Paket. Sie wählen Ihren Hauptkanal — dort, wo Ihre Kunden sind. Weitere Kanäle kommen auf Wunsch gegen Aufpreis dazu. Zusammen mit dem Google-Profil oder einer Website wirkt Social Media besser: Man findet Sie bei Google und sieht sofort, wer hinter dem Betrieb steht.', items: ['social'], highlight: 'social', combo: true },
+  'social-media': {
+    title: 'Wir führen Ihr Profil für Sie',
+    intro: 'Sie schicken Fotos aus dem Arbeitsalltag, wir machen daraus Beiträge und veröffentlichen sie. Den Plan für den Monat geben Sie vorher frei.',
+    items: ['social'], highlight: 'social', combo: true,
+    fromYou: 'Von Ihnen: Fotos und kurze Videos von den Einsätzen in den Chat schicken und einmal im Monat den Plan freigeben. Was und wie Sie filmen, zeigen wir Ihnen. Texte und Veröffentlichung übernehmen wir.',
+  },
 }
 
 function priceItem(id: PriceItemId) {
-  if (id === 'profile') return { name: PROFILE_PACKAGE.name, tag: PROFILE_PACKAGE.tag, price: PROFILE_PACKAGE.price, unit: 'einmalig', thesis: PROFILE_PACKAGE.thesis, includes: PROFILE_PACKAGE.includes }
-  if (id === 'social') return { name: SOCIAL_ADDON.name, tag: 'Auch einzeln', price: SOCIAL_ADDON.price, unit: '/ Monat', thesis: SOCIAL_ADDON.thesis, includes: SOCIAL_ADDON.includes }
+  if (id === 'profile') return { name: PROFILE_PACKAGE.name, tag: PROFILE_PACKAGE.tag, price: PROFILE_PACKAGE.price, unit: 'einmalig', thesis: PROFILE_PACKAGE.thesis, includes: PROFILE_PACKAGE.includes, highlightsTitle: undefined as string | undefined, highlights: undefined as string[] | undefined }
+  if (id === 'social') return { name: SOCIAL_ADDON.name, tag: 'Auch einzeln', price: SOCIAL_ADDON.price, unit: '/ Monat', thesis: SOCIAL_ADDON.thesis, includes: SOCIAL_ADDON.includes, highlightsTitle: undefined as string | undefined, highlights: undefined as string[] | undefined }
   const p = WEBSITE_PACKAGES.find(w => w.id === id)!
-  return { name: p.name, tag: p.tag, price: p.price, unit: '/ Monat', thesis: p.thesis, includes: p.includes }
+  return { name: p.name, tag: p.tag, price: p.price, unit: '/ Monat', thesis: p.thesis, includes: p.includes, highlightsTitle: p.highlightsTitle, highlights: p.highlights }
 }
 
 function ServicePackages({ slug }: { slug: string }) {
   const cfg = SERVICE_PACKAGES[slug]
   const [pkgOrder, setPkgOrder] = useState<PackageOrder | null>(null)
-  const [profileOrder, setProfileOrder] = useState<null | { social: boolean }>(null)
+  const [profileOrder, setProfileOrder] = useState<null | { social: boolean; web: boolean }>(null)
+  const [addSocial, setAddSocial] = useState(false)
+  const [addWeb, setAddWeb] = useState(false)
   if (!cfg) return null
   const order = (id: PriceItemId) => {
-    if (id === 'profile') setProfileOrder({ social: slug === 'social-media' })
+    if (id === 'profile') setProfileOrder({ social: slug === 'social-media' || addSocial, web: addWeb })
     else if (id === 'social') setPkgOrder({ pkg: null, social: true })
     else setPkgOrder({ pkg: id, social: false })
   }
@@ -5113,7 +5170,7 @@ function ServicePackages({ slug }: { slug: string }) {
   return (
     <>
       {pkgOrder && <PackageOrderModal initial={pkgOrder} onClose={() => setPkgOrder(null)} />}
-      {profileOrder && <ProfileOrderModal initialSocial={profileOrder.social} onClose={() => setProfileOrder(null)} />}
+      {profileOrder && <ProfileOrderModal initialSocial={profileOrder.social} initialWeb={profileOrder.web} onClose={() => setProfileOrder(null)} />}
       <section id="pakete" style={{ backgroundColor: 'var(--bone)', padding: '0 clamp(20px,4vw,48px) var(--sec-y, 110px)', scrollMarginTop: 80 }}>
         <div style={{ ...SHELL }}>
           <div style={{ textAlign: 'center', maxWidth: 1120, margin: '0 auto' }}>
@@ -5136,7 +5193,7 @@ function ServicePackages({ slug }: { slug: string }) {
                   </div>
                   {id === 'social' && (
                     <div style={{ padding: '16px 18px', borderRadius: 16, backgroundColor: 'var(--brand-soft)' }}>
-                      <p style={{ fontSize: 14, fontWeight: 800, margin: '0 0 10px' }}>Ihr Hauptkanal — nach Wahl</p>
+                      <p style={{ fontSize: 14, fontWeight: 800, margin: '0 0 10px' }}>Ihr Hauptkanal nach Wahl</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                         {['Instagram', 'Facebook', 'TikTok', 'LinkedIn', 'Threads'].map(c => (
                           <span key={c} style={{ padding: '6px 12px', borderRadius: 999, backgroundColor: '#fff', border: '1px solid #C9C5F7', fontSize: 14, fontWeight: 700 }}>{c}</span>
@@ -5154,11 +5211,28 @@ function ServicePackages({ slug }: { slug: string }) {
               const list = (
                 <div style={{ display: single ? 'grid' : 'flex', flexDirection: 'column', gridTemplateColumns: single ? 'repeat(auto-fit, minmax(240px, 1fr))' : undefined, gap: single ? '16px 28px' : 12, ...(single ? {} : { borderTop: '1px solid var(--divider)', paddingTop: 20 }) }}>
                   {single && <p className="kick" style={{ fontSize: 12, margin: 0, gridColumn: '1 / -1' }}>Das ist enthalten</p>}
+                  {!single && it.highlights && <p className="kick" style={{ fontSize: 11.5, margin: 0, color: 'var(--muted)' }}>Außerdem enthalten</p>}
                   {it.includes.map(x => (
                     <div key={x} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                      {checkIcon()}<span style={{ fontSize: 15.5, lineHeight: 1.5 }}>{x}</span>
+                      {checkIcon()}<span style={{ fontSize: it.highlights ? 14.5 : 15.5, lineHeight: 1.5, color: it.highlights ? 'var(--muted)' : undefined }}>{x}</span>
                     </div>
                   ))}
+                </div>
+              )
+              const monthly = (addSocial ? SOCIAL_ADDON.price : 0) + (addWeb ? WEBSITE_PACKAGES.find(w => w.id === 'onepager')!.price : 0)
+              const addonRow = (on: boolean, toggle: () => void, label: string, price: number) => (
+                <label key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 14, border: `1px solid ${on ? 'var(--electric)' : 'var(--border)'}`, backgroundColor: on ? 'var(--brand-soft)' : '#fff', fontSize: 14.5, transition: 'all 0.2s ease' }}>
+                  <input type="checkbox" checked={on} onChange={toggle} style={{ width: 17, height: 17, margin: 0, accentColor: '#2600FF', flexShrink: 0 }} />
+                  <span style={{ flex: 1 }}>{label}</span>
+                  <strong style={{ whiteSpace: 'nowrap' }}>+ {price} € <span style={{ fontWeight: 500, color: 'var(--muted)' }}>/ Monat</span></strong>
+                </label>
+              )
+              const addons = cfg.addons && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <p className="kick" style={{ fontSize: 12, margin: '0 0 2px' }}>Auf Wunsch dazu</p>
+                  {cfg.addons.includes('social') && addonRow(addSocial, () => setAddSocial(!addSocial), SOCIAL_ADDON.name, SOCIAL_ADDON.price)}
+                  {cfg.addons.includes('onepager') && addonRow(addWeb, () => setAddWeb(!addWeb), 'One Pager: Website auf einer Seite', WEBSITE_PACKAGES.find(w => w.id === 'onepager')!.price)}
+                  {monthly > 0 && <p style={{ fontSize: 14, color: 'var(--muted)', margin: '4px 0 0' }}>Zusammen: <strong style={{ color: 'var(--ink)' }}>{it.price} € einmalig + {monthly} € / Monat</strong></p>}
                 </div>
               )
               const btn = (
@@ -5174,11 +5248,11 @@ function ServicePackages({ slug }: { slug: string }) {
                     )}
                     {single ? (
                       <>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>{head}{btn}</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>{head}{addons}{btn}</div>
                         <div className="svc-pk-list" style={{ borderLeft: '1px solid var(--divider)', paddingLeft: 'clamp(28px, 4vw, 64px)' }}>{list}</div>
                       </>
                     ) : (
-                      <>{head}{list}{btn}</>
+                      <>{head}{it.highlights && it.highlightsTitle && <PackageHighlights title={it.highlightsTitle} items={it.highlights} strong={id === 'aiplus'} />}{list}{btn}</>
                     )}
                   </article>
                 </Reveal>
@@ -5219,6 +5293,36 @@ const SERVICE_CONSULT: Record<string, { lead: string; link: string }> = {
 }
 
 // Beschriftung des Check-Buttons im Hero je Leistungsseite — das Formular ist überall dasselbe (/check).
+// Logos auf der Check-Karte: welche Dienste wir für diese Seite prüfen. ChatGPT und LinkedIn ohne Logo (nicht frei verfügbar).
+const SERVICE_CHECK_BRANDS: Record<string, string[]> = {
+  'ai-search-optimization': ['chatgpt', 'googlegemini', 'claude', 'perplexity'],
+  'google-maps-business-profile': ['googlemaps'],
+  'website-google-search': ['google'],
+  'social-media': ['instagram', 'facebook', 'tiktok', 'threads'],
+}
+const BRAND_TEXT_ONLY: Record<string, string> = { chatgpt: 'ChatGPT', linkedin: 'LinkedIn' }
+function BrandChips({ ids }: { ids: string[] }) {
+  if (!ids.length) return null
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }} data-no-translate>
+      {ids.map(id => {
+        const b = BRAND_ICONS[id]
+        const title = b?.title ?? BRAND_TEXT_ONLY[id] ?? id
+        return (
+          <span key={id} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '6px 11px 6px 9px', borderRadius: 999, backgroundColor: '#fff', border: '1px solid var(--border)', fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>
+            {b ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0 }}><path d={b.path} fill={b.hex} /></svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0 }} fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M4 5h16v11H9l-5 4z" /></svg>
+            )}
+            {title}
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
 const SERVICE_CHECK_BUTTON: Record<string, string> = {
   'google-maps-business-profile': 'Google-Profil prüfen',
   'website-google-search': 'Website prüfen',
@@ -5311,23 +5415,58 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
   'google-maps-business-profile': {
     title: 'Google Maps ist Pflicht für lokale Unternehmen',
     sub: 'Wenn man schnell etwas in der Nähe braucht, öffnet man die Karte und entscheidet nach dem Profil. Wir richten Ihr Google-Profil so ein, dass die Wahl auf Sie fällt.',
-    priceLink: 'Google-Profil schlüsselfertig — 149 €',
+    priceLink: 'Ihr Profil bei Google Maps: 149 € einmalig',
     problem: {
-      title: 'Kunden entscheiden in einer halben Minute. Nach dem Profil',
-      text: 'Abends fliegt die Sicherung raus. Jemand tippt „Elektriker Frankfurt“ und sieht drei Betriebe. Angerufen wird der, bei dem im Profil sofort zu sehen ist:',
+      title: 'Kunden entscheiden in einer halben Minute. Nach Ihrem Profil bei Google Maps',
+      text: 'Jemand tippt „Elektriker Frankfurt“ und sieht drei Betriebe. Angerufen wird der, bei dem im Profil sofort zu sehen ist:',
       points: ['echte Fotos vom Betrieb und von Arbeiten', 'frische Bewertungen', 'aktuelle Öffnungszeiten und Telefonnummer', 'welche Leistungen es gibt'],
       outro: 'Sie können der beste Betrieb der Stadt sein. Ist Ihr Profil leer oder steht dort eine alte Nummer, ruft man den Nachbarn an.',
       visual: 'map',
     },
     article: { href: '/ratgeber/google-maps-ranking-verbessern', label: 'Wovon hängt der Platz auf der Karte ab? Im Ratgeber erklärt' },
-    needsTitle: 'Was Sie auf der Karte brauchen — und wobei wir helfen',
-    needs: [
-      { need: 'Ein vollständiges Profil', why: 'Richtige Kategorie, alle Leistungen, Öffnungszeiten, Telefon und Link zur Website.', help: 'Wir füllen alles aus. Gibt es schon ein Profil, legen wir kein zweites an, sondern bereinigen das bestehende: Dubletten, alte Nummern, falsche Kategorie.' },
-      { need: 'Fotos von Ihnen und Ihren Arbeiten', why: 'Menschen wollen sehen, mit wem sie es zu tun haben.', help: 'Wir sagen Ihnen, welche Fotos Sie machen sollen, und laden sie hoch.' },
-      { need: 'Laufend neue Bewertungen', why: 'Ein Profil mit frischen Bewertungen wirkt lebendig und vertrauenswürdig.', help: 'Sie bekommen von uns einen Link und einen QR-Code — zum Verschicken nach dem Auftrag oder als Aufkleber fürs Auto.' },
-      { need: 'Ein bestätigtes Profil auf Ihren Namen', why: 'Nur so können Sie es selbst verwalten.', help: 'Wir führen Sie Schritt für Schritt durch die Bestätigung per Google-Code. Das Profil gehört Ihnen und bleibt Ihres.' },
+    needsTitle: 'Was Ihr Profil bei Google Maps braucht, damit man Sie anruft',
+    needsIntro: 'Google zeigt zuerst Betriebe, deren Profil vollständig und aktiv ist. Angerufen wird der, der auf den ersten Blick überzeugt.',
+    factors: [
+      {
+        title: 'Was Sie anbieten',
+        items: [
+          { name: 'Die richtige Hauptkategorie', why: 'Damit Google weiß, bei welchen Suchen es Sie zeigen soll.' },
+          { name: 'Passende Zusatzkategorien', why: 'Für alles, was Sie außerdem anbieten.' },
+          { name: 'Alle Leistungen mit kurzer Beschreibung', why: 'Kunden und Google sehen sofort, was Sie machen.' },
+          { name: 'Ein klares Einsatzgebiet', why: 'Die Orte, in die Sie fahren. Ihre Privatadresse muss nicht sichtbar sein.' },
+          { name: 'Eine Beschreibung des Betriebs', why: 'Wer Sie sind, was Sie besonders gut machen, seit wann es Sie gibt.' },
+        ],
+      },
+      {
+        title: 'Wie man Sie erreicht',
+        items: [
+          { name: 'Eine Telefonnummer, unter der jemand rangeht', why: 'Wer nicht durchkommt, ruft den Nächsten an.' },
+          { name: 'Aktuelle Öffnungszeiten', why: 'Auch an Feiertagen und im Urlaub.' },
+          { name: 'Ein Link zur passenden Seite Ihrer Website', why: 'Wer mehr wissen will, landet direkt bei der Leistung.' },
+          { name: 'Kontakt-Buttons', why: 'Anrufen, schreiben, Termin anfragen: mit einem Tipp.' },
+        ],
+      },
+      {
+        title: 'Echte Fotos und Bewertungen',
+        items: [
+          { name: 'Fotos von Ihnen, Ihrem Team und Fahrzeug', why: 'Menschen wollen sehen, wer zu ihnen nach Hause kommt.' },
+          { name: 'Fotos echter Arbeiten', why: 'Vorher und nachher, keine Bilder aus dem Internet.' },
+          { name: 'Regelmäßig neue Bewertungen', why: 'Frische Bewertungen mit Text zählen mehr als viele alte.' },
+          { name: 'Antworten auf jede Bewertung', why: 'Auch auf kritische. Künftige Kunden lesen mit.' },
+        ],
+      },
+      {
+        title: 'Ob Google Ihnen vertraut',
+        items: [
+          { name: 'Ein bestätigtes Profil auf Ihren Namen', why: 'Nur dann können Sie es selbst verwalten.' },
+          { name: 'Kein zweites Profil', why: 'Doppelte Einträge verwirren Google und Kunden.' },
+          { name: 'Gleiche Angaben überall', why: 'Name, Adresse und Telefon wie auf der Website und in Verzeichnissen.' },
+          { name: 'Ein aktives Profil', why: 'Neue Fotos und Beiträge zeigen Google, dass Sie arbeiten.' },
+          { name: 'Eine Website mit Seiten für Ihre Leistungen', why: 'Sie bestätigt Google, was im Profil steht.' },
+        ],
+      },
     ],
-    fromYou: 'Von Ihnen: 15 Minuten für ein paar Fragen, 10–15 Fotos vom Handy und der Bestätigungscode von Google.',
+    factorsNote: 'Wie nah ein Kunde an Ihrem Betrieb ist, können Sie nicht ändern. Alles andere auf dieser Liste schon.',
     faq: [
       { q: 'Kostet das Google-Profil selbst etwas?', a: 'Nein. Die 149 € sind für unsere Arbeit.' },
       { q: 'Ich habe kein Büro, ich fahre zu den Kunden.', a: 'Kein Problem: Wir hinterlegen Ihr Einsatzgebiet. Ihre Privatadresse muss nicht sichtbar sein.' },
@@ -5343,34 +5482,67 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
     priceLink: 'Website ab 30 € im Monat',
     problem: {
       title: 'Google zeigt den, über den es sich am sichersten ist',
-      text: 'Google sammelt alles, was es über einen Betrieb findet: Website, Google-Profil, Bewertungen, Verzeichnisse. Hat Ihre Website nur eine Seite „Alle Elektroarbeiten“, weiß Google nicht, dass Sie Wallboxen installieren. Nach oben kommt, bei wem Google vier Dinge sicher versteht:',
-      points: ['welche Leistungen es gibt — jede auf eigener Seite', 'in welchem Ort und welcher Region', 'dass die Angaben überall gleich sind', 'dass der Betrieb aktiv ist und man ihm trauen kann'],
-      outro: 'Eine Website, die einmal gebaut und dann vergessen wurde, liefert Google keine Antworten — dann zeigt Google den Nachbarn, auch wenn Ihre Seite schön aussieht.',
+      text: 'Google sammelt alles, was es über einen Betrieb findet: Website, Google-Profil, Bewertungen, Verzeichnisse. Nach oben kommt, bei wem Google vier Dinge sicher versteht:',
+      points: ['welche Leistungen es gibt, jede auf eigener Seite', 'in welchem Ort und welcher Region', 'dass die Angaben überall gleich sind', 'dass der Betrieb aktiv ist und man ihm trauen kann'],
+      outro: 'Eine Website, die einmal gebaut und dann vergessen wurde, liefert Google keine Antworten. Dann zeigt Google einen anderen Betrieb, auch wenn Ihre Seite schön aussieht.',
       visual: 'serp',
     },
     article: { href: '/ratgeber/wie-funktioniert-lokales-seo', label: 'Wie wählt Google aus, wen es zeigt? Im Ratgeber erklärt' },
     layers: {
       title: 'So sieht die Google-Suche heute aus',
-      intro: 'Unter einer Suche wie „Elektriker Frankfurt“ stehen heute vier Dinge. Google füllt sie aus allem, was es über Sie findet — Ihre Website ist dabei die Quelle, die Sie selbst in der Hand haben.',
+      intro: 'Unter einer Suche wie „Elektriker Frankfurt“ stehen heute vier Dinge. Google füllt sie aus allem, was es über Sie findet. Ihre Website ist dabei die Quelle, die Sie selbst in der Hand haben.',
       items: [
-        { kind: 'ads', name: 'Anzeigen', what: 'Bezahlte Plätze ganz oben, markiert mit „Gesponsert“.', source: 'Hilft sofort — aber nur, solange Sie zahlen.' },
-        { kind: 'ai', name: 'KI-Übersicht', what: 'Eine fertige Antwort von Google: Preise, Tipps, oft schon Namen von Betrieben. Dazu der KI-Modus — Suche im Chat.', source: 'Woher: Seiten, die die Frage klar beantworten, Bewertungen und Verzeichnisse.' },
+        { kind: 'ads', name: 'Anzeigen', what: 'Bezahlte Plätze ganz oben, markiert mit „Gesponsert“.', source: 'Hilft sofort, aber nur, solange Sie zahlen.' },
+        { kind: 'ai', name: 'KI-Übersicht', what: 'Eine fertige Antwort von Google: Preise, Tipps, oft schon Namen von Betrieben. Dazu der KI-Modus: Suche im Chat.', source: 'Woher: Seiten, die die Frage klar beantworten, Bewertungen und Verzeichnisse.' },
         { kind: 'map', name: 'Karte mit drei Betrieben', what: 'Sterne, Bewertungen, „Jetzt geöffnet“, Button „Anrufen“. Viele entscheiden schon hier.', source: 'Woher: Google-Profil, Bewertungen und die Nähe zum Suchenden.' },
-        { kind: 'links', name: 'Websites und Verzeichnisse', what: 'Klassische Treffer — gemischt mit Gelbe Seiten, MyHammer, YouTube und Foren.', source: 'Woher: Ihre Website — am besten eine eigene Seite für jede Leistung und jeden Ort.' },
+        { kind: 'links', name: 'Websites und Verzeichnisse', what: 'Klassische Treffer, gemischt mit Gelbe Seiten, MyHammer, YouTube und Foren.', source: 'Woher: Ihre Website, am besten eine eigene Seite für jede Leistung und jeden Ort.' },
       ],
     },
-    needsTitle: 'Was Ihre Website braucht, damit Google Sie zeigt — und wobei wir helfen',
-    needs: [
-      { need: 'Eine Seite für jede wichtige Leistung', why: 'Mit Ort und Region im Text, damit Google sie der passenden Suche zuordnet.', help: 'Wir schreiben bis zu 10 Leistungsseiten. Sie lesen nur gegen und geben frei.' },
-      { need: 'Antworten auf die Fragen Ihrer Kunden', why: 'Wer „Was kostet ein neuer Sicherungskasten im Altbau?“ sucht, findet die Antwort bei Ihnen. Genau solche Antworten zitiert Google in der KI-Übersicht.', help: 'Jeden Monat schreiben wir neue Artikel und kurze Begriffserklärungen.' },
-      { need: 'Website, Google-Profil und Bewertungen, die zusammenpassen', why: 'Die Karte mit drei Betrieben nimmt ihre Daten aus dem Google-Profil, die KI-Übersicht auch aus Bewertungen und Verzeichnissen. Widersprechen sie sich, traut Google keinem.', help: 'In Local Website richten wir Ihr Google-Profil mit ein und gleichen die Angaben ab. In AI Plus kommen Verzeichnisse und die Bitte um Bewertung nach jedem Auftrag dazu.' },
-      { need: 'Eine Website, die nicht stehen bleibt', why: 'Neue Inhalte, echte Fotos und klare Kontaktwege zeigen Google und Kunden, dass der Betrieb arbeitet.', help: 'Hosting, Updates und Änderungen sind im Preis. Einmal im Monat bekommen Sie einen kurzen Bericht: wie viele Besucher kamen und wie viele angefragt haben.' },
+    needsTitle: 'Was Google über Ihre Website wissen muss, um Sie zu zeigen',
+    factors: [
+      {
+        title: 'Welche Leistungen Sie anbieten',
+        items: [
+          { name: 'Eine eigene Seite für jede Leistung', why: 'Mit Ablauf, Dauer und Preis ab. Eine Seite „Alle Elektroarbeiten“ reicht Google nicht.' },
+          { name: 'Klare Überschriften und Seitentitel', why: 'Damit Google auf einen Blick sieht, worum es auf der Seite geht.' },
+          { name: 'Antworten auf Fragen Ihrer Kunden', why: 'Artikel zu Kosten, Dauer und Förderung. Genau das zitiert Google in der KI-Übersicht.' },
+          { name: 'Fotos echter Arbeiten', why: 'Eigene Bilder statt Fotos aus dem Internet.' },
+        ],
+      },
+      {
+        title: 'Wo Sie arbeiten',
+        items: [
+          { name: 'Ort und Region im Text', why: 'Auf jeder Leistungsseite steht, wo Sie diese Leistung anbieten.' },
+          { name: 'Eigene Seiten für wichtige Orte', why: 'Wenn Sie in mehreren Städten arbeiten.' },
+          { name: 'Adresse und Einsatzgebiet bei Kontakt und im Impressum', why: 'Genau so wie im Google-Profil.' },
+          { name: 'Ein verknüpftes Google-Profil', why: 'Die Karte mit drei Betrieben nimmt ihre Daten von dort.' },
+        ],
+      },
+      {
+        title: 'Ob die Angaben überall gleich sind',
+        items: [
+          { name: 'Gleicher Name, Adresse und Telefon überall', why: 'Website, Google-Profil, Verzeichnisse. Widersprechen sie sich, traut Google keinem.' },
+          { name: 'Gleiche Leistungen überall', why: 'Was auf der Website steht, steht auch im Google-Profil.' },
+          { name: 'Einträge in Verzeichnissen', why: 'Gelbe Seiten, Das Örtliche, 11880 und die Portale Ihrer Branche.' },
+          { name: 'Strukturierte Daten auf der Website', why: 'Eine maschinenlesbare Visitenkarte im Code der Seite.' },
+        ],
+      },
+      {
+        title: 'Ob man Ihnen trauen kann',
+        items: [
+          { name: 'Eine schnelle Website, die auf dem Handy funktioniert', why: 'Die meisten suchen unterwegs. Langsame Seiten verlieren Kunden und Plätze.' },
+          { name: 'Sicher und vollständig', why: 'HTTPS, Impressum und Datenschutz. Ohne das wirkt ein Betrieb unseriös.' },
+          { name: 'Bewertungen und Nachweise auf der Seite', why: 'Meisterbrief, Zertifikate, echte Kundenstimmen.' },
+          { name: 'Regelmäßig neue Inhalte', why: 'Eine Website, die sich nicht verändert, wirkt verlassen.' },
+          { name: 'Links von anderen Seiten', why: 'Wenn Partner, Presse und Portale auf Sie verlinken, vertraut Google Ihnen mehr.' },
+        ],
+      },
     ],
-    fromYou: 'Von Ihnen: ein Gespräch von 30–45 Minuten und Fotos Ihrer Arbeiten. Die Texte schreiben wir, Sie geben nur frei.',
+    factorsNote: 'Je mehr davon stimmt, desto öfter zeigt Google Sie. Einen festen Platz kann niemand versprechen.',
     faq: [
       { q: 'Wozu eine Website, wenn Google die Antwort selbst zeigt?', a: 'Weil Google sie irgendwoher nehmen muss. Die KI-Übersicht zitiert Seiten, die eine Frage klar beantworten, und verlinkt sie. Ihre Website ist der einzige Ort, an dem Sie selbst bestimmen, was dort steht.' },
       { q: 'Ich habe schon eine Website. Wozu eine neue?', a: 'Eine neue ist nicht nötig. Wir prüfen zuerst Ihre: Bringt sie schon Kunden, sagen wir Ihnen das. Wenn nicht, verbessern wir, was sie bremst.' },
-      { q: 'Brauche ich eine Website, wenn ich ein Google-Profil habe?', a: 'Für den Anfang reicht das Profil — es füllt die Karte. Für die KI-Übersicht und die Suche nach einzelnen Leistungen braucht Google mehr Text, als in ein Profil passt. Diese Quelle ist Ihre Website.' },
+      { q: 'Brauche ich eine Website, wenn ich ein Google-Profil habe?', a: 'Für den Anfang reicht das Profil, es füllt die Karte. Für die KI-Übersicht und die Suche nach einzelnen Leistungen braucht Google mehr Text, als in ein Profil passt. Diese Quelle ist Ihre Website.' },
       { q: 'Wann sehe ich Ergebnisse?', a: 'Die ersten Seiten erscheinen nach einigen Wochen in der Suche, spürbar mehr Anfragen kommen nach einigen Monaten.' },
       { q: 'Wohin gehen die Anfragen?', a: 'Direkt an Ihre E-Mail-Adresse.' },
     ],
@@ -5379,29 +5551,62 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
   'social-media': {
     title: 'In sozialen Netzwerken sehen Kunden Menschen',
     sub: 'Bevor jemand einen Betrieb beauftragt, will er wissen, wer dahintersteht. Wir betreuen Ihre Social-Media-Kanäle und zeigen Ihr Team und Ihre Arbeit: Wir richten Ihre Profile so ein, dass man Sie in den sozialen Netzwerken und bei Google findet, und erarbeiten Ihre Inhalte.',
-    priceLink: '199 € im Monat, auch ohne Website',
+    priceLink: 'Betreuung Ihres Kanals mit 3 Beiträgen pro Woche: 199 € im Monat',
     problem: {
       title: 'Der Kunde hat Sie schon gefunden. Jetzt prüft er Sie',
-      text: 'Jemand findet Sie auf Instagram — und dort ist der letzte Beitrag von vorletztem Jahr. Bevor man anruft, will man im Profil sehen:',
+      text: 'Jemand findet Sie auf Instagram, und dort ist der letzte Beitrag von vorletztem Jahr. Bevor man anruft, will man im Profil sehen:',
       points: ['eine klare Kopfzeile: wer Sie sind, was Sie machen, wo und wie man Sie erreicht', 'dass der Betrieb gerade arbeitet', 'wer dahintersteht', 'echte Arbeiten und Ergebnisse', 'dasselbe Bild wie bei Google und auf der Website'],
       outro: 'Social Media bringt selten von allein Aufträge. Aber es entscheidet, ob jemand anruft, der Sie bei Google schon gefunden hat.',
       visual: 'social',
     },
     article: { href: '/ratgeber/brauchen-handwerker-instagram', label: 'Brauchen Handwerker überhaupt Instagram? Im Ratgeber erklärt' },
-    needsTitle: 'Was Ihr Profil braucht, damit man Sie anruft — und wobei wir helfen',
-    needs: [
-      { need: 'Ein lebendiges Profil', why: 'Regelmäßige Beiträge zeigen: Der Betrieb arbeitet.', help: 'Jeden Monat ein Plan zur Freigabe, dann täglich Stories und dreimal pro Woche ein Beitrag oder ein kurzes Video.' },
-      { need: 'Gesichter', why: 'Man will wissen, mit wem man es zu tun hat.', help: 'Wir zeigen Sie und Ihr Team — oder, wenn Sie nicht vor die Kamera möchten, Ihre Arbeit und Ihren Arbeitsalltag.' },
-      { need: 'Echte Arbeiten', why: '„Vorher und nachher“ erklärt Qualität besser als jeder Werbespruch.', help: 'Aus Ihren Fotos von der Arbeit machen wir Beiträge mit kurzen Erklärungen.' },
-      { need: 'Überall dasselbe Bild', why: 'Wer Sie bei Google und auf Instagram sieht, soll denselben Betrieb erkennen.', help: 'Dieselben Fotos kommen auch in Ihr Google-Profil und auf Ihre Website.' },
+    needsTitle: 'Was Ihr Profil braucht, damit man Sie anruft',
+    factors: [
+      {
+        title: 'Eine klare Kopfzeile',
+        items: [
+          { name: 'Ein Name, unter dem man Sie findet', why: 'Betriebsname und Gewerk, zum Beispiel „Muster Elektrotechnik Siegen“.' },
+          { name: 'Eine Bio in einem Satz', why: 'Was Sie machen und wo. Keine Werbesprüche.' },
+          { name: 'Die richtige Kategorie', why: 'Damit das Netzwerk Sie bei passenden Suchen zeigt.' },
+          { name: 'Kontakt-Buttons und Link', why: 'Anrufen, Nachricht schreiben, zur Website: mit einem Tipp.' },
+          { name: 'Highlights', why: 'Leistungen, Arbeiten und Bewertungen, die oben im Profil bleiben.' },
+        ],
+      },
+      {
+        title: 'Dass Sie gerade arbeiten',
+        items: [
+          { name: 'Regelmäßige Beiträge', why: 'Dreimal pro Woche. Ein Profil ohne neue Beiträge wirkt wie geschlossen.' },
+          { name: 'Stories aus dem Alltag', why: 'Kurz und ungeschnitten: unterwegs, beim Kunden, in der Werkstatt.' },
+          { name: 'Kurze Videos', why: 'Die Netzwerke zeigen Videos öfter als Fotos.' },
+          { name: 'Antworten auf Kommentare und Nachrichten', why: 'Wer schnell antwortet, bekommt den Auftrag.' },
+        ],
+      },
+      {
+        title: 'Wer dahintersteht',
+        items: [
+          { name: 'Gesichter', why: 'Sie und Ihr Team. Man will wissen, wer ins Haus kommt.' },
+          { name: 'Ihre Geschichte', why: 'Seit wann es Sie gibt und was Ihnen bei der Arbeit wichtig ist.' },
+          { name: 'Auch ohne Kamera möglich', why: 'Dann zeigen Hände, Werkzeug und Fahrzeug, wer hier arbeitet.' },
+        ],
+      },
+      {
+        title: 'Echte Arbeiten und ein Bild überall',
+        items: [
+          { name: 'Vorher und nachher', why: 'Erklärt Qualität besser als jeder Werbespruch.' },
+          { name: 'Kurze Erklärungen zur Arbeit', why: 'Was gemacht wurde und warum. Das beantwortet gleich die Fragen künftiger Kunden.' },
+          { name: 'Bewertungen zeigen', why: 'Echte Kundenstimmen als Beitrag oder Highlight.' },
+          { name: 'Gleicher Name, Logo und Fotos überall', why: 'Wer Sie bei Google und auf Instagram sieht, erkennt denselben Betrieb.' },
+          { name: 'Link zu Website und Google-Profil', why: 'Damit man vom Profil direkt zu Ihnen findet.' },
+        ],
+      },
     ],
-    fromYou: 'Von Ihnen: Fotos und kurze Videos von den Einsätzen in den Chat schicken und einmal im Monat den Plan freigeben. Was und wie Sie filmen, zeigen wir Ihnen. Texte und Veröffentlichung übernehmen wir.',
+    factorsNote: 'Entscheidend ist die Regelmäßigkeit: lieber dreimal pro Woche ehrlich als einmal im Monat perfekt.',
     faq: [
       { q: 'Muss ich selbst vor die Kamera?', a: 'Nicht unbedingt. Arbeiten, Werkzeug und Team zeigen auch die Menschen hinter dem Betrieb.' },
       { q: 'Bringt Social Media mir Aufträge?', a: 'Direkt eher selten. Es überzeugt die, die Sie bei Google schon gefunden haben, dass es Sie wirklich gibt und man Sie anrufen kann.' },
       { q: 'Ich habe noch gar kein Profil.', a: 'Dann bauen wir es von null auf: Konto anlegen, Profil und Kopfzeile einrichten, die ersten Beiträge vorbereiten.' },
       { q: 'Ein Profil gibt es, aber es ist eingeschlafen.', a: 'Wir sehen es uns zuerst genau an, räumen auf und bauen darauf auf. Follower und bisherige Beiträge bleiben erhalten.' },
-      { q: 'Welchen Kanal betreuen Sie?', a: 'Den, auf dem Ihre Kunden sind: Instagram, Facebook, TikTok, LinkedIn oder Threads. Welcher passt, klären wir im ersten Gespräch. Weitere Kanäle kommen auf Wunsch gegen Aufpreis dazu. Für TikTok braucht es kurze Videos im Hochformat — wie Sie sie mit dem Handy drehen, zeigen wir Ihnen.' },
+      { q: 'Welchen Kanal betreuen Sie?', a: 'Den, auf dem Ihre Kunden sind: Instagram, Facebook, TikTok, LinkedIn oder Threads. Welcher passt, klären wir im ersten Gespräch. Weitere Kanäle kommen auf Wunsch gegen Aufpreis dazu. Für TikTok braucht es kurze Videos im Hochformat. Wie Sie sie mit dem Handy drehen, zeigen wir Ihnen.' },
       { q: 'Wie oft wird gepostet?', a: 'Dreimal pro Woche ein Beitrag oder ein kurzes Video und jeden Tag drei Stories, wo der Kanal sie hat. Den Plan für den Monat geben Sie vorher frei.' },
       { q: 'Geht auch nur Social Media, ohne Website?', a: 'Ja, für 199 € im Monat.' },
       { q: 'Und wenn wir nichts zu zeigen haben?', a: 'Doch: Jeder Einsatz ist ein „Vorher und nachher“, jede Kundenfrage ein Thema für einen Beitrag.' },
@@ -5414,9 +5619,9 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
 type NeedIconKind = 'page' | 'data' | 'star' | 'chart' | 'list' | 'camera' | 'shield' | 'chat' | 'refresh' | 'calendar' | 'users'
 const NEED_ICONS: Record<string, NeedIconKind[]> = {
   'ai-search-optimization': ['page', 'list', 'star', 'data'],
-  'google-maps-business-profile': ['list', 'camera', 'star', 'shield'],
-  'website-google-search': ['page', 'chat', 'shield', 'refresh'],
-  'social-media': ['calendar', 'users', 'camera', 'data'],
+  'google-maps-business-profile': ['list', 'chat', 'camera', 'shield'],
+  'website-google-search': ['page', 'list', 'data', 'shield'],
+  'social-media': ['list', 'calendar', 'users', 'camera'],
 }
 function NeedIcon({ kind }: { kind: NeedIconKind }) {
   const p = { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true }
@@ -5661,7 +5866,7 @@ function ServicePage({ slug }: { slug: string }) {
             <div id="check-form" style={{ position: 'relative', scrollMarginTop: 120 }}>
               <RingsBackdrop size={560} style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
               <div className="d-card" style={{ position: 'relative', zIndex: 5, padding: 'clamp(24px, 3vw, 36px)' }}>
-                <p className="kick" style={{ fontSize: 12, marginBottom: 12 }}>Kostenlos · unverbindlich</p>
+                <BrandChips ids={SERVICE_CHECK_BRANDS[slug] ?? []} />
                 <h2 className="display" style={{ fontSize: 'clamp(22px, 2.2vw, 28px)', lineHeight: 1.15, margin: '0 0 20px' }}>{data.ctaTitle}</h2>
                 <CompanySearch variant="plain" buttonLabel={SERVICE_CHECK_BUTTON[slug]} placeholder="Name Ihres Unternehmens und Ort" />
                 {SERVICE_CONSULT[slug] && (
