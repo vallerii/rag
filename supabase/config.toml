@@ -15,3 +15,7 @@ verify_jwt = false
 
 [functions.audit-collect]
 verify_jwt = false
+
+# Wird nur aus der Datenbank aufgerufen (Trigger auf activity) — Schutz über x-notify-secret.
+[functions.notify]
+verify_jwt = false
