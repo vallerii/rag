@@ -59,7 +59,7 @@ export default function CompanySearch({ variant = 'hero', initial = '', autoFocu
   const linkBtn: React.CSSProperties = { background: 'none', border: 0, padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, color: 'var(--electric)', textAlign: 'left' }
 
   return (
-    <div style={{ maxWidth: hero ? 580 : undefined }}>
+    <div className="cs-wrap" style={{ maxWidth: hero ? 580 : undefined }}>
       <form onSubmit={submit} className="bc-form" role="search"
         style={{ display: 'flex', gap: 8, backgroundColor: '#fff', borderRadius: 16, padding: 6, border: hero ? 'none' : '1px solid var(--border)', boxShadow: hero ? '0 12px 30px rgba(11,11,26,.18)' : 'var(--shadow-float)' }}>
         <label htmlFor={`cs-${variant}`} style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>Unternehmen in Google finden</label>

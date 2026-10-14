@@ -5876,9 +5876,9 @@ function ServicePage({ slug }: { slug: string }) {
         <div className="d-hide-md" aria-hidden style={{ position: 'absolute', left: 'max(24px, calc(50% - 700px))', bottom: '10%' }}><PinD size={44} opacity={0.45} /></div>
         <div style={{ ...SHELL, position: 'relative' }}>
           <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Wo man Sie sucht', href: '/services' }, { label: moduleLabel ?? content.title }]} tone="light" />
-          <div className="svc-hero" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 0.9fr)', gap: 'clamp(32px, 5vw, 72px)', alignItems: 'center' }}>
+          <div className="svc-hero" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.45fr) minmax(0, 0.8fr)', gap: 'clamp(28px, 4vw, 56px)', alignItems: 'center' }}>
             <div>
-              <h1 className="display h-lg" style={{ marginBottom: 22, maxWidth: 720 }}>{content.title}</h1>
+              <h1 className="display" style={{ fontSize: 'clamp(36px, 4.6vw, 64px)', lineHeight: 1.03, letterSpacing: '-0.04em', marginBottom: 24 }}>{content.title}</h1>
               <p className="lead" style={{ color: 'var(--muted)', maxWidth: 600, margin: '0 0 26px' }}>{content.sub}</p>
               {SERVICE_PACKAGES[slug] && <a href="#pakete" className="d-link" style={{ fontSize: 15.5 }}>{content.priceLink} <span className="arw">↓</span></a>}
             </div>

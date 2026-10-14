@@ -287,3 +287,11 @@ em, i, cite, address, dfn { font-style: normal; }
   .bc-form input { padding: 12px 14px !important; }
 }
 @media (prefers-reduced-motion: reduce) { .ck-spin { animation-duration: 2.4s; } }
+
+/* Suchfeld: wird die Karte schmal (z. B. neben der großen Überschrift), rutscht der Button unter das Feld. */
+.cs-wrap { container-type: inline-size; }
+@container (max-width: 480px) {
+  .cs-wrap .bc-form { flex-direction: column; border-radius: 22px !important; }
+  .cs-wrap .bc-form input { padding: 12px 14px !important; }
+  .cs-wrap .bc-form button { justify-content: center; }
+}
