@@ -1004,6 +1004,30 @@ const WEBSITE_PACKAGES: { id: PackageId; tag: string; name: string; price: numbe
   },
 ]
 
+// Rest der Leistungen eines Pakets: eingeklappt, damit die Karten gleich kompakt bleiben.
+function MoreIncludes({ items }: { items: string[] }) {
+  const [open, setOpen] = useState(false)
+  if (!items.length) return null
+  return (
+    <div style={{ borderTop: '1px solid var(--divider)', paddingTop: 14 }}>
+      <button type="button" onClick={() => setOpen(!open)} aria-expanded={open}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, width: '100%', padding: '4px 0', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+        <span className="kick" style={{ fontSize: 11.5, color: 'var(--muted)' }}>Außerdem enthalten ({items.length})</span>
+        <span aria-hidden style={{ width: 26, height: 26, borderRadius: 999, backgroundColor: 'var(--brand-soft)', color: 'var(--electric)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, transform: open ? 'rotate(45deg)' : 'none', transition: 'transform .3s ease' }}>+</span>
+      </button>
+      {open && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
+          {items.map(x => (
+            <div key={x} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              {checkIcon()}<span style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--muted)' }}>{x}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Was ein Paket ausmacht: hervorgehoben über dem Trenner, der Rest darunter.
 function PackageHighlights({ title, items, strong = false }: { title: string; items: string[]; strong?: boolean }) {
   return (
@@ -1409,14 +1433,7 @@ function Pricing() {
                     <p style={{ fontSize: 15, lineHeight: 1.6, color: dark ? 'rgba(255,255,255,0.7)' : 'var(--muted)', margin: '0 0 12px' }}>{p.thesis}</p>
                     <p style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.45, color: 'var(--electric)', margin: '0 0 18px' }}>{p.forWhom}</p>
                     <PackageHighlights title={p.highlightsTitle} items={p.highlights} strong={top} />
-                    <div style={{ margin: '16px 0 22px' }}>
-                      <p className="kick" style={{ fontSize: 11.5, margin: '0 0 4px', color: 'var(--muted)' }}>Außerdem enthalten</p>
-                      {p.includes.map(it => (
-                        <div key={it} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '9px 0', borderTop: `1px solid ${dark ? 'var(--line-dark)' : 'var(--line)'}` }}>
-                          {checkIcon(dark)}<span style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--muted)' }}>{it}</span>
-                        </div>
-                      ))}
-                    </div>
+                    <div style={{ margin: '16px 0 22px' }}><MoreIncludes items={p.includes} /></div>
                     <button type="button" onClick={() => setOrder({ pkg: p.id, social: false })} className={`btn btn-md ${top ? 'btn-electric' : 'btn-ink'}`} style={{ marginTop: 'auto', alignSelf: 'flex-start' }}>
                       Paket anfragen <span className="arw">→</span>
                     </button>
@@ -5252,7 +5269,9 @@ function ServicePackages({ slug }: { slug: string }) {
                         <div className="svc-pk-list" style={{ borderLeft: '1px solid var(--divider)', paddingLeft: 'clamp(28px, 4vw, 64px)' }}>{list}</div>
                       </>
                     ) : (
-                      <>{head}{it.highlights && it.highlightsTitle && <PackageHighlights title={it.highlightsTitle} items={it.highlights} strong={id === 'aiplus'} />}{list}{btn}</>
+                      <>{head}{it.highlights && it.highlightsTitle
+                        ? <><PackageHighlights title={it.highlightsTitle} items={it.highlights} strong={id === 'aiplus'} /><MoreIncludes items={it.includes} /></>
+                        : list}{btn}</>
                     )}
                   </article>
                 </Reveal>
