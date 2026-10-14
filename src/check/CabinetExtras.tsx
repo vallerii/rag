@@ -27,7 +27,7 @@ export function ManagerCard({ manager, onWrite, canBook, lockedHint, compact = f
   const link = canBook ? bookingLink(manager) : null
   const name = manager?.name || 'Ihr RAG-Team'
   if (compact) return (
-    <section style={{ ...card, padding: 20 }}>
+    <section style={card}>
       {kick(manager ? (manager.title || 'Ihr Ansprechpartner') : 'Ihr Ansprechpartner')}
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', margin: '4px 0 14px' }}>
         {manager?.photo_url

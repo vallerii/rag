@@ -498,6 +498,14 @@ export default function CabinetPage() {
                 <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0 }}>Detaillierte Auswertung in vier Bereichen.</p>
                 {ready && versions[0] && <p style={{ fontSize: 13, color: 'var(--muted)', margin: '6px 0 0' }}><span>Stand:</span> <span>{new Date(versions[0].created_at).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' })}</span>{versions.length > 1 && <> · <span>Version</span> <span>{versions.length}</span></>}</p>}
               </div>
+              {scored && total !== null && (
+                <div style={{ backgroundColor: 'var(--electric)', color: '#fff', borderRadius: 20, padding: '16px 24px', minWidth: 190 }}>
+                  <Eyebrow color="rgba(255,255,255,0.7)">Sichtbarkeit gesamt</Eyebrow>
+                  <p className="display" style={{ fontSize: 48, lineHeight: 1, margin: '4px 0 0' }}>
+                    {total}<span style={{ fontSize: 17, fontWeight: 500, opacity: 0.6, letterSpacing: 0 }}> / 100</span><Delta d={diff.total} />
+                  </p>
+                </div>
+              )}
             </div>
             {!scored ? <PendingCard assigned={assigned} /> : (
               <div className="cab-grid-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 18 }}>
