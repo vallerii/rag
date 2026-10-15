@@ -25,4 +25,4 @@ Disallow: /login
 Disallow: /passwort-vergessen
 Disallow: /passwort-neu
 
-Sitemap: https://rag-agentur.de/sitemap.xml
+Sitemap: https://rag-theta-one.vercel.app/sitemap.xml

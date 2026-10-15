@@ -20,6 +20,7 @@ export const COMPANY = {
   countryCode: 'DE',
   /** TODO: Telefon im internationalen Format, z. B. +49 30 1234567 (für tel:-Links ohne Leerzeichen). */
   phone: '',
+  /** TODO: echte Adresse — hallo@rag-agentur.de existiert nicht (Platzhalter). */
   email: 'hallo@rag-agentur.de',
   /** TODO bei GmbH/UG: z. B. «Amtsgericht Berlin-Charlottenburg» und «HRB 123456 B». Sonst leer lassen. */
   registerCourt: '',

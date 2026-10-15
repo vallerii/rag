@@ -90,3 +90,12 @@ end $$;
 revoke all on function public.change_my_password(text, text) from public, anon;
 grant execute on function public.change_my_password(text, text) to authenticated;
 notify pgrst, 'reload schema';
+
+-- 5) «Прочитано»: когда сотрудник открывает переписку, сообщения клиента отмечаются прочитанными.
+alter table public.messages add column if not exists read_at timestamptz;
+grant update (read_at) on public.messages to authenticated;
+drop policy if exists "messages: Team markiert gelesen" on public.messages;
+create policy "messages: Team markiert gelesen" on public.messages for update to authenticated using (public.is_staff()) with check (public.is_staff());
+-- Старые сообщения считаем прочитанными, чтобы счётчики не вспыхнули разом.
+update public.messages set read_at = created_at where read_at is null and author <> 'rag' and created_at < now() - interval '1 day';
+notify pgrst, 'reload schema';

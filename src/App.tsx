@@ -6414,7 +6414,7 @@ export function prerenderRoutes(): string[] {
 
 export default function App() {
   const path = currentPath()
-  if (/^\/rag-intern(\/(einladung|profil|team|passwort-neu))?\/?$/.test(path)) {
+  if (/^\/rag-intern(\/(einladung|profil|team|leads|passwort-neu))?\/?$/.test(path)) {
     return <Suspense fallback={null}><AdminApp /></Suspense>
   }
   const serviceMatch = path.match(/^\/services\/([a-z0-9-]+)\/?$/)

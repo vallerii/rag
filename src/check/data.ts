@@ -131,6 +131,14 @@ export async function getCompany(id: string, _sessionToken?: string): Promise<Pl
 }
 
 /** Website + Social-Profile (Edge Function liest die Website und sucht Links). */
+/** Code aus einem Brief (Lead) → Google place_id. Unbekannter Code → null. */
+export async function placeFromCode(code: string): Promise<string | null> {
+  try {
+    const { data, error } = await (await getSupabase()).rpc('prospect_place', { p_code: code })
+    return error ? null : ((data as string | null) ?? null)
+  } catch { return null }
+}
+
 export async function discoverSources(place: Place): Promise<Source[]> {
   if (PROXY) {
     const res = await humanFetch(`${PROXY}/discover-sources`, {

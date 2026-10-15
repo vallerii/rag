@@ -1,13 +1,16 @@
 import LangSwitch from '../LangSwitch'
+import { tr } from '../i18n'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNoindex } from '../check/CheckPage'
 import {
-  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, addAppointment, deleteAppointment, loadAll, loadClient, loadMyProfile, setAppointmentStatus, loadTeam, myId, saveMyProfile, myAccount, changeMyEmail, changeMyPassword, sendStaffPasswordReset, hasRecoverySession, setStaffNewPassword,
+  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, addAppointment, deleteAppointment, loadAll, loadClient, loadMyProfile, setAppointmentStatus, loadTeam, myId, saveMyProfile, myAccount, changeMyEmail, changeMyPassword, prospectByPlace, markMessagesRead, type Prospect, sendStaffPasswordReset, hasRecoverySession, setStaffNewPassword,
   revokeInvite, saveOffer, saveProject, projectLabel, versionTotal, sendStaffMessage, setAssignee, setNextContact, setRole, setStage, signInPlain, signInStaff, mfaEnroll, mfaState, mfaVerify, signOutStaff, signUpStaff, stageLabel,
   type Invite, type Kind, type Project, type ProjectStatus, type ReportVersionRow,
   type Activity, type Appointment, type Check, type Lead, type Message, type Note, type Offer, type Order, type Profile, type Request, type Stage,
 } from './api'
 import ReportEditor from './ReportEditor'
+import Leads from './Leads'
+import OfferBuilder from './OfferBuilder'
 import { stopLive, useLive, useLiveStatus } from './live'
 import { CATALOG, totals, type OfferItem, type Unit } from './catalog'
 
@@ -25,6 +28,10 @@ const KIND: Record<Request['kind'], [string, string]> = { lead: ['Quiz', '#E8F3E
 const STAGE_COLOR: Partial<Record<Stage, string>> = { new: '#D93A3A', report_sent: '#5B4BDB', won: '#1F7A4A', lost: '#8A8A8A' }
 
 type Queue = 'mine' | 'free' | 'new' | 'quiz' | 'order' | 'check' | 'today' | 'clients' | 'all'
+// Группы фильтров в списке: срочное (только если не 0), что показать, что ждёт действия.
+const URGENT: [Queue, string][] = [['today', 'Heute kontaktieren'], ['free', 'Ohne Verantwortlichen'], ['new', 'Neu, noch nicht bearbeitet']]
+const SHOW: [Queue, string][] = [['mine', 'Meine Anfragen'], ['all', 'Alle Anfragen'], ['clients', 'Kunden in Arbeit']]
+const ACTION: [Queue, string][] = [['check', 'Check: Bericht erstellen'], ['quiz', 'Quiz: Gespräch vereinbaren'], ['order', 'Paket: Gespräch vereinbaren']]
 const QUEUES: [Queue, string][] = [
   ['mine', 'Meine Anfragen'], ['free', 'Ohne Verantwortlichen'], ['new', 'Neu'], ['quiz', 'Quiz → Gespräch'], ['order', 'Paket → warten auf Gespräch'], ['check', 'Check → wartet auf Analyse'], ['today', 'Heute kontaktieren'], ['clients', 'Kunden (Projekt)'], ['all', 'Alle Anfragen'],
 ]
@@ -151,9 +158,9 @@ function Login({ onDone }: { onDone: () => void }) {
 }
 
 // Разделы админки — отдельные адреса: работают «назад/вперёд», обновление страницы и ссылки.
-type View = 'requests' | 'team' | 'profile'
-const VIEW_PATH: Record<View, string> = { requests: '/rag-intern', team: '/rag-intern/team', profile: '/rag-intern/profil' }
-const viewFromPath = (): View => (/\/profil\/?$/.test(window.location.pathname) ? 'profile' : /\/team\/?$/.test(window.location.pathname) ? 'team' : 'requests')
+type View = 'requests' | 'leads' | 'team' | 'profile'
+const VIEW_PATH: Record<View, string> = { requests: '/rag-intern', leads: '/rag-intern/leads', team: '/rag-intern/team', profile: '/rag-intern/profil' }
+const viewFromPath = (): View => { const p = window.location.pathname; return /\/profil\/?$/.test(p) ? 'profile' : /\/team\/?$/.test(p) ? 'team' : /\/leads\/?$/.test(p) ? 'leads' : 'requests' }
 
 function NavLink({ to, onGo, style, children }: { to: View; onGo: (v: View) => void; style?: React.CSSProperties; children: React.ReactNode }) {
   return (
@@ -186,7 +193,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const reload = () => { loadAll().then(setData) }
   useEffect(() => { reload(); isAdmin().then(setAdmin); myId().then(setMe) }, [])
   // Новые заявки, смена статуса/ответственного, правки профилей — сразу, без кнопки «Обновить».
-  useLive(c => c.table === 'leads' || c.table === 'orders' || c.table === 'checks' || c.table === 'profiles', reload)
+  useLive(c => c.table === 'leads' || c.table === 'orders' || c.table === 'checks' || c.table === 'profiles' || c.table === 'messages', reload)
   useEffect(() => {
     if (view !== 'requests') return
     const sp = new URLSearchParams(window.location.search)
@@ -197,68 +204,111 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const list = useMemo(() => {
     if (!data) return []
     const needle = q.trim().toLowerCase()
-    return data.requests.filter(r => inQueue(r, queue, me) && (!needle || `${r.title} ${r.sub} ${profileOf(data.profiles, r.userId)?.email ?? ''} ${profileOf(data.profiles, r.userId)?.name ?? ''}`.toLowerCase().includes(needle)))
+    const due = (r: Request) => !!r.next && r.next <= today() && OPEN.includes(r.stage)
+    const rank = (r: Request) => ((r.unanswered ?? 0) > 0 ? 0 : due(r) ? 1 : r.stage === 'new' ? 2 : 3)
+    return data.requests
+      .filter(r => inQueue(r, queue, me) && (!needle || `${r.title} ${r.sub} ${profileOf(data.profiles, r.userId)?.email ?? ''} ${profileOf(data.profiles, r.userId)?.name ?? ''}`.toLowerCase().includes(needle)))
+      .sort((a, b) => rank(a) - rank(b) || b.created_at.localeCompare(a.created_at))
   }, [data, queue, q, me])
+  const count = (k: Queue) => (data ? data.requests.filter(r => inQueue(r, k, me)).length : 0)
+  const open = (key: string) => { history.pushState(null, '', `${VIEW_PATH.requests}?r=${encodeURIComponent(key)}`); setSel(key); window.scrollTo(0, 0) }
+  const back = () => { history.pushState(null, '', VIEW_PATH.requests); setSel(null) }
   const current = data?.requests.find(r => `${r.kind}:${r.id}` === sel) ?? null
   const patch = (r: Request, p: Partial<Request>) => setData(d => d && { ...d, requests: d.requests.map(x => (x.kind === r.kind && x.id === r.id ? { ...x, ...p } : x)) })
 
+  const urgent = URGENT.filter(([k]) => count(k) > 0)
+  const navLink = (on: boolean): React.CSSProperties => ({ fontWeight: 600, color: on ? accent : muted, backgroundColor: on ? 'var(--brand-soft)' : 'transparent', padding: '8px 12px', borderRadius: 10 })
+  const QueueBtn = ({ k, label, tone }: { k: Queue; label: string; tone?: string }) => {
+    const n = count(k), on = queue === k
+    return (
+      <button type="button" onClick={() => setQueue(k)}
+        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', minHeight: 40, padding: '8px 12px', borderRadius: 10, border: 0, cursor: 'pointer', font: 'inherit', fontSize: 14, textAlign: 'left',
+          backgroundColor: on ? accent : 'transparent', color: on ? '#fff' : n === 0 ? '#8A8AA0' : ink }}>
+        {label}
+        <span style={{ fontSize: 12.5, fontWeight: 700, minWidth: 22, textAlign: 'center', padding: '2px 7px', borderRadius: 999,
+          backgroundColor: on ? 'rgba(255,255,255,0.22)' : tone && n ? tone : n ? '#EFEEF8' : 'transparent', color: on || (tone && n) ? '#fff' : n ? muted : '#8A8AA0' }}>{n}</span>
+      </button>
+    )
+  }
+  const group = (title: string, items: [Queue, string][], opts: { tone?: (k: Queue) => string; danger?: boolean } = {}) => (
+    <section style={{ ...card, padding: 10, borderColor: opts.danger ? '#F2C9C3' : line }}>
+      <p style={{ margin: '2px 4px 6px', fontSize: 11.5, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: opts.danger ? '#B3261E' : muted }}>{title}</p>
+      {items.map(([k, l]) => <QueueBtn key={k} k={k} label={l} tone={opts.tone?.(k)} />)}
+    </section>
+  )
+  const label = [...SHOW, ...URGENT, ...ACTION].find(([k]) => k === queue)?.[1] ?? ''
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)', color: ink }}>
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', borderBottom: `1px solid ${line}`, backgroundColor: '#fff', position: 'sticky', top: 0, zIndex: 5 }}>
-        <NavLink to="requests" onGo={v => go(v, false)} style={{ fontWeight: 800, fontSize: 18, color: ink }}>RAG<span style={{ color: accent }}>.</span> <span style={{ fontWeight: 500, color: muted, fontSize: 14 }}>· Anfragen</span></NavLink>
-        <span style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+      <header style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 24px', borderBottom: `1px solid ${line}`, backgroundColor: '#fff', position: 'sticky', top: 0, zIndex: 5 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 22, flexWrap: 'wrap' }}>
+          <NavLink to="requests" onGo={v => { go(v, false) }} style={{ fontWeight: 800, fontSize: 19, color: ink }}>RAG<span style={{ color: accent }}>.</span></NavLink>
+          <nav style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            <NavLink to="requests" onGo={v => go(v, false)} style={navLink(view === 'requests')}>Anfragen</NavLink>
+            <NavLink to="leads" onGo={go} style={navLink(view === 'leads')}>Leads</NavLink>
+            {admin && <NavLink to="team" onGo={go} style={navLink(view === 'team')}>Team</NavLink>}
+          </nav>
+        </span>
+        <span style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
           <LangSwitch />
-          {view !== 'requests' && <NavLink to="requests" onGo={go}>← Anfragen</NavLink>}
-          {admin && view !== 'team' && <NavLink to="team" onGo={go}>Team</NavLink>}
-          {view !== 'profile' && <NavLink to="profile" onGo={go}>Mein Profil</NavLink>}
           <LiveBadge />
+          <NavLink to="profile" onGo={go} style={view === 'profile' ? { fontWeight: 700 } : undefined}>Mein Profil</NavLink>
           <button type="button" onClick={onLogout} style={{ ...linkBtn, color: ink }}>Abmelden</button>
         </span>
       </header>
-      {view === 'profile' ? <MyProfile /> : view === 'team' ? (admin ? <Team /> : <p style={{ padding: 20, color: muted }}>{admin === null ? 'Wird geladen…' : 'Nur für Admins.'}</p>) : <div className="adm-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 400px) minmax(0, 1fr)', gap: 20, padding: 20, alignItems: 'start' }}>
-        <aside className="adm-aside" style={{ display: 'grid', gap: 12, position: 'sticky', top: 76 }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {QUEUES.map(([k, label]) => {
-              const n = data ? data.requests.filter(r => inQueue(r, k, me)).length : 0
-              const on = k === queue
-              return (
-                <button key={k} type="button" onClick={() => setQueue(k)}
-                  style={{ padding: '7px 11px', borderRadius: 999, border: `1px solid ${on ? accent : line}`, backgroundColor: on ? accent : '#fff', color: on ? '#fff' : ink, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-                  {label} <span style={{ opacity: 0.7 }}>{n}</span>
-                </button>
-              )
-            })}
-          </div>
-          <input style={input} placeholder="Suche: Name, Unternehmen, E-Mail" value={q} onChange={e => setQ(e.target.value)} />
-          <div style={{ ...card, padding: 0, maxHeight: 'calc(100vh - 230px)', overflowY: 'auto' }}>
-            {!data && <p style={{ padding: 16, color: muted, margin: 0 }}>Wird geladen…</p>}
-            {data && list.length === 0 && <p style={{ padding: 16, color: muted, margin: 0 }}>Leer.</p>}
-            {list.map((r, i) => {
-              const key = `${r.kind}:${r.id}`
-              return (
-                <button key={key} type="button" onClick={() => setSel(key)}
-                  style={{ display: 'block', width: '100%', textAlign: 'left', padding: '12px 14px', border: 0, borderTop: i ? `1px solid ${line}` : 0, backgroundColor: key === sel ? '#F4F2FF' : '#fff', cursor: 'pointer', fontFamily: 'inherit', color: ink }}>
-                  <span style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
-                    <span style={{ fontSize: 11.5, fontWeight: 700, padding: '2px 8px', borderRadius: 999, backgroundColor: KIND[r.kind][1] }}>{KIND[r.kind][0]}</span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: STAGE_COLOR[r.stage] ?? muted }}>{stageLabel(r.stage)}</span>
-                  </span>
-                  <span style={{ display: 'block', fontWeight: 600, fontSize: 14.5, marginTop: 6 }}>{r.title}</span>
-                  <span style={{ display: 'block', ...small, marginTop: 2 }}>{r.sub}</span>
-                  <span style={{ display: 'block', ...small, marginTop: 2 }}>{fmt(r.created_at)}{r.next ? ` · Kontakt ${r.next}` : ''} · {r.assignee ? (r.assignee === me ? 'Ihre' : staffName(data?.profiles ?? [], r.assignee)) : 'frei'}</span>
-                </button>
-              )
-            })}
-          </div>
-        </aside>
-        <main>
-          {current && data
-            ? <Detail key={sel ?? ''} r={current} all={data.requests} profiles={data.profiles} me={me} onSelect={setSel} onPatch={p => patch(current, p)} />
-            : <div style={{ ...card, color: muted }}>Wählen Sie links eine Anfrage.</div>}
-        </main>
-      </div>}
-      <style>{'@media (max-width: 900px) { .adm-grid { grid-template-columns: 1fr !important; } .adm-aside { position: static !important; } }'}</style>
+      {view === 'leads' ? <Leads onOpenRequest={key => { history.pushState(null, '', `${VIEW_PATH.requests}?r=${encodeURIComponent(key)}`); setView('requests'); setSel(key) }} /> : view === 'profile' ? <MyProfile /> : view === 'team' ? (admin ? <Team /> : <p style={{ padding: 20, color: muted }}>{admin === null ? 'Wird geladen…' : 'Nur für Admins.'}</p>)
+        : sel ? (current && data
+          ? <Detail key={sel} r={current} all={data.requests} profiles={data.profiles} me={me} onSelect={open} onBack={back} onPatch={p => patch(current, p)} />
+          : <p style={{ padding: 24, color: muted }}>{data ? 'Anfrage nicht gefunden.' : 'Wird geladen…'} <button type="button" onClick={back} style={linkBtn}>← Alle Anfragen</button></p>)
+        : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, padding: 20, alignItems: 'flex-start' }}>
+          <aside style={{ flex: '1 1 260px', maxWidth: 300, display: 'grid', gap: 14 }}>
+            <input style={input} type="search" placeholder="Suche: Name, Unternehmen, E-Mail" value={q} onChange={e => setQ(e.target.value)} aria-label="Suche" />
+            {urgent.length > 0 && group('Dringend', urgent, { danger: true, tone: k => (k === 'today' ? '#B3261E' : '#B25A00') })}
+            {group('Anzeigen', SHOW)}
+            {group('Wartet auf Aktion', ACTION)}
+          </aside>
+          <main style={{ flex: '999 1 640px', minWidth: 0, display: 'grid', gap: 12 }}>
+            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800 }}>{label} <span style={{ color: muted, fontWeight: 600 }}>· {list.length}</span></h1>
+            <div style={{ ...card, padding: 0, overflowX: 'auto' }}>
+              <div style={{ minWidth: 860 }}>
+                <div className="adm-row" style={{ fontSize: 11.5, fontWeight: 700, color: muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  <span>Typ</span><span>Unternehmen</span><span>Status</span><span>Nächster Kontakt</span><span>Verantwortlich</span><span>Nachrichten</span>
+                </div>
+                {!data && <p style={{ padding: 16, color: muted, margin: 0 }}>Wird geladen…</p>}
+                {data && list.length === 0 && <p style={{ padding: 16, color: muted, margin: 0 }}>Hier ist gerade nichts.</p>}
+                {list.map(r => {
+                  const key = `${r.kind}:${r.id}`
+                  const due = !!r.next && r.next <= today() && OPEN.includes(r.stage)
+                  const n = r.unanswered ?? 0
+                  return (
+                    <button key={key} type="button" className="adm-row" onClick={() => open(key)}
+                      style={{ width: '100%', textAlign: 'left', border: 0, borderTop: `1px solid ${line}`, backgroundColor: n ? '#FBFAFF' : '#fff', cursor: 'pointer', font: 'inherit', fontSize: 14, color: ink }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 9px', borderRadius: 999, backgroundColor: KIND[r.kind][1], justifySelf: 'start' }}>{KIND[r.kind][0]}</span>
+                      <span style={{ minWidth: 0 }}><strong style={{ display: 'block' }}>{r.title}</strong><span style={small}>{r.sub}</span></span>
+                      <span style={{ fontWeight: 600, color: STAGE_COLOR[r.stage] ?? ink }}>{stageLabel(r.stage)}</span>
+                      <span style={{ fontWeight: due ? 700 : 400, color: due ? '#B3261E' : r.next ? ink : muted }}>{r.next ? (due ? 'heute' : fmtDay(r.next)) : '—'}</span>
+                      <span style={{ color: r.assignee ? ink : '#B25A00' }}>{r.assignee ? (r.assignee === me ? 'Sie selbst' : staffName(data?.profiles ?? [], r.assignee)) : 'frei'}</span>
+                      <span>{n > 0
+                        ? <span style={{ display: 'inline-flex', gap: 5, alignItems: 'center', color: accent, fontWeight: 800, fontSize: 13 }} title="Ungelesene Nachrichten des Kunden"><ChatIcon />{n}</span>
+                        : <span style={small}>—</span>}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+            <p style={{ ...small, margin: 0 }}>Oben: ungelesene Nachrichten von Kunden, dann «heute kontaktieren», dann neue.</p>
+          </main>
+        </div>
+      )}
+      <style>{'.btn:disabled{opacity:.45;cursor:not-allowed}.adm-row{display:grid;grid-template-columns:96px minmax(0,2fr) minmax(0,1.2fr) 110px 150px 70px;gap:12px;align-items:center;padding:13px 18px}'}</style>
     </div>
   )
+}
+
+const fmtDay = (d: string) => { const [y, m, dd] = d.split('-'); return y && m && dd ? `${dd}.${m}.` : d }
+function ChatIcon() {
+  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" /></svg>
 }
 
 const TABLE_OF: Record<Kind, string> = { lead: 'leads', order: 'orders', check: 'checks' }
@@ -278,7 +328,7 @@ function LiveBadge() {
   )
 }
 
-function Detail({ r, all, profiles, me, onSelect, onPatch }: { r: Request; all: Request[]; profiles: Profile[]; me: string | null; onSelect: (k: string) => void; onPatch: (p: Partial<Request>) => void }) {
+function Detail({ r, all, profiles, me, onSelect, onBack, onPatch }: { r: Request; all: Request[]; profiles: Profile[]; me: string | null; onSelect: (k: string) => void; onBack: () => void; onPatch: (p: Partial<Request>) => void }) {
   const staff = profiles.filter(p => p.role === 'admin' || p.role === 'manager')
   const prof = profileOf(profiles, r.userId)
   const related = all.filter(x => x.clientKey === r.clientKey && !(x.kind === r.kind && x.id === r.id))
@@ -297,13 +347,59 @@ function Detail({ r, all, profiles, me, onSelect, onPatch }: { r: Request; all: 
   const changeAssignee = async (uid: string | null) => { if (await setAssignee(r.kind, r.id, uid)) { onPatch({ assignee: uid }); reloadClient() } }
   const changeNext = async (d: string) => { if (await setNextContact(r.kind, r.id, d)) onPatch({ next: d || null }) }
 
+  // Та же компания в других местах: лид (письмо) и проверки других клиентов.
+  const placeId = r.kind === 'check' ? (r.row as Check).place_id : null
+  const samePlace = placeId ? all.filter(x => x.kind === 'check' && x.id !== r.id && (x.row as Check).place_id === placeId) : []
+  const [lead, setLead] = useState<Prospect | null>(null)
+  useEffect(() => { setLead(null); if (placeId && !placeId.startsWith('manual:')) prospectByPlace(placeId).then(setLead).catch(() => {}) }, [placeId])
+  const fromLead = r.kind === 'check' && !!(r.row as Check).from_prospect
+  type Tab = 'reports' | 'offer' | 'appointments' | 'project'
+  const [tab, setTab] = useState<Tab | null>(null)
+  const [panel, setPanel] = useState<'' | 'chat' | 'notes' | 'history' | 'client'>('')
+  const closePanel = useCallback(() => setPanel(''), [])
+  const tabs: [Tab, string][] = [
+    ...(client?.project ? [['project', 'Projekt'] as [Tab, string]] : []),
+    ...(r.kind === 'check' ? [['reports', 'Berichte'] as [Tab, string]] : []),
+    ['offer', 'Angebot'], ['appointments', 'Termine'],
+  ]
+  const active: Tab = tab && tabs.some(([k]) => k === tab) ? tab : tabs[0][0]
+  // Сообщения клиента после последнего ответа команды.
+  const msgs = client?.messages ?? []
+  const hasRead = msgs.some(m => 'read_at' in m)
+  let waiting = 0
+  if (hasRead) waiting = msgs.filter(m => m.author !== 'rag' && !m.read_at).length
+  else for (let x = msgs.length - 1; x >= 0 && msgs[x].author !== 'rag'; x--) waiting++
+  // Переписка открыта → сообщения клиента прочитаны.
+  useEffect(() => {
+    if (panel === 'chat' && r.userId && hasRead && waiting > 0) void markMessagesRead(r.userId).then(ok => { if (ok) setClient(c => c && { ...c, messages: c.messages.map(m => (m.author !== 'rag' && !m.read_at ? { ...m, read_at: new Date().toISOString() } : m)) }) })
+  }, [panel, waiting]) // eslint-disable-line react-hooks/exhaustive-deps
+  const sideBtn = (key: typeof panel, text: string, icon: React.ReactNode, badge?: number, hot?: boolean) => (
+    <button type="button" onClick={() => setPanel(key)}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, padding: '0 14px', borderRadius: 12, border: `1px solid ${hot ? accent : '#D6D5E3'}`, backgroundColor: hot ? 'var(--brand-soft)' : '#fff', font: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: ink }}>
+      {icon}{text}
+      {!!badge && <span style={{ minWidth: 20, height: 20, padding: '0 6px', boxSizing: 'border-box', borderRadius: 999, backgroundColor: hot ? accent : '#EFEEF8', color: hot ? '#fff' : muted, fontSize: 12, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{badge}</span>}
+    </button>
+  )
+  const ic = (d: string) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
+
   return (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <div style={card}>
-        <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 9px', borderRadius: 999, backgroundColor: KIND[r.kind][1] }}>{KIND[r.kind][0]}</span>
-        <h1 style={{ fontSize: 24, margin: '10px 0 4px', lineHeight: 1.2 }}>{r.title}</h1>
-        <p style={{ ...small, margin: 0 }}>{r.sub} · erstellt {fmt(r.created_at)}</p>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 16 }}>
+    <div style={{ maxWidth: 1360, margin: '0 auto', padding: '18px 24px 48px', display: 'grid', gap: 16 }}>
+      <button type="button" onClick={onBack} style={{ ...linkBtn, justifySelf: 'start', fontWeight: 600 }}>← Alle Anfragen</button>
+      <section style={{ ...card, padding: '20px 24px', display: 'grid', gap: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
+          <div style={{ display: 'grid', gap: 6 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999, backgroundColor: KIND[r.kind][1], justifySelf: 'start' }}>{KIND[r.kind][0]}</span>
+            <h1 style={{ fontSize: 28, margin: 0, lineHeight: 1.2 }}>{r.title}</h1>
+            <p style={{ ...small, margin: 0 }}>{r.sub} · erstellt {fmt(r.created_at)}</p>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {sideBtn('chat', 'Nachrichten', ic('M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z'), waiting || undefined, waiting > 0)}
+            {sideBtn('notes', 'Notizen', ic('M4 4h12l4 4v12H4zM8 12h8M8 16h5'), client?.notes.length || undefined)}
+            {sideBtn('history', 'Verlauf', ic('M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2'))}
+            {sideBtn('client', 'Kunde', ic('M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21c1.5-4 4.5-6 8-6s6.5 2 8 6'))}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <label style={{ ...small, display: 'grid', gap: 4 }}>Status
             <select value={r.stage} onChange={e => changeStage(e.target.value as Stage)} style={{ ...input, width: 230 }}>
               {STAGES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
@@ -318,33 +414,82 @@ function Detail({ r, all, profiles, me, onSelect, onPatch }: { r: Request; all: 
               {staff.map(p => <option key={p.id} value={p.id}>{p.id === me ? `Ich (${p.name || p.email})` : p.name || p.email}</option>)}
             </select>
           </label>
-          {me && r.assignee !== me && <button type="button" className="btn btn-sm btn-outline-light" style={{ alignSelf: 'end' }} onClick={() => changeAssignee(me)}>Übernehmen</button>}
+          {me && r.assignee !== me && <button type="button" className="btn btn-sm btn-outline-light" onClick={() => changeAssignee(me)}>Übernehmen</button>}
         </div>
-        {r.assignee && r.assignee !== me && <p style={{ ...small, margin: '10px 0 0', color: '#B26B00' }}>Die Anfrage betreut {staffName(profiles, r.assignee)}.</p>}
+        {r.assignee && r.assignee !== me && <p style={{ ...small, margin: 0, color: '#B26B00' }}>Die Anfrage betreut {staffName(profiles, r.assignee)}.</p>}
+        {(lead || samePlace.length > 0) && (
+          <div style={{ display: 'grid', gap: 4, padding: '10px 14px', borderRadius: 12, backgroundColor: '#F2FAF5', border: '1px solid #CDEBD8', fontSize: 13.5 }}>
+            {lead && (
+              <span>
+                <strong>War ein Lead</strong>{lead.printed_at ? <> · Brief gedruckt {new Date(lead.printed_at).toLocaleDateString('ru-RU')}</> : ' · noch kein Brief gedruckt'}
+                {' · Code '}<span data-no-translate>{lead.code}</span>{lead.score !== null ? <> · Kurzanalyse {lead.score}/100</> : null}
+                {fromLead && <> · Analyse aus dem Lead übernommen — keine neuen Google-Abfragen</>}
+              </span>
+            )}
+            {!lead && r.kind === 'check' && (r.row as Check).from_check && <span>Analyse aus einer anderen Prüfung dieses Unternehmens übernommen — keine neuen Google-Abfragen</span>}
+            {samePlace.length > 0 && (
+              <span>Dieses Unternehmen hat noch {samePlace.length === 1 ? 'eine weitere Prüfung' : `${samePlace.length} weitere Prüfungen`}:{' '}
+                {samePlace.map(x => <button key={x.id} type="button" onClick={() => onSelect(`check:${x.id}`)} style={{ ...linkBtn, fontSize: 13.5, marginRight: 10 }}>{(x.row as Check).email ?? x.title} · {fmt(x.created_at)}</button>)}
+              </span>
+            )}
+          </div>
+        )}
         {related.length > 0 && (
-          <p style={{ ...small, margin: '14px 0 0' }}>Weitere Anfragen des Kunden:{' '}
+          <p style={{ ...small, margin: 0 }}>Weitere Anfragen des Kunden:{' '}
             {related.map(x => <button key={x.kind + x.id} type="button" onClick={() => onSelect(`${x.kind}:${x.id}`)} style={{ ...linkBtn, fontSize: 12.5, marginRight: 10 }}>{KIND[x.kind][0]} · {x.title}</button>)}
           </p>
         )}
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16, alignItems: 'start' }}>
-        <div style={{ display: 'grid', gap: 16 }}>
-          {client?.project && <InvoiceCard key={'inv' + client.project.id + client.project.status} project={client.project} offer={client.offer} onSaved={reloadClient} />}
-          {client?.project && <WorkCard key={'work' + client.project.id} project={client.project} versions={client.versions} onSaved={reloadClient}
-            onGoToReport={r.kind === 'check' ? () => document.getElementById('pruefbericht')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) : undefined} />}
-          <ClientCard r={r} prof={prof} />
-          {r.kind === 'check' && <div id="pruefbericht" style={{ scrollMarginTop: 16 }} />}
-          {r.kind === 'check' && <ReportEditor c={r.row as Check} onPublished={async report => { const assignee = r.assignee ?? await getAssignee(r.kind, r.id); onPatch({ assignee, row: { ...(r.row as Check), status: 'ready', report, assignee_id: assignee } }); reloadClient() }} />}
-          {client && <OfferCard key={r.kind + r.id} clientKey={r.clientKey} userId={r.userId} kind={r.kind} requestId={r.id} title={r.title} initial={client.offer} preset={r.kind === 'order' ? (r.row as Order).items ?? [] : []} onSaved={reloadClient} />}
+        <nav style={{ display: 'flex', gap: 28, borderBottom: `1px solid ${line}`, flexWrap: 'wrap' }}>
+          {tabs.map(([k, l]) => (
+            <button key={k} type="button" onClick={() => setTab(k)}
+              style={{ ...linkBtn, padding: '12px 2px', fontSize: 15, fontWeight: 700, color: active === k ? accent : muted, borderBottom: `3px solid ${active === k ? accent : 'transparent'}`, borderRadius: 0 }}>{l}</button>
+          ))}
+        </nav>
+        {!client && <p style={{ color: muted, margin: 0 }}>Wird geladen…</p>}
+        {client && active === 'project' && client.project && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: 16, alignItems: 'start' }}>
+            <InvoiceCard key={'inv' + client.project.id + client.project.status} project={client.project} offer={client.offer} onSaved={reloadClient} />
+            <WorkCard key={'work' + client.project.id} project={client.project} versions={client.versions} onSaved={reloadClient}
+              onGoToReport={r.kind === 'check' ? () => setTab('reports') : undefined} />
+          </div>
+        )}
+        {client && active === 'reports' && r.kind === 'check' && (
+          <ReportEditor c={r.row as Check} onPublished={async report => { const assignee = r.assignee ?? await getAssignee(r.kind, r.id); onPatch({ assignee, row: { ...(r.row as Check), status: 'ready', report, assignee_id: assignee } }); reloadClient() }} />
+        )}
+        {client && active === 'offer' && <OfferCard key={r.kind + r.id} clientKey={r.clientKey} userId={r.userId} kind={r.kind} requestId={r.id} title={r.title} initial={client.offer} preset={r.kind === 'order' ? (r.row as Order).items ?? [] : []} onSaved={reloadClient} />}
+        {client && active === 'appointments' && <AppointmentsCard r={r} list={client.appointments} onChanged={async added => {
+          if (added && ['new', 'contacted', 'report_sent'].includes(r.stage)) await changeStage('call_booked'); else reloadClient()
+        }} />}
+      </section>
+
+      {panel && (
+        <SidePanel title={panel === 'chat' ? 'Nachrichten mit dem Kunden' : panel === 'notes' ? 'Notizen (für den Kunden unsichtbar)' : panel === 'history' ? 'Verlauf' : 'Kunde und Unternehmen'} onClose={closePanel}>
+          {panel === 'client' && <ClientCard r={r} prof={prof} />}
+          {panel === 'chat' && client && <Chat userId={r.userId} messages={client.messages} onSent={m => setClient(c => c && { ...c, messages: [...c.messages, m] })} />}
+          {panel === 'notes' && client && <Notes clientKey={r.clientKey} notes={client.notes} onAdded={() => reloadClient()} />}
+          {panel === 'history' && client && <History items={client.activity} profiles={profiles} current={`${r.kind}:${r.id}`} />}
+        </SidePanel>
+      )}
+    </div>
+  )
+}
+
+/** Боковая панель поверх карточки: переписка, заметки, история, данные клиента. */
+function SidePanel({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  useEffect(() => {
+    const k = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', k)
+    return () => window.removeEventListener('keydown', k)
+  }, [onClose])
+  return (
+    <div role="dialog" aria-modal="true" aria-label={title} onMouseDown={e => { if (e.target === e.currentTarget) onClose() }}
+      style={{ position: 'fixed', inset: 0, zIndex: 40, backgroundColor: 'rgba(11,11,26,0.28)' }}>
+      <div className="adm-panel" style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 480, maxWidth: '100%', backgroundColor: 'var(--bone)', boxShadow: '-12px 0 40px rgba(11,11,26,0.18)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', backgroundColor: '#fff', borderBottom: `1px solid ${line}` }}>
+          <strong style={{ fontSize: 17 }}>{title}</strong>
+          <button type="button" onClick={onClose} aria-label="Schließen" style={{ ...linkBtn, color: muted, fontSize: 24, width: 44, height: 44 }}>×</button>
         </div>
-        <div style={{ display: 'grid', gap: 16 }}>
-          {client && <AppointmentsCard r={r} list={client.appointments} onChanged={async added => {
-            if (added && ['new', 'contacted', 'report_sent'].includes(r.stage)) await changeStage('call_booked'); else reloadClient()
-          }} />}
-          {client && <Chat userId={r.userId} messages={client.messages} onSent={m => setClient(c => c && { ...c, messages: [...c.messages, m] })} />}
-          {client && <Notes clientKey={r.clientKey} notes={client.notes} onAdded={() => reloadClient()} />}
-          {client && <History items={client.activity} profiles={profiles} current={`${r.kind}:${r.id}`} />}
-        </div>
+        <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>{children}</div>
       </div>
     </div>
   )
@@ -407,22 +552,11 @@ function OfferCard({ clientKey, userId, kind, requestId, title, initial, preset,
   const [items, setItems] = useState<OfferItem[]>(initial?.items ?? preset)
   const [note, setNote] = useState(initial?.note ?? '')
   const [status, setStatus] = useState<Offer['status']>(initial?.status ?? 'draft')
-  const [custom, setCustom] = useState({ name: '', description: '', price: '', unit: 'pro Monat' as Unit })
   const [msg, setMsg] = useState('')
-  const has = (id: string) => items.some(i => i.id === id)
-  const toggle = (c: OfferItem) => setItems(xs => (has(c.id) ? xs.filter(x => x.id !== c.id) : [...xs, { id: c.id, name: c.name, price: c.price, unit: c.unit }]))
-  const setPrice = (id: string, price: string) => setItems(xs => xs.map(x => (x.id === id ? { ...x, price: Number(price) || 0 } : x)))
-  const addCustom = () => {
-    if (!custom.name.trim()) return
-    setItems(xs => [...xs, { id: 'custom-' + Date.now().toString(36), name: custom.name.trim(), description: custom.description.trim() || undefined, price: Number(custom.price) || 0, unit: custom.unit, custom: true }])
-    setCustom({ name: '', description: '', price: '', unit: 'pro Monat' })
-  }
   const save = async (next: Offer['status']) => {
     const r = await saveOffer({ client_key: clientKey, user_id: userId, request_kind: kind, request_id: requestId, items, note: note || null, status: next })
-    if (r) { setStatus(r.status); setMsg(next === 'sent' ? 'Als gesendet markiert.' : 'Gespeichert.'); onSaved() } else setMsg('Speichern fehlgeschlagen.')
+    if (r) { setStatus(r.status); setMsg(next === 'sent' ? 'Gesendet — der Kunde kann das Angebot im Kundenbereich annehmen.' : 'Gespeichert.'); onSaved() } else setMsg('Speichern fehlgeschlagen.')
   }
-  const groups = [...new Set(CATALOG.map(c => c.group))]
-  const priceOf = (id: string) => items.find(i => i.id === id)?.price ?? 0
   if (status === 'accepted') return (
     <section style={card}>
       <h3 style={h3}>Angebot <span style={{ color: '#1F7A4A' }}>· angenommen</span></h3>
@@ -436,43 +570,13 @@ function OfferCard({ clientKey, userId, kind, requestId, title, initial, preset,
   )
   return (
     <section style={card}>
-      <h3 style={h3}>Angebot {status !== 'draft' && <span style={{ color: '#1F7A4A' }}>· {status === 'sent' ? 'gesendet' : 'angenommen'}</span>}</h3>
-      <p style={{ ...small, margin: '-6px 0 12px' }}>Nur für diese Anfrage: <strong style={{ color: ink }}>{title}</strong>. Andere Unternehmen des Kunden haben eigene Angebote.</p>
-      {groups.map(g => (
-        <div key={g} style={{ marginBottom: 10 }}>
-          <p style={{ ...small, fontWeight: 700, margin: '0 0 4px' }}>{g}</p>
-          {CATALOG.filter(c => c.group === g).map(c => (
-            <label key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, padding: '3px 0' }}>
-              <input type="checkbox" checked={has(c.id)} onChange={() => toggle(c)} />
-              <span style={{ flex: 1 }}>{c.name}</span>
-              {has(c.id)
-                ? <input type="number" value={priceOf(c.id)} onChange={e => setPrice(c.id, e.target.value)} style={{ ...input, width: 90, padding: '5px 8px' }} aria-label={`Preis ${c.name}`} />
-                : <span style={small}>{c.price} €</span>}
-              <span style={{ ...small, width: 52 }}>{c.unit === 'einmalig' ? 'einmalig' : '/Monat'}</span>
-            </label>
-          ))}
-        </div>
-      ))}
-      {items.filter(i => i.custom).map(i => (
-        <div key={i.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, padding: '3px 0' }}>
-          <span style={{ flex: 1 }}><strong>{i.name}</strong>{i.description ? <span style={small}> — {i.description}</span> : null}</span>
-          <input type="number" value={i.price} onChange={e => setPrice(i.id, e.target.value)} style={{ ...input, width: 90, padding: '5px 8px' }} aria-label={`Preis ${i.name}`} />
-          <span style={{ ...small, width: 52 }}>{i.unit === 'einmalig' ? 'einmalig' : '/Monat'}</span>
-          <button type="button" onClick={() => setItems(xs => xs.filter(x => x.id !== i.id))} style={{ border: 0, background: 'none', cursor: 'pointer', color: '#B3261E' }} aria-label="Position löschen">✕</button>
-        </div>
-      ))}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 10, padding: 10, borderRadius: 12, backgroundColor: '#F7F6F2' }}>
-        <input style={input} placeholder="Eigene Position: Bezeichnung" value={custom.name} onChange={e => setCustom(c => ({ ...c, name: e.target.value }))} />
-        <input style={input} placeholder="Beschreibung" value={custom.description} onChange={e => setCustom(c => ({ ...c, description: e.target.value }))} />
-        <input style={input} type="number" placeholder="Preis, €" value={custom.price} onChange={e => setCustom(c => ({ ...c, price: e.target.value }))} />
-        <select style={input} value={custom.unit} onChange={e => setCustom(c => ({ ...c, unit: e.target.value as Unit }))}><option value="pro Monat">pro Monat</option><option value="einmalig">einmalig</option></select>
-        <button type="button" onClick={addCustom} disabled={!custom.name.trim()} className="btn btn-sm btn-outline-light" style={{ gridColumn: '1 / -1' }}>+ Position hinzufügen</button>
-      </div>
-      <p style={{ fontSize: 15, fontWeight: 700, margin: '12px 0 6px' }}>Summe: {totals(items)}</p>
-      <textarea style={{ ...input, minHeight: 60 }} placeholder="Kommentar zum Angebot" value={note} onChange={e => setNote(e.target.value)} />
+      <h3 style={h3}>Angebot {status !== 'draft' && <span style={{ color: '#1F7A4A' }}>· gesendet</span>}</h3>
+      <p style={{ ...small, margin: '-6px 0 12px' }}>Nur für diese Anfrage: <strong style={{ color: ink }}>{title}</strong>.{kind === 'check' ? ' Wird auch mit dem Bericht (Schritt 4) zusammengestellt — dieselben Positionen.' : ''}</p>
+      <OfferBuilder items={items} onChange={setItems} />
+      <textarea style={{ ...input, minHeight: 60, marginTop: 10 }} placeholder="Kommentar zum Angebot (für den Kunden, Deutsch)" value={note} onChange={e => setNote(e.target.value)} />
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10, alignItems: 'center' }}>
-        <button type="button" className="btn btn-sm btn-outline-light" onClick={() => save('draft')}>Entwurf speichern</button>
-        <button type="button" className="btn btn-sm btn-electric" onClick={() => save('sent')} disabled={!items.length}>Als gesendet markieren</button>
+        <button type="button" className="btn btn-sm btn-outline-light" onClick={() => save(status === 'sent' ? 'sent' : 'draft')}>{status === 'sent' ? 'Änderungen speichern' : 'Entwurf speichern'}</button>
+        {status !== 'sent' && <button type="button" className="btn btn-sm btn-electric" onClick={() => save('sent')} disabled={!items.length}>An den Kunden senden</button>}
         {msg && <span style={small}>{msg}</span>}
       </div>
     </section>
@@ -753,7 +857,7 @@ function AppointmentsCard({ r, list, onChanged }: { r: Request; list: Appointmen
           <select value={a.status} onChange={async e => { if (await setAppointmentStatus(a.id, e.target.value as Appointment['status'])) onChanged(false) }} style={{ ...input, width: 150, padding: '5px 8px' }}>
             {APPT_STATUS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           </select>
-          <button type="button" style={{ ...linkBtn, fontSize: 12.5, color: '#A21C22' }} onClick={async () => { if (confirm('Termin löschen? Der Kunde sieht ihn danach nicht mehr.') && await deleteAppointment(a.id)) onChanged(false) }}>Löschen</button>
+          <button type="button" style={{ ...linkBtn, fontSize: 12.5, color: '#A21C22' }} onClick={async () => { if (confirm(tr('Termin löschen? Der Kunde sieht ihn danach nicht mehr.')) && await deleteAppointment(a.id)) onChanged(false) }}>Löschen</button>
         </div>
       ))}
       {open ? (
@@ -985,8 +1089,8 @@ function Team() {
   }
   const copy = async () => { try { await navigator.clipboard.writeText(link); setCopied(true) } catch { setCopied(false) } }
   const change = async (p: Profile, r: 'client' | 'manager' | 'admin') => {
-    if (r === 'client' && !confirm(`Zugang sperren für ${p.email}?`)) return
-    const e = await setRole(p.id, r); if (e) alert(e); reload()
+    if (r === 'client' && !confirm(tr(`Zugang sperren für ${p.email}?`))) return
+    const e = await setRole(p.id, r); if (e) alert(tr(e)); reload()
   }
   const inviteState = (i: Invite) => i.used_at ? `angenommen ${fmt(i.used_at)}` : i.revoked_at ? 'widerrufen' : new Date(i.expires_at) < new Date() ? 'abgelaufen' : `gültig bis ${fmt(i.expires_at)}`
   return (

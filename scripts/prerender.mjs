@@ -8,7 +8,7 @@ import { pathToFileURL } from 'node:url'
 
 const root = process.cwd()
 const dist = path.join(root, 'dist')
-const SITE_URL = (process.env.VITE_SITE_URL || process.env.SITE_URL || 'https://rag-agentur.de').replace(/\/+$/, '')
+const SITE_URL = (process.env.VITE_SITE_URL || process.env.SITE_URL || 'https://rag-theta-one.vercel.app').replace(/\/+$/, '')
 const OG_IMAGE = `${SITE_URL}/og-image.png`
 const SITE_NAME = 'RAG — Regionale Agentur'
 
@@ -53,7 +53,7 @@ function page(route, html, meta) {
 }
 
 if (!COMPANY.ready) console.warn('\n⚠  src/company.ts: Firmendaten noch nicht vollständig (ready: false) — Impressum zeigt Platzhalter.\n')
-if (/rag-agentur\.de/.test(SITE_URL)) console.warn('⚠  VITE_SITE_URL nicht gesetzt — Canonical/Sitemap verwenden die Platzhalter-Domain rag-agentur.de.\n')
+// Standard: aktuelle Vercel-Adresse. Bei eigener Domain VITE_SITE_URL in Vercel setzen.
 
 const routes = prerenderRoutes()
 let count = 0

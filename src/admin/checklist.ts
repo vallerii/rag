@@ -25,6 +25,10 @@ export type Checklist = {
   aiNamed?: string
   dirs?: Record<string, DirState>
   pagespeed?: number | null
+  /** Neuer Bericht nach einer Veröffentlichung begonnen (ISO-Zeit) — leer, solange kein Entwurf offen ist. */
+  draftStarted?: string | null
+  /** Angebot im Entwurf des Berichts (wird erst beim Veröffentlichen an den Kunden gesendet). */
+  offerDraft?: { items: { id: string; name: string; description?: string; price: number; unit: 'einmalig' | 'pro Monat'; custom?: boolean }[]; why: string } | null
 }
 
 export type ManualDef = { id: string; chan: Chan; label: string; weight: number; texts: Partial<Record<Mark, string>>; hint?: string }

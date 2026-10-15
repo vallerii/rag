@@ -40,7 +40,7 @@ Deno.serve(handler(10, async (req, body) => {
 
   const checkId = String(body.checkId ?? '')
   const { data: check, error: readErr } = await db.from('checks')
-    .select('id, user_id, place_id, place, sources, sources_confirmed, status, audited_at, checklist')
+    .select('id, user_id, place_id, place, sources, sources_confirmed, status, audited_at, checklist, audit')
     .eq('id', checkId).maybeSingle()
   if (readErr) { console.error('checks read', readErr); return json(req, { error: 'db', detail: readErr.message }, 500) }
   if (!check) return json(req, { error: 'not_found', detail: 'no_row' }, 404)
@@ -58,6 +58,12 @@ Deno.serve(handler(10, async (req, body) => {
   if (check.status === 'ready' && !force) return json(req, { status: 'ready' })
   // Höchstens einmal pro 30 Minuten (Kosten bei Google) — außer das Team erzwingt es.
   if (!force && check.audited_at && Date.now() - Date.parse(check.audited_at) < 30 * 60_000) return json(req, { status: 'cached' })
+  // Анализ уже есть (из лида или другой проверки той же компании, не старше 30 дней) — не собираем заново.
+  const reused = check.audit as { from_prospect?: string; from_check?: string } | null
+  if (!force && (reused?.from_prospect || reused?.from_check) && check.audited_at && Date.now() - Date.parse(check.audited_at) < 30 * 86_400_000) {
+    if (check.status !== 'ready') await db.from('checks').update({ status: 'in_review' }).eq('id', check.id)
+    return json(req, { status: 'from_prospect' })
+  }
   if (!check.place_id || String(check.place_id).startsWith('demo')) return json(req, { error: 'demo_place' }, 400)
 
   const key = placesKey()

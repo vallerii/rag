@@ -10,7 +10,7 @@ import { getSupabase } from '../check/data'
 export type Change = { table: string; row: Record<string, unknown> }
 export type LiveStatus = 'connecting' | 'live' | 'offline'
 
-const TABLES = ['leads', 'orders', 'checks', 'profiles', 'messages', 'notes', 'activity', 'offers', 'appointments', 'projects', 'check_reports', 'staff_invites']
+const TABLES = ['leads', 'orders', 'checks', 'profiles', 'messages', 'notes', 'activity', 'offers', 'appointments', 'projects', 'check_reports', 'staff_invites', 'prospects']
 const RESYNC: Change = { table: '*', row: {} }
 
 const listeners = new Set<(c: Change) => void>()

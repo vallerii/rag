@@ -473,7 +473,7 @@ export default function CabinetPage() {
                 </div>
               </div>
             ) : null}
-            {rec && <RecommendedCard rec={rec} booking={book} onWrite={write} />}
+            {rec && !offer && <RecommendedCard rec={rec} booking={book} onWrite={write} />}
             {!check && (
           <div style={{ ...card, display: 'flex', gap: 20, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
             <div style={{ maxWidth: 620 }}>
@@ -528,7 +528,7 @@ export default function CabinetPage() {
             {scored && check.report && <CompetitorsCard report={check.report} />}
             {scored && check.report && <AiCard report={check.report} />}
             <HistoryCard versions={versions} />
-            {rec && <RecommendedCard rec={rec} booking={book} onWrite={write} />}
+            {offer ? <OfferPanel offer={offer} onAccepted={onAccepted} /> : rec && <RecommendedCard rec={rec} booking={book} onWrite={write} />}
           </div>
         )}
 

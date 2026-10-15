@@ -19,3 +19,7 @@ verify_jwt = false
 # Wird nur aus der Datenbank aufgerufen (Trigger auf activity) — Schutz über x-notify-secret.
 [functions.notify]
 verify_jwt = false
+
+# Leads (nur Team): Import aus der Google-Tabelle + Kurzanalyse. Prüft die Sitzung selbst.
+[functions.prospects]
+verify_jwt = false

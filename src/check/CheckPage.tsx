@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import CompanySearch from './CompanySearch'
 import {
-  DEMO, SOURCE_ORDER, createCheck, discoverSources, findMyCheck, getCompany, manualPlace, newSessionToken, searchCompanies,
+  DEMO, SOURCE_LABELS, SOURCE_ORDER, createCheck, placeFromCode, discoverSources, findMyCheck, getCompany, manualPlace, newSessionToken, searchCompanies,
   type Contact, type Place, type Source, type Suggestion,
 } from './data'
 import AccountStep from './AccountStep'
@@ -66,6 +66,37 @@ function Spinner({ label }: { label: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '26px 0', color: 'var(--muted)', fontSize: 14.5 }}>
       <span className="ck-spin" aria-hidden="true" />{label}
+    </div>
+  )
+}
+
+/** Erste Eindrücke in Schritt 2 — nur aus Daten, die schon geladen sind (keine zusätzlichen Google-Anfragen). */
+function FirstFindings({ place, found }: { place: Place; found: Source[] | null }) {
+  const row = (ok: boolean | null, text: React.ReactNode) => (
+    <li style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, lineHeight: 1.5 }}>
+      <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800,
+        backgroundColor: ok === null ? '#EFEEF8' : ok ? '#E3F4EA' : '#FFF1D6', color: ok === null ? 'var(--muted)' : ok ? '#17663A' : '#8A4B00' }}>{ok === null ? '…' : ok ? '✓' : '!'}</span>
+      <span>{text}</span>
+    </li>
+  )
+  const social = (found ?? []).filter(s => s.key !== 'website')
+  const yes = social.filter(s => s.found).map(s => SOURCE_LABELS[s.key])
+  const no = social.filter(s => !s.found).map(s => SOURCE_LABELS[s.key])
+  const site = place.website?.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '')
+  return (
+    <div style={{ border: '1px solid var(--line)', borderRadius: 18, padding: '16px 18px', margin: '-8px 0 24px', backgroundColor: '#fff' }}>
+      <p style={{ fontWeight: 700, fontSize: 15, margin: '0 0 10px' }}>Das haben wir schon gefunden</p>
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
+        {place.manual
+          ? row(false, 'Kein Google-Unternehmensprofil — bei Google Maps erscheinen Sie nicht.')
+          : row(place.reviews >= 20 && (place.rating ?? 0) >= 4.2, <>Google-Profil: {place.rating !== null ? <>★ {place.rating.toLocaleString('de-DE', { minimumFractionDigits: 1 })} · </> : null}{place.reviews} Bewertungen</>)}
+        {row(!!place.website, place.website ? <>Website: <span data-no-translate>{site}</span></> : 'Keine Website im Google-Profil hinterlegt')}
+        {!place.manual && row(!!place.phone, place.phone ? 'Telefonnummer im Profil' : 'Keine Telefonnummer im Profil')}
+        {found === null
+          ? row(null, 'Wir suchen Ihre Social-Media-Profile…')
+          : row(yes.length >= 2, yes.length ? <>Social Media: {yes.join(', ')}{no.length ? <span style={{ color: 'var(--muted)' }}> · nicht gefunden: {no.join(', ')}</span> : null}</> : 'Keine Social-Media-Profile gefunden')}
+      </ul>
+      <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.55, margin: '12px 0 0' }}>Die vollständige Analyse — Platz bei Google Maps, Wettbewerber, KI-Assistenten und Website-Technik — erstellen wir nach der Anmeldung.</p>
     </div>
   )
 }
@@ -134,17 +165,26 @@ export default function CheckPage() {
   useNoindex('Kostenloser Sichtbarkeits-Check | RAG')
   const params = new URLSearchParams(window.location.search)
   const initialPlace = params.get('place')
+  // Code aus dem Brief (QR-Code / Link): /check?c=ABC123 → Unternehmen ist schon ausgewählt.
+  const briefCode = (params.get('c') ?? '').trim().toUpperCase()
   const initialQ = params.get('q') ?? ''
   // Von der Startseite über «Mein Unternehmen ist nicht in der Liste»: Formular sofort offen, keine neue Google-Suche.
   const [manualMode, setManualMode] = useState(params.get('manual') === '1')
 
-  const [step, setStep] = useState<Step>(initialPlace ? 'contact' : 'find')
+  const [step, setStep] = useState<Step>(initialPlace || briefCode ? 'contact' : 'find')
   const [place, setPlace] = useState<Place | null>(null)
-  const [loadingPlace, setLoadingPlace] = useState(!!initialPlace)
+  const [loadingPlace, setLoadingPlace] = useState(!!initialPlace || !!briefCode)
   const [notFound, setNotFound] = useState(false)
   // Website + Social-Profile werden im Hintergrund gesucht, während das Konto angelegt wird.
   // Bestätigt werden sie danach im Kundenbereich.
   const discovery = useRef<Promise<Source[]> | null>(null)
+  const [found, setFound] = useState<Source[] | null>(null)
+  const startDiscovery = (p: Place) => {
+    setFound(null)
+    const job = discoverSources(p).catch(() => [] as Source[])
+    discovery.current = job
+    job.then(r => { if (discovery.current === job) setFound(r) })
+  }
   const [query, setQuery] = useState(initialQ)
   const [results, setResults] = useState<Suggestion[] | null>(null)
   const [searching, setSearching] = useState(false)
@@ -176,11 +216,11 @@ export default function CheckPage() {
   // Treffer gewählt → sofort Schritt 2; das Profil lädt dort oben, die Quellensuche startet, sobald es da ist.
   const loadPlace = (id: string) => {
     setPlace(null); setStep('contact'); setLoadingPlace(true); setNotFound(false)
-    discovery.current = null
+    discovery.current = null; setFound(null)
     getCompany(id, token.current)
       .then(p => {
         setPlace(p); setNotFound(!p)
-        if (p) discovery.current = discoverSources(p).catch(() => [])
+        if (p) startDiscovery(p)
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoadingPlace(false))
@@ -195,12 +235,15 @@ export default function CheckPage() {
     setStep('find')
   }
 
-  useEffect(() => { if (initialPlace) loadPlace(initialPlace) }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (initialPlace) loadPlace(initialPlace)
+    else if (briefCode) placeFromCode(briefCode).then(id => { if (id) loadPlace(id); else { setLoadingPlace(false); setStep('find') } })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { topRef.current?.scrollIntoView({ block: 'start' }) }, [step])
 
   const goContact = (p: Place | null = place) => {
     if (!p) return
-    discovery.current = discoverSources(p).catch(() => [])
+    startDiscovery(p)
     setStep('contact')
   }
   // Ohne Google-Profil: Angaben des Kunden übernehmen und direkt zum Konto.
@@ -217,7 +260,7 @@ export default function CheckPage() {
     const found = await Promise.race([discovery.current ?? Promise.resolve(empty), new Promise<Source[]>(r => setTimeout(() => r(empty), 4000))])
     const id = await createCheck({
       place, region: `${place.city} + 30 km`, sources: found.length ? found : empty, contact,
-      sourcePage: params.get('from'),
+      sourcePage: params.get('from') ?? (briefCode ? `brief-${briefCode}` : null),
     })
     if (!id) return 'Das Speichern hat nicht geklappt. Bitte versuchen Sie es noch einmal.'
     // Neues Konto (gerade angelegt) → Begrüßung; bestehendes Konto → Hinweis «weitere Firma hinzugefügt».
@@ -330,6 +373,7 @@ export default function CheckPage() {
               ) : (
                 <>
                   <SelectedCompany place={place} loading={loadingPlace} onChange={backToFind} />
+                  {place && !loadingPlace && <FirstFindings place={place} found={found} />}
                   {DEMO && !place?.manual && <div style={{ margin: '-10px 0 20px' }}><DemoNote>Die Google-Anbindung ist noch nicht aktiv. Angezeigt werden Beispieldaten.</DemoNote></div>}
                   <AccountStep submitLabel="Weiter zum Kundenbereich" onAuthed={createAndGo} onBack={backToFind} />
                 </>
