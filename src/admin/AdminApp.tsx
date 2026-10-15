@@ -1,13 +1,14 @@
 import LangSwitch from '../LangSwitch'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNoindex } from '../check/CheckPage'
 import {
-  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, addAppointment, deleteAppointment, loadAll, loadClient, loadMyProfile, setAppointmentStatus, loadTeam, myId, saveMyProfile,
+  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, addAppointment, deleteAppointment, loadAll, loadClient, loadMyProfile, setAppointmentStatus, loadTeam, myId, saveMyProfile, myAccount, changeMyEmail, changeMyPassword, sendStaffPasswordReset, hasRecoverySession, setStaffNewPassword,
   revokeInvite, saveOffer, saveProject, projectLabel, versionTotal, sendStaffMessage, setAssignee, setNextContact, setRole, setStage, signInPlain, signInStaff, mfaEnroll, mfaState, mfaVerify, signOutStaff, signUpStaff, stageLabel,
   type Invite, type Kind, type Project, type ProjectStatus, type ReportVersionRow,
   type Activity, type Appointment, type Check, type Lead, type Message, type Note, type Offer, type Order, type Profile, type Request, type Stage,
 } from './api'
 import ReportEditor from './ReportEditor'
+import { stopLive, useLive, useLiveStatus } from './live'
 import { CATALOG, totals, type OfferItem, type Unit } from './catalog'
 
 // Admin-Bereich unter einer nicht verlinkten Adresse (/rag-intern), noindex.
@@ -46,6 +47,7 @@ const profileOf = (ps: Profile[], uid: string | null) => ps.find(p => p.id === u
 export default function AdminApp() {
   useNoindex('Intern | RAG')
   if (/\/einladung\/?$/.test(window.location.pathname)) return <AcceptInvite />
+  if (/\/passwort-neu\/?$/.test(window.location.pathname)) return <StaffResetPassword />
   return <AdminRoot />
 }
 
@@ -60,7 +62,7 @@ function AdminRoot() {
     mfaState().then(m => setState(m.status === 'ok' ? 'ok' : 'mfa')).catch(() => setState('login'))
   }
   useEffect(() => { isStaff().then(ok => (ok ? afterPassword() : setState('login'))).catch(() => setState('login')) }, [])
-  const logout = async () => { await signOutStaff(); setState('login') }
+  const logout = async () => { stopLive(); await signOutStaff(); setState('login') }
   if (state === 'loading') return <div style={{ padding: 40, color: muted }}>Wird geladen…</div>
   if (state === 'login') return <Login onDone={afterPassword} />
   if (state === 'mfa') return <MfaGate onDone={() => setState('ok')} onCancel={logout} />
@@ -111,23 +113,54 @@ function MfaGate({ onDone, onCancel }: { onDone: () => void; onCancel: () => voi
 }
 
 function Login({ onDone }: { onDone: () => void }) {
+  const [mode, setMode] = useState<'login' | 'forgot' | 'sent'>(() => (new URLSearchParams(window.location.search).has('vergessen') ? 'forgot' : 'login'))
   const [email, setEmail] = useState(''), [pw, setPw] = useState(''), [err, setErr] = useState(''), [busy, setBusy] = useState(false)
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setBusy(true); setErr('')
+    if (mode === 'forgot') {
+      const r = await sendStaffPasswordReset(email)
+      setBusy(false)
+      if (r) setErr(r); else setMode('sent')
+      return
+    }
     const r = await signInStaff(email, pw)
     setBusy(false)
     if (r) setErr(r); else onDone()
   }
+  const switchTo = (m: 'login' | 'forgot') => { setMode(m); setErr('') }
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bone)', padding: 20 }}>
       <form onSubmit={submit} style={{ ...card, width: '100%', maxWidth: 380, padding: 28, display: 'grid', gap: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 800, fontSize: 20, margin: 0 }}>RAG<span style={{ color: accent }}>.</span> · Team-Login</p><LangSwitch /></div>
-        <input style={input} type="email" placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)} autoComplete="username" required />
-        <input style={input} type="password" placeholder="Passwort" value={pw} onChange={e => setPw(e.target.value)} autoComplete="current-password" required />
-        {err && <p role="alert" style={{ color: '#B3261E', fontSize: 14, margin: 0 }}>{err}</p>}
-        <button className="btn btn-md btn-electric" disabled={busy}>{busy ? 'Anmeldung…' : 'Anmelden'}</button>
+        {mode === 'sent' ? <>
+          <p style={{ fontSize: 14, margin: 0, lineHeight: 1.55 }}>Wenn es für diese Adresse ein Team-Konto gibt, haben wir einen Link zum Zurücksetzen geschickt. Schauen Sie auch im Spam-Ordner nach.</p>
+          <button type="button" onClick={() => switchTo('login')} style={linkBtn}>← Zurück zur Anmeldung</button>
+        </> : <>
+          {mode === 'forgot' && <p style={{ ...small, margin: 0 }}>Geben Sie Ihre E-Mail ein — wir schicken einen Link, mit dem Sie ein neues Passwort festlegen.</p>}
+          <input style={input} type="email" placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)} autoComplete="username" required autoFocus={mode === 'forgot'} />
+          {mode === 'login' && <input style={input} type="password" placeholder="Passwort" value={pw} onChange={e => setPw(e.target.value)} autoComplete="current-password" required />}
+          {err && <p role="alert" style={{ color: '#B3261E', fontSize: 14, margin: 0 }}>{err}</p>}
+          <button className="btn btn-md btn-electric" disabled={busy}>{mode === 'forgot' ? (busy ? 'Wird gesendet…' : 'Link senden') : (busy ? 'Anmeldung…' : 'Anmelden')}</button>
+          {mode === 'login'
+            ? <button type="button" onClick={() => switchTo('forgot')} style={{ ...linkBtn, fontSize: 13.5, justifySelf: 'start' }}>Passwort vergessen?</button>
+            : <button type="button" onClick={() => switchTo('login')} style={{ ...linkBtn, fontSize: 13.5, justifySelf: 'start' }}>← Zurück zur Anmeldung</button>}
+        </>}
       </form>
     </div>
+  )
+}
+
+// Разделы админки — отдельные адреса: работают «назад/вперёд», обновление страницы и ссылки.
+type View = 'requests' | 'team' | 'profile'
+const VIEW_PATH: Record<View, string> = { requests: '/rag-intern', team: '/rag-intern/team', profile: '/rag-intern/profil' }
+const viewFromPath = (): View => (/\/profil\/?$/.test(window.location.pathname) ? 'profile' : /\/team\/?$/.test(window.location.pathname) ? 'team' : 'requests')
+
+function NavLink({ to, onGo, style, children }: { to: View; onGo: (v: View) => void; style?: React.CSSProperties; children: React.ReactNode }) {
+  return (
+    <a href={VIEW_PATH[to]} style={{ ...linkBtn, textDecoration: 'none', ...style }}
+      onClick={e => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; e.preventDefault(); onGo(to) }}>
+      {children}
+    </a>
   )
 }
 
@@ -137,16 +170,30 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [me, setMe] = useState<string | null>(null)
   const [q, setQ] = useState('')
   const [sel, setSel] = useState<string | null>(() => new URLSearchParams(window.location.search).get('r'))
-  const [view, setView] = useState<'requests' | 'team' | 'profile'>('requests')
-  const [admin, setAdmin] = useState(false)
+  const [view, setView] = useState<View>(viewFromPath)
+  const go = (v: View, keepSel = true) => {
+    if (!keepSel) setSel(null)
+    const r = v === 'requests' && keepSel && sel ? `?r=${encodeURIComponent(sel)}` : ''
+    history.pushState(null, '', VIEW_PATH[v] + r)
+    setView(v); window.scrollTo(0, 0)
+  }
+  useEffect(() => {
+    const onPop = () => { setView(viewFromPath()); setSel(new URLSearchParams(window.location.search).get('r')) }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+  const [admin, setAdmin] = useState<boolean | null>(null)
   const reload = () => { loadAll().then(setData) }
   useEffect(() => { reload(); isAdmin().then(setAdmin); myId().then(setMe) }, [])
+  // Новые заявки, смена статуса/ответственного, правки профилей — сразу, без кнопки «Обновить».
+  useLive(c => c.table === 'leads' || c.table === 'orders' || c.table === 'checks' || c.table === 'profiles', reload)
   useEffect(() => {
+    if (view !== 'requests') return
     const sp = new URLSearchParams(window.location.search)
     if (sel) sp.set('r', sel); else sp.delete('r')
     const qs = sp.toString()
     history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''))
-  }, [sel])
+  }, [sel, view])
   const list = useMemo(() => {
     if (!data) return []
     const needle = q.trim().toLowerCase()
@@ -158,17 +205,17 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)', color: ink }}>
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', borderBottom: `1px solid ${line}`, backgroundColor: '#fff', position: 'sticky', top: 0, zIndex: 5 }}>
-        <span style={{ fontWeight: 800, fontSize: 18 }}>RAG<span style={{ color: accent }}>.</span> <span style={{ fontWeight: 500, color: muted, fontSize: 14 }}>· Anfragen</span></span>
+        <NavLink to="requests" onGo={v => go(v, false)} style={{ fontWeight: 800, fontSize: 18, color: ink }}>RAG<span style={{ color: accent }}>.</span> <span style={{ fontWeight: 500, color: muted, fontSize: 14 }}>· Anfragen</span></NavLink>
         <span style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
           <LangSwitch />
-          {view !== 'requests' && <button type="button" onClick={() => setView('requests')} style={linkBtn}>← Anfragen</button>}
-          {admin && view !== 'team' && <button type="button" onClick={() => setView('team')} style={linkBtn}>Team</button>}
-          {view !== 'profile' && <button type="button" onClick={() => setView('profile')} style={linkBtn}>Mein Profil</button>}
-          <button type="button" onClick={reload} style={linkBtn}>Aktualisieren</button>
+          {view !== 'requests' && <NavLink to="requests" onGo={go}>← Anfragen</NavLink>}
+          {admin && view !== 'team' && <NavLink to="team" onGo={go}>Team</NavLink>}
+          {view !== 'profile' && <NavLink to="profile" onGo={go}>Mein Profil</NavLink>}
+          <LiveBadge />
           <button type="button" onClick={onLogout} style={{ ...linkBtn, color: ink }}>Abmelden</button>
         </span>
       </header>
-      {view === 'profile' ? <MyProfile /> : view === 'team' ? <Team /> : <div className="adm-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 400px) minmax(0, 1fr)', gap: 20, padding: 20, alignItems: 'start' }}>
+      {view === 'profile' ? <MyProfile /> : view === 'team' ? (admin ? <Team /> : <p style={{ padding: 20, color: muted }}>{admin === null ? 'Wird geladen…' : 'Nur für Admins.'}</p>) : <div className="adm-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 400px) minmax(0, 1fr)', gap: 20, padding: 20, alignItems: 'start' }}>
         <aside className="adm-aside" style={{ display: 'grid', gap: 12, position: 'sticky', top: 76 }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {QUEUES.map(([k, label]) => {
@@ -214,6 +261,23 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   )
 }
 
+const TABLE_OF: Record<Kind, string> = { lead: 'leads', order: 'orders', check: 'checks' }
+
+function LiveBadge() {
+  const st = useLiveStatus()
+  const [color, label, hint] = st === 'live'
+    ? ['#1F9D55', 'Live', 'Änderungen erscheinen automatisch']
+    : st === 'offline'
+      ? ['#B26B00', 'Offline', 'Keine Live-Verbindung — Daten werden alle 30 Sekunden neu geladen']
+      : ['#9A9AA5', 'Verbinde…', 'Live-Verbindung wird aufgebaut']
+  return (
+    <span title={hint} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: muted }}>
+      <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: color, boxShadow: st === 'live' ? `0 0 0 3px ${color}22` : 'none' }} />
+      {label}
+    </span>
+  )
+}
+
 function Detail({ r, all, profiles, me, onSelect, onPatch }: { r: Request; all: Request[]; profiles: Profile[]; me: string | null; onSelect: (k: string) => void; onPatch: (p: Partial<Request>) => void }) {
   const staff = profiles.filter(p => p.role === 'admin' || p.role === 'manager')
   const prof = profileOf(profiles, r.userId)
@@ -221,6 +285,12 @@ function Detail({ r, all, profiles, me, onSelect, onPatch }: { r: Request; all: 
   const [client, setClient] = useState<Awaited<ReturnType<typeof loadClient>> | null>(null)
   const reloadClient = () => { loadClient(r.clientKey, r.userId, r.kind, r.id).then(setClient) }
   useEffect(() => { setClient(null); reloadClient() }, [r.clientKey, r.kind, r.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Чат, заметки, история, оффер, встречи, проект, версии отчёта этого клиента — вживую.
+  useLive(({ table, row }) => {
+    if (Object.keys(row).length <= 1) return true // DELETE: Realtime отдаёт только id — перечитываем на всякий случай
+    if (table === TABLE_OF[r.kind] && row.id === r.id) return true
+    return row.client_key === r.clientKey || (!!r.userId && row.user_id === r.userId) || row.request_id === r.id || row.check_id === r.id
+  }, reloadClient)
 
   // Erster Statuswechsel an einer freien Anfrage → sie gehört dem, der ihn macht (Trigger in der DB).
   const changeStage = async (s: Stage) => { if (await setStage(r.kind, r.id, s)) { onPatch({ stage: s, assignee: r.assignee ?? await getAssignee(r.kind, r.id) }); reloadClient() } }
@@ -745,6 +815,156 @@ function MyProfile() {
         <span><span style={small}>{f.title || 'Ihr Ansprechpartner'}</span><br /><strong>{f.name || '—'}</strong></span>
         <span style={{ ...small, marginLeft: 'auto' }}>Vorschau für den Kunden</span>
       </section>
+      <AccountCard />
+    </div>
+  )
+}
+
+// ── Доступы: e-mail и пароль меняются во всплывающих окнах, без писем ────────
+function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  useEffect(() => {
+    const k = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', k)
+    const o = document.body.style.overflow; document.body.style.overflow = 'hidden'
+    return () => { window.removeEventListener('keydown', k); document.body.style.overflow = o }
+  }, [onClose])
+  return (
+    <div role="dialog" aria-modal="true" aria-label={title} onMouseDown={e => { if (e.target === e.currentTarget) onClose() }}
+      style={{ position: 'fixed', inset: 0, zIndex: 50, backgroundColor: 'rgba(7,7,12,0.45)', display: 'grid', placeItems: 'center', padding: 16 }}>
+      <div style={{ ...card, width: '100%', maxWidth: 420, padding: 24, boxShadow: '0 20px 60px rgba(7,7,12,0.25)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+          <h2 style={{ fontSize: 19, margin: 0 }}>{title}</h2>
+          <button type="button" onClick={onClose} aria-label="Schließen" style={{ ...linkBtn, color: muted, fontSize: 22, lineHeight: 1 }}>×</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function EmailModal({ current, onClose, onDone }: { current: string | null; onClose: () => void; onDone: (email: string) => void }) {
+  const [email, setEmail] = useState(''), [pw, setPw] = useState(''), [err, setErr] = useState(''), [busy, setBusy] = useState(false)
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const v = email.trim().toLowerCase()
+    if (v === current?.toLowerCase()) { setErr('Das ist bereits Ihre E-Mail.'); return }
+    setBusy(true); setErr('')
+    const r = await changeMyEmail(v, pw)
+    setBusy(false)
+    if (r) setErr(r); else onDone(v)
+  }
+  return (
+    <Modal title="E-Mail ändern" onClose={onClose}>
+      <form onSubmit={submit} style={{ display: 'grid', gap: 10 }}>
+        <p style={{ ...small, margin: 0 }}>Die neue E-Mail gilt sofort für den Login — ohne Bestätigungs-E-Mail.</p>
+        <label style={small}>Neue E-Mail<input style={input} type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required autoFocus /></label>
+        <label style={small}>Aktuelles Passwort<input style={input} type="password" autoComplete="current-password" value={pw} onChange={e => setPw(e.target.value)} required /></label>
+        {err && <p role="alert" style={{ color: '#B3261E', fontSize: 13.5, margin: 0 }}>{err}</p>}
+        <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+          <button className="btn btn-md btn-electric" disabled={busy}>{busy ? 'Wird gespeichert…' : 'Speichern'}</button>
+          <button type="button" className="btn btn-md btn-outline-light" onClick={onClose}>Abbrechen</button>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
+function PasswordModal({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
+  const [f, setF] = useState({ cur: '', a: '', b: '' }), [err, setErr] = useState(''), [busy, setBusy] = useState(false)
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF(x => ({ ...x, [k]: e.target.value }))
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault(); setErr('')
+    if (f.a.length < 8) { setErr('Passwort zu einfach — mindestens 8 Zeichen.'); return }
+    if (f.a !== f.b) { setErr('Die Passwörter stimmen nicht überein.'); return }
+    setBusy(true)
+    const r = await changeMyPassword(f.cur, f.a)
+    setBusy(false)
+    if (r) setErr(r); else onDone()
+  }
+  return (
+    <Modal title="Passwort ändern" onClose={onClose}>
+      <form onSubmit={submit} style={{ display: 'grid', gap: 10 }}>
+        <label style={small}>Aktuelles Passwort<input style={input} type="password" autoComplete="current-password" value={f.cur} onChange={set('cur')} required autoFocus /></label>
+        <label style={small}>Neues Passwort (mindestens 8 Zeichen)<input style={input} type="password" autoComplete="new-password" value={f.a} onChange={set('a')} required minLength={8} /></label>
+        <label style={small}>Neues Passwort wiederholen<input style={input} type="password" autoComplete="new-password" value={f.b} onChange={set('b')} required /></label>
+        {err && <p role="alert" style={{ color: '#B3261E', fontSize: 13.5, margin: 0 }}>{err}</p>}
+        <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+          <button className="btn btn-md btn-electric" disabled={busy}>{busy ? 'Wird gespeichert…' : 'Speichern'}</button>
+          <button type="button" className="btn btn-md btn-outline-light" onClick={onClose}>Abbrechen</button>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
+function AccountCard() {
+  const [acc, setAcc] = useState<{ email: string | null; pending: string | null } | null>(null)
+  const [open, setOpen] = useState<'' | 'email' | 'password'>(''), [msg, setMsg] = useState('')
+  useEffect(() => { myAccount().then(setAcc) }, [])
+  const close = useCallback(() => setOpen(''), [])
+  const row: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', flexWrap: 'wrap' }
+  return (
+    <section style={card}>
+      <h3 style={h3}>Zugangsdaten</h3>
+      <p style={{ ...small, margin: '0 0 6px' }}>E-Mail und Passwort für den Login in den Team-Bereich. Der Kunde sieht sie nicht.</p>
+      <div style={row}>
+        <span style={{ ...small, width: 80 }}>E-Mail</span>
+        <strong data-no-translate style={{ fontSize: 14.5 }}>{acc?.email ?? '…'}</strong>
+        <button type="button" onClick={() => { setMsg(''); setOpen('email') }} className="btn btn-sm btn-outline-light" style={{ marginLeft: 'auto' }}>Ändern</button>
+      </div>
+      <div style={{ ...row, borderTop: `1px solid ${line}` }}>
+        <span style={{ ...small, width: 80 }}>Passwort</span>
+        <strong style={{ fontSize: 14.5, letterSpacing: '0.15em' }}>••••••••</strong>
+        <button type="button" onClick={() => { setMsg(''); setOpen('password') }} className="btn btn-sm btn-outline-light" style={{ marginLeft: 'auto' }}>Ändern</button>
+      </div>
+      {msg && <p role="status" style={{ ...small, color: '#1F9D55', margin: '6px 0 0' }}>{msg}</p>}
+      {open === 'email' && <EmailModal current={acc?.email ?? null} onClose={close} onDone={() => { setOpen(''); myAccount().then(setAcc); setMsg('E-Mail geändert. Melden Sie sich ab jetzt mit der neuen E-Mail an.') }} />}
+      {open === 'password' && <PasswordModal onClose={close} onDone={() => { setOpen(''); setMsg('Passwort geändert. Auf anderen Geräten wurden Sie abgemeldet.') }} />}
+    </section>
+  )
+}
+
+// ── Новый пароль по ссылке из письма: /rag-intern/passwort-neu ───────────────
+function StaffResetPassword() {
+  const [ready, setReady] = useState<'wait' | 'ok' | 'invalid'>('wait')
+  const [f, setF] = useState({ a: '', b: '', code: '' }), [needCode, setNeedCode] = useState(false)
+  const [err, setErr] = useState(''), [busy, setBusy] = useState(false)
+  useEffect(() => {
+    if (new URLSearchParams(window.location.hash.slice(1)).get('error_code')) { setReady('invalid'); return }
+    // Supabase liest den Token aus der URL selbst (detectSessionInUrl) — kurz warten.
+    const t = setTimeout(async () => setReady((await hasRecoverySession()) ? 'ok' : 'invalid'), 900)
+    return () => clearTimeout(t)
+  }, [])
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF(x => ({ ...x, [k]: e.target.value }))
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault(); setErr('')
+    if (f.a.length < 8) { setErr('Passwort zu einfach — mindestens 8 Zeichen.'); return }
+    if (f.a !== f.b) { setErr('Die Passwörter stimmen nicht überein.'); return }
+    if (needCode && f.code.replace(/\s/g, '').length < 6) { setErr('Bitte den 6-stelligen Code eingeben.'); return }
+    setBusy(true)
+    const r = await setStaffNewPassword(f.a, needCode ? f.code : undefined)
+    setBusy(false)
+    if (r === 'mfa') { setNeedCode(true); setErr('Bitte zusätzlich den Code aus Ihrer Authenticator-App eingeben.'); return }
+    if (r) { setErr(r); return }
+    window.location.replace('/rag-intern')
+  }
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bone)', padding: 20, color: ink }}>
+      <form onSubmit={submit} style={{ ...card, width: '100%', maxWidth: 380, padding: 28, display: 'grid', gap: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 800, fontSize: 20, margin: 0 }}>RAG<span style={{ color: accent }}>.</span> · Neues Passwort</p><LangSwitch /></div>
+        {ready === 'wait' && <p style={{ ...small, margin: 0 }}>Wird geladen…</p>}
+        {ready === 'invalid' && <>
+          <p style={{ fontSize: 14, margin: 0 }}>Der Link ist abgelaufen oder wurde schon benutzt.</p>
+          <a href="/rag-intern?vergessen=1" className="btn btn-md btn-electric" style={{ textAlign: 'center' }}>Neuen Link anfordern</a>
+        </>}
+        {ready === 'ok' && <>
+          <label style={small}>Neues Passwort (mindestens 8 Zeichen)<input style={input} type="password" autoComplete="new-password" value={f.a} onChange={set('a')} required minLength={8} autoFocus /></label>
+          <label style={small}>Neues Passwort wiederholen<input style={input} type="password" autoComplete="new-password" value={f.b} onChange={set('b')} required /></label>
+          {needCode && <label style={small}>Code aus der Authenticator-App<input style={{ ...input, letterSpacing: '0.2em' }} inputMode="numeric" autoComplete="one-time-code" value={f.code} onChange={set('code')} placeholder="123 456" /></label>}
+          {err && <p role="alert" style={{ color: '#B3261E', fontSize: 14, margin: 0 }}>{err}</p>}
+          <button className="btn btn-md btn-electric" disabled={busy}>{busy ? 'Wird gespeichert…' : 'Passwort speichern'}</button>
+        </>}
+      </form>
     </div>
   )
 }
@@ -757,6 +977,7 @@ function Team() {
   const [link, setLink] = useState(''), [err, setErr] = useState(''), [copied, setCopied] = useState(false)
   const reload = () => { loadTeam().then(setTeam) }
   useEffect(() => { reload(); myId().then(setMe) }, [])
+  useLive(c => c.table === 'profiles' || c.table === 'staff_invites', reload)
   const create = async (e: React.FormEvent) => {
     e.preventDefault(); setErr(''); setLink(''); setCopied(false)
     const r = await createInvite(email, role)

@@ -343,3 +343,61 @@ export async function mfaVerify(factorId: string, code: string): Promise<string 
   if (!error) enrolling = null
   return error ? 'Falscher Code. Prüfen Sie die Uhrzeit auf dem Handy und versuchen Sie es erneut.' : null
 }
+
+// ── Собственные доступы: e-mail и пароль ────────────────────────────────────
+export async function myAccount(): Promise<{ email: string | null; pending: string | null }> {
+  const { data } = await (await db()).auth.getUser()
+  return { email: data.user?.email ?? null, pending: data.user?.new_email ?? null }
+}
+/** Sofort, ohne Bestätigungs-E-Mail (alter Posteingang evtl. nicht mehr da). Schutz: aktuelles Passwort + Team-Sitzung (RPC change_my_email). */
+export async function changeMyEmail(email: string, password: string): Promise<string | null> {
+  const s = await db()
+  const { error } = await s.rpc('change_my_email', { p_email: email.trim(), p_password: password })
+  if (!error) { await s.auth.refreshSession(); return null }
+  if (/wrong_password/.test(error.message)) return 'Aktuelles Passwort ist falsch.'
+  if (/email_taken/.test(error.message)) return 'Diese E-Mail ist bereits vergeben.'
+  if (/bad_email/.test(error.message)) return 'Ungültige E-Mail-Adresse.'
+  if (/forbidden/.test(error.message)) return 'Kein Zugriff.'
+  if (/PGRST202|change_my_email|function/i.test(error.message)) return 'Funktion fehlt in der Datenbank — supabase/admin-live.sql ausführen.'
+  return error.message
+}
+/** Nur mit dem aktuellen Passwort, ohne E-Mail (RPC change_my_password). Andere Sitzungen werden beendet. */
+export async function changeMyPassword(current: string, next: string): Promise<string | null> {
+  const { error } = await (await db()).rpc('change_my_password', { p_current: current, p_new: next })
+  if (!error) return null
+  if (/wrong_password/.test(error.message)) return 'Aktuelles Passwort ist falsch.'
+  if (/same_password/.test(error.message)) return 'Das neue Passwort muss sich vom alten unterscheiden.'
+  if (/weak_password/.test(error.message)) return 'Passwort zu einfach — mindestens 8 Zeichen.'
+  if (/forbidden/.test(error.message)) return 'Kein Zugriff.'
+  if (/PGRST202|change_my_password|function/i.test(error.message)) return 'Funktion fehlt in der Datenbank — supabase/admin-live.sql ausführen.'
+  return error.message
+}
+
+// ── Passwort vergessen (Team): Link per E-Mail → /rag-intern/passwort-neu ────
+export async function sendStaffPasswordReset(email: string): Promise<string | null> {
+  const { error } = await (await db()).auth.resetPasswordForEmail(email.trim(), {
+    redirectTo: `${window.location.origin}/rag-intern/passwort-neu`,
+    captchaToken: (await turnstileToken().catch(() => null)) ?? undefined,
+  })
+  if (!error) return null
+  if (/rate|seconds|security purposes/i.test(error.message)) return 'Zu viele Versuche — bitte in einer Minute erneut.'
+  return 'Link konnte nicht gesendet werden. Bitte später erneut versuchen.'
+}
+export async function hasRecoverySession(): Promise<boolean> {
+  const { data } = await (await db()).auth.getSession()
+  return !!data.session
+}
+/** Nach dem Link aus der E-Mail. Mit 2FA verlangt Supabase vorher den Code (aal2). */
+export async function setStaffNewPassword(password: string, totp?: string): Promise<string | null> {
+  const s = await db()
+  if (totp) {
+    const m = await mfaState()
+    if (m.status === 'verify') { const e = await mfaVerify(m.factorId, totp); if (e) return e }
+  }
+  const { error } = await s.auth.updateUser({ password })
+  if (!error) return null
+  if (error.code === 'insufficient_aal' || /aal2|AAL/i.test(error.message)) return 'mfa'
+  if (error.code === 'same_password') return 'Das neue Passwort muss sich vom alten unterscheiden.'
+  if (error.code === 'weak_password') return 'Passwort zu einfach — mindestens 8 Zeichen.'
+  return 'Link abgelaufen oder ungültig. Fordern Sie einen neuen an.'
+}
