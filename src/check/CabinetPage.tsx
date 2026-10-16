@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react'
 import { dateLocale } from '../i18n'
 import { Logo, StarsRow, useNoindex } from './CheckPage'
 import {
-  SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, loadLatestOrder, loadMyChecks, loadMessages, deleteMyCheck, loadReportVersions, loadMyAppointments, loadMyContact, loadMyManager, loadMyOffers, loadMyProjects, resultVisible, runAudit, sendMessage, signOut, updateSources,
-  type Appointment, type ClientProject, type CheckRow, type ReportVersion, type ClientOffer, type MyContact, type Manager, type MessageRow, type OrderRow, type Source,
+  SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, loadLatestOrder, loadMyChecks, loadMyQuiz, loadMessages, deleteMyCheck, loadReportVersions, loadMyAppointments, loadMyContact, loadMyManager, loadMyOffers, loadMyProjects, resultVisible, runAudit, sendMessage, signOut, updateSources,
+  type Appointment, type ClientProject, type CheckRow, type ReportVersion, type ClientOffer, type MyContact, type Manager, type MessageRow, type OrderRow, type QuizLead, type Source,
 } from './data'
 import SourcesEditor from './SourcesEditor'
 import OrderPanel, { orderStatusLabel } from './OrderPanel'
+import CompanyForm, { WishSummary } from './CompanyForm'
 import { AccountPanel, AppointmentsPanel, ConfirmDialog, ContactForm, fmtWhen, upcoming } from './CabinetAccount'
 import { AiCard, CompetitorsCard, Delta, HistoryCard, deltas } from './ReportExtras'
 import { ProjectPanel, ResultView, projectHeadline } from './ProjectView'
@@ -114,6 +115,7 @@ export default function CabinetPage() {
   const [check, setCheck] = useState<CheckRow | null>(null)
   const [checks, setChecks] = useState<CheckRow[]>([])
   const [order, setOrder] = useState<OrderRow | null>(null)
+  const [quiz, setQuiz] = useState<QuizLead | null>(null)
   const [contact, setContact] = useState<MyContact>({ name: '', phone: '' })
   const [appts, setAppts] = useState<Appointment[]>([])
   const [versions, setVersions] = useState<ReportVersion[]>([])
@@ -145,11 +147,11 @@ export default function CabinetPage() {
       const u = await currentUser()
       if (!u) { window.location.replace('/login?next=' + encodeURIComponent('/kabinett')); return }
       setUserEmail(u.email ?? '')
-      const [c, o, m, mg, of, ap, ct, pj] = await Promise.all([loadMyChecks(), loadLatestOrder(), loadMessages(), loadMyManager(), loadMyOffers(), loadMyAppointments(), loadMyContact(u), loadMyProjects()])
+      const [c, o, m, mg, of, ap, ct, pj, qz] = await Promise.all([loadMyChecks(), loadLatestOrder(), loadMessages(), loadMyManager(), loadMyOffers(), loadMyAppointments(), loadMyContact(u), loadMyProjects(), loadMyQuiz()])
       // Gewählte Firma: ?firma=<id>, sonst die zuletzt geprüfte.
       const want = new URLSearchParams(window.location.search).get('firma')
       const sel = c.find(x => x.id === want) ?? c[0] ?? null
-      setChecks(c); setCheck(sel); setOrder(o); setMsgs(m); setManager(mg); setOffers(of); setAppts(ap); setContact(ct); setProjects(pj)
+      setChecks(c); setCheck(sel); setOrder(o?.merged_into ? null : o); setQuiz(qz); setMsgs(m); setManager(mg); setOffers(of); setAppts(ap); setContact(ct); setProjects(pj)
       if (sel) setConfirmDraft(allSources(sel.sources))
       // Bestätigt, aber noch nicht analysiert (z. B. Tab geschlossen) → Datensammlung nachholen.
       for (const x of c) if (x.sources_confirmed && x.status === 'submitted') void runAudit(x.id)
@@ -201,16 +203,21 @@ export default function CabinetPage() {
   const onAccepted = (o: ClientOffer) => { setOffers(list => list.map(x => (x.id === o.id ? o : x))); void loadMyProjects().then(setProjects) }
 
   if (loading) return <Loading />
-  if (!check && !order && !offer && tab !== 'konto') return <EmptyState onLogout={logout} onKonto={() => setTab('konto')} />
+  if (!check && !order && !offer && !quiz && tab !== 'konto') return <EmptyState onLogout={logout} onKonto={() => setTab('konto')} />
 
   const ready = check?.status === 'ready'
+  // Paket oder Quiz ohne Firma → zuerst Angaben zum Unternehmen (CompanyForm).
+  const intake = (!!order && !order.details) || !!quiz
+  // Start bei null: keine Analyse, Termin sofort. Abgeschlossen: nur der Manager setzt «lost».
+  const scratch = !!check?.scratch
+  const lost = (check ? check.stage : order?.stage) === 'lost' && offer?.status !== 'accepted'
   const confirmed = !check || check.sources_confirmed !== false
-  const checkLabel = ready ? 'Bericht fertig' : !confirmed ? 'Bitte Quellen bestätigen' : !check?.assignee_id ? 'Anfrage eingegangen' : 'Analyse läuft'
+  const checkLabel = lost ? 'Anfrage abgeschlossen' : scratch ? (ready ? 'Bericht fertig' : 'Erstgespräch') : ready ? 'Bericht fertig' : !confirmed ? 'Bitte Quellen bestätigen' : !check?.assignee_id ? 'Anfrage eingegangen' : 'Analyse läuft'
   // Kopfzeile: die offene Aufgabe zuerst (Angaben zur Anfrage / Quellen bestätigen), sonst der neueste Vorgang.
-  const orderFirst = !!order && (!check || !order.details || (confirmed && order.created_at > check.created_at))
-  const statusLabel = orderFirst && order ? orderStatusLabel(order) : checkLabel
+  const orderFirst = !!order && !intake && (!check || (confirmed && order.created_at > check.created_at))
+  const statusLabel = intake && !check ? 'Angaben zum Unternehmen' : orderFirst && order ? orderStatusLabel(order) : checkLabel
   const statusDone = orderFirst ? order?.status === 'active' || order?.status === 'closed' : ready
-  const statusWaiting = orderFirst ? !order?.details : !confirmed
+  const statusWaiting = intake || (orderFirst ? !order?.details : !confirmed)
   const tabs = TABS.filter(([t]) => t !== 'konto' && (t === 'ergebnis' ? resultVisible(project) && !!check : t === 'offer' ? !!offer : check || (t !== 'report' && t !== 'company')))
   const scored = ready
   const chans: Channel[] = CHANNELS.map(c => {
@@ -255,23 +262,30 @@ export default function CabinetPage() {
   const assigned = check ? !!check.assignee_id : order ? !!order.assignee_id : !!manager
   const rec = ready ? check?.report?.recommended ?? null : null
   const nextAppt = upcoming(appts)
-  const canBook = !!offer || !!nextAppt || (assigned && (!check || ready))
-  const lockedHint = !assigned ? 'Verfügbar, sobald Ihr Ansprechpartner die Anfrage übernommen hat.' : 'Verfügbar, sobald Ihr Bericht fertig ist.'
+  const canBook = !lost && (!!offer || !!nextAppt || scratch || (assigned && (!check || ready)))
+  const lockedHint = lost ? 'Diese Anfrage ist abgeschlossen. Schreiben Sie uns, wenn Sie weitermachen möchten.' : !assigned ? 'Verfügbar, sobald Ihr Ansprechpartner die Anfrage übernommen hat.' : 'Verfügbar, sobald Ihr Bericht fertig ist.'
   const book = canBook ? bookingLink(manager) : null
   const write = () => setTab('messages')
   const chat = { label: 'Im Chat schreiben', onClick: write }
   const ph = project ? projectHeadline(project) : null
-  const nextStep: NextStep | null = !confirmed || (order && !order.details) ? null
+  const nextStep: NextStep | null = intake && !check || !confirmed ? null
+    : lost ? { title: 'Anfrage abgeschlossen', text: 'Diese Anfrage haben wir abgeschlossen. Wenn Sie doch weitermachen möchten oder Fragen haben, schreiben Sie uns einfach.', links: [{ label: 'Nachricht schreiben', onClick: write }] }
     : project && ph ? { title: ph.title, text: ph.text, links: resultVisible(project) && check ? [{ label: 'Ergebnis ansehen', onClick: () => setTab('ergebnis') }, chat] : project.invoice_url && project.invoice_sent_at && project.status === 'awaiting_payment' ? [{ label: 'Rechnung öffnen', href: project.invoice_url }, chat] : [chat] }
     : offer?.status === 'sent' ? { title: 'Ihr Angebot ist da', text: 'Wir haben ein Angebot für Ihr Unternehmen zusammengestellt. Sehen Sie es sich in Ruhe an — Fragen klären wir gern im Gespräch.', links: [{ label: 'Angebot ansehen', onClick: () => setTab('offer') }] }
     : nextAppt ? { title: 'Ihr nächster Termin', text: <><strong style={{ color: 'var(--ink)' }}>{fmtWhen(nextAppt.starts_at)}</strong> · {nextAppt.title}</>, links: [nextAppt.location && /^https?:\/\//.test(nextAppt.location) ? { label: 'Zum Videogespräch', href: nextAppt.location } : { label: 'Termine ansehen', onClick: () => setTab('termine') }] }
     : offer?.status === 'accepted' ? { title: 'Wir bereiten den Start vor', text: 'Danke für Ihre Zusage. Ihr Ansprechpartner meldet sich mit den nächsten Schritten und den Unterlagen, die wir von Ihnen brauchen.', links: [chat] }
+    : scratch && !offer ? { title: 'Erstgespräch vereinbaren', text: 'Sie starten bei null — dafür brauchen wir keine Analyse. Wählen Sie einen Termin: Wir besprechen, womit Sie anfangen und was es kostet.', links: [...(book ? [{ label: 'Termin wählen', href: book }] : []), chat] }
     : !assigned ? { title: 'Ihre Anfrage ist eingegangen', text: check ? 'Ihr persönlicher Ansprechpartner übernimmt sie in der Regel innerhalb von 1 Werktag und analysiert dann Ihr Unternehmen. Fragen können Sie uns schon jetzt im Chat stellen.' : 'Ihr persönlicher Ansprechpartner übernimmt sie in der Regel innerhalb von 1 Werktag. Fragen können Sie uns schon jetzt im Chat stellen.', links: [chat] }
     : check && !ready ? { title: 'Ihr Ansprechpartner analysiert Ihr Unternehmen', text: 'Wir prüfen Google Maps, Website, KI-Suche und Social Media. Den Bericht sehen Sie hier, meist innerhalb von 1–2 Werktagen.', links: [chat] }
     : check ? { title: 'Ihr Bericht ist fertig', text: rec ? <>Unsere Empfehlung: <strong style={{ color: 'var(--ink)' }}>{rec.name}</strong>. <span>Vereinbaren Sie einen Termin mit Ihrem Ansprechpartner — wir besprechen den Bericht in einem kurzen Gespräch.</span></> : 'Vereinbaren Sie einen Termin mit Ihrem Ansprechpartner — in 20 Minuten gehen wir die Ergebnisse durch.', links: [{ label: 'Bericht ansehen', onClick: () => setTab('report') }] }
     : { title: 'Erstgespräch vereinbaren', text: 'Ihr Ansprechpartner hat Ihre Anfrage übernommen. Vereinbaren Sie einen Termin — wir besprechen Ihre Ziele und den Ablauf.', links: [chat] }
 
-  const statusSteps: [boolean, string, string][] = [
+  const statusSteps: [boolean, string, string][] = scratch ? [
+    [true, 'Angaben gespeichert', 'Start bei null'],
+    [assigned, 'Ansprechpartner übernimmt', assigned ? (manager?.name || 'Ihr Ansprechpartner ist zugeteilt') : 'In der Regel innerhalb von 1 Werktag'],
+    [!!nextAppt || !!offer, 'Erstgespräch', nextAppt ? fmtWhen(nextAppt.starts_at) : offer ? 'Erledigt' : 'Termin jetzt wählbar'],
+    [!!offer, 'Angebot', offer ? 'Liegt vor' : 'Nach dem Gespräch'],
+  ] : [
     [true, 'Unternehmen bestätigt', place?.manual ? 'Angaben gespeichert' : 'Google-Profil gespeichert'],
     [confirmed, 'Website & Profile bestätigt', confirmed ? 'Öffentliche Quellen bestätigt' : 'Wartet auf Ihre Bestätigung'],
     [assigned, 'Ansprechpartner übernimmt', assigned ? (manager?.name || 'Ihr Ansprechpartner ist zugeteilt') : confirmed ? 'In der Regel innerhalb von 1 Werktag' : 'Nach Ihrer Bestätigung'],
@@ -399,17 +413,19 @@ export default function CabinetPage() {
             </div>
           </section>
             )}
+            {intake && <CompanyForm order={order && !order.details ? order : null} quiz={quiz} checks={checks} contact={{ name: contact.name, email: userEmail, phone: contact.phone }} />}
             {nextStep && <NextStepCard step={nextStep} />}
+            {!!check?.wish?.length && !offer && !lost && <WishSummary items={check.wish} />}
             {project && <ProjectPanel project={project} />}
             {offer?.status === 'sent' && <OfferPanel offer={offer} onAccepted={onAccepted} />}
-            {!check && <ManagerCard manager={manager} onWrite={write} canBook={canBook} lockedHint={lockedHint} />}
-            {order && (
+            {!check && !intake && <ManagerCard manager={manager} onWrite={write} canBook={canBook} lockedHint={lockedHint} />}
+            {order?.details && (
           <div>
             <OrderPanel order={order} onChange={setOrder}
               defaults={{ company: place?.name ?? '', phone: contact.phone, website: check?.sources.find(x => x.key === 'website')?.value ?? '', city: place?.city ?? '', industry: place?.category ?? '' }} />
           </div>
             )}
-            {check && (
+            {check && !scratch && (
               <div style={{ ...card, backgroundColor: 'var(--electric)', color: '#fff', border: 'none' }}>
                 <Eyebrow color="rgba(255,255,255,0.7)">Sichtbarkeit gesamt</Eyebrow>
                 <p className="display" style={{ fontSize: 'clamp(64px, 8vw, 96px)', lineHeight: 0.95, margin: '6px 0 4px' }}>
@@ -422,7 +438,7 @@ export default function CabinetPage() {
                 </p>
               </div>
             )}
-            {check && (
+            {check && !scratch && (
             <div className="cab-grid-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 18 }}>
               {chans.map((c, i) => (
                 <div key={c.key} style={{ ...card, display: 'flex', flexDirection: 'column' }}>
@@ -455,7 +471,7 @@ export default function CabinetPage() {
                   ))}
                 </div>
               </div>
-            ) : check && !scored ? (
+            ) : check && !scored && !scratch ? (
               <div style={card}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
                   <Eyebrow>Was wir zuerst empfehlen</Eyebrow>
@@ -474,7 +490,7 @@ export default function CabinetPage() {
               </div>
             ) : null}
             {rec && !offer && <RecommendedCard rec={rec} booking={book} onWrite={write} />}
-            {!check && (
+            {!check && !intake && (
           <div style={{ ...card, display: 'flex', gap: 20, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
             <div style={{ maxWidth: 620 }}>
               <Eyebrow>Kostenlos dazu</Eyebrow>

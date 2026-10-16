@@ -72,6 +72,22 @@ export function ProjectPanel({ project }: { project: ClientProject }) {
         </div>
       )}
       {project.note && <p style={{ fontSize: 14.5, lineHeight: 1.65, margin: '16px 0 0', padding: '12px 14px', borderRadius: 14, backgroundColor: '#F7F6FF' }}>{project.note}</p>}
+      {(project.plan || (project.updates ?? []).length > 0) && (
+        <div style={{ marginTop: 22, paddingTop: 18, borderTop: '1px solid var(--line-soft)' }}>
+          <p className="kick" style={{ fontSize: 12, marginBottom: 10 }}>Was wir tun</p>
+          {project.plan && <p data-no-translate style={{ fontSize: 14.5, lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>{project.plan}</p>}
+          {(project.updates ?? []).length > 0 && (
+            <ul style={{ listStyle: 'none', margin: project.plan ? '16px 0 0' : 0, padding: 0 }}>
+              {(project.updates ?? []).map((u, i) => (
+                <li key={u.at + i} style={{ display: 'grid', gridTemplateColumns: '92px minmax(0, 1fr)', gap: 12, padding: '10px 0', borderTop: '1px solid var(--line-soft)', fontSize: 14.5, lineHeight: 1.6 }}>
+                  <span style={{ color: 'var(--muted)', fontSize: 13 }}>{new Date(u.at).toLocaleDateString(dateLocale(), { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                  <span data-no-translate>{u.text}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </section>
   )
 }

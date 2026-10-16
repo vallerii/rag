@@ -24,6 +24,9 @@ export type Project = {
   id: string; client_key: string; user_id: string | null; offer_id: string | null; status: ProjectStatus
   invoice_number: string | null; invoice_amount: number | null; invoice_due: string | null; invoice_url: string | null; invoice_sent_at: string | null
   note: string | null; paid_at: string | null; started_at: string | null; result_at: string | null; finished_at: string | null; created_at: string; updated_at: string
+  request_kind?: string | null; request_id?: string | null
+  /** «Was wir tun» für den Kunden; monatlicher Bericht (supabase/flow.sql) */
+  plan?: string | null; updates?: { at: string; text: string }[]; monthly?: boolean; next_report_at?: string | null
 }
 export type ReportVersionRow = { report: { channels?: Record<string, { score: number | null } | undefined> } | null; created_at: string }
 /** Gesamtpunktzahl einer Berichtsversion (Mittel der Kanäle) — wie im Kundenbereich. */
@@ -40,8 +43,8 @@ export type Kind = 'lead' | 'order' | 'check'
 export type Profile = { id: string; email: string | null; name: string | null; phone: string | null; role: string; created_at: string; title?: string | null; photo_url?: string | null; booking_url?: string | null }
 export type Lead = { id: string; created_at: string; from_page: string | null; answers: Record<string, unknown>; recommendations: string[]; booking_clicked_at: string | null; user_id: string | null; stage: Stage; next_contact_at: string | null; assignee_id: string | null }
 export type Order = { id: string; user_id: string; email: string | null; items: OfferItem[]; details: Record<string, unknown> | null; status: string; stage: Stage; next_contact_at: string | null; assignee_id: string | null; source_page: string | null; created_at: string }
-export type Check = { from_prospect?: string | null; from_check?: string | null; id: string; user_id: string; email: string | null; place_id: string | null; place: Record<string, unknown>; sources: { key: string; value: string }[]; sources_confirmed: boolean; contact: Record<string, unknown>; status: string; report: unknown; report_draft: unknown; audit: unknown; audited_at: string | null; stage: Stage; next_contact_at: string | null; assignee_id: string | null; source_page: string | null; created_at: string }
-export type Request = { kind: Kind; id: string; clientKey: string; userId: string | null; created_at: string; stage: Stage; next: string | null; assignee: string | null; title: string; sub: string; row: Lead | Order | Check; unanswered?: number }
+export type Check = { wish?: OfferItem[] | null; quiz?: Record<string, unknown> | null; scratch?: boolean; profile_hint?: string | null; from_prospect?: string | null; from_check?: string | null; id: string; user_id: string; email: string | null; place_id: string | null; place: Record<string, unknown>; sources: { key: string; value: string }[]; sources_confirmed: boolean; contact: Record<string, unknown>; status: string; report: unknown; report_draft: unknown; audit: unknown; audited_at: string | null; stage: Stage; next_contact_at: string | null; assignee_id: string | null; source_page: string | null; created_at: string }
+export type Request = { kind: Kind; id: string; clientKey: string; userId: string | null; created_at: string; stage: Stage; next: string | null; assignee: string | null; title: string; sub: string; row: Lead | Order | Check; unanswered?: number; reportDue?: boolean }
 export type Message = { id: string; author: 'client' | 'rag'; body: string; created_at: string; read_at?: string | null }
 export type Note = { id: string; body: string; author_id: string | null; created_at: string }
 export type Activity = { id: string; kind: string; detail: Record<string, unknown>; actor: string | null; created_at: string }
@@ -74,13 +77,22 @@ const quiz = (l: Lead) => l.answers as { branche?: string; ort?: string; firma?:
 
 export async function loadAll(): Promise<{ requests: Request[]; profiles: Profile[] }> {
   const s = await db()
-  const [L, O, C, P, M] = await Promise.all([
+  const checkCols = 'id, user_id, email, place_id, place, sources, sources_confirmed, contact, status, report, report_draft, audited_at, stage, next_contact_at, assignee_id, source_page, created_at, from_prospect:audit->>from_prospect, from_check:audit->>from_check'
+  const loadChecks = async () => {
+    // Spalten aus supabase/flow.sql (Wunschpaket, Quiz, Start bei null) — ohne sie weiter funktionsfähig.
+    const r = await s.from('checks').select(checkCols + ', wish, quiz, scratch, profile_hint').order('created_at', { ascending: false }).limit(500)
+    return r.error ? s.from('checks').select(checkCols).order('created_at', { ascending: false }).limit(500) : r
+  }
+  const [L, O, C, P, M, J] = await Promise.all([
     s.from('leads').select('*').order('created_at', { ascending: false }).limit(500),
     s.from('orders').select('*').order('created_at', { ascending: false }).limit(500),
-    s.from('checks').select('id, user_id, email, place_id, place, sources, sources_confirmed, contact, status, report, report_draft, audited_at, stage, next_contact_at, assignee_id, source_page, created_at, from_prospect:audit->>from_prospect, from_check:audit->>from_check').order('created_at', { ascending: false }).limit(500),
+    loadChecks(),
     s.from('profiles').select('*'),
     s.from('messages').select('*').order('created_at', { ascending: false }).limit(3000),
+    s.from('projects').select('*'),
   ])
+  // Ежемесячный отчёт: проект с включённым напоминанием, срок наступил.
+  const due = new Set(((J.data ?? []) as Project[]).filter(p => p.monthly && p.next_report_at && p.next_report_at <= new Date().toISOString().slice(0, 10)).map(p => `${p.request_kind}:${p.request_id}`))
   const profiles = (P.data ?? []) as Profile[]
   // Сообщения клиента после последнего ответа команды — «ждут ответа».
   const unanswered = new Map<string, number>(), answered = new Set<string>()
@@ -95,31 +107,33 @@ export async function loadAll(): Promise<{ requests: Request[]; profiles: Profil
   }
   const who = (uid: string | null) => profiles.find(p => p.id === uid)
   const requests: Request[] = [
-    ...((L.data ?? []) as Lead[]).map(l => ({
+    // Квиз и пакет, перешедшие в карточку компании, отдельной заявкой не показываем.
+    ...((L.data ?? []) as (Lead & { merged_into?: string | null })[]).filter(l => !l.merged_into).map(l => ({
       kind: 'lead' as const, id: l.id, clientKey: l.user_id ? `user:${l.user_id}` : `lead:${l.id}`, userId: l.user_id, created_at: l.created_at,
       stage: l.stage, next: l.next_contact_at, assignee: l.assignee_id, row: l,
       title: quiz(l).firma || [quiz(l).branche, quiz(l).ort].filter(Boolean).join(' · ') || 'Quiz',
       sub: [(l as Lead & { email?: string }).email, l.booking_clicked_at ? 'hat «Termin wählen» geklickt' : 'ohne Terminbuchung'].filter(Boolean).join(' · '),
     })),
-    ...((O.data ?? []) as Order[]).map(o => ({
+    ...((O.data ?? []) as (Order & { merged_into?: string | null })[]).filter(o => !o.merged_into).map(o => ({
       kind: 'order' as const, id: o.id, clientKey: `user:${o.user_id}`, userId: o.user_id, created_at: o.created_at,
       stage: o.stage, next: o.next_contact_at, assignee: o.assignee_id, row: o,
       title: String((o.details as { company?: string } | null)?.company || who(o.user_id)?.name || o.email || 'Anfrage'),
       sub: (o.items ?? []).map(i => i.name).join(' + ') + (o.details ? '' : ' · Fragebogen nicht ausgefüllt'),
     })),
-    ...((C.data ?? []) as Check[]).map(c => ({
+    ...((C.data ?? []) as unknown as Check[]).map(c => ({
       kind: 'check' as const, id: c.id, clientKey: `user:${c.user_id}`, userId: c.user_id, created_at: c.created_at,
       stage: c.stage, next: c.next_contact_at, assignee: c.assignee_id, row: c,
       title: place(c).name || 'Check',
-      sub: [place(c).category, place(c).city].filter(Boolean).join(' · ') + ' · ' + checkState(c),
+      sub: [place(c).category, place(c).city].filter(Boolean).join(' · ') + ' · ' + checkState(c) + (c.wish?.length ? ' · Paket: ' + c.wish.map(i => i.name).join(' + ') : ''),
     })),
-  ].map(r => ({ ...r, unanswered: r.userId ? unanswered.get(r.userId) ?? 0 : 0 }))
+  ].map(r => ({ ...r, unanswered: r.userId ? unanswered.get(r.userId) ?? 0 : 0, reportDue: due.has(`${r.kind}:${r.id}`) }))
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
   return { requests, profiles }
 }
 
 export function checkState(c: Check): string {
   if (c.status === 'ready') return 'Bericht veröffentlicht'
+  if (c.scratch) return 'Start bei null — Gespräch vereinbaren'
   if (!c.sources_confirmed) return 'wartet auf Bestätigung der Quellen'
   if (c.report_draft) return 'Berichtsentwurf fertig'
   return 'Daten werden gesammelt'

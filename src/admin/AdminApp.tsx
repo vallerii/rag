@@ -27,9 +27,9 @@ const fmt = (d: string) => new Date(d).toLocaleString('ru-RU', { day: '2-digit',
 const KIND: Record<Request['kind'], [string, string]> = { lead: ['Quiz', '#E8F3EC'], order: ['Paket', '#EEEBFF'], check: ['Check', '#FFF3DC'] }
 const STAGE_COLOR: Partial<Record<Stage, string>> = { new: '#D93A3A', report_sent: '#5B4BDB', won: '#1F7A4A', lost: '#8A8A8A' }
 
-type Queue = 'mine' | 'free' | 'new' | 'quiz' | 'order' | 'check' | 'today' | 'clients' | 'all'
+type Queue = 'mine' | 'free' | 'new' | 'quiz' | 'order' | 'check' | 'today' | 'report' | 'clients' | 'all'
 // Группы фильтров в списке: срочное (только если не 0), что показать, что ждёт действия.
-const URGENT: [Queue, string][] = [['today', 'Heute kontaktieren'], ['free', 'Ohne Verantwortlichen'], ['new', 'Neu, noch nicht bearbeitet']]
+const URGENT: [Queue, string][] = [['report', 'Monatsbericht fällig'], ['today', 'Heute kontaktieren'], ['free', 'Ohne Verantwortlichen'], ['new', 'Neu, noch nicht bearbeitet']]
 const SHOW: [Queue, string][] = [['mine', 'Meine Anfragen'], ['all', 'Alle Anfragen'], ['clients', 'Kunden in Arbeit']]
 const ACTION: [Queue, string][] = [['check', 'Check: Bericht erstellen'], ['quiz', 'Quiz: Gespräch vereinbaren'], ['order', 'Paket: Gespräch vereinbaren']]
 const QUEUES: [Queue, string][] = [
@@ -43,9 +43,11 @@ function inQueue(r: Request, q: Queue, me: string | null): boolean {
   if (q === 'mine') return !!me && r.assignee === me && OPEN.includes(r.stage)
   if (q === 'free') return !r.assignee && OPEN.includes(r.stage)
   if (q === 'new') return r.stage === 'new'
-  if (q === 'quiz') return r.kind === 'lead' && OPEN.includes(r.stage)
+  if (q === 'report') return !!r.reportDue
+  // «Start bei null» (Quiz: nichts vorhanden) braucht keinen Bericht, sondern ein Gespräch.
+  if (q === 'quiz') return (r.kind === 'lead' || (r.kind === 'check' && !!(r.row as Check).scratch)) && OPEN.includes(r.stage)
   if (q === 'order') return r.kind === 'order' && ['new', 'contacted', 'call_booked'].includes(r.stage)
-  if (q === 'check') return r.kind === 'check' && (r.row as Check).status !== 'ready'
+  if (q === 'check') return r.kind === 'check' && (r.row as Check).status !== 'ready' && !(r.row as Check).scratch
   return !!r.next && r.next <= today() && OPEN.includes(r.stage) && (!r.assignee || r.assignee === me)
 }
 const staffName = (ps: Profile[], uid: string | null) => { const p = ps.find(x => x.id === uid); return p ? (p.name || p.email || '—') : '' }
@@ -193,7 +195,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const reload = () => { loadAll().then(setData) }
   useEffect(() => { reload(); isAdmin().then(setAdmin); myId().then(setMe) }, [])
   // Новые заявки, смена статуса/ответственного, правки профилей — сразу, без кнопки «Обновить».
-  useLive(c => c.table === 'leads' || c.table === 'orders' || c.table === 'checks' || c.table === 'profiles' || c.table === 'messages', reload)
+  useLive(c => c.table === 'leads' || c.table === 'orders' || c.table === 'checks' || c.table === 'profiles' || c.table === 'messages' || c.table === 'projects', reload)
   useEffect(() => {
     if (view !== 'requests') return
     const sp = new URLSearchParams(window.location.search)
@@ -205,7 +207,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     if (!data) return []
     const needle = q.trim().toLowerCase()
     const due = (r: Request) => !!r.next && r.next <= today() && OPEN.includes(r.stage)
-    const rank = (r: Request) => ((r.unanswered ?? 0) > 0 ? 0 : due(r) ? 1 : r.stage === 'new' ? 2 : 3)
+    const rank = (r: Request) => ((r.unanswered ?? 0) > 0 ? 0 : due(r) || r.reportDue ? 1 : r.stage === 'new' ? 2 : 3)
     return data.requests
       .filter(r => inQueue(r, queue, me) && (!needle || `${r.title} ${r.sub} ${profileOf(data.profiles, r.userId)?.email ?? ''} ${profileOf(data.profiles, r.userId)?.name ?? ''}`.toLowerCase().includes(needle)))
       .sort((a, b) => rank(a) - rank(b) || b.created_at.localeCompare(a.created_at))
@@ -285,7 +287,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                     <button key={key} type="button" className="adm-row" onClick={() => open(key)}
                       style={{ width: '100%', textAlign: 'left', border: 0, borderTop: `1px solid ${line}`, backgroundColor: n ? '#FBFAFF' : '#fff', cursor: 'pointer', font: 'inherit', fontSize: 14, color: ink }}>
                       <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 9px', borderRadius: 999, backgroundColor: KIND[r.kind][1], justifySelf: 'start' }}>{KIND[r.kind][0]}</span>
-                      <span style={{ minWidth: 0 }}><strong style={{ display: 'block' }}>{r.title}</strong><span style={small}>{r.sub}</span></span>
+                      <span style={{ minWidth: 0 }}><strong style={{ display: 'block' }}>{r.title}</strong><span style={small}>{r.sub}</span>{r.reportDue && <span style={{ ...small, display: 'block', color: '#B3261E', fontWeight: 700 }}>Monatsbericht fällig</span>}</span>
                       <span style={{ fontWeight: 600, color: STAGE_COLOR[r.stage] ?? ink }}>{stageLabel(r.stage)}</span>
                       <span style={{ fontWeight: due ? 700 : 400, color: due ? '#B3261E' : r.next ? ink : muted }}>{r.next ? (due ? 'heute' : fmtDay(r.next)) : '—'}</span>
                       <span style={{ color: r.assignee ? ink : '#B25A00' }}>{r.assignee ? (r.assignee === me ? 'Sie selbst' : staffName(data?.profiles ?? [], r.assignee)) : 'frei'}</span>
@@ -451,12 +453,13 @@ function Detail({ r, all, profiles, me, onSelect, onBack, onPatch }: { r: Reques
             <InvoiceCard key={'inv' + client.project.id + client.project.status} project={client.project} offer={client.offer} onSaved={reloadClient} />
             <WorkCard key={'work' + client.project.id} project={client.project} versions={client.versions} onSaved={reloadClient}
               onGoToReport={r.kind === 'check' ? () => setTab('reports') : undefined} />
+            <PlanCard key={'plan' + client.project.id} project={client.project} monthlyItems={(client.offer?.items ?? []).some(i => i.unit === 'pro Monat')} onSaved={reloadClient} />
           </div>
         )}
         {client && active === 'reports' && r.kind === 'check' && (
           <ReportEditor c={r.row as Check} onPublished={async report => { const assignee = r.assignee ?? await getAssignee(r.kind, r.id); onPatch({ assignee, row: { ...(r.row as Check), status: 'ready', report, assignee_id: assignee } }); reloadClient() }} />
         )}
-        {client && active === 'offer' && <OfferCard key={r.kind + r.id} clientKey={r.clientKey} userId={r.userId} kind={r.kind} requestId={r.id} title={r.title} initial={client.offer} preset={r.kind === 'order' ? (r.row as Order).items ?? [] : []} onSaved={reloadClient} />}
+        {client && active === 'offer' && <OfferCard key={r.kind + r.id} clientKey={r.clientKey} userId={r.userId} kind={r.kind} requestId={r.id} title={r.title} initial={client.offer} preset={r.kind === 'order' ? (r.row as Order).items ?? [] : r.kind === 'check' ? (r.row as Check).wish ?? [] : []} onSaved={reloadClient} />}
         {client && active === 'appointments' && <AppointmentsCard r={r} list={client.appointments} onChanged={async added => {
           if (added && ['new', 'contacted', 'report_sent'].includes(r.stage)) await changeStage('call_booked'); else reloadClient()
         }} />}
@@ -543,6 +546,10 @@ function ClientCard({ r, prof }: { r: Request; prof?: Profile }) {
       ['Karte', p.mapsUrl ? <a href={String(p.mapsUrl)} target="_blank" rel="noreferrer">in Google Maps öffnen</a> : null],
       ['Website', str(p.website)], ['Profile', (c.sources ?? []).filter(s => s.value).map(s => `${s.key}: ${s.value}`).join(', ')],
       ['Check', checkState(c)], ['Herkunft', c.source_page])
+    if (p.manual) rows.push(['Google-Profil laut Kunde', ({ yes: 'ja — wird bei der Analyse gesucht', no: 'nein', unknown: 'weiß nicht — wird bei der Analyse gesucht' } as Record<string, string>)[str(c.profile_hint)] ?? ''])
+    if (c.wish?.length) rows.push(['Kunde wünscht', c.wish.map(i => `${i.name} — ${i.price} € ${i.unit === 'einmalig' ? 'einmalig' : '/Monat'}`).join('; ')])
+    const a = (c.quiz ?? null) as Record<string, unknown> | null
+    if (a) rows.push(['Was vorhanden ist (Quiz)', ql(a.have)], ['Woher die Kunden kommen', ql(a.sources)], ['Ziel', ql(a.goal)])
   }
   return <section style={card}><h3 style={h3}>Kunde und Unternehmen</h3><Rows rows={rows} /></section>
 }
@@ -658,6 +665,67 @@ function InvoiceCard({ project, offer, onSaved }: { project: Project; offer: Off
       </div>
       {!sent && !ready && <p style={{ ...small, margin: '8px 0 0' }}>Zum Senden: Rechnungsnummer und Betrag eintragen.</p>}
       {sent && !paid && <p style={{ ...small, margin: '8px 0 0' }}>Gesendet {fmt(project.invoice_sent_at!)}. Sobald das Geld auf dem Konto ist: «Zahlung erhalten».</p>}
+    </section>
+  )
+}
+
+// «Was wir tun»: Arbeitsplan + Neuigkeiten (sieht der Kunde unter «Ihr Projekt») und monatlicher Bericht.
+function PlanCard({ project, monthlyItems, onSaved }: { project: Project; monthlyItems: boolean; onSaved: () => void }) {
+  const [plan, setPlan] = useState(project.plan ?? '')
+  const [news, setNews] = useState('')
+  const [msg, setMsg] = useState(''), [busy, setBusy] = useState(false)
+  const updates = project.updates ?? []
+  const paid = project.status !== 'awaiting_payment'
+  const set = async (patch: Partial<Project>, done: string) => {
+    setBusy(true)
+    const r = await saveProject(project.id, patch)
+    setBusy(false)
+    if (r) { setMsg(done); onSaved() } else setMsg('Speichern fehlgeschlagen. Ist supabase/flow.sql ausgeführt?')
+  }
+  const in30 = () => { const d = new Date(); d.setDate(d.getDate() + 30); return d.toISOString().slice(0, 10) }
+  const addNews = () => { const t = news.trim(); if (!t) return; void set({ updates: [{ at: new Date().toISOString(), text: t }, ...updates] }, 'Neuigkeit veröffentlicht.').then(() => setNews('')) }
+  return (
+    <section style={card}>
+      <h3 style={h3}>Was wir tun</h3>
+      <p style={{ ...small, margin: '0 0 10px' }}>Sieht der Kunde im Kundenbereich unter «Ihr Projekt».</p>
+      <label style={{ ...small, display: 'grid', gap: 4 }}>Arbeitsplan
+        <textarea style={{ ...input, minHeight: 90 }} value={plan} onChange={e => setPlan(e.target.value)} placeholder="Was wir in welcher Reihenfolge machen — in eigenen Worten, auf Deutsch." />
+      </label>
+      <button type="button" className="btn btn-sm btn-outline-light" style={{ marginTop: 8 }} disabled={busy || plan === (project.plan ?? '')} onClick={() => set({ plan: plan.trim() || null }, 'Arbeitsplan gespeichert.')}>Arbeitsplan speichern</button>
+
+      <p style={{ ...small, fontWeight: 700, margin: '16px 0 6px' }}>Neuigkeiten</p>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input style={{ ...input, flex: 1 }} value={news} onChange={e => setNews(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') addNews() }} placeholder="z. B. «Google-Profil überarbeitet, 12 neue Fotos hochgeladen»" />
+        <button type="button" className="btn btn-sm btn-electric" disabled={busy || !news.trim()} onClick={addNews}>Hinzufügen</button>
+      </div>
+      {updates.length > 0 && (
+        <ul style={{ listStyle: 'none', margin: '8px 0 0', padding: 0 }}>
+          {updates.map((u, i) => (
+            <li key={u.at + i} style={{ display: 'flex', gap: 10, alignItems: 'baseline', padding: '8px 0', borderTop: `1px solid ${line}`, fontSize: 14 }}>
+              <span style={{ ...small, whiteSpace: 'nowrap' }}>{fmtDay(u.at.slice(0, 10))}</span>
+              <span style={{ flex: 1 }} data-no-translate>{u.text}</span>
+              <button type="button" style={{ ...linkBtn, fontSize: 13, color: muted }} disabled={busy} onClick={() => set({ updates: updates.filter((_, j) => j !== i) }, 'Neuigkeit entfernt.')}>Entfernen</button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div style={{ borderTop: `1px solid ${line}`, marginTop: 14, paddingTop: 12 }}>
+        <p style={{ ...small, fontWeight: 700, margin: '0 0 6px' }}>Monatlicher Bericht</p>
+        {!monthlyItems ? <p style={{ ...small, margin: 0 }}>Nur bei Angeboten mit monatlichen Leistungen.</p>
+          : !paid ? <p style={{ ...small, margin: 0 }}>Verfügbar nach «Zahlung erhalten».</p>
+          : (
+            <>
+              <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 14 }}>
+                <input type="checkbox" checked={!!project.monthly} disabled={busy} style={{ width: 18, height: 18, accentColor: '#2600FF' }}
+                  onChange={e => set(e.target.checked ? { monthly: true, next_report_at: project.next_report_at ?? in30() } : { monthly: false, next_report_at: null }, e.target.checked ? 'Erinnerung eingeschaltet.' : 'Erinnerung ausgeschaltet.')} />
+                Alle 30 Tage an einen neuen Bericht erinnern
+              </label>
+              {project.monthly && project.next_report_at && <p style={{ ...small, margin: '6px 0 0' }}>Nächster Bericht fällig: <strong>{fmtDay(project.next_report_at)}</strong>. Erscheint dann unter «Dringend». Nach einer neuen Berichtsversion beginnen die 30 Tage neu.</p>}
+            </>
+          )}
+      </div>
+      {msg && <p style={{ ...small, margin: '10px 0 0' }}>{msg}</p>}
     </section>
   )
 }

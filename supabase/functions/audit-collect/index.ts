@@ -7,7 +7,7 @@
 // um Fortschritt zu zeigen; der veröffentlichte Bericht bleibt, bis das Team eine neue Version freigibt.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { handler, json, placesKey } from '../_shared/http.ts'
-import { competitors, defaultQuery, placeRaw, type GPlace } from '../_shared/google.ts'
+import { competitors, defaultQuery, placeRaw, searchPlaces, toPlace, type GPlace } from '../_shared/google.ts'
 import { scanSite, type Source } from '../_shared/site.ts'
 import { buildReport } from '../_shared/audit.ts'
 
@@ -40,7 +40,7 @@ Deno.serve(handler(10, async (req, body) => {
 
   const checkId = String(body.checkId ?? '')
   const { data: check, error: readErr } = await db.from('checks')
-    .select('id, user_id, place_id, place, sources, sources_confirmed, status, audited_at, checklist, audit')
+    .select('*')
     .eq('id', checkId).maybeSingle()
   if (readErr) { console.error('checks read', readErr); return json(req, { error: 'db', detail: readErr.message }, 500) }
   if (!check) return json(req, { error: 'not_found', detail: 'no_row' }, 404)
@@ -67,13 +67,31 @@ Deno.serve(handler(10, async (req, body) => {
   if (!check.place_id || String(check.place_id).startsWith('demo')) return json(req, { error: 'demo_place' }, 400)
 
   const key = placesKey()
-  const noProfile = String(check.place_id).startsWith('manual:')
-  const p = (check.place ?? {}) as { name?: string; category?: string; city?: string; website?: string | null }
+  let noProfile = String(check.place_id).startsWith('manual:')
+  let foundRaw: GPlace | null = null
+  const p = (check.place ?? {}) as { name?: string; category?: string; city?: string; address?: string; website?: string | null; manual?: boolean }
+  // Firma im Kundenbereich selbst eingetragen, Google-Profil «Ja» / «Weiß nicht»: einmal bei Google suchen.
+  // Treffer nur, wenn der Name passt — sonst bleibt es bei «ohne Profil».
+  if (noProfile && check.profile_hint && check.profile_hint !== 'no' && !check.profile_searched_at && p.name) {
+    const words = (x: string) => x.toLowerCase().replace(/[^a-z0-9äöüß]+/g, ' ').split(' ').filter(w => w.length > 2 && !['gmbh', 'und', 'inh', 'der', 'die', 'das'].includes(w))
+    const want = words(p.name)
+    const hits = await searchPlaces(key, [p.name, p.address || p.city].filter(Boolean).join(' ')).catch(() => [])
+    const hit = hits.find(h => { const got = words(h.main); return want.length > 0 && want.filter(w => got.includes(w)).length >= Math.ceil(want.length / 2) })
+    if (hit) {
+      const raw = await placeRaw(key, hit.id, true).catch(() => null)
+      if (raw) {
+        const found = toPlace(raw)
+        await db.from('checks').update({ place_id: hit.id, place: { ...found, category: found.category || p.category }, profile_searched_at: new Date().toISOString() }).eq('id', check.id)
+        check.place_id = hit.id; check.place = found; noProfile = false; foundRaw = raw
+      }
+    }
+    if (noProfile) await db.from('checks').update({ profile_searched_at: new Date().toISOString() }).eq('id', check.id)
+  }
   const place: GPlace = noProfile
     ? { id: check.place_id, displayName: { text: p.name ?? '' }, primaryTypeDisplayName: { text: p.category ?? '' },
         addressComponents: p.city ? [{ longText: p.city, shortText: p.city, types: ['locality'] }] : [],
         websiteUri: p.website ? (/^https?:\/\//.test(p.website) ? p.website : `https://${p.website}`) : undefined }
-    : await placeRaw(key, check.place_id, true)
+    : foundRaw ?? await placeRaw(key, check.place_id as string, true)
   const sources = (check.sources ?? []) as Source[]
   const website = sources.find(s => s.key === 'website')?.value?.trim() || place.websiteUri || null
 

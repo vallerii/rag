@@ -257,6 +257,12 @@ export type CheckRow = {
   /** Ansprechpartner im Team; null = noch niemand hat die Anfrage übernommen. */
   assignee_id: string | null
   created_at: string
+  /** Stand der Anfrage im Team; 'lost' = abgeschlossen ohne Auftrag */
+  stage?: string
+  /** Auf /preise gewählte Leistungen */
+  wish?: OrderItem[] | null
+  /** Start bei null (Quiz: «Noch nichts davon») — keine Analyse, Termin sofort */
+  scratch?: boolean
 }
 export type MessageRow = { id: string; author: 'client' | 'rag'; body: string; created_at: string }
 
@@ -273,31 +279,41 @@ export async function claimRememberedLead() {
   if (!error) { try { sessionStorage.removeItem(LEAD_KEY) } catch { /* */ } }
 }
 
-export async function createCheck(input: { place: Place; region: string; sources: Source[]; contact: Contact; sourcePage: string | null }): Promise<string | null> {
+export async function createCheck(input: { place: Place; region: string; sources: Source[]; contact: Contact; sourcePage: string | null
+  /** Firma im Kundenbereich selbst eingetragen: Quellen gelten als bestätigt */
+  manual?: { profileHint: 'yes' | 'no' | 'unknown'; scratch: boolean } }): Promise<string | null> {
   const { data, error } = await (await getSupabase()).from('checks').insert({
     place_id: input.place.id, place: input.place, region: input.region, sources: input.sources,
     contact: input.contact, source_page: input.sourcePage,
+    ...(input.manual ? { sources_confirmed: true, profile_hint: input.manual.profileHint, scratch: input.manual.scratch } : {}),
   }).select('id').single()
   if (error) { console.error(error); return null }
   await claimRememberedLead().catch(() => undefined)
   return data.id as string
 }
 
+const CHECK_BASE = 'id, email, place, region, sources, sources_confirmed, contact, status, report, assignee_id, created_at'
+// Neue Spalten aus supabase/flow.sql; solange das SQL nicht ausgeführt ist, ohne sie laden.
+let CHECK_COLS = CHECK_BASE + ', stage, wish, scratch'
+async function selectChecks<T>(run: (cols: string) => PromiseLike<{ data: T; error: { message: string } | null }>): Promise<{ data: T; error: { message: string } | null }> {
+  const r = await run(CHECK_COLS)
+  if (r.error && CHECK_COLS !== CHECK_BASE && /column/i.test(r.error.message)) { CHECK_COLS = CHECK_BASE; return run(CHECK_COLS) }
+  return r
+}
+
 export async function loadLatestCheck(): Promise<CheckRow | null> {
-  const { data, error } = await (await getSupabase()).from('checks')
-    .select('id, email, place, region, sources, sources_confirmed, contact, status, report, assignee_id, created_at').eq('user_id', await myUid())
-    .order('created_at', { ascending: false }).limit(1).maybeSingle()
+  const s = await getSupabase(), uid = await myUid()
+  const { data, error } = await selectChecks(cols => s.from('checks').select(cols).eq('user_id', uid).order('created_at', { ascending: false }).limit(1).maybeSingle())
   if (error) { console.error(error); return null }
-  return data as CheckRow | null
+  return data as unknown as CheckRow | null
 }
 
 /** Alle Checks des Kontos (neueste zuerst) — ein Konto kann mehrere Firmen prüfen lassen. */
 export async function loadMyChecks(): Promise<CheckRow[]> {
-  const { data, error } = await (await getSupabase()).from('checks')
-    .select('id, email, place, region, sources, sources_confirmed, contact, status, report, assignee_id, created_at').eq('user_id', await myUid())
-    .order('created_at', { ascending: false })
+  const s = await getSupabase(), uid = await myUid()
+  const { data, error } = await selectChecks(cols => s.from('checks').select(cols).eq('user_id', uid).order('created_at', { ascending: false }))
   if (error) { console.error(error); return [] }
-  return (data ?? []) as CheckRow[]
+  return (data ?? []) as unknown as CheckRow[]
 }
 
 const normName = (s: string | undefined) => (s ?? '').toLowerCase().replace(/[^a-z0-9äöüß]+/g, ' ').trim()
@@ -368,6 +384,9 @@ export type OrderRow = {
   status: OrderStatus
   assignee_id: string | null
   created_at: string
+  /** Paket ist in eine Firma (Check) übergegangen */
+  merged_into?: string | null
+  stage?: string
 }
 
 export async function createOrder(items: OrderItem[], sourcePage: string | null): Promise<string | null> {
@@ -379,10 +398,24 @@ export async function createOrder(items: OrderItem[], sourcePage: string | null)
 
 export async function loadLatestOrder(): Promise<OrderRow | null> {
   const { data, error } = await (await getSupabase()).from('orders')
-    .select('id, items, details, status, assignee_id, created_at').eq('user_id', await myUid())
+    .select('*').eq('user_id', await myUid())
     .order('created_at', { ascending: false }).limit(1).maybeSingle()
   if (error) { console.error(error); return null }
   return data as OrderRow | null
+}
+
+/** Offenes Quiz des Kontos (noch keiner Firma zugeordnet). */
+export type QuizLead = { id: string; answers: { have?: string[]; branche?: string; ort?: string; firma?: string; goal?: string } }
+export async function loadMyQuiz(): Promise<QuizLead | null> {
+  const { data, error } = await (await getSupabase()).rpc('my_quiz')
+  if (error || !data) return null
+  return data as QuizLead
+}
+/** Paket-Anfrage und Quiz an die Firma hängen — im Admin eine Anfrage statt mehrerer. */
+export async function attachRequests(checkId: string, orderId: string | null): Promise<boolean> {
+  const { error } = await (await getSupabase()).rpc('attach_requests', { p_check: checkId, p_order: orderId })
+  if (error) console.error(error)
+  return !error
 }
 
 export async function saveOrderDetails(orderId: string, details: OrderDetails): Promise<boolean> {
@@ -476,11 +509,13 @@ export type ClientProject = {
   id: string; offer_id: string | null; status: ProjectStatus
   invoice_number: string | null; invoice_amount: number | null; invoice_due: string | null; invoice_url: string | null; invoice_sent_at: string | null
   note: string | null; paid_at: string | null; started_at: string | null; result_at: string | null
+  /** «Was wir tun»: Arbeitsplan und Neuigkeiten vom Ansprechpartner */
+  plan?: string | null; updates?: { at: string; text: string }[]
 }
 /** Projekte des Kunden — eins je angenommenem Angebot (also je Unternehmen/Anfrage). */
 export async function loadMyProjects(): Promise<ClientProject[]> {
   const { data, error } = await (await getSupabase()).from('projects')
-    .select('id, offer_id, status, invoice_number, invoice_amount, invoice_due, invoice_url, invoice_sent_at, note, paid_at, started_at, result_at')
+    .select('*')
     .eq('user_id', await myUid())
   return error ? [] : (data as ClientProject[])
 }

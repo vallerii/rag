@@ -80,6 +80,8 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
     // Entwurf im Bericht hat Vorrang; sonst das bestehende Angebot als Ausgangspunkt.
     if (list.offerDraft) { setItems(list.offerDraft.items ?? []); setWhy(list.offerDraft.why ?? '') }
     else if (o) { setItems(o.items ?? []); setWhy(o.note ?? '') }
+    // Paket von /preise: Ausgangspunkt für das Angebot («Kunde wünscht»).
+    else if (c.wish?.length) setItems(c.wish.map(i => ({ ...i })))
     return f
   }
   useEffect(() => { void reload() }, [c.id]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -557,6 +559,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
               </div>
             ) : (
               <>
+                {!!c.wish?.length && <p style={{ ...small, margin: 0, padding: '8px 12px', borderRadius: 10, backgroundColor: '#EEEBFF', color: 'var(--ink)' }}>Kunde wünscht (Auswahl auf /preise): <strong>{c.wish.map(i => i.name).join(' + ')}</strong> — vorausgefüllt, bei Bedarf anpassen.</p>}
                 <OfferBuilder items={items} onChange={x => { setItems(x); upd(y => ({ ...y, offerDraft: { items: x, why } })) }} />
                 <textarea value={why} onChange={e => { const w = e.target.value; setWhy(w); upd(y => ({ ...y, offerDraft: { items, why: w } })) }} style={{ ...input, minHeight: 56, resize: 'vertical' }} placeholder="Warum genau das — 1–2 Sätze für den Kunden, auf Deutsch (optional)" />
               </>
