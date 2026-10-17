@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import CompanySearch from './CompanySearch'
 import {
-  DEMO, SOURCE_LABELS, SOURCE_ORDER, createCheck, placeFromCode, discoverSources, findMyCheck, getCompany, manualPlace, newSessionToken, searchCompanies,
+  DEMO, SOURCE_LABELS, SOURCE_ORDER, createCheck, placeFromCode, discoverSources, findMyCheck, getCompany, loadMyChecks, manualPlace, newSessionToken, searchCompanies,
   type Contact, type Place, type Source, type Suggestion,
 } from './data'
 import AccountStep from './AccountStep'
@@ -255,6 +255,7 @@ export default function CheckPage() {
     // Diese Firma ist im Konto schon geprüft → keinen zweiten Check anlegen, den vorhandenen öffnen.
     const existing = await findMyCheck(place).catch(() => null)
     if (existing) { window.location.href = `/kabinett?firma=${existing}&bereits=1`; return null }
+    const hadChecks = (await loadMyChecks().catch(() => [])).length > 0
     // Nicht länger als 4 s auf die Quellen warten — sonst leer anlegen und im Kundenbereich ergänzen.
     const empty: Source[] = SOURCE_ORDER.map(key => ({ key, value: '', found: false }))
     const found = await Promise.race([discovery.current ?? Promise.resolve(empty), new Promise<Source[]>(r => setTimeout(() => r(empty), 4000))])
@@ -264,7 +265,7 @@ export default function CheckPage() {
     })
     if (!id) return 'Das Speichern hat nicht geklappt. Bitte versuchen Sie es noch einmal.'
     // Neues Konto (gerade angelegt) → Begrüßung; bestehendes Konto → Hinweis «weitere Firma hinzugefügt».
-    const fresh = Date.now() - new Date(user.created_at).getTime() < 15 * 60 * 1000
+    const fresh = Date.now() - new Date(user.created_at).getTime() < 15 * 60 * 1000 && !hadChecks
     window.location.href = `/kabinett?firma=${id}&${fresh ? 'welcome=1' : 'neu=1'}`
     return null
   }

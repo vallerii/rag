@@ -25,8 +25,10 @@ function PasswordField({ value, onChange, autoComplete }: { value: string; onCha
   )
 }
 
-export default function AccountStep({ submitLabel, onAuthed, onBack }: {
+export default function AccountStep({ submitLabel, loggedInLabel, onAuthed, onBack }: {
   submitLabel: string
+  /** Text des Knopfs, wenn schon angemeldet (Standard: submitLabel) */
+  loggedInLabel?: string
   /** Legt Check/Anfrage an und leitet weiter. Gibt einen Fehlertext zurück, wenn etwas schiefging. */
   onAuthed: (user: User, contact: Contact) => Promise<string | null>
   onBack?: () => void
@@ -152,7 +154,7 @@ export default function AccountStep({ submitLabel, onAuthed, onBack }: {
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 24 }}>
         <button type="submit" className="btn btn-lg btn-electric" disabled={!canSubmit || busy} style={{ opacity: canSubmit ? 1 : 0.45, cursor: canSubmit && !busy ? 'pointer' : 'default' }}>
-          {busy ? 'Einen Moment…' : submitLabel} <span className="arw">→</span>
+          {busy ? 'Einen Moment…' : user && loggedInLabel ? loggedInLabel : submitLabel} <span className="arw">→</span>
         </button>
         {onBack && <button type="button" className="btn btn-lg btn-outline-light" onClick={onBack}>Zurück</button>}
       </div>

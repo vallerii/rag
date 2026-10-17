@@ -45,7 +45,10 @@ export default function CompanyForm({ order, quiz, checks, contact }: {
   const q = quiz?.answers ?? {}
   const scratch = !order && !!q.have?.includes('none')
   // Schon eine Firma im Konto → Paket gehört meist zu ihr; «Ein anderes Unternehmen» bleibt wählbar.
-  const [target, setTarget] = useState<string>(checks[0]?.id ?? 'new')
+  // Quiz: Firma mit gleichem Namen und Ort vorwählen (sonst «Ein anderes Unternehmen»); Paket: die zuletzt geprüfte.
+  const norm = (x?: string) => (x ?? '').toLowerCase().replace(/[^a-z0-9äöüß]+/g, ' ').trim()
+  const quizMatch = quiz ? checks.find(c => norm(c.place?.name) === norm(q.firma) && (!q.ort || norm(c.place?.city).includes(norm(q.ort)) || norm(c.place?.address).includes(norm(q.ort)))) : undefined
+  const [target, setTarget] = useState<string>(quiz && !order ? (quizMatch?.id ?? 'new') : checks[0]?.id ?? 'new')
   const [name, setName] = useState(q.firma ?? '')
   const [category, setCategory] = useState(q.branche ?? '')
   const [city, setCity] = useState(q.ort ?? '')

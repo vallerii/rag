@@ -6565,7 +6565,7 @@ function StartQuizPage() {
   // Quiz mit Konto: Antworten werden erst nach der Registrierung gespeichert (Lead → Konto).
   // Im Kundenbereich trägt der Kunde dann sein Unternehmen ein; bei «Noch nichts davon» ist der Termin sofort frei.
   const fromScratch = a.have.includes('none')
-  const saveAndGo = async (user: { email?: string | null }): Promise<string | null> => {
+  const saveAndGo = async (user: { email?: string | null; created_at?: string }): Promise<string | null> => {
     const id = (() => { try { return crypto.randomUUID() } catch { return null } })()
     if (!id) return 'Das Speichern hat nicht geklappt. Bitte versuchen Sie es noch einmal.'
     const s = await import('./check/data').then(({ getSupabase }) => getSupabase())
@@ -6575,7 +6575,9 @@ function StartQuizPage() {
     if (error) return 'Das Speichern hat nicht geklappt. Bitte versuchen Sie es noch einmal.'
     rememberLead(id)
     await s.rpc('claim_lead', { p_lead: id })
-    window.location.href = '/kabinett?welcome=1'
+    // Begrüßung nur für ein gerade angelegtes Konto.
+    const fresh = !!user.created_at && Date.now() - new Date(user.created_at).getTime() < 15 * 60 * 1000
+    window.location.href = fresh ? '/kabinett?welcome=1' : '/kabinett'
     return null
   }
   const label = <T extends string>(list: QuizOption<T>[], id: T | null) => list.find(o => o.id === id)?.label ?? ''
@@ -6664,7 +6666,7 @@ function StartQuizPage() {
                         : 'Legen Sie Ihren Kundenbereich an und tragen Sie Ihr Unternehmen ein. Wir analysieren Google, Website, KI-Suche und Social Media — den Bericht und einen Termin für das Gespräch finden Sie danach dort.'}
                     </p>
                   </div>
-                  <AccountStep submitLabel="Kundenbereich anlegen" onAuthed={saveAndGo} />
+                  <AccountStep submitLabel="Kundenbereich anlegen" loggedInLabel="Weiter zum Kundenbereich" onAuthed={saveAndGo} />
                 </div>
                 <p style={{ textAlign: 'center', margin: '20px 0 0' }}>
                   <button type="button" onClick={() => setStep(0)} className="d-link" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', fontWeight: 700, fontSize: 15 }}>Antworten ändern</button>

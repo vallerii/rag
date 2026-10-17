@@ -860,6 +860,7 @@ function activityText(a: Activity, profiles: Profile[]): string {
     case 'report_published': return 'Bericht veröffentlicht'
     case 'order_created': return `Paketanfrage: ${Array.isArray(d.items) ? (d.items as { name: string }[]).map(i => i.name).join(' + ') : ''}`
     case 'order_details': return 'Fragebogen zum Unternehmen ausgefüllt'
+    case 'wish_changed': return `Kunde hat ein anderes Paket gewählt (${str(d.name)}): ${Array.isArray(d.items) ? (d.items as { name: string }[]).map(i => i.name).join(' + ') : ''}`
     case 'message': return d.author === 'rag' ? 'Nachricht vom Team' : 'Nachricht vom Kunden'
     case 'note': return 'Notiz hinzugefügt'
     case 'offer_sent': return 'Angebot als gesendet markiert'

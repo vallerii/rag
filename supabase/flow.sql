@@ -31,6 +31,10 @@ begin
   if p_order is not null then
     select * into o from orders where id = p_order and user_id = uid and merged_into is null;
     if found then
+      -- Firma hatte schon einen Wunsch / ein Angebot → im Verlauf deutlich machen, dass der Kunde neu gewählt hat.
+      if c.wish is not null and c.wish is distinct from o.items then
+        insert into activity (client_key, kind, detail) values ('user:' || uid, 'wish_changed', jsonb_build_object('name', c.place ->> 'name', 'items', o.items));
+      end if;
       update checks set wish = o.items, assignee_id = coalesce(checks.assignee_id, o.assignee_id) where id = c.id;
       update orders set merged_into = c.id where id = o.id;
       if not exists (select 1 from offers where request_kind = 'check' and request_id = c.id) then

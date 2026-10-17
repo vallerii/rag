@@ -95,6 +95,7 @@ const adminPatterns: [RegExp, (m: RegExpMatchArray, t: (x: string) => string) =>
   [/^Neu geladen: (\d+) \(aus (\d+) Zeilen, Dubletten übersprungen\)\.$/, m => `Загружено новых: ${m[1]} (из ${m[2]} строк, повторы пропущены).`],
   [/^Keine neuen Unternehmen \((\d+) Zeilen, alle schon vorhanden\)\.$/, m => `Новых компаний нет (${m[1]} строк, все уже есть).`],
   [/^Briefe vorbereitet: (\d+)\. Nach dem Drucken «Als gedruckt markieren»\.$/, m => `Писем подготовлено: ${m[1]}. После печати нажмите «Отметить напечатанными».`],
+  [/^Kunde hat ein anderes Paket gewählt \((.*)\): (.*)$/, m => `Клиент выбрал другой пакет (${m[1]}): ${m[2]}`],
   [/^Geprüft: (\d+)(.*)$/, m => `Проверено: ${m[1]}${m[2].replace('Fehler:', 'ошибок:').replace('Dubletten ausgeblendet:', 'повторы скрыты:').replace('angehalten', 'остановлено').replace('schon Kunden (Anfrage vorhanden):', 'уже клиенты (есть заявка):').replace('bei Google nicht gefunden:', 'не найдены в Google:')}`],
   [/^Briefe drucken \((\d+)\)$/, m => `Печать писем (${m[1]})`],
   [/^Ausgewählt: (\d+)$/, m => `Выбрано: ${m[1]}`],
