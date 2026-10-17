@@ -142,6 +142,14 @@ async function searchPlaces(key, query) {
     secondary: [p.primaryTypeDisplayName?.text, p.formattedAddress].filter(Boolean).join(" \xB7 ")
   }));
 }
+var STOP = ["gmbh", "und", "inh", "der", "die", "das", "ug", "kg", "co", "e.k.", "ek", "ohg", "gbr"];
+var words = (x) => x.toLowerCase().replace(/[^a-z0-9äöüß]+/g, " ").split(" ").filter((w) => w.length > 2 && !STOP.includes(w));
+function sameCompany(name, hit, city) {
+  const want = words(name), got = words(hit.main);
+  if (!want.length || want.filter((w) => got.includes(w)).length < Math.ceil(want.length / 2)) return false;
+  const c = (city ?? "").toLowerCase().trim();
+  return !c || hit.secondary.toLowerCase().includes(c);
+}
 async function placeRaw(key, id, full = false) {
   return call(key, `/places/${encodeURIComponent(id)}?languageCode=${LANG}`, { method: "GET" }, full ? MASK_AUDIT : MASK_CARD);
 }
@@ -620,8 +628,6 @@ Deno.serve(handler(10, async (req, body) => {
   const p = check.place ?? {};
   let profileSearch = null;
   if (noProfile && check.profile_hint && check.profile_hint !== "no" && (force || !check.profile_searched_at) && p.name) {
-    const words = (x) => x.toLowerCase().replace(/[^a-z0-9äöüß]+/g, " ").split(" ").filter((w) => w.length > 2 && !["gmbh", "und", "inh", "der", "die", "das"].includes(w));
-    const want = words(p.name);
     const query = [p.name, p.address || p.city].filter(Boolean).join(" ");
     let searchError = "";
     let hits2 = await searchPlaces(key, query).catch((e) => {
@@ -643,10 +649,7 @@ Deno.serve(handler(10, async (req, body) => {
         raw = { error: e instanceof Error ? e.message : String(e) };
       }
     }
-    const hit = hits2.find((h) => {
-      const got = words(h.main);
-      return want.length > 0 && want.filter((w) => got.includes(w)).length >= Math.ceil(want.length / 2);
-    });
+    const hit = hits2.find((h) => sameCompany(p.name, h, p.city));
     profileSearch = { query, hits: hits2.slice(0, 5).map((h) => h.main), matched: hit?.main ?? null, error: searchError || void 0, raw };
     if (hit) {
       const raw2 = await placeRaw(key, hit.id, true).catch((e) => {

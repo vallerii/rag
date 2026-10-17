@@ -112,7 +112,7 @@ export default function Leads({ onOpenRequest }: { onOpenRequest: (key: string) 
     const ids = chosen.filter(p => !['checking', 'responded'].includes(p.status)).map(p => p.id)
     if (!ids.length) return
     setBusy('audit'); setMsg(''); stop.current = false
-    let done = 0, failed = 0, dup = 0, client = 0
+    let done = 0, failed = 0, dup = 0, client = 0, notFound = 0
     setProgress({ done, total: ids.length })
     const queue = [...ids]
     const worker = async () => {
@@ -121,13 +121,14 @@ export default function Leads({ onOpenRequest }: { onOpenRequest: (key: string) 
         const r = await auditProspect(id)
         if (r === 'duplicate') dup++
         else if (r === 'already_client') client++
+        else if (r === 'not_found') notFound++
         else if (r !== 'checked') failed++
         done++; setProgress({ done, total: ids.length })
       }
     }
     await Promise.all([worker(), worker(), worker()])
     setBusy(''); setProgress(null); reload()
-    setMsg([`Geprüft: ${done - failed - dup - client}`, failed ? `Fehler: ${failed}` : '', dup ? `Dubletten ausgeblendet: ${dup}` : '', client ? `schon Kunden (Anfrage vorhanden): ${client}` : '', stop.current ? 'angehalten' : ''].filter(Boolean).join(' · '))
+    setMsg([`Geprüft: ${done - failed - dup - client - notFound}`, notFound ? `bei Google nicht gefunden: ${notFound}` : '', failed ? `Fehler: ${failed}` : '', dup ? `Dubletten ausgeblendet: ${dup}` : '', client ? `schon Kunden (Anfrage vorhanden): ${client}` : '', stop.current ? 'angehalten' : ''].filter(Boolean).join(' · '))
   }
   const printable = chosen.filter(p => p.audited_at && p.status !== 'hidden')
   const doPrint = async () => {
@@ -250,7 +251,7 @@ export default function Leads({ onOpenRequest }: { onOpenRequest: (key: string) 
                 <span data-no-translate style={small}>{[p.category, p.city].filter(Boolean).join(' · ')}</span>
                 <strong style={{ fontSize: 18, color: scoreColor(p.score) }}>{p.status === 'checking' ? '…' : p.score ?? '—'}</strong>
                 <span style={{ ...small, minWidth: 0 }}>
-                  {p.status === 'error' ? <span style={{ color: '#9C1F17' }}>{p.error}</span>
+                  {p.status === 'error' ? <span style={{ color: '#9C1F17' }}>{p.error === 'not_found' ? 'Bei Google nicht gefunden — Google-Maps-Link in die Tabelle eintragen und erneut prüfen' : p.error}</span>
                     : p.issues?.length ? p.issues.slice(0, 2).map(i => i.text).join(' · ')
                     : p.status === 'checking' ? 'wird geprüft' : 'noch nicht geprüft'}
                 </span>

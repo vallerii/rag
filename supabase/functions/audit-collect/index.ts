@@ -7,7 +7,7 @@
 // um Fortschritt zu zeigen; der veröffentlichte Bericht bleibt, bis das Team eine neue Version freigibt.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { handler, json, placesKey } from '../_shared/http.ts'
-import { competitors, defaultQuery, onlyDE, placeRaw, searchPlaces, toPlace, type GPlace } from '../_shared/google.ts'
+import { competitors, defaultQuery, onlyDE, placeRaw, sameCompany, searchPlaces, toPlace, type GPlace } from '../_shared/google.ts'
 import { scanSite, type Source } from '../_shared/site.ts'
 import { buildReport } from '../_shared/audit.ts'
 
@@ -77,8 +77,6 @@ Deno.serve(handler(10, async (req, body) => {
   let profileSearch: Record<string, unknown> | null = null
   // Team («Daten neu sammeln») darf die Suche wiederholen.
   if (noProfile && check.profile_hint && check.profile_hint !== 'no' && (force || !check.profile_searched_at) && p.name) {
-    const words = (x: string) => x.toLowerCase().replace(/[^a-z0-9äöüß]+/g, ' ').split(' ').filter(w => w.length > 2 && !['gmbh', 'und', 'inh', 'der', 'die', 'das'].includes(w))
-    const want = words(p.name)
     const query = [p.name, p.address || p.city].filter(Boolean).join(' ')
     let searchError = ''
     let hits = await searchPlaces(key, query).catch(e => { searchError = e instanceof Error ? e.message : String(e); return [] as Awaited<ReturnType<typeof searchPlaces>> })
@@ -97,7 +95,7 @@ Deno.serve(handler(10, async (req, body) => {
           .map(x => ({ id: x.id, main: x.displayName?.text ?? '', secondary: x.formattedAddress ?? '' }))
       } catch (e) { raw = { error: e instanceof Error ? e.message : String(e) } }
     }
-    const hit = hits.find(h => { const got = words(h.main); return want.length > 0 && want.filter(w => got.includes(w)).length >= Math.ceil(want.length / 2) })
+    const hit = hits.find(h => sameCompany(p.name!, h, p.city))
     profileSearch = { query, hits: hits.slice(0, 5).map(h => h.main), matched: hit?.main ?? null, error: searchError || undefined, raw }
     if (hit) {
       const raw = await placeRaw(key, hit.id, true).catch(e => { profileSearch!.error = 'details: ' + (e instanceof Error ? e.message : String(e)); return null })

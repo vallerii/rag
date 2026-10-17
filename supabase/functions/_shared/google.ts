@@ -100,6 +100,17 @@ export async function searchPlaces(key: string, query: string): Promise<Suggesti
   }))
 }
 
+/** Passt ein Treffer zur gesuchten Firma? Mindestens die Hälfte der Namenswörter und — falls bekannt — der Ort in der Adresse.
+ *  Verhindert, dass Google bei unbekannten Namen einfach «irgendeinen» Betrieb in der Nähe liefert. */
+const STOP = ['gmbh', 'und', 'inh', 'der', 'die', 'das', 'ug', 'kg', 'co', 'e.k.', 'ek', 'ohg', 'gbr']
+const words = (x: string) => x.toLowerCase().replace(/[^a-z0-9äöüß]+/g, ' ').split(' ').filter(w => w.length > 2 && !STOP.includes(w))
+export function sameCompany(name: string, hit: Suggestion, city?: string | null): boolean {
+  const want = words(name), got = words(hit.main)
+  if (!want.length || want.filter(w => got.includes(w)).length < Math.ceil(want.length / 2)) return false
+  const c = (city ?? '').toLowerCase().trim()
+  return !c || hit.secondary.toLowerCase().includes(c)
+}
+
 export async function placeRaw(key: string, id: string, full = false): Promise<GPlace> {
   return call<GPlace>(key, `/places/${encodeURIComponent(id)}?languageCode=${LANG}`, { method: 'GET' }, full ? MASK_AUDIT : MASK_CARD)
 }

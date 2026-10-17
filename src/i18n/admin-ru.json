@@ -825,5 +825,8 @@
   "Speichern fehlgeschlagen. Ist supabase/flow.sql ausgeführt?": "Не удалось сохранить. Выполнен ли supabase/flow.sql?",
   "Nächster Bericht fällig:": "Следующий отчёт:",
   "An diesem Tag erscheint die Anfrage unter «Dringend». Nach einer neuen Berichtsversion beginnen die 30 Tage neu.": "В этот день заявка появится в «Срочно». После публикации новой версии отчёта отсчёт 30 дней начнётся заново.",
-  "Start bei null": "С нуля"
+  "Start bei null": "С нуля",
+  "Kunde wünscht (Auswahl auf /preise):": "Клиент выбрал (на /preise):",
+  "— vorausgefüllt, bei Bedarf anpassen.": "— подставлено, при необходимости поправьте.",
+  "Bei Google nicht gefunden — Google-Maps-Link in die Tabelle eintragen und erneut prüfen": "Не найдена в Google — добавьте ссылку на Google Maps в таблицу и проверьте снова"
 }

@@ -142,6 +142,14 @@ async function searchPlaces(key, query) {
     secondary: [p.primaryTypeDisplayName?.text, p.formattedAddress].filter(Boolean).join(" \xB7 ")
   }));
 }
+var STOP = ["gmbh", "und", "inh", "der", "die", "das", "ug", "kg", "co", "e.k.", "ek", "ohg", "gbr"];
+var words = (x) => x.toLowerCase().replace(/[^a-z0-9äöüß]+/g, " ").split(" ").filter((w) => w.length > 2 && !STOP.includes(w));
+function sameCompany(name, hit, city) {
+  const want = words(name), got = words(hit.main);
+  if (!want.length || want.filter((w) => got.includes(w)).length < Math.ceil(want.length / 2)) return false;
+  const c = (city ?? "").toLowerCase().trim();
+  return !c || hit.secondary.toLowerCase().includes(c);
+}
 async function placeRaw(key, id, full = false) {
   return call(key, `/places/${encodeURIComponent(id)}?languageCode=${LANG}`, { method: "GET" }, full ? MASK_AUDIT : MASK_CARD);
 }
@@ -651,7 +659,11 @@ async function audit(id) {
     let placeId = p.place_id;
     if (!placeId) {
       const hits2 = await searchPlaces(key, [p.name, p.address || p.city].filter(Boolean).join(" "));
-      placeId = hits2[0]?.id ?? null;
+      placeId = hits2.find((h) => sameCompany(p.name, h, p.city))?.id ?? null;
+      if (!placeId) {
+        await db.from("prospects").update({ status: "error", error: "not_found" }).eq("id", id);
+        return { status: "not_found" };
+      }
     }
     if (placeId) {
       const { data: chk } = await db.from("checks").select("id").eq("place_id", placeId).order("created_at", { ascending: true }).limit(1);

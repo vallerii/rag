@@ -4,7 +4,7 @@
 // Leads sind potenzielle Kunden — nur das Team sieht sie (RLS auf prospects).
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { handler, json, placesKey } from '../_shared/http.ts'
-import { competitors, defaultQuery, placeRaw, searchPlaces, type GPlace } from '../_shared/google.ts'
+import { competitors, defaultQuery, placeRaw, sameCompany, searchPlaces, type GPlace } from '../_shared/google.ts'
 import { scanSite, sourcesFrom } from '../_shared/site.ts'
 import { buildReport, type Item } from '../_shared/audit.ts'
 
@@ -98,7 +98,12 @@ async function audit(id: string) {
     let placeId: string | null = p.place_id
     if (!placeId) {
       const hits = await searchPlaces(key, [p.name, p.address || p.city].filter(Boolean).join(' '))
-      placeId = hits[0]?.id ?? null
+      // Nur übernehmen, wenn Name und Ort passen — sonst lieber nachfragen als einen fremden Betrieb anschreiben.
+      placeId = hits.find(h => sameCompany(p.name, h, p.city))?.id ?? null
+      if (!placeId) {
+        await db.from('prospects').update({ status: 'error', error: 'not_found' }).eq('id', id)
+        return { status: 'not_found' }
+      }
     }
     if (placeId) {
       // Компания уже сама пришла к нам (есть проверка на сайте) — не тратим запросы и не шлём письмо.
