@@ -615,12 +615,12 @@ Deno.serve(handler(10, async (req, body) => {
   if (!check.sources_confirmed) return json(req, { error: "not_confirmed" }, 409);
   if (check.status === "ready" && !force) return json(req, { status: "ready" });
   if (check.scratch && !force) return json(req, { status: "scratch" });
-  if (!force && check.audited_at && Date.now() - Date.parse(check.audited_at) < 30 * 6e4) return json(req, { status: "cached" });
   const reused = check.audit;
   if (!force && (reused?.from_prospect || reused?.from_check) && check.audited_at && Date.now() - Date.parse(check.audited_at) < 30 * 864e5) {
     if (check.status !== "ready") await db.from("checks").update({ status: "in_review" }).eq("id", check.id);
     return json(req, { status: "from_prospect" });
   }
+  if (!force && check.audited_at && Date.now() - Date.parse(check.audited_at) < 30 * 6e4) return json(req, { status: "cached" });
   if (!check.place_id || String(check.place_id).startsWith("demo")) return json(req, { error: "demo_place" }, 400);
   const key = placesKey();
   let noProfile = String(check.place_id).startsWith("manual:");

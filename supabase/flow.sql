@@ -27,6 +27,7 @@ declare uid uuid := auth.uid(); c checks; o orders; l leads;
 begin
   select * into c from checks where id = p_check and user_id = uid;
   if not found then raise exception 'not_found'; end if;
+  perform set_config('rag.system', 'on', true);   -- Verantwortlichen übernehmen darf nur das System
   if p_order is not null then
     select * into o from orders where id = p_order and user_id = uid and merged_into is null;
     if found then
@@ -47,6 +48,7 @@ begin
       update projects set request_kind = 'check', request_id = c.id where request_kind = 'lead' and request_id = l.id;
     end if;
   end if;
+  perform set_config('rag.system', 'off', true);
 end $$;
 revoke execute on function public.attach_requests(uuid, uuid) from public, anon;
 grant execute on function public.attach_requests(uuid, uuid) to authenticated;
@@ -100,3 +102,45 @@ begin
     'Danke für Ihre Anfrage (' || coalesce(names, 'Paket') || '). Ihre Auswahl ist gespeichert. Tragen Sie in der Übersicht kurz Ihr Unternehmen ein oder wählen Sie es aus — dann geht es weiter.');
   return new;
 end $$;
+
+-- 5) Анализ из лида / другой проверки: исправление (вставка проверки по QR падала на правиле доступа)
+-- Компания уже проверена (как лид или для другого клиента, анализ не старше 30 дней) → новая проверка
+-- сразу получает этот анализ и запросы: без повторных платных запросов к Google, черновик сразу готов.
+-- AFTER INSERT + UPDATE (а не BEFORE): иначе правило «клиент создаёт проверку без анализа» отклоняет вставку.
+create or replace function public.prospect_prefill() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare pr prospects; ch checks;
+begin
+  if new.place_id is null or new.place_id like 'manual:%' or new.audit is not null then return null; end if;
+  -- Systemänderung: Schutz «nur das Team ändert checklist/status» hier nicht anwenden (siehe guard_staff_fields).
+  perform set_config('rag.system', 'on', true);
+  select * into pr from prospects
+   where place_id = new.place_id and audit is not null and audited_at > now() - interval '30 days'
+   order by audited_at desc limit 1;
+  if found then
+    update checks set
+      audit = pr.audit || jsonb_build_object('from_prospect', pr.id),
+      report_draft = pr.report_draft, audited_at = pr.audited_at,
+      checklist = case when pr.query is not null and coalesce(checklist, '{}'::jsonb) = '{}'::jsonb
+                       then jsonb_build_object('keywords', jsonb_build_array(pr.query)) else checklist end
+    where id = new.id;
+    perform set_config('rag.system', 'off', true);
+    return null;
+  end if;
+  -- Иначе: ту же компанию недавно проверяли для другого клиента — берём её анализ и запросы.
+  select * into ch from checks c
+   where c.place_id = new.place_id and c.id <> new.id and c.audit is not null and c.audited_at > now() - interval '30 days'
+   order by c.audited_at desc limit 1;
+  if found then
+    update checks set
+      audit = (ch.audit - 'from_prospect') || jsonb_build_object('from_check', ch.id),
+      report_draft = ch.report_draft, audited_at = ch.audited_at,
+      checklist = case when ch.checklist ? 'keywords' and coalesce(checklist, '{}'::jsonb) = '{}'::jsonb
+                       then jsonb_build_object('keywords', ch.checklist -> 'keywords') else checklist end
+    where id = new.id;
+  end if;
+  perform set_config('rag.system', 'off', true);
+  return null;
+end $$;
+drop trigger if exists checks_prospect_prefill on public.checks;
+create trigger checks_prospect_prefill after insert on public.checks for each row execute function public.prospect_prefill();
