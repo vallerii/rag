@@ -359,10 +359,12 @@ function Detail({ r, all, profiles, me, onSelect, onBack, onPatch }: { r: Reques
   const [tab, setTab] = useState<Tab | null>(null)
   const [panel, setPanel] = useState<'' | 'chat' | 'notes' | 'history' | 'client'>('')
   const closePanel = useCallback(() => setPanel(''), [])
+  // «Start bei null»: zuerst Termin und Angebot, Bericht nur bei Bedarf.
+  const scratch = r.kind === 'check' && !!(r.row as Check).scratch
   const tabs: [Tab, string][] = [
     ...(client?.project ? [['project', 'Projekt'] as [Tab, string]] : []),
-    ...(r.kind === 'check' ? [['reports', 'Berichte'] as [Tab, string]] : []),
-    ['offer', 'Angebot'], ['appointments', 'Termine'],
+    ...(scratch ? [['appointments', 'Termine'], ['offer', 'Angebot'], ['reports', 'Berichte']] as [Tab, string][]
+      : [...(r.kind === 'check' ? [['reports', 'Berichte'] as [Tab, string]] : []), ['offer', 'Angebot'], ['appointments', 'Termine']] as [Tab, string][]),
   ]
   const active: Tab = tab && tabs.some(([k]) => k === tab) ? tab : tabs[0][0]
   // Сообщения клиента после последнего ответа команды.
@@ -721,7 +723,10 @@ function PlanCard({ project, monthlyItems, onSaved }: { project: Project; monthl
                   onChange={e => set(e.target.checked ? { monthly: true, next_report_at: project.next_report_at ?? in30() } : { monthly: false, next_report_at: null }, e.target.checked ? 'Erinnerung eingeschaltet.' : 'Erinnerung ausgeschaltet.')} />
                 Alle 30 Tage an einen neuen Bericht erinnern
               </label>
-              {project.monthly && project.next_report_at && <p style={{ ...small, margin: '6px 0 0' }}>Nächster Bericht fällig: <strong>{fmtDay(project.next_report_at)}</strong>. Erscheint dann unter «Dringend». Nach einer neuen Berichtsversion beginnen die 30 Tage neu.</p>}
+              {project.monthly && project.next_report_at && <>
+                <p style={{ ...small, margin: '6px 0 0' }}>Nächster Bericht fällig: <strong data-no-translate>{project.next_report_at.split('-').reverse().join('.')}</strong></p>
+                <p style={{ ...small, margin: '2px 0 0' }}>An diesem Tag erscheint die Anfrage unter «Dringend». Nach einer neuen Berichtsversion beginnen die 30 Tage neu.</p>
+              </>}
             </>
           )}
       </div>

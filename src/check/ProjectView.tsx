@@ -13,7 +13,7 @@ const fmtDate = (d: string) => new Date(d).toLocaleDateString(dateLocale(), { da
 const fmtEur = (n: number) => n.toLocaleString(dateLocale(), { style: 'currency', currency: 'EUR' })
 const fmtRating = (n: number | null | undefined) => (typeof n === 'number' ? `${n.toLocaleString(dateLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ★` : '—')
 
-const STEPS: { key: ClientProject['status'][]; label: string }[] = [
+const STEPS: { key: ClientProject['status'][]; label: string }[] = [ // Reihenfolge der Anzeige
   { key: ['awaiting_payment'], label: 'Rechnung' },
   { key: ['paid'], label: 'Zahlung' },
   { key: ['in_progress'], label: 'Umsetzung' },
@@ -34,7 +34,9 @@ export function projectHeadline(p: ClientProject): { title: string; text: string
 }
 
 export function ProjectPanel({ project }: { project: ClientProject }) {
-  const cur = STEPS.findIndex(s => s.key.includes(project.status))
+  // Bezahlt = Rechnung und Zahlung erledigt, als Nächstes kommt die Umsetzung.
+  const cur = project.status === 'awaiting_payment' ? (project.invoice_sent_at ? 1 : 0)
+    : project.status === 'paid' || project.status === 'in_progress' ? 2 : 3
   const showInvoice = !!project.invoice_sent_at && project.status === 'awaiting_payment'
   const bank = COMPANY.iban.trim()
   return (

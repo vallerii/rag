@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {
-  SOURCE_LABELS, SOURCE_ORDER, attachRequests, createCheck, findMyCheck, manualPlace, orderTotal, runAudit,
+  SOURCE_LABELS, SOURCE_ORDER, attachRequests, markAuditStarted, createCheck, findMyCheck, manualPlace, orderTotal, runAudit,
   type CheckRow, type OrderRow, type QuizLead, type SourceKey,
 } from './data'
 
@@ -14,6 +14,9 @@ const field: React.CSSProperties = { width: '100%', boxSizing: 'border-box', pad
 const labelSt: React.CSSProperties = { display: 'block', fontSize: 12.5, fontWeight: 600, marginBottom: 6 }
 const opt = (on: boolean): React.CSSProperties => ({ flex: 1, padding: '11px 10px', borderRadius: 12, fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', border: `1px solid ${on ? 'var(--electric)' : 'var(--line)'}`, backgroundColor: on ? '#EEEBFF' : '#fff', color: on ? 'var(--electric)' : 'var(--ink)' })
 const PLACEHOLDER: Record<SourceKey, string> = { website: 'z. B. meinbetrieb.de', instagram: 'instagram.com/…', facebook: 'facebook.com/…', linkedin: 'linkedin.com/company/…', tiktok: 'tiktok.com/@…' }
+
+/** Hinweis unter «Ihre Auswahl», wenn keine Analyse läuft (Start bei null). */
+export const SCRATCH_NOTE = 'Noch keine Bestellung: Im Erstgespräch besprechen wir Ihre Auswahl, danach bekommen Sie ein Angebot — Kosten entstehen erst, wenn Sie es annehmen.'
 
 export function WishSummary({ items, note }: { items: OrderRow['items']; note?: string }) {
   return (
@@ -41,7 +44,8 @@ export default function CompanyForm({ order, quiz, checks, contact }: {
 }) {
   const q = quiz?.answers ?? {}
   const scratch = !order && !!q.have?.includes('none')
-  const [target, setTarget] = useState<string>('new')
+  // Schon eine Firma im Konto → Paket gehört meist zu ihr; «Ein anderes Unternehmen» bleibt wählbar.
+  const [target, setTarget] = useState<string>(checks[0]?.id ?? 'new')
   const [name, setName] = useState(q.firma ?? '')
   const [category, setCategory] = useState(q.branche ?? '')
   const [city, setCity] = useState(q.ort ?? '')
@@ -75,7 +79,8 @@ export default function CompanyForm({ order, quiz, checks, contact }: {
     }
     if (!id) { setBusy(false); setError(true); return }
     await attachRequests(id, order?.id ?? null)
-    if (isNew && !isScratch) await runAudit(id)
+    // Analyse im Hintergrund starten (kann bis zu einer Minute dauern) — nicht darauf warten.
+    if (isNew && !isScratch) { markAuditStarted(id); void runAudit(id); await new Promise(r => setTimeout(r, 400)) }
     window.location.href = `/kabinett?firma=${id}`
   }
 
@@ -141,7 +146,7 @@ export default function CompanyForm({ order, quiz, checks, contact }: {
           {!canSend && <span style={{ fontSize: 13, color: 'var(--muted)' }}>{scratch ? 'Name, Branche und Ort ausfüllen.' : 'Name, Branche, Ort und die Frage zum Google-Profil ausfüllen.'}</span>}
         </div>
       </form>
-      {order && <WishSummary items={order.items} />}
+      {order && <WishSummary items={order.items} note={(isNew ? scratch : checks.find(c => c.id === target)?.scratch) ? SCRATCH_NOTE : undefined} />}
     </div>
   )
 }

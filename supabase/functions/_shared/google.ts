@@ -14,8 +14,10 @@ const REFERER = (globalThis as { Deno?: { env: { get(k: string): string | undefi
 
 /** Suchgebiet Deutschland. Das Rechteck schneidet Randgebiete der Nachbarländer an — die filtert onlyDE() unten heraus. */
 const DE = { low: { latitude: 47.27, longitude: 5.86 }, high: { latitude: 55.06, longitude: 15.05 } }
-/** Nur Treffer mit Adresse in Deutschland (languageCode 'de' → Adresse endet auf «Deutschland»). */
-const onlyDE = (p: GPlace) => !p.formattedAddress || /(^|,\s*)Deutschland$/.test(p.formattedAddress.trim())
+/** Nur Treffer in Deutschland. Google hängt das Land nicht immer an (mal «Deutschland», mal «Germany», mal gar nichts) —
+ *  deshalb nur Adressen mit einem Nachbarland am Ende aussortieren. */
+const FOREIGN = /(^|,\s*)(Österreich|Austria|Schweiz|Switzerland|Frankreich|France|Niederlande|Netherlands|Belgien|Belgium|Luxemburg|Luxembourg|Dänemark|Denmark|Polen|Poland|Tschechien|Czechia|Liechtenstein)$/i
+export const onlyDE = (p: { formattedAddress?: string }) => !p.formattedAddress || !FOREIGN.test(p.formattedAddress.trim())
 
 export type Suggestion = { id: string; main: string; secondary: string }
 

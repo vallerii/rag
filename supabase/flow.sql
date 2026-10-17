@@ -70,3 +70,33 @@ create trigger check_reports_monthly after insert on public.check_reports for ea
 
 -- 3) Анализ сам ищет Google-профиль компании, заведённой вручную (один раз)
 alter table public.checks add column if not exists profile_searched_at timestamptz;
+
+-- 4) Приветствия в чате под новые пути
+-- «С нуля»: анализа нет — сразу предлагаем время для разговора.
+create or replace function public.greet_new_check() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare first_name text := split_part(coalesce(new.contact ->> 'name', ''), ' ', 1);
+        hello text := 'Hallo' || case when first_name <> '' then ' ' || first_name else '' end;
+begin
+  insert into public.messages (user_id, check_id, author, body) values (
+    new.user_id, new.id, 'rag',
+    case when coalesce(new.scratch, false)
+      then hello || ', danke für Ihre Angaben zu ' || coalesce(new.place ->> 'name', 'Ihrem Unternehmen') ||
+           '. Wählen Sie gern direkt einen Termin für das Erstgespräch — Fragen können Sie uns auch hier schreiben.'
+      else hello || ', wir haben Ihre Anfrage erhalten und mit dem Check von ' || coalesce(new.place ->> 'name', 'Ihrem Unternehmen') ||
+           ' begonnen. Falls wir noch Informationen brauchen, schreiben wir Ihnen hier.'
+    end);
+  return new;
+end $$;
+
+-- Пакет: анкеты больше нет — просим указать компанию (или выбрать уже существующую).
+create or replace function public.greet_new_order() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare names text;
+begin
+  select string_agg(i ->> 'name', ' + ') into names from jsonb_array_elements(new.items) as i;
+  insert into public.messages (user_id, order_id, author, body) values (
+    new.user_id, new.id, 'rag',
+    'Danke für Ihre Anfrage (' || coalesce(names, 'Paket') || '). Ihre Auswahl ist gespeichert. Tragen Sie in der Übersicht kurz Ihr Unternehmen ein oder wählen Sie es aus — dann geht es weiter.');
+  return new;
+end $$;

@@ -379,7 +379,7 @@
   "Monatliche Betreuung läuft weiter": "Ежемесячное сопровождение продолжается",
   "Projekt abschließen": "Завершить проект",
   "Status: monatliche Betreuung.": "Статус: ежемесячное сопровождение.",
-  "Hinweis für den Kunden (sieht er im Kundenbereich unter «Ihr Projekt»)": "Комментарий для клиента (он видит его в кабинете в блоке «Ihr Projekt»)",
+  "Hinweis für den Kunden (sieht er im Kundenbereich unter «Ihr Projekt»)": "Комментарий для клиента (он видит его в кабинете в блоке «Ваш проект»)",
   "Hinweis speichern": "Сохранить комментарий",
   "Hinweis gespeichert.": "Комментарий сохранён.",
   "Gesamt:": "Итого:",
@@ -822,5 +822,8 @@
   "Erinnerung ausgeschaltet.": "Напоминание выключено.",
   "Nächster Bericht fällig: ": "Следующий отчёт: ",
   ". Erscheint dann unter «Dringend». Nach einer neuen Berichtsversion beginnen die 30 Tage neu.": ". В этот день появится в «Срочно». После публикации новой версии отчёта отсчёт 30 дней начнётся заново.",
-  "Speichern fehlgeschlagen. Ist supabase/flow.sql ausgeführt?": "Не удалось сохранить. Выполнен ли supabase/flow.sql?"
+  "Speichern fehlgeschlagen. Ist supabase/flow.sql ausgeführt?": "Не удалось сохранить. Выполнен ли supabase/flow.sql?",
+  "Nächster Bericht fällig:": "Следующий отчёт:",
+  "An diesem Tag erscheint die Anfrage unter «Dringend». Nach einer neuen Berichtsversion beginnen die 30 Tage neu.": "В этот день заявка появится в «Срочно». После публикации новой версии отчёта отсчёт 30 дней начнётся заново.",
+  "Start bei null": "С нуля"
 }

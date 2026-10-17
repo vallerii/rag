@@ -7,7 +7,7 @@
 // um Fortschritt zu zeigen; der veröffentlichte Bericht bleibt, bis das Team eine neue Version freigibt.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { handler, json, placesKey } from '../_shared/http.ts'
-import { competitors, defaultQuery, placeRaw, searchPlaces, toPlace, type GPlace } from '../_shared/google.ts'
+import { competitors, defaultQuery, onlyDE, placeRaw, searchPlaces, toPlace, type GPlace } from '../_shared/google.ts'
 import { scanSite, type Source } from '../_shared/site.ts'
 import { buildReport } from '../_shared/audit.ts'
 
@@ -56,6 +56,8 @@ Deno.serve(handler(10, async (req, body) => {
   const force = staff && body.force === true
   if (!check.sources_confirmed) return json(req, { error: 'not_confirmed' }, 409)
   if (check.status === 'ready' && !force) return json(req, { status: 'ready' })
+  // «Start bei null»: nichts zu analysieren — nur auf ausdrücklichen Wunsch des Teams.
+  if (check.scratch && !force) return json(req, { status: 'scratch' })
   // Höchstens einmal pro 30 Minuten (Kosten bei Google) — außer das Team erzwingt es.
   if (!force && check.audited_at && Date.now() - Date.parse(check.audited_at) < 30 * 60_000) return json(req, { status: 'cached' })
   // Анализ уже есть (из лида или другой проверки той же компании, не старше 30 дней) — не собираем заново.
@@ -72,16 +74,43 @@ Deno.serve(handler(10, async (req, body) => {
   const p = (check.place ?? {}) as { name?: string; category?: string; city?: string; address?: string; website?: string | null; manual?: boolean }
   // Firma im Kundenbereich selbst eingetragen, Google-Profil «Ja» / «Weiß nicht»: einmal bei Google suchen.
   // Treffer nur, wenn der Name passt — sonst bleibt es bei «ohne Profil».
-  if (noProfile && check.profile_hint && check.profile_hint !== 'no' && !check.profile_searched_at && p.name) {
+  let profileSearch: Record<string, unknown> | null = null
+  // Team («Daten neu sammeln») darf die Suche wiederholen.
+  if (noProfile && check.profile_hint && check.profile_hint !== 'no' && (force || !check.profile_searched_at) && p.name) {
     const words = (x: string) => x.toLowerCase().replace(/[^a-z0-9äöüß]+/g, ' ').split(' ').filter(w => w.length > 2 && !['gmbh', 'und', 'inh', 'der', 'die', 'das'].includes(w))
     const want = words(p.name)
-    const hits = await searchPlaces(key, [p.name, p.address || p.city].filter(Boolean).join(' ')).catch(() => [])
+    const query = [p.name, p.address || p.city].filter(Boolean).join(' ')
+    let searchError = ''
+    let hits = await searchPlaces(key, query).catch(e => { searchError = e instanceof Error ? e.message : String(e); return [] as Awaited<ReturnType<typeof searchPlaces>> })
+    // Kein Treffer → noch einmal direkt bei Google, ohne Gebietsgrenze (nur deutsche Adressen übernehmen).
+    let raw: Record<string, unknown> | null = null
+    if (!hits.length) {
+      try {
+        const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': key, 'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress', 'Referer': Deno.env.get('PLACES_REFERER') ?? 'https://rag-theta-one.vercel.app/' },
+          body: JSON.stringify({ textQuery: query, languageCode: 'de', regionCode: 'de', pageSize: 5 }),
+        })
+        const data = await res.json().catch(() => ({})) as { places?: { id: string; displayName?: { text?: string }; formattedAddress?: string }[]; error?: { message?: string } }
+        raw = { status: res.status, count: data.places?.length ?? 0, address: data.places?.[0]?.formattedAddress, error: data.error?.message }
+        hits = (data.places ?? []).filter(onlyDE)
+          .map(x => ({ id: x.id, main: x.displayName?.text ?? '', secondary: x.formattedAddress ?? '' }))
+      } catch (e) { raw = { error: e instanceof Error ? e.message : String(e) } }
+    }
     const hit = hits.find(h => { const got = words(h.main); return want.length > 0 && want.filter(w => got.includes(w)).length >= Math.ceil(want.length / 2) })
+    profileSearch = { query, hits: hits.slice(0, 5).map(h => h.main), matched: hit?.main ?? null, error: searchError || undefined, raw }
     if (hit) {
-      const raw = await placeRaw(key, hit.id, true).catch(() => null)
+      const raw = await placeRaw(key, hit.id, true).catch(e => { profileSearch!.error = 'details: ' + (e instanceof Error ? e.message : String(e)); return null })
       if (raw) {
         const found = toPlace(raw)
-        await db.from('checks').update({ place_id: hit.id, place: { ...found, category: found.category || p.category }, profile_searched_at: new Date().toISOString() }).eq('id', check.id)
+        // Website aus dem Google-Profil übernehmen, wenn der Kunde keine angegeben hat.
+        const src = ((check.sources ?? []) as Source[]).map(x => ({ ...x }))
+        const web = src.find(x => x.key === 'website')
+        if (found.website && web && !web.value?.trim()) { web.value = found.website; web.found = true }
+        else if (found.website && !web) src.push({ key: 'website', value: found.website, found: true } as Source)
+        const { error: upErr } = await db.from('checks').update({ place_id: hit.id, place: { ...found, category: found.category || p.category }, sources: src, profile_searched_at: new Date().toISOString() }).eq('id', check.id)
+        check.sources = src
+        if (upErr) profileSearch.error = 'update: ' + upErr.message
         check.place_id = hit.id; check.place = found; noProfile = false; foundRaw = raw
       }
     }
@@ -112,7 +141,7 @@ Deno.serve(handler(10, async (req, body) => {
   if (site) delete site.hay
 
   const patch: Record<string, unknown> = {
-    audit: { place, competitors: comp, ranks, site, pagespeed: speed, keywords, collected_at: new Date().toISOString() },
+    audit: { place, competitors: comp, ranks, site, pagespeed: speed, keywords, profile_search: profileSearch, collected_at: new Date().toISOString() },
     report_draft: report,
     audited_at: new Date().toISOString(),
   }

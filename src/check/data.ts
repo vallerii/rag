@@ -18,6 +18,7 @@
 
 import { humanFetch, turnstileToken } from './turnstile'
 import type { User } from '@supabase/supabase-js'
+import { getLang } from '../i18n'
 // Supabase erst bei Bedarf laden — die Startseite (Suchfeld) bleibt so klein.
 export const getSupabase = () => import('./supabase').then(m => m.supabase)
 
@@ -340,6 +341,13 @@ export async function runAudit(checkId: string): Promise<void> {
   }).catch(() => undefined)
 }
 
+/** Analyse gerade gestartet (Seitenwechsel danach) — der Kundenbereich startet sie dann nicht ein zweites Mal. */
+const AUDIT_KEY = 'rag-audit-started'
+export function markAuditStarted(id: string) { try { sessionStorage.setItem(AUDIT_KEY, JSON.stringify({ id, at: Date.now() })) } catch { /* privat */ } }
+export function auditRecentlyStarted(id: string): boolean {
+  try { const v = JSON.parse(sessionStorage.getItem(AUDIT_KEY) ?? 'null'); return v?.id === id && Date.now() - v.at < 10 * 60_000 } catch { return false }
+}
+
 /** Kunde bestätigt Website + Profile im Kundenbereich → Analyse kann starten. */
 export async function confirmSources(checkId: string, sources: Source[]): Promise<boolean> {
   const { error } = await (await getSupabase()).from('checks').update({ sources, sources_confirmed: true }).eq('id', checkId)
@@ -427,7 +435,8 @@ export async function saveOrderDetails(orderId: string, details: OrderDetails): 
 export function orderTotal(items: OrderItem[]): string {
   const once = items.filter(i => i.unit === 'einmalig').reduce((a, i) => a + i.price, 0)
   const monthly = items.filter(i => i.unit === 'pro Monat').reduce((a, i) => a + i.price, 0)
-  return [once ? `${once} € einmalig` : '', monthly ? `${monthly} € pro Monat` : ''].filter(Boolean).join(' + ')
+  const ru = getLang() === 'ru'
+  return [once ? `${once} € ${ru ? 'разово' : 'einmalig'}` : '', monthly ? `${monthly} € ${ru ? 'в месяц' : 'pro Monat'}` : ''].filter(Boolean).join(' + ')
 }
 
 export function initials(name: string): string {

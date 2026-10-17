@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react'
 import { dateLocale } from '../i18n'
 import { Logo, StarsRow, useNoindex } from './CheckPage'
 import {
-  SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, loadLatestOrder, loadMyChecks, loadMyQuiz, loadMessages, deleteMyCheck, loadReportVersions, loadMyAppointments, loadMyContact, loadMyManager, loadMyOffers, loadMyProjects, resultVisible, runAudit, sendMessage, signOut, updateSources,
+  SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, auditRecentlyStarted, loadLatestOrder, loadMyChecks, loadMyQuiz, loadMessages, deleteMyCheck, loadReportVersions, loadMyAppointments, loadMyContact, loadMyManager, loadMyOffers, loadMyProjects, resultVisible, runAudit, sendMessage, signOut, updateSources,
   type Appointment, type ClientProject, type CheckRow, type ReportVersion, type ClientOffer, type MyContact, type Manager, type MessageRow, type OrderRow, type QuizLead, type Source,
 } from './data'
 import SourcesEditor from './SourcesEditor'
 import OrderPanel, { orderStatusLabel } from './OrderPanel'
-import CompanyForm, { WishSummary } from './CompanyForm'
+import CompanyForm, { SCRATCH_NOTE, WishSummary } from './CompanyForm'
 import { AccountPanel, AppointmentsPanel, ConfirmDialog, ContactForm, fmtWhen, upcoming } from './CabinetAccount'
 import { AiCard, CompetitorsCard, Delta, HistoryCard, deltas } from './ReportExtras'
 import { ProjectPanel, ResultView, projectHeadline } from './ProjectView'
@@ -154,7 +154,7 @@ export default function CabinetPage() {
       setChecks(c); setCheck(sel); setOrder(o?.merged_into ? null : o); setQuiz(qz); setMsgs(m); setManager(mg); setOffers(of); setAppts(ap); setContact(ct); setProjects(pj)
       if (sel) setConfirmDraft(allSources(sel.sources))
       // Bestätigt, aber noch nicht analysiert (z. B. Tab geschlossen) → Datensammlung nachholen.
-      for (const x of c) if (x.sources_confirmed && x.status === 'submitted') void runAudit(x.id)
+      for (const x of c) if (x.sources_confirmed && x.status === 'submitted' && !x.scratch && !auditRecentlyStarted(x.id)) void runAudit(x.id)
       setLoading(false)
     })()
   }, [])
@@ -218,7 +218,7 @@ export default function CabinetPage() {
   const statusLabel = intake && !check ? 'Angaben zum Unternehmen' : orderFirst && order ? orderStatusLabel(order) : checkLabel
   const statusDone = orderFirst ? order?.status === 'active' || order?.status === 'closed' : ready
   const statusWaiting = intake || (orderFirst ? !order?.details : !confirmed)
-  const tabs = TABS.filter(([t]) => t !== 'konto' && (t === 'ergebnis' ? resultVisible(project) && !!check : t === 'offer' ? !!offer : check || (t !== 'report' && t !== 'company')))
+  const tabs = TABS.filter(([t]) => t !== 'konto' && (t === 'ergebnis' ? resultVisible(project) && !!check : t === 'offer' ? !!offer : t === 'report' && scratch && !ready ? false : check || (t !== 'report' && t !== 'company')))
   const scored = ready
   const chans: Channel[] = CHANNELS.map(c => {
     const r = check?.report?.channels?.[c.key]
@@ -283,7 +283,7 @@ export default function CabinetPage() {
   const statusSteps: [boolean, string, string][] = scratch ? [
     [true, 'Angaben gespeichert', 'Start bei null'],
     [assigned, 'Ansprechpartner übernimmt', assigned ? (manager?.name || 'Ihr Ansprechpartner ist zugeteilt') : 'In der Regel innerhalb von 1 Werktag'],
-    [!!nextAppt || !!offer, 'Erstgespräch', nextAppt ? fmtWhen(nextAppt.starts_at) : offer ? 'Erledigt' : 'Termin jetzt wählbar'],
+    [!!nextAppt || !!offer, 'Erstgespräch', nextAppt ? fmtWhen(nextAppt.starts_at) : offer ? 'Erledigt' : lost ? 'Anfrage abgeschlossen' : 'Termin jetzt wählbar'],
     [!!offer, 'Angebot', offer ? 'Liegt vor' : 'Nach dem Gespräch'],
   ] : [
     [true, 'Unternehmen bestätigt', place?.manual ? 'Angaben gespeichert' : 'Google-Profil gespeichert'],
@@ -376,7 +376,7 @@ export default function CabinetPage() {
             {check && (
               <aside style={{ position: 'sticky', top: 20 }}>
               <div style={card}>
-                <Eyebrow>Stand der Prüfung</Eyebrow>
+                <Eyebrow>{scratch ? 'Stand der Anfrage' : 'Stand der Prüfung'}</Eyebrow>
                 <p className="display" style={{ fontSize: 22, margin: '0 0 16px' }}>{statusLabel}</p>
                 {statusSteps.map(([done, t, s], i) => (
                   <div key={t} style={{ display: 'flex', gap: 14, padding: '12px 0', borderTop: '1px solid var(--line-soft)' }}>
@@ -415,7 +415,7 @@ export default function CabinetPage() {
             )}
             {intake && <CompanyForm order={order && !order.details ? order : null} quiz={quiz} checks={checks} contact={{ name: contact.name, email: userEmail, phone: contact.phone }} />}
             {nextStep && <NextStepCard step={nextStep} />}
-            {!!check?.wish?.length && !offer && !lost && <WishSummary items={check.wish} />}
+            {!!check?.wish?.length && !offer && !lost && <WishSummary items={check.wish} note={scratch ? SCRATCH_NOTE : undefined} />}
             {project && <ProjectPanel project={project} />}
             {offer?.status === 'sent' && <OfferPanel offer={offer} onAccepted={onAccepted} />}
             {!check && !intake && <ManagerCard manager={manager} onWrite={write} canBook={canBook} lockedHint={lockedHint} />}

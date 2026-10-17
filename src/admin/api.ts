@@ -133,7 +133,7 @@ export async function loadAll(): Promise<{ requests: Request[]; profiles: Profil
 
 export function checkState(c: Check): string {
   if (c.status === 'ready') return 'Bericht veröffentlicht'
-  if (c.scratch) return 'Start bei null — Gespräch vereinbaren'
+  if (c.scratch) return OPEN.includes(c.stage) ? 'Start bei null — Gespräch vereinbaren' : 'Start bei null'
   if (!c.sources_confirmed) return 'wartet auf Bestätigung der Quellen'
   if (c.report_draft) return 'Berichtsentwurf fertig'
   return 'Daten werden gesammelt'

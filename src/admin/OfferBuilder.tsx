@@ -37,7 +37,7 @@ export default function OfferBuilder({ items, onChange }: { items: OfferItem[]; 
           </div>
         ))}
       </div>
-      {items.filter(i => i.custom).map(i => (
+      {items.filter(i => i.custom || !CATALOG.some(c => c.id === i.id)).map(i => (
         <div key={i.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
           <span style={{ flex: 1 }}><strong data-no-translate>{i.name}</strong>{i.description ? <span style={small} data-no-translate> — {i.description}</span> : null}</span>
           <input type="number" value={i.price} onChange={e => setPrice(i.id, e.target.value)} style={{ ...input, width: 90, padding: '5px 8px' }} aria-label={`Preis ${i.name}`} />
