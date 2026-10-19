@@ -23,9 +23,10 @@ export function LockedBooking({ hint, size = 'md' }: { hint: string; size?: 'md'
   )
 }
 
-export function ManagerCard({ manager, onWrite, canBook, lockedHint, compact = false }: { manager: Manager | null; onWrite: () => void; canBook: boolean; lockedHint: string; compact?: boolean }) {
+export function ManagerCard({ manager, assigned = !!manager, onWrite, canBook, lockedHint, compact = false }: { manager: Manager | null; assigned?: boolean; onWrite: () => void; canBook: boolean; lockedHint: string; compact?: boolean }) {
   const link = canBook ? bookingLink(manager) : null
-  const name = manager?.name || 'Ihr RAG-Team'
+  // Zugeteilt, aber Profil des Ansprechpartners nicht lesbar (my_manager leer) → nicht «wird zugeteilt» anzeigen.
+  const name = manager?.name || (assigned ? 'Ihr Ansprechpartner' : 'Ihr RAG-Team')
   if (compact) return (
     <section style={card}>
       {kick(manager ? (manager.title || 'Ihr Ansprechpartner') : 'Ihr Ansprechpartner')}
@@ -35,7 +36,7 @@ export function ManagerCard({ manager, onWrite, canBook, lockedHint, compact = f
           : <span aria-hidden style={{ width: 44, height: 44, borderRadius: '50%', backgroundColor: 'var(--brand-soft)', color: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, flexShrink: 0 }}>{manager?.name ? initials(manager.name) : 'R'}</span>}
         <div style={{ minWidth: 0 }}>
           <p style={{ fontWeight: 700, fontSize: 15.5, margin: 0 }}>{name}</p>
-          <p style={{ fontSize: 13, color: 'var(--muted)', margin: '2px 0 0', lineHeight: 1.45 }}>{manager ? 'Betreut Ihr Projekt persönlich' : 'Wird in der Regel innerhalb von 1 Werktag zugeteilt'}</p>
+          <p style={{ fontSize: 13, color: 'var(--muted)', margin: '2px 0 0', lineHeight: 1.45 }}>{assigned ? 'Betreut Ihr Projekt persönlich' : 'Wird in der Regel innerhalb von 1 Werktag zugeteilt'}</p>
         </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -54,7 +55,7 @@ export function ManagerCard({ manager, onWrite, canBook, lockedHint, compact = f
         {kick(manager ? (manager.title || 'Ihr Ansprechpartner') : 'Ihr Ansprechpartner')}
         <p className="display" style={{ fontSize: 20, margin: '0 0 4px' }}>{name}</p>
         <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, lineHeight: 1.55 }}>
-          {manager ? 'Betreut Ihr Projekt persönlich — von der Analyse bis zur Umsetzung.' : 'Sobald sich jemand aus dem Team Ihrer Anfrage annimmt, sehen Sie hier Ihren persönlichen Ansprechpartner.'}
+          {assigned ? 'Betreut Ihr Projekt persönlich — von der Analyse bis zur Umsetzung.' : 'Sobald sich jemand aus dem Team Ihrer Anfrage annimmt, sehen Sie hier Ihren persönlichen Ansprechpartner.'}
         </p>
       </div>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-start' }}>
@@ -66,7 +67,7 @@ export function ManagerCard({ manager, onWrite, canBook, lockedHint, compact = f
   )
 }
 
-export function OfferPanel({ offer, onAccepted }: { offer: ClientOffer; onAccepted: (o: ClientOffer) => void }) {
+export function OfferPanel({ offer, onAccepted, booking = null }: { offer: ClientOffer; onAccepted: (o: ClientOffer) => void; booking?: string | null }) {
   const [busy, setBusy] = useState(false), [err, setErr] = useState(false)
   const accepted = offer.status === 'accepted'
   const accept = async () => {
@@ -99,7 +100,9 @@ export function OfferPanel({ offer, onAccepted }: { offer: ClientOffer; onAccept
       {!accepted && (
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 20 }}>
           <button type="button" className="btn btn-lg btn-electric" onClick={accept} disabled={busy}>{busy ? 'Einen Moment…' : 'Angebot annehmen'} <span className="arw">→</span></button>
-          <span style={{ fontSize: 13, color: 'var(--muted)' }}>Fragen dazu? Schreiben Sie uns oder vereinbaren Sie einen Termin.</span>
+          {booking
+            ? <a href={booking} target="_blank" rel="noopener noreferrer" className="btn btn-lg btn-outline-light">Erst im Gespräch klären</a>
+            : <span style={{ fontSize: 13, color: 'var(--muted)' }}>Fragen dazu? Schreiben Sie uns im Chat.</span>}
           <p style={{ flexBasis: '100%', fontSize: 12.5, lineHeight: 1.6, color: 'var(--muted)', margin: '4px 0 0' }}>
             Mit «Angebot annehmen» beauftragen Sie die Leistungen verbindlich. Es gelten unsere <a href="/agb" target="_blank" rel="noopener" className="ul">AGB</a>; {priceNote()}
           </p>

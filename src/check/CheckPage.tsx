@@ -7,13 +7,16 @@ import {
   type Contact, type Place, type Source, type Suggestion,
 } from './data'
 import AccountStep from './AccountStep'
+import SourcesEditor from './SourcesEditor'
 
 // /check — Onboarding nach der Unternehmenssuche (Prototyp «rag_client_cabinet_v1», 25.09.2026).
 // Reihenfolge: 1 Unternehmen suchen (Trefferliste) → 2 Konto anlegen oder anmelden → Kundenbereich.
 // Seit 06.10.2026 ohne eigenen Bestätigungsschritt: Treffer wählen führt direkt zu Schritt 2,
 // die gewählte Firma steht dort oben (mit «Ändern»). ?place=<id> öffnet direkt Schritt 2,
 // ?manual=1 öffnet Schritt 1 direkt mit dem Formular «nicht in der Liste» (ohne Google-Suche).
-// Website und Social-Profile bestätigt der Kunde im Kundenbereich.
+// Website und Social-Profile prüft der Kunde in Schritt 2 («Das haben wir schon gefunden», korrigierbar).
+// Seit 19.10.2026 gilt die Anmeldung als Bestätigung (sources_confirmed = true): die Analyse startet sofort,
+// das Team wartet nicht mehr auf einen zweiten Schritt im Kundenbereich.
 
 type Step = 'find' | 'contact'
 
@@ -71,7 +74,8 @@ function Spinner({ label }: { label: string }) {
 }
 
 /** Erste Eindrücke in Schritt 2 — nur aus Daten, die schon geladen sind (keine zusätzlichen Google-Anfragen). */
-function FirstFindings({ place, found }: { place: Place; found: Source[] | null }) {
+function FirstFindings({ place, found, draft, onDraft }: { place: Place; found: Source[] | null; draft: Source[] | null; onDraft: (next: Source[]) => void }) {
+  const [edit, setEdit] = useState(false)
   const row = (ok: boolean | null, text: React.ReactNode) => (
     <li style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, lineHeight: 1.5 }}>
       <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800,
@@ -79,10 +83,12 @@ function FirstFindings({ place, found }: { place: Place; found: Source[] | null 
       <span>{text}</span>
     </li>
   )
-  const social = (found ?? []).filter(s => s.key !== 'website')
-  const yes = social.filter(s => s.found).map(s => SOURCE_LABELS[s.key])
-  const no = social.filter(s => !s.found).map(s => SOURCE_LABELS[s.key])
-  const site = place.website?.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '')
+  const list = draft ?? found
+  const social = (list ?? []).filter(s => s.key !== 'website')
+  const yes = social.filter(s => !!s.value?.trim()).map(s => SOURCE_LABELS[s.key])
+  const no = social.filter(s => !s.value?.trim()).map(s => SOURCE_LABELS[s.key])
+  const web = list?.find(s => s.key === 'website')?.value?.trim() || place.website
+  const site = web?.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '')
   return (
     <div style={{ border: '1px solid var(--line)', borderRadius: 18, padding: '16px 18px', margin: '-8px 0 24px', backgroundColor: '#fff' }}>
       <p style={{ fontWeight: 700, fontSize: 15, margin: '0 0 10px' }}>Das haben wir schon gefunden</p>
@@ -90,13 +96,21 @@ function FirstFindings({ place, found }: { place: Place; found: Source[] | null 
         {place.manual
           ? row(false, 'Kein Google-Unternehmensprofil — bei Google Maps erscheinen Sie nicht.')
           : row(place.reviews >= 20 && (place.rating ?? 0) >= 4.2, <>Google-Profil: {place.rating !== null ? <>★ {place.rating.toLocaleString('de-DE', { minimumFractionDigits: 1 })} · </> : null}{place.reviews} Bewertungen</>)}
-        {row(!!place.website, place.website ? <>Website: <span data-no-translate>{site}</span></> : 'Keine Website im Google-Profil hinterlegt')}
+        {row(!!web, web ? <>Website: <span data-no-translate>{site}</span></> : 'Keine Website im Google-Profil hinterlegt')}
         {!place.manual && row(!!place.phone, place.phone ? 'Telefonnummer im Profil' : 'Keine Telefonnummer im Profil')}
         {found === null
           ? row(null, 'Wir suchen Ihre Social-Media-Profile…')
           : row(yes.length >= 2, yes.length ? <>Social Media: {yes.join(', ')}{no.length ? <span style={{ color: 'var(--muted)' }}> · nicht gefunden: {no.join(', ')}</span> : null}</> : 'Keine Social-Media-Profile gefunden')}
       </ul>
-      <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.55, margin: '12px 0 0' }}>Die vollständige Analyse — Platz bei Google Maps, Wettbewerber, KI-Assistenten und Website-Technik — erstellen wir nach der Anmeldung.</p>
+      {found !== null && draft && (edit ? (
+        <div style={{ marginTop: 14 }}>
+          <SourcesEditor sources={draft} onChange={onDraft} />
+          <button type="button" onClick={() => setEdit(false)} className="ul" style={{ marginTop: 10, background: 'none', border: 0, padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, color: 'var(--electric)' }}>Fertig</button>
+        </div>
+      ) : (
+        <button type="button" onClick={() => setEdit(true)} className="ul" style={{ marginTop: 12, background: 'none', border: 0, padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, color: 'var(--electric)' }}>Website oder Profil fehlt / stimmt nicht? Korrigieren</button>
+      ))}
+      <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.55, margin: '12px 0 0' }}>Mit der Anmeldung starten wir die vollständige Analyse — Platz bei Google Maps, Wettbewerber, KI-Assistenten und Website-Technik. Ein weiterer Schritt ist nicht nötig.</p>
     </div>
   )
 }
@@ -179,12 +193,20 @@ export default function CheckPage() {
   // Bestätigt werden sie danach im Kundenbereich.
   const discovery = useRef<Promise<Source[]> | null>(null)
   const [found, setFound] = useState<Source[] | null>(null)
+  // Vom Kunden korrigierte Quellen (Schritt 2). touched = Kunde hat etwas geändert → genau so übernehmen.
+  const [srcDraft, setSrcDraft] = useState<Source[] | null>(null)
+  const touched = useRef(false)
   const startDiscovery = (p: Place) => {
-    setFound(null)
+    setFound(null); setSrcDraft(null); touched.current = false
     const job = discoverSources(p).catch(() => [] as Source[])
     discovery.current = job
-    job.then(r => { if (discovery.current === job) setFound(r) })
+    job.then(r => {
+      if (discovery.current !== job) return
+      setFound(r)
+      if (!touched.current) setSrcDraft(SOURCE_ORDER.map(key => r.find(s => s.key === key) ?? { key, value: key === 'website' ? p.website ?? '' : '', found: false }))
+    })
   }
+  const editSources = (next: Source[]) => { touched.current = true; setSrcDraft(next) }
   const [query, setQuery] = useState(initialQ)
   const [results, setResults] = useState<Suggestion[] | null>(null)
   const [searching, setSearching] = useState(false)
@@ -258,9 +280,11 @@ export default function CheckPage() {
     const hadChecks = (await loadMyChecks().catch(() => [])).length > 0
     // Nicht länger als 4 s auf die Quellen warten — sonst leer anlegen und im Kundenbereich ergänzen.
     const empty: Source[] = SOURCE_ORDER.map(key => ({ key, value: '', found: false }))
-    const found = await Promise.race([discovery.current ?? Promise.resolve(empty), new Promise<Source[]>(r => setTimeout(() => r(empty), 4000))])
+    const found = touched.current && srcDraft ? srcDraft
+      : await Promise.race([discovery.current ?? Promise.resolve(empty), new Promise<Source[]>(r => setTimeout(() => r(empty), 4000))])
+    // Anmeldung = Bestätigung der Quellen: die Analyse startet sofort (Kundenbereich ruft audit-collect auf).
     const id = await createCheck({
-      place, region: `${place.city} + 30 km`, sources: found.length ? found : empty, contact,
+      place, region: `${place.city} + 30 km`, sources: found.length ? found : empty, contact, confirmed: true,
       sourcePage: params.get('from') ?? (briefCode ? `brief-${briefCode}` : null),
     })
     if (!id) return 'Das Speichern hat nicht geklappt. Bitte versuchen Sie es noch einmal.'
@@ -271,7 +295,7 @@ export default function CheckPage() {
   }
 
   const stepIdx = step === 'find' ? 0 : 1
-  const STEPS = [['Unternehmen', 'Profil bei Google finden und auswählen'], ['Kundenbereich', 'Konto anlegen — danach Website und Profile bestätigen']]
+  const STEPS = [['Unternehmen', 'Profil bei Google finden und auswählen'], ['Kundenbereich', 'Konto anlegen — die Analyse startet sofort']]
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)' }}>
@@ -365,7 +389,7 @@ export default function CheckPage() {
 
           {step === 'contact' && (
             <>
-              <StepHead n="Schritt 2 von 2" title="Ihr Kundenbereich" sub="Legen Sie ein Konto an oder melden Sie sich an. Währenddessen suchen wir Website und Social-Media-Profile — im Kundenbereich bestätigen Sie sie und sehen später den Bericht." />
+              <StepHead n="Schritt 2 von 2" title="Ihr Kundenbereich" sub="Prüfen Sie kurz, was wir gefunden haben, und legen Sie ein Konto an. Danach startet die Analyse — den Bericht sehen Sie im Kundenbereich." />
               {!loadingPlace && notFound ? (
                 <>
                   <p style={{ fontSize: 15, lineHeight: 1.7, margin: '0 0 18px' }}>Dieses Profil konnten wir nicht laden. Bitte suchen Sie noch einmal.</p>
@@ -374,7 +398,7 @@ export default function CheckPage() {
               ) : (
                 <>
                   <SelectedCompany place={place} loading={loadingPlace} onChange={backToFind} />
-                  {place && !loadingPlace && <FirstFindings place={place} found={found} />}
+                  {place && !loadingPlace && <FirstFindings place={place} found={found} draft={srcDraft} onDraft={editSources} />}
                   {DEMO && !place?.manual && <div style={{ margin: '-10px 0 20px' }}><DemoNote>Die Google-Anbindung ist noch nicht aktiv. Angezeigt werden Beispieldaten.</DemoNote></div>}
                   <AccountStep submitLabel="Weiter zum Kundenbereich" onAuthed={createAndGo} onBack={backToFind} />
                 </>

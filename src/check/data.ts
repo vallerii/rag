@@ -281,11 +281,14 @@ export async function claimRememberedLead() {
 }
 
 export async function createCheck(input: { place: Place; region: string; sources: Source[]; contact: Contact; sourcePage: string | null
+  /** Quellen hat der Kunde schon in /check gesehen (Anmeldung = Bestätigung) → Analyse kann sofort starten */
+  confirmed?: boolean
   /** Firma im Kundenbereich selbst eingetragen: Quellen gelten als bestätigt */
   manual?: { profileHint: 'yes' | 'no' | 'unknown'; scratch: boolean } }): Promise<string | null> {
   const { data, error } = await (await getSupabase()).from('checks').insert({
     place_id: input.place.id, place: input.place, region: input.region, sources: input.sources,
     contact: input.contact, source_page: input.sourcePage,
+    ...(input.confirmed ? { sources_confirmed: true } : {}),
     ...(input.manual ? { sources_confirmed: true, profile_hint: input.manual.profileHint, scratch: input.manual.scratch } : {}),
   }).select('id').single()
   if (error) { console.error(error); return null }

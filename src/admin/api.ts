@@ -134,7 +134,7 @@ export async function loadAll(): Promise<{ requests: Request[]; profiles: Profil
 export function checkState(c: Check): string {
   if (c.status === 'ready') return 'Bericht veröffentlicht'
   if (c.scratch) return OPEN.includes(c.stage) ? 'Start bei null — Gespräch vereinbaren' : 'Start bei null'
-  if (!c.sources_confirmed) return 'wartet auf Bestätigung der Quellen'
+  if (!c.sources_confirmed) return 'Quellen nicht bestätigt — Team kann starten'
   if (c.report_draft) return 'Berichtsentwurf fertig'
   return 'Daten werden gesammelt'
 }
@@ -310,6 +310,9 @@ export async function recollect(checkId: string): Promise<{ ok: boolean; message
   const { data } = await (await db()).auth.getSession()
   const token = data.session?.access_token
   if (!token) return { ok: false, message: 'Keine Sitzung' }
+  // Ältere Anfragen ohne Bestätigung der Quellen: das Team übernimmt die gefundenen Quellen und startet trotzdem.
+  // Der Kunde wartet nicht auf einen Schritt, den er vielleicht nie macht.
+  await (await db()).from('checks').update({ sources_confirmed: true }).eq('id', checkId).eq('sources_confirmed', false)
   try {
     const res = await fetch(`${proxy}/audit-collect`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ checkId, force: true }) })
     const j = await res.json().catch(() => ({})) as { status?: string; error?: string; detail?: string; pagespeed?: number | null }

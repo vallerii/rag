@@ -828,5 +828,8 @@
   "Start bei null": "С нуля",
   "Kunde wünscht (Auswahl auf /preise):": "Клиент выбрал (на /preise):",
   "— vorausgefüllt, bei Bedarf anpassen.": "— подставлено, при необходимости поправьте.",
-  "Bei Google nicht gefunden — Google-Maps-Link in die Tabelle eintragen und erneut prüfen": "Не найдена в Google — добавьте ссылку на Google Maps в таблицу и проверьте снова"
+  "Bei Google nicht gefunden — Google-Maps-Link in die Tabelle eintragen und erneut prüfen": "Не найдена в Google — добавьте ссылку на Google Maps в таблицу и проверьте снова",
+  "Der Kunde hat Website und Profile nicht bestätigt. Prüfen Sie die Quellen beim Kunden und sammeln Sie die Daten trotzdem.": "Клиент не подтвердил сайт и профили. Проверьте источники в карточке клиента и соберите данные — подтверждение не обязательно.",
+  "Der Kunde hat Website und Profile nicht bestätigt. Prüfen Sie die Quellen beim Kunden — mit «Daten sammeln» übernehmen wir sie und starten.": "Клиент не подтвердил сайт и профили. Проверьте источники в карточке клиента — кнопка «Собрать данные» примет их и запустит анализ.",
+  "Quellen nicht bestätigt — Team kann starten": "Источники не подтверждены — можно начинать"
 }

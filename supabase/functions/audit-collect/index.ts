@@ -54,7 +54,9 @@ Deno.serve(handler(10, async (req, body) => {
     staff = prof?.role === 'admin' || prof?.role === 'manager'
   }
   const force = staff && body.force === true
-  if (!check.sources_confirmed) return json(req, { error: 'not_confirmed' }, 409)
+  // Team («Daten sammeln») darf ohne Bestätigung des Kunden starten — die Quellen gelten dann als übernommen.
+  if (!check.sources_confirmed && !force) return json(req, { error: 'not_confirmed' }, 409)
+  if (!check.sources_confirmed) await db.from('checks').update({ sources_confirmed: true }).eq('id', check.id)
   if (check.status === 'ready' && !force) return json(req, { status: 'ready' })
   // «Start bei null»: nichts zu analysieren — nur auf ausdrücklichen Wunsch des Teams.
   if (check.scratch && !force) return json(req, { status: 'scratch' })

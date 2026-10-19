@@ -232,7 +232,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
             <div style={{ display: 'grid', gap: 4 }}>
               <strong style={{ fontSize: 16 }}>Bericht Nr. {nr} · Entwurf</strong>
               <span style={small}>
-                {!full.sources_confirmed ? 'Der Kunde hat Website und Profile noch nicht bestätigt — Daten können noch nicht gesammelt werden.'
+                {!full.sources_confirmed ? 'Der Kunde hat Website und Profile nicht bestätigt. Prüfen Sie die Quellen beim Kunden und sammeln Sie die Daten trotzdem.'
                   : needsCollect ? 'Nächster Schritt: Suchbegriffe festlegen und Daten sammeln.'
                   : `Daten erfasst ${fmt(full.audited_at!)} · nächster Schritt: Ergebnisse prüfen.`}
               </span>
@@ -314,12 +314,12 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
                 onChange={e => upd(x => { const k = [...(x.keywords ?? [])]; while (k.length < i) k.push(''); k[i] = e.target.value; return { ...x, keywords: k } })} />
             </label>
           ))}
-          {!full.sources_confirmed && <p style={{ ...small, color: '#B26B00', margin: 0 }}>Der Kunde hat Website und Profile noch nicht bestätigt — Daten können erst danach gesammelt werden.</p>}
+          {!full.sources_confirmed && <p style={{ ...small, color: '#B26B00', margin: 0 }}>Der Kunde hat Website und Profile nicht bestätigt. Prüfen Sie die Quellen beim Kunden — mit «Daten sammeln» übernehmen wir sie und starten.</p>}
           {footer(
             <span style={small}>{busy === 'collect' ? 'Daten werden gesammelt: Google, Website, PageSpeed… bis zu einer Minute.' : 'Das Sammeln dauert etwa 30 Sekunden.'}</span>,
             <>
               {!needsCollect && draft?.items && <button type="button" className="btn btn-md btn-outline-light" disabled={!!busy} onClick={() => goStep(2)}>Ohne neues Sammeln weiter</button>}
-              <button type="button" className="btn btn-md btn-electric" disabled={!!busy || !full.sources_confirmed || !keywords[0]?.trim()} onClick={collect}>{busy === 'collect' ? 'Wird gesammelt…' : 'Daten sammeln →'}</button>
+              <button type="button" className="btn btn-md btn-electric" disabled={!!busy || !keywords[0]?.trim()} onClick={collect}>{busy === 'collect' ? 'Wird gesammelt…' : 'Daten sammeln →'}</button>
             </>,
           )}
         </section>
