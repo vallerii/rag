@@ -169,7 +169,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
   const pdf = (v: ReportVersion) => {
     const r = v.report as unknown as PublishedReport & { recommended?: Recommended; offer_items?: OfferItem[] }
     const no = versions.length - versions.findIndex(x => x.id === v.id)
-    void printReport({ company: place.name ?? '', address: place.address ?? null, city: place.city ?? null, no, date: fmtDay(v.created_at),
+    void printReport({ ref: full?.id, company: place.name ?? '', address: place.address ?? null, city: place.city ?? null, no, date: fmtDay(v.created_at),
       channels: r.channels as never, recommendations: r.recommendations ?? [], recommended: r.recommended ?? null, items: r.offer_items ?? null })
   }
   const pdfBtn = (v: ReportVersion) => (
@@ -408,7 +408,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
             <>
               <button type="button" className="btn btn-md btn-outline-light" onClick={() => goStep(1)}>← Suchbegriffe</button>
               <button type="button" className="btn btn-md btn-outline-light" title="Druckfenster: drucken oder «Als PDF speichern»"
-                onClick={() => printReport({ company: place.name ?? '', address: place.address ?? null, city: place.city ?? null, no: nr, date: fmtDay(new Date().toISOString()), channels: report.channels as never, recommendations: report.recommendations ?? [], draft: true })}>
+                onClick={() => printReport({ ref: full?.id, company: place.name ?? '', address: place.address ?? null, city: place.city ?? null, no: nr, date: fmtDay(new Date().toISOString()), channels: report.channels as never, recommendations: report.recommendations ?? [], draft: true })}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>PDF Kurzanalyse
               </button>
             </>,
