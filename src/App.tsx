@@ -1652,7 +1652,7 @@ function Nav() {
       borderBottom: `1px solid ${solid ? 'var(--line)' : 'transparent'}`,
       transition: 'background-color 0.5s ease, border-color 0.5s ease, backdrop-filter 0.5s ease',
     }}>
-      <nav aria-label="Hauptnavigation" style={{ ...SHELL, padding: '0 clamp(20px, 4vw, 48px)', height: solid ? 66 : 82, display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'height 0.5s ' + EASE }}>
+      <nav aria-label="Hauptnavigation" style={{ ...SHELL, maxWidth: 'calc(1240px + 2 * clamp(20px, 4vw, 48px))', padding: '0 clamp(20px, 4vw, 48px)', height: solid ? 66 : 82, display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'height 0.5s ' + EASE }}>
         <a href="/" style={{ fontWeight: 800, fontSize: 24, color: fg, letterSpacing: '-0.04em', textDecoration: 'none', transition: 'color 0.4s ease' }}>
           RAG<span style={{ color: 'var(--electric)' }}>.</span>
         </a>
@@ -1947,10 +1947,10 @@ function ChannelBlock({ id, label, title, body, actions, aside, article, tone = 
     </div>
   )
   return (
-    <section id={id} style={{ backgroundColor: bg, color: 'var(--ink)', padding: soft ? 'clamp(24px, 3vw, 40px) clamp(12px, 4vw, 48px)' : 'var(--sec-y) clamp(20px, 4vw, 48px)', scrollMarginTop: 70, position: 'relative', overflow: 'clip' }}>
+    <section id={id} style={{ backgroundColor: bg, color: 'var(--ink)', padding: soft ? 'clamp(24px, 3vw, 40px) clamp(20px, 4vw, 48px)' : 'var(--sec-y) clamp(20px, 4vw, 48px)', scrollMarginTop: 70, position: 'relative', overflow: 'clip' }}>
       {!soft && backdrop}
       {soft ? (
-        <div className="d-panel" style={{ ...SHELL, maxWidth: 1344, backgroundColor: 'var(--brand-soft)', padding: 'clamp(40px, 5.4vw, 80px) clamp(20px, 4.8vw, 72px)' }}>
+        <div className="d-panel" style={{ ...SHELL, backgroundColor: 'var(--brand-soft)', padding: 'clamp(40px, 5.4vw, 80px) clamp(20px, 4.8vw, 72px)' }}>
           {backdrop}
           {inner}
         </div>
@@ -2257,8 +2257,8 @@ function BusinessCheck() {
   return (
     <>
       {order && <ProfileOrderModal onClose={() => setOrder(false)} />}
-      <section id="audit-quiz" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 3vw, 40px) clamp(12px, 4vw, 48px) var(--sec-y)', scrollMarginTop: 70 }}>
-        <div className="d-panel on-brand" style={{ ...SHELL, maxWidth: 1344, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(40px, 5.4vw, 80px) clamp(20px, 4.8vw, 72px)' }}>
+      <section id="audit-quiz" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 3vw, 40px) clamp(20px, 4vw, 48px) var(--sec-y)', scrollMarginTop: 70 }}>
+        <div className="d-panel on-brand" style={{ ...SHELL, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(40px, 5.4vw, 80px) clamp(20px, 4.8vw, 72px)' }}>
           <RingsBackdrop size={900} color="rgba(255,255,255,0.14)" style={{ right: -240, top: -220 }} />
           <div className="audit-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 440px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
             <div>
@@ -4607,8 +4607,8 @@ function usePageMeta(title: string, description: string, ogType: 'website' | 'ar
 
 function ContentCTA() {
   return (
-    <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 3vw, 40px) clamp(12px, 4vw, 48px) clamp(56px, 7vw, 96px)' }}>
-      <div className="d-panel on-brand" style={{ ...SHELL, maxWidth: 1344, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(40px, 5vw, 72px) clamp(20px, 4.8vw, 72px)' }}>
+    <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 3vw, 40px) clamp(20px, 4vw, 48px) clamp(56px, 7vw, 96px)' }}>
+      <div className="d-panel on-brand" style={{ ...SHELL, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(40px, 5vw, 72px) clamp(20px, 4.8vw, 72px)' }}>
         <RingsBackdrop size={760} color="rgba(255,255,255,0.14)" style={{ right: -180, top: -260 }} />
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
           <div style={{ maxWidth: 620 }}>
@@ -5979,8 +5979,8 @@ function ServicePage({ slug }: { slug: string }) {
       )}
 
       {/* 3 — Was Sie brauchen — und wobei wir helfen: großes Brand-Soft-Panel mit Stadtplan */}
-      <section style={{ backgroundColor: 'var(--bone)', padding: 'var(--sec-y, 110px) clamp(12px, 4vw, 48px)' }}>
-        <div className="d-panel" style={{ ...SHELL, maxWidth: 1344, backgroundColor: 'var(--brand-soft)', padding: 'clamp(48px, 7vw, 104px) clamp(20px, 6vw, 100px) clamp(44px, 6vw, 96px)' }}>
+      <section style={{ backgroundColor: 'var(--bone)', padding: 'var(--sec-y, 110px) clamp(20px, 4vw, 48px)' }}>
+        <div className="d-panel" style={{ ...SHELL, backgroundColor: 'var(--brand-soft)', padding: 'clamp(48px, 7vw, 104px) clamp(20px, 6vw, 100px) clamp(44px, 6vw, 96px)' }}>
           <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
             <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
               <defs><pattern id="svc-needs-map" width="120" height="96" patternUnits="userSpaceOnUse"><rect x="8" y="8" width="104" height="80" rx="10" fill="#E3E1FB" /></pattern></defs>
@@ -6076,8 +6076,8 @@ function ServicePage({ slug }: { slug: string }) {
       </section>
 
       {/* 6 — Abschluss: Brand-Panel mit Formular und Beispielbericht (wie der Check auf der Startseite) */}
-      <section style={{ backgroundColor: 'var(--paper)', padding: '0 clamp(12px, 4vw, 48px) var(--sec-y, 110px)' }}>
-        <div className="d-panel on-brand" style={{ ...SHELL, maxWidth: 1344, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(40px, 5.4vw, 88px) clamp(20px, 5.6vw, 96px)' }}>
+      <section style={{ backgroundColor: 'var(--paper)', padding: '0 clamp(20px, 4vw, 48px) var(--sec-y, 110px)' }}>
+        <div className="d-panel on-brand" style={{ ...SHELL, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(40px, 5.4vw, 88px) clamp(20px, 5.6vw, 96px)' }}>
           <RingsBackdrop size={900} color="rgba(255,255,255,0.14)" style={{ right: -240, top: -220 }} />
           <div className="audit-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 420px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
             <div>
