@@ -48,7 +48,7 @@ const footer = () => `
   <div class="foot">
     <div><u>Anschrift</u><br>${brandName()}<br>${esc(fill(COMPANY.street, 'Straße'))}<br>${esc(fill(COMPANY.zip, 'PLZ'))} ${esc(fill(COMPANY.city, 'Ort'))}</div>
     <div><u>Kontakt</u><br>Telefon ${esc(fill(COMPANY.phone, 'Telefon'))}<br>${esc(COMPANY.email)}<br>${esc(shortUrl(siteUrl()))}</div>
-    <div><u>Angaben zum Unternehmen</u><br>${COMPANY.representative ? `Geschäftsführung: ${esc(COMPANY.representative)}<br>` : '[Geschäftsführung]<br>'}${COMPANY.registerNumber ? `${esc(COMPANY.registerCourt)} ${esc(COMPANY.registerNumber)}<br>` : '[Handelsregister]<br>'}${COMPANY.vatId ? `USt-IdNr. ${esc(COMPANY.vatId)}` : COMPANY.smallBusiness ? 'Kleinunternehmer § 19 UStG' : '[USt-IdNr.]'}</div>
+    <div><u>Angaben zum Unternehmen</u><br>${COMPANY.representative ? `Geschäftsführung: ${esc(COMPANY.representative)}<br>` : '[Geschäftsführung]<br>'}${COMPANY.registerNumber ? `${esc(COMPANY.registerCourt)} ${esc(COMPANY.registerNumber)}<br>` : '[Handelsregister]<br>'}${COMPANY.vatId ? `USt-IdNr. ${esc(COMPANY.vatId)}` : '[USt-IdNr.]'}</div>
     ${COMPANY.iban ? `<div><u>Bankverbindung</u><br>${esc(COMPANY.bankName)}<br>IBAN ${esc(COMPANY.iban)}<br>BIC ${esc(COMPANY.bic)}</div>` : ''}
   </div>`
 
@@ -184,14 +184,14 @@ async function leadLetter(p: ProspectFull): Promise<string> {
   const issues = (p.issues ?? []).slice(0, 5)
   // Steht die Position schon in den Problemen («Bei «…» …»), nicht doppelt erwähnen.
   const rankLine = comp?.query && !issues.some(i => i.text.startsWith('Bei «'))
-    ? comp.rank && comp.rank <= 3 ? '' : `<p>Wer in Ihrer Region bei Google Maps nach «${esc(comp.query)}» sucht, findet Sie ${comp.rank ? `erst auf Platz ${comp.rank}` : 'nicht unter den ersten Treffern'} — die ersten drei Einträge bekommen die meisten Anrufe.</p>`
+    ? comp.rank && comp.rank <= 3 ? '' : `<p>Wer in Ihrer Region bei Google Maps nach «${esc(comp.query)}» sucht, findet Sie ${comp.rank ? `erst auf Platz ${comp.rank}` : 'nicht unter den ersten Treffern'}. Die ersten drei Einträge bekommen die meisten Anrufe.</p>`
     : ''
   const ref = `KA-${String(p.code).toUpperCase()}`
   return `<section class="page lead">${frame({ ref, refNote: '(Bitte bei Rückfragen angeben)', date: today(), kind: 'Kurzanalyse', qr, qrCap: 'ONLINE ABRUFEN', recipient: p.name, address: addressLines(p.address, p.city) }, `
     <div class="body">
       <div class="subj">Kurzanalyse Ihrer Sichtbarkeit bei Google, Google Maps und Social Media<span>Unternehmen: ${esc(p.name)}${p.city ? `, ${esc(p.city)}` : ''}</span></div>
       <p>Sehr geehrte Damen und Herren,</p>
-      <p>wir haben geprüft, wie Ihr Unternehmen bei Google Maps, in der Google-Suche und in Social Media erscheint — dort, wo Kunden heute nach ${esc(p.category || 'Anbietern')} in ${esc(p.city || 'Ihrer Region')} suchen. Das Ergebnis im Überblick:</p>
+      <p>wir haben geprüft, wie Ihr Unternehmen bei Google Maps, in der Google-Suche und in Social Media erscheint, dort, wo Kunden heute nach ${esc(p.category || 'Anbietern')} in ${esc(p.city || 'Ihrer Region')} suchen. Das Ergebnis im Überblick:</p>
       ${scoreTable(p.report_draft?.channels, today())}
       ${issues.length ? findings(issues.slice(0, rankLine ? 4 : 5).map(i => [i.mark, i.text] as [Mark, string]), 'Feststellung') : ''}
       ${rankLine}
@@ -260,7 +260,7 @@ const flowPageCss = (ref: string) => `
 
 function openPrint(title: string): Window | null {
   const w = window.open('', '_blank')
-  if (!w) { alert('Das Druckfenster wurde blockiert — bitte Pop-ups für diese Seite erlauben.'); return null }
+  if (!w) { alert('Das Druckfenster wurde blockiert. Bitte Pop-ups für diese Seite erlauben.'); return null }
   w.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${esc(title)}</title></head><body style="font:16px Arial;padding:40px">Wird vorbereitet…</body></html>`)
   return w
 }

@@ -81,7 +81,7 @@ export function HistoryCard({ versions }: { versions: ReportVersion[] }) {
   return (
     <section style={card}>
       {kick('Verlauf')}
-      <p style={{ fontSize: 14, color: 'var(--muted)', margin: '0 0 12px', lineHeight: 1.6 }}>Nach jeder Arbeitsphase prüfen wir erneut — so sehen Sie, was sich verbessert hat.</p>
+      <p style={{ fontSize: 14, color: 'var(--muted)', margin: '0 0 12px', lineHeight: 1.6 }}>Nach jeder Arbeitsphase prüfen wir erneut, so sehen Sie, was sich verbessert hat.</p>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 520 }}>
           <thead><tr><th style={th}>Datum</th><th style={th}>Gesamt</th><th style={th}>KI-Suche</th><th style={th}>Google Maps</th><th style={th}>Website</th><th style={th}>Social Media</th></tr></thead>

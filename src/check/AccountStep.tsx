@@ -101,7 +101,7 @@ export default function AccountStep({ submitLabel, loggedInLabel, onAuthed, onBa
       ) : (
         <>
           <div role="tablist" aria-label="Konto" className="acc-switch" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, padding: 4, borderRadius: 999, backgroundColor: 'var(--bone)', marginBottom: 22 }}>
-            {([['register', 'Neu hier — Konto anlegen'], ['login', 'Ich habe schon ein Konto']] as const).map(([m, l]) => (
+            {([['register', 'Neu hier? Konto anlegen'], ['login', 'Ich habe schon ein Konto']] as const).map(([m, l]) => (
               <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => switchTo(m)}
                 style={{ border: 'none', borderRadius: 999, padding: '11px 14px', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', backgroundColor: mode === m ? '#fff' : 'transparent', color: mode === m ? 'var(--ink)' : 'var(--muted)', boxShadow: mode === m ? '0 2px 8px rgba(7,7,12,0.08)' : 'none', transition: 'all 0.2s ease' }}>
                 {l}

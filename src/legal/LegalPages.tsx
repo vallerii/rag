@@ -1,13 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Rechtstexte: Impressum (§ 5 DDG), Datenschutzerklärung (DSGVO), AGB (nur B2B).
-// Stand 07.10.2026 — Entwurf auf Basis der tatsächlich eingesetzten Dienste.
+// Stand 23.10.2026 — Entwurf auf Basis der tatsächlich eingesetzten Dienste.
 // Vor dem Livegang: Firmendaten in src/company.ts ausfüllen und die Texte
 // einmal von Anwalt/Rechtstext-Dienst (z. B. IT-Recht Kanzlei, eRecht24) prüfen lassen.
 // Wenn ein neuer Dienst dazukommt (Analyse, Newsletter-Tool, Chat …) → Datenschutz ergänzen.
 // ─────────────────────────────────────────────────────────────────────────────
 import { COMPANY, TERMS, fill, phoneHref, priceNote } from '../company'
 
-export const LEGAL_UPDATED = '07.10.2026'
+export const LEGAL_UPDATED = '23.10.2026'
 
 const h2: React.CSSProperties = { fontSize: 'clamp(19px, 1.8vw, 24px)', lineHeight: 1.25, margin: '40px 0 12px', fontWeight: 700 }
 const h3: React.CSSProperties = { fontSize: 16.5, lineHeight: 1.35, margin: '24px 0 8px', fontWeight: 700 }
@@ -49,7 +49,7 @@ export function ImpressumBody() {
         <>
           <h2 style={h2}>Registereintrag</h2>
           <p style={p}>
-            Registergericht: <Todo v={c.registerCourt} label="Amtsgericht — nur bei GmbH/UG, sonst Abschnitt entfernen" /><br />
+            Registergericht: <Todo v={c.registerCourt} label="Amtsgericht (nur bei GmbH/UG, sonst Abschnitt entfernen)" /><br />
             Registernummer: <Todo v={c.registerNumber} label="HRB …" />
           </p>
         </>
@@ -57,9 +57,7 @@ export function ImpressumBody() {
 
       <h2 style={h2}>Umsatzsteuer</h2>
       <p style={p}>
-        {c.smallBusiness
-          ? 'Gemäß § 19 UStG wird keine Umsatzsteuer berechnet (Kleinunternehmerregelung).'
-          : <>Umsatzsteuer-Identifikationsnummer gemäß § 27 a UStG: <Todo v={c.vatId} label="DE…" /></>}
+        Umsatzsteuer-Identifikationsnummer gemäß § 27 a UStG: <Todo v={c.vatId} label="DE…" />
       </p>
 
       <h2 style={h2}>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
@@ -94,7 +92,7 @@ export function DatenschutzBody() {
       <ul style={ul}>
         <li>Ihre Sprachwahl (Deutsch/Russisch),</li>
         <li>Ihre Anmeldung im Kundenbereich (Sitzungs-Token), solange Sie angemeldet sind,</li>
-        <li>während eines Sichtbarkeits-Checks: einen vorübergehenden Prüf-Pass des Bot-Schutzes (Abschnitt 6).</li>
+        <li>während eines Sichtbarkeits-Checks im Sitzungsspeicher: einen vorübergehenden Prüf-Pass des Bot-Schutzes (Abschnitt 6) und einen Merker, dass die Analyse bereits gestartet wurde. Beides wird beim Schließen des Tabs gelöscht.</li>
       </ul>
       <p style={p}>Eine Einwilligung (Cookie-Banner) ist dafür nicht erforderlich. Sie können den Speicher jederzeit in Ihrem Browser löschen.</p>
 
@@ -105,30 +103,34 @@ export function DatenschutzBody() {
       <h3 style={h3}>Unternehmenssuche</h3>
       <p style={p}>Wenn Sie Ihr Unternehmen suchen, senden wir den Suchbegriff von unserem Server an die Google Places API (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland). Ihre IP-Adresse wird dabei nicht an Google übermittelt. Zurück kommen öffentliche Angaben aus dem Google-Unternehmensprofil (Name, Adresse, Bewertungen usw.).</p>
       <h3 style={h3}>Konto und Prüfung</h3>
-      <p style={p}>Für den Check legen Sie ein Konto an. Wir speichern E-Mail-Adresse, Passwort (nur als verschlüsselter Hash), Name, Telefonnummer, das gewählte Unternehmen, die angegebenen Website- und Social-Media-Adressen, Ihre Nachrichten an uns, Termine, Angebote und den Prüfbericht. Für den Bericht rufen wir Ihre Website ab, prüfen öffentliche Angaben (z. B. Impressum, Datenschutz, Sitemap) und messen die Ladezeit über Google PageSpeed Insights. Rechtsgrundlage ist die Durchführung des von Ihnen angefragten Checks bzw. Vertrags (Art. 6 Abs. 1 lit. b DSGVO).</p>
+      <p style={p}>Für den Sichtbarkeits-Check, nach dem Fragebogen oder nach der Paketauswahl legen Sie ein Konto an. Wir speichern E-Mail-Adresse, Passwort (nur als verschlüsselter Hash), Name, Telefonnummer, das gewählte Unternehmen, die angegebenen Website- und Social-Media-Adressen, Ihre Antworten im Fragebogen und die gewählten Pakete, Ihre Nachrichten an uns, Termine, Angebote, Rechnungen, den Projektstand und den Prüfbericht. Nach der Anmeldung startet die Analyse automatisch: Wir rufen das Google-Unternehmensprofil über die Google Places API ab, rufen Ihre Website ab, prüfen öffentliche Angaben (z. B. Impressum, Datenschutz, Sitemap) und messen die Ladezeit über Google PageSpeed Insights. Rechtsgrundlage ist die Durchführung des von Ihnen angefragten Checks bzw. Vertrags (Art. 6 Abs. 1 lit. b DSGVO).</p>
       <p style={p}>Datenbank und Anmeldung betreibt Supabase Inc. (970 Toa Payoh North #07-04, Singapur) als Auftragsverarbeiter; die Daten liegen auf Servern in der EU (Frankfurt am Main). Ein Auftragsverarbeitungsvertrag mit Standardvertragsklauseln besteht.</p>
       <h3 style={h3}>Speicherdauer</h3>
-      <p style={p}>Kontodaten speichern wir, bis Sie Ihr Konto löschen — das geht jederzeit selbst unter «Konto» im Kundenbereich. Kommt kein Vertrag zustande, löschen wir Anfragen spätestens 24 Monate nach dem letzten Kontakt. Daten, die wir aus steuer- und handelsrechtlichen Gründen aufbewahren müssen (Rechnungen, Verträge), löschen wir nach Ablauf der gesetzlichen Fristen (6 bzw. 10 Jahre).</p>
+      <p style={p}>Kontodaten speichern wir, bis Sie Ihr Konto löschen. Das geht jederzeit selbst unter «Konto» im Kundenbereich. Kommt kein Vertrag zustande, löschen wir Anfragen spätestens 24 Monate nach dem letzten Kontakt. Daten, die wir aus steuer- und handelsrechtlichen Gründen aufbewahren müssen (Rechnungen, Verträge), löschen wir nach Ablauf der gesetzlichen Fristen (6 bzw. 10 Jahre).</p>
 
       <h2 style={h2}>6. Schutz vor Bots (Cloudflare Turnstile)</h2>
-      <p style={p}>Unternehmenssuche, Registrierung, Anmeldung und «Passwort vergessen» schützen wir mit Cloudflare Turnstile (Cloudflare, Inc., 101 Townsend St., San Francisco, CA 94107, USA). Turnstile prüft anhand technischer Merkmale Ihres Browsers und Ihrer IP-Adresse, ob ein Mensch die Seite nutzt — ohne Bilderrätsel und ohne Cookies zu Werbezwecken. Zweck ist der Schutz vor Missbrauch und automatisierten Anfragen, die uns Kosten verursachen (Art. 6 Abs. 1 lit. f DSGVO). Cloudflare ist unter dem EU-US Data Privacy Framework zertifiziert. Mehr: <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener" className="ul">cloudflare.com/privacypolicy</a>.</p>
+      <p style={p}>Unternehmenssuche, Registrierung, Anmeldung und «Passwort vergessen» schützen wir mit Cloudflare Turnstile (Cloudflare, Inc., 101 Townsend St., San Francisco, CA 94107, USA). Turnstile prüft anhand technischer Merkmale Ihres Browsers und Ihrer IP-Adresse, ob ein Mensch die Seite nutzt, ohne Bilderrätsel und ohne Cookies zu Werbezwecken. Zweck ist der Schutz vor Missbrauch und automatisierten Anfragen, die uns Kosten verursachen (Art. 6 Abs. 1 lit. f DSGVO). Cloudflare ist unter dem EU-US Data Privacy Framework zertifiziert. Mehr: <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener" className="ul">cloudflare.com/privacypolicy</a>.</p>
 
       <h2 style={h2}>7. Terminbuchung</h2>
       <p style={p}>Für Termine verlinken wir auf die Terminbuchung von Google Kalender. Erst wenn Sie den Link öffnen, verarbeitet Google Ihre Angaben (Name, E-Mail, gewählter Termin) nach der Datenschutzerklärung von Google. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Anbahnung eines Vertrags).</p>
 
       <h2 style={h2}>8. Kontakt per E-Mail und Telefon</h2>
-      <p style={p}>Wenn Sie uns schreiben oder anrufen, verarbeiten wir Ihre Angaben, um die Anfrage zu beantworten (Art. 6 Abs. 1 lit. b bzw. f DSGVO). Systemmails (Bestätigung, Passwort zurücksetzen, Bericht ist fertig) versenden wir über unseren E-Mail-Dienst als Auftragsverarbeiter.</p>
+      <p style={p}>Wenn Sie uns schreiben oder anrufen, verarbeiten wir Ihre Angaben, um die Anfrage zu beantworten (Art. 6 Abs. 1 lit. b bzw. f DSGVO).</p>
+      <p style={p}>E-Mails aus dem Kundenbereich (z. B. Bestätigung, Passwort zurücksetzen, neue Nachricht, Ansprechpartner zugeteilt, Bericht ist fertig, Angebot, Termin, Rechnung, Projektstand) versenden wir über Brevo (Sendinblue GmbH, Köpenicker Str. 126, 10179 Berlin) als Auftragsverarbeiter. Dabei verarbeitet Brevo Ihre E-Mail-Adresse, Ihren Namen und den Inhalt der Benachrichtigung; die Daten liegen auf Servern in der EU. Rechtsgrundlage ist die Durchführung des Checks bzw. Vertrags (Art. 6 Abs. 1 lit. b DSGVO). Ein Auftragsverarbeitungsvertrag besteht.</p>
 
       <h2 style={h2}>9. Tipps per E-Mail (nur mit Einwilligung)</h2>
-      <p style={p}>Gelegentliche Tipps zur lokalen Sichtbarkeit schicken wir nur, wenn Sie das bei der Registrierung ausdrücklich angekreuzt haben (Art. 6 Abs. 1 lit. a DSGVO, § 7 Abs. 2 UWG). Wir speichern dazu Zeitpunkt und Inhalt Ihrer Einwilligung. Sie können sie jederzeit ohne Angabe von Gründen widerrufen — per Abmeldelink in jeder E-Mail oder formlos an {c.email}.</p>
+      <p style={p}>Gelegentliche Tipps zur lokalen Sichtbarkeit schicken wir nur, wenn Sie das bei der Registrierung ausdrücklich angekreuzt haben (Art. 6 Abs. 1 lit. a DSGVO, § 7 Abs. 2 UWG). Wir speichern dazu Zeitpunkt und Inhalt Ihrer Einwilligung. Sie können sie jederzeit ohne Angabe von Gründen widerrufen, per Abmeldelink in jeder E-Mail oder formlos an {c.email}.</p>
 
-      <h2 style={h2}>10. Bewertungsanfragen für unsere Kunden</h2>
+      <h2 style={h2}>10. Briefe an Unternehmen</h2>
+      <p style={p}>Wir schreiben ausgewählte Betriebe in unserer Region per Post an und legen eine kurze Sichtbarkeits-Analyse bei. Dafür verwenden wir nur öffentlich zugängliche Geschäftsangaben aus dem Google-Unternehmensprofil und von der Website des Betriebs (Firmenname, Anschrift, Branche, Website, Bewertungen). Rechtsgrundlage ist unser berechtigtes Interesse an der Vorstellung unserer Leistungen gegenüber Unternehmen (Art. 6 Abs. 1 lit. f DSGVO). Sie können dem jederzeit formlos an {c.email} widersprechen; dann schreiben wir Sie nicht mehr an und löschen Ihre Daten, soweit wir sie nicht für die Sperrliste brauchen. Reagiert ein Betrieb nicht, löschen wir die Daten spätestens 24 Monate nach dem Brief.</p>
+
+      <h2 style={h2}>11. Bewertungsanfragen für unsere Kunden</h2>
       <p style={p}>Wenn wir für ein Kundenunternehmen dessen Kunden um eine Bewertung bitten (Link oder QR-Code), handeln wir im Auftrag dieses Unternehmens (Art. 28 DSGVO). Verantwortlich ist dann das Kundenunternehmen; es stellt sicher, dass für Anfragen per E-Mail oder SMS eine Einwilligung vorliegt.</p>
 
-      <h2 style={h2}>11. Webanalyse</h2>
-      <p style={p}>Derzeit setzen wir keine Webanalyse ein. Sollte sich das ändern, informieren wir hier vorab und holen — wo nötig — Ihre Einwilligung ein.</p>
+      <h2 style={h2}>12. Webanalyse</h2>
+      <p style={p}>Derzeit setzen wir keine Webanalyse ein. Sollte sich das ändern, informieren wir hier vorab und holen, wo nötig, Ihre Einwilligung ein.</p>
 
-      <h2 style={h2}>12. Ihre Rechte</h2>
+      <h2 style={h2}>13. Ihre Rechte</h2>
       <p style={p}>Sie haben das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) sowie auf Widerruf erteilter Einwilligungen mit Wirkung für die Zukunft (Art. 7 Abs. 3). Eine E-Mail an {c.email} genügt.</p>
       <p style={{ ...p, fontWeight: 600, color: 'var(--ink)' }}>Widerspruchsrecht: Verarbeiten wir Daten auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO, können Sie aus Gründen, die sich aus Ihrer besonderen Situation ergeben, jederzeit widersprechen (Art. 21 DSGVO).</p>
       <p style={p}>Sie können sich außerdem bei einer Datenschutz-Aufsichtsbehörde beschweren, z. B. in dem Bundesland, in dem Sie wohnen oder in dem wir unseren Sitz haben (Art. 77 DSGVO).</p>
@@ -146,12 +148,12 @@ export function AgbBody() {
       <p style={p}>Allgemeine Geschäftsbedingungen von <Todo v={c.legalName} label="Firmenname mit Rechtsform" /> («RAG», «wir») für Leistungen rund um lokale Sichtbarkeit.</p>
 
       {n(1, 'Geltungsbereich')}
-      <p style={p}>(1) Diese AGB gelten für alle Verträge zwischen uns und unseren Kunden. Unsere Leistungen richten sich ausschließlich an Unternehmer im Sinne von § 14 BGB, juristische Personen des öffentlichen Rechts und öffentlich-rechtliche Sondervermögen — nicht an Verbraucher.</p>
+      <p style={p}>(1) Diese AGB gelten für alle Verträge zwischen uns und unseren Kunden. Unsere Leistungen richten sich ausschließlich an Unternehmer im Sinne von § 14 BGB, juristische Personen des öffentlichen Rechts und öffentlich-rechtliche Sondervermögen, nicht an Verbraucher.</p>
       <p style={p}>(2) Abweichende Bedingungen des Kunden gelten nur, wenn wir ihnen ausdrücklich in Textform zustimmen.</p>
 
       {n(2, 'Vertragsschluss')}
       <p style={p}>(1) Eine Anfrage über die Website, den Sichtbarkeits-Check oder den Kundenbereich ist noch kein Auftrag. Nach einem Gespräch erhält der Kunde ein Angebot im Kundenbereich oder in Textform.</p>
-      <p style={p}>(2) Der Vertrag kommt zustande, wenn der Kunde das Angebot annimmt — per Klick auf «Angebot annehmen» im Kundenbereich oder in Textform — und wir die Annahme bestätigen. Der kostenlose Sichtbarkeits-Check begründet keine Zahlungspflicht.</p>
+      <p style={p}>(2) Der Vertrag kommt zustande, wenn der Kunde das Angebot annimmt (per Klick auf «Angebot annehmen» im Kundenbereich oder in Textform) und wir die Annahme bestätigen. Der kostenlose Sichtbarkeits-Check begründet keine Zahlungspflicht.</p>
 
       {n(3, 'Leistungen')}
       <p style={p}>(1) Umfang und Inhalt der Leistungen ergeben sich aus dem angenommenen Angebot und der Paketbeschreibung auf <a href="/preise" className="ul">/preise</a> zum Zeitpunkt der Annahme.</p>
@@ -177,11 +179,12 @@ export function AgbBody() {
       <p style={p}>(2) Das Recht zur außerordentlichen Kündigung aus wichtigem Grund bleibt unberührt, z. B. bei Zahlungsverzug von mehr als zwei Monatsbeiträgen.</p>
       <p style={p}>(3) Kündigungen bedürfen der Textform (E-Mail genügt).</p>
 
-      {n(8, 'Was dem Kunden gehört — auch nach Vertragsende')}
+      {n(8, 'Was dem Kunden gehört, auch nach Vertragsende')}
       <p style={p}>(1) <strong>Google-Unternehmensprofil und Social-Media-Konten</strong> gehören dem Kunden. Der Kunde ist bzw. bleibt Inhaber; wir arbeiten mit einem eigenen Verwalter-Zugang, den wir bei Vertragsende abgeben.</p>
       <p style={p}>(2) <strong>Domain:</strong> Domains, die wir für den Kunden registrieren, werden auf den Namen des Kunden registriert. Bei Vertragsende übertragen wir die Domain auf Wunsch kostenlos (Auth-Code bzw. Providerwechsel). Laufende Registrierungsgebühren bis dahin sind im Paket enthalten.</p>
       <p style={p}>(3) <strong>Inhalte:</strong> Texte, Fotos und Logos, die der Kunde liefert oder die wir für ihn erstellen und die er bezahlt hat, darf er nach Vertragsende uneingeschränkt weiter nutzen. Auf Wunsch übergeben wir sie gesammelt als Dateien.</p>
       <p style={p}>(4) <strong>Website:</strong> Die Website läuft während der Vertragslaufzeit auf unserer Technik (Vorlagen, Hosting, Wartung). Bei Vertragsende erhält der Kunde auf Wunsch einen Export der Website mit allen Inhalten als statische Dateien, die bei jedem Hoster betrieben werden können. Ein Anspruch auf unsere Quellcode-Vorlagen und Werkzeuge besteht nicht.</p>
+      <p style={p}>(5) <strong>Individuelle Funktionen:</strong> Funktionen, die über eine statische Website hinausgehen und gesondert beauftragt werden (z. B. ein Kundenbereich mit Anmeldung, Schnittstellen zu anderen Systemen), lassen sich nicht als statische Dateien exportieren. Ob und wie sie bei Vertragsende übergeben werden, regelt das jeweilige Angebot; ohne eine solche Regelung erhält der Kunde die Inhalte und Daten dieser Funktionen in einem gängigen Dateiformat.</p>
 
       {n(9, 'Haftung')}
       <p style={p}>(1) Wir haften unbeschränkt bei Vorsatz und grober Fahrlässigkeit, für Schäden aus der Verletzung von Leben, Körper oder Gesundheit sowie nach dem Produkthaftungsgesetz.</p>
@@ -205,6 +208,6 @@ export function AgbBody() {
 /** Kurzfassung für /preise («Gut zu wissen»). */
 export const PRICE_FACTS: [string, string][] = [
   ['Preise', priceNote() + ' Unsere Angebote richten sich an Unternehmen.'],
-  ['Laufzeit', `Monatspakete: Mindestlaufzeit ${TERMS.minTermMonths} Monate, danach monatlich kündbar (${TERMS.noticeDays} Tage zum Monatsende). Das Google-Profil ist eine Einmalzahlung — ohne Abo.`],
-  ['Ihr Eigentum', 'Google-Profil, Social-Media-Konten und Domain laufen auf Ihren Namen. Kündigen Sie, nehmen Sie alles mit — die Website auf Wunsch als Export.'],
+  ['Laufzeit', `Monatspakete: Mindestlaufzeit ${TERMS.minTermMonths} Monate, danach monatlich kündbar (${TERMS.noticeDays} Tage zum Monatsende). Das Google-Profil ist eine Einmalzahlung, ohne Abo.`],
+  ['Ihr Eigentum', 'Google-Profil, Social-Media-Konten und Domain laufen auf Ihren Namen. Kündigen Sie, nehmen Sie alles mit, die Website auf Wunsch als Export.'],
 ]

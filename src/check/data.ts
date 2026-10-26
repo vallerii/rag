@@ -450,7 +450,8 @@ export function initials(name: string): string {
 // ── Ansprechpartner & Angebot (Kundenbereich) ────────────────────────────────
 export type Manager = { name: string | null; title: string | null; photo_url: string | null; booking_url: string | null }
 export type OfferLine = { id: string; name: string; description?: string; price: number; unit: 'einmalig' | 'pro Monat' }
-export type ClientOffer = { id: string; request_kind: 'check' | 'order' | 'lead' | null; request_id: string | null; items: OfferLine[]; note: string | null; status: 'sent' | 'accepted'; sent_at: string | null; updated_at: string }
+/** parent_id: Zusatzangebot zu einem angenommenen Angebot (supabase/addendum.sql). */
+export type ClientOffer = { id: string; request_kind: 'check' | 'order' | 'lead' | null; request_id: string | null; parent_id?: string | null; items: OfferLine[]; note: string | null; status: 'sent' | 'accepted'; sent_at: string | null; updated_at: string }
 
 /** Wer betreut den Kunden (Verantwortlicher im Admin). null = noch niemand zugeteilt. */
 export async function loadMyManager(): Promise<Manager | null> {
@@ -460,7 +461,7 @@ export async function loadMyManager(): Promise<Manager | null> {
 }
 /** Vom Team gesendete Angebote — eins je Unternehmen/Anfrage (Entwürfe sieht der Kunde nicht). */
 export async function loadMyOffers(): Promise<ClientOffer[]> {
-  const { data, error } = await (await getSupabase()).from('offers').select('id, request_kind, request_id, items, note, status, sent_at, updated_at').eq('user_id', await myUid())
+  const { data, error } = await (await getSupabase()).from('offers').select('*').eq('user_id', await myUid())
     .neq('status', 'draft').order('updated_at', { ascending: false })
   return error ? [] : (data as ClientOffer[])
 }
@@ -530,6 +531,29 @@ export async function loadMyProjects(): Promise<ClientProject[]> {
     .select('*')
     .eq('user_id', await myUid())
   return error ? [] : (data as ClientProject[])
+}
+/**
+ * Kundenbereich aktuell halten: Änderungen des Teams (Arbeitsplan, Neuigkeiten, Rechnung, Angebot, Bericht, Nachrichten)
+ * erscheinen ohne Neuladen. Supabase Realtime mit denselben Rechten wie normale Abfragen (RLS);
+ * zusätzlich beim Zurückkehren auf den Tab und alle 60 s, falls Realtime nicht verbunden ist.
+ */
+export async function watchMyData(onChange: () => void): Promise<() => void> {
+  const s = await getSupabase(), uid = await myUid()
+  let timer: number | undefined, live = false
+  const ping = () => { window.clearTimeout(timer); timer = window.setTimeout(onChange, 400) }
+  let ch = s.channel(`kabinett-${uid}`)
+  for (const table of ['projects', 'offers', 'messages', 'checks', 'check_reports', 'appointments', 'orders']) {
+    ch = ch.on('postgres_changes', { event: '*', schema: 'public', table, filter: `user_id=eq.${uid}` }, ping)
+  }
+  ch.subscribe(st => { live = st === 'SUBSCRIBED' })
+  const onVisible = () => { if (document.visibilityState === 'visible') ping() }
+  document.addEventListener('visibilitychange', onVisible)
+  const poll = window.setInterval(() => { if (!live && document.visibilityState === 'visible') ping() }, 60_000)
+  return () => {
+    window.clearTimeout(timer); window.clearInterval(poll)
+    document.removeEventListener('visibilitychange', onVisible)
+    void s.removeChannel(ch)
+  }
 }
 export const resultVisible = (p: ClientProject | null) => !!p && ['result', 'support', 'done'].includes(p.status)
 

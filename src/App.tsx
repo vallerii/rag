@@ -1273,7 +1273,7 @@ function ProfileOrderModal({ onClose, initialSocial = false, initialWeb = false 
           </label>
           {summary}
           <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: '12px 0 0' }}>
-            Tipp: In den Website-Paketen Local Website und AI Plus ist das Google-Profil bereits enthalten.{' '}
+            Tipp: In den Website-Paketen Local Website und AI Plus ist das Google-Profil bereits enthalten. Wechseln Sie innerhalb von 60 Tagen zu Local Website, rechnen wir die 149 € auf den ersten Monat an.{' '}
             <a href={'/preise'} onClick={onClose} className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>Pakete ansehen →</a>
           </p>
           <SendButton enabled label="Weiter" onSend={() => goToOrder('profile', social, web ? 'onepager' : undefined)} />
@@ -1320,7 +1320,7 @@ function PackageOrderModal({ initial, onClose }: { initial: PackageOrder; onClos
           <p className="eyebrow" style={{ fontSize: 9.5, color: 'var(--electric)', marginBottom: 10 }}>Monatliches Paket</p>
           <h2 id="order-title" style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-0.02em', margin: '0 0 6px', paddingRight: 28 }}>Paket anfragen</h2>
           <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: '0 0 16px' }}>
-            Wählen Sie eine Website — Social Media können Sie dazu nehmen oder allein buchen.
+            Wählen Sie eine Website, Social Media können Sie dazu nehmen oder allein buchen.
           </p>
 
           <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(7,7,12,0.45)', marginBottom: 8 }}>Website</p>
@@ -1343,6 +1343,8 @@ function PackageOrderModal({ initial, onClose }: { initial: PackageOrder; onClos
 const PROFILE_PACKAGE = {
   tag: 'Einmalig', name: 'Google-Profil schlüsselfertig', price: 149,
   thesis: 'Ihr Profil bei Google Maps und in der Google-Suche: fertig eingerichtet, ohne Abo.',
+  /** Angebot 23.10.2026: Anrechnung beim Wechsel zu Local Website (1. Monat 150 € statt 299 €). */
+  upgrade: 'Wechseln Sie innerhalb von 60 Tagen zu Local Website, rechnen wir die 149 € auf den ersten Monat an.',
   includes: [
     'Neues Profil anlegen oder bestehendes übernehmen und bereinigen',
     'Bestätigung bei Google: das Profil gehört Ihnen',
@@ -1403,6 +1405,7 @@ function Pricing() {
                   </span>
                   <button type="button" onClick={() => setProfile(true)} className="btn btn-md btn-electric">Paket anfragen <span className="arw">→</span></button>
                 </div>
+                <p style={{ fontSize: 13.5, lineHeight: 1.6, color: 'var(--muted)', margin: '16px 0 0', maxWidth: 440 }}>{PROFILE_PACKAGE.upgrade}</p>
               </div>
               <div className="price-profile-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', columnGap: 'clamp(16px, 2vw, 32px)' }}>
                 {PROFILE_PACKAGE.includes.map(it => (
@@ -1461,7 +1464,7 @@ function Pricing() {
                 </div>
               </div>
               <div>
-                <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)', margin: '0 0 12px' }}>{SOCIAL_ADDON.thesis} Zu jedem Website-Paket dazu — oder ganz ohne Website.</p>
+                <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)', margin: '0 0 12px' }}>{SOCIAL_ADDON.thesis} Zu jedem Website-Paket dazu, oder ganz ohne Website.</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {SOCIAL_ADDON.includes.map(it => (
                     <span key={it} style={{ fontSize: 13, fontWeight: 600, padding: '6px 11px', borderRadius: 999, backgroundColor: '#fff' }}>{it}</span>
@@ -1481,8 +1484,8 @@ function Pricing() {
 
 function PreisePage() {
   usePageMeta(
-    'Preise — Google-Profil, Website-Pakete und Social Media | RAG',
-    'Google-Profil schlüsselfertig für 149 € einmalig. Websites als Monatspaket: One Pager 30 €, Local Website 299 €, AI Plus 499 €. Social-Media-Betreuung 199 € im Monat — dazu oder einzeln.',
+    'Preise: Google-Profil, Website-Pakete und Social Media | RAG',
+    'Google-Profil schlüsselfertig für 149 € einmalig. Websites als Monatspaket: One Pager 30 €, Local Website 299 €, AI Plus 499 €. Social-Media-Betreuung 199 € im Monat, dazu oder einzeln.',
   )
   return (
     <>
@@ -1492,7 +1495,7 @@ function PreisePage() {
         crumbs={[{ label: 'Start', href: '/' }, { label: 'Preise' }]}
         kicker="PREISE"
         title={<>Klare Preise für Ihre <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>lokale Sichtbarkeit</span></>}
-        sub="Starten Sie mit dem Google-Profil, wählen Sie eine Website als Monatspaket — und nehmen Sie Social Media dazu oder einzeln."
+        sub="Starten Sie mit dem Google-Profil, wählen Sie eine Website als Monatspaket, und nehmen Sie Social Media dazu oder einzeln."
       />
       <Pricing />
       <PriceFacts />
@@ -1525,8 +1528,8 @@ function PriceFacts() {
 
 // Impressum, Datenschutz, AGB — Texte in src/legal/LegalPages.tsx, Firmendaten in src/company.ts.
 const LEGAL = {
-  impressum: { title: 'Impressum', meta: 'Impressum von RAG — Regionale Agentur: Anbieter, Kontakt, Registerangaben.', Body: ImpressumBody },
-  datenschutz: { title: 'Datenschutzerklärung', meta: 'Welche Daten RAG auf der Website und im Kundenbereich verarbeitet, wozu — und welche Rechte Sie haben. Keine Tracking-Cookies.', Body: DatenschutzBody },
+  impressum: { title: 'Impressum', meta: 'Impressum von RAG Regionale Agentur: Anbieter, Kontakt, Registerangaben.', Body: ImpressumBody },
+  datenschutz: { title: 'Datenschutzerklärung', meta: 'Welche Daten RAG auf der Website und im Kundenbereich verarbeitet, wozu und welche Rechte Sie haben. Keine Tracking-Cookies.', Body: DatenschutzBody },
   agb: { title: 'Allgemeine Geschäftsbedingungen', meta: 'AGB von RAG für Unternehmen: Vertragsschluss, Laufzeit, Preise, was Ihnen bei Vertragsende gehört.', Body: AgbBody },
 } as const
 type LegalKind = keyof typeof LEGAL
@@ -1636,7 +1639,11 @@ function Nav() {
   const light = true
   const fg = '#0B0B1A'
 
+  // Adaptive Regeln (Burger-Menü, einspaltiger Footer, Raster) auf JEDER Seite mit Navigation laden —
+  // früher nur auf der Startseite, dadurch waren Kopf und Fuß auf /start, /preise, /services … mobil nicht angepasst.
   return (
+    <>
+    <style>{responsiveCSS}</style>
     <header style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 90,
       backgroundColor: solid ? 'rgba(247,247,251,0.86)' : open ? '#ffffff' : 'transparent',
@@ -1688,6 +1695,7 @@ function Nav() {
         </nav>
       )}
     </header>
+    </>
   )
 }
 
@@ -1788,7 +1796,7 @@ function Hero() {
         <div className="d-hide-md hero-float" aria-hidden style={{ position: 'absolute', left: 'max(24px, calc(50% - 680px))', top: '58%', width: 230, zIndex: 1 }}>
           <div className="d-float floaty" style={{ padding: '14px 16px', fontSize: 13.5, lineHeight: 1.5 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, fontWeight: 800, color: 'var(--electric)' }}><ChannelIcon kind="ki" size={16} />ChatGPT empfiehlt</span>
-            „Muster Elektrotechnik in München — schnell, zuverlässig, mit Notdienst.“
+            „Muster Elektrotechnik in München: schnell, zuverlässig, mit Notdienst.“
           </div>
         </div>
         <div className="d-hide-md hero-float" aria-hidden style={{ position: 'absolute', right: 'max(24px, calc(50% - 680px))', top: '50%', width: 230, zIndex: 1 }}>
@@ -1829,7 +1837,7 @@ function Hero() {
             <div className="mask-line" style={{ marginBottom: 36 }}>
               <span style={{ ['--d' as any]: '0.42s' }}>
                 <p className="lead" style={{ color: 'var(--muted)', maxWidth: 720, margin: '0 auto' }}>
-                  Kunden rufen den Betrieb an, den sie zuerst finden — nicht unbedingt den besten. Wir verbinden Google-Profil, Website, Bewertungen und KI-Suche zu einem System aus einer Hand, damit diese Anrufe bei Ihnen landen statt bei der Konkurrenz.
+                  Kunden rufen den Betrieb an, den sie zuerst finden, nicht unbedingt den besten. Wir verbinden Google-Profil, Website, Bewertungen und KI-Suche zu einem System aus einer Hand, damit diese Anrufe bei Ihnen landen statt bei der Konkurrenz.
                 </p>
               </span>
             </div>
@@ -1882,7 +1890,7 @@ function ChannelOverview() {
           />
           <Reveal delay={0.1}>
             <p className="lead" style={{ color: 'var(--muted)', maxWidth: 680, margin: '20px auto 0' }}>
-              Heute suchen sie bei Google Maps, Google, ChatGPT, Perplexity und in sozialen Netzwerken. Wir machen Ihr Unternehmen überall dort sichtbar — gleichzeitig.
+              Heute suchen sie bei Google Maps, Google, ChatGPT, Perplexity und in sozialen Netzwerken. Wir machen Ihr Unternehmen überall dort sichtbar, gleichzeitig.
             </p>
           </Reveal>
         </div>
@@ -1984,7 +1992,7 @@ function ChannelAI() {
     <ChannelBlock
       id="ki" label="KI-Suche"
       title={<>Lokale Suche beginnt immer öfter mit einer <span className="serif italic-serif">Frage an die KI</span></>}
-      body="ChatGPT, Perplexity und die KI-Übersichten bei Google nennen nur wenige Anbieter — und zwar die, die sie eindeutig verstehen und für vertrauenswürdig halten."
+      body="ChatGPT, Perplexity und die KI-Übersichten bei Google nennen nur wenige Anbieter, und zwar die, die sie eindeutig verstehen und für vertrauenswürdig halten."
       actions={<>
         <a href="#audit-quiz" className="btn btn-md btn-electric">Prüfen, wie die KI mich sieht <span className="arw">→</span></a>
       </>}
@@ -2044,7 +2052,7 @@ function ChannelMaps() {
         </>}
         aside={
           <div className="d-card" style={{ position: 'relative', padding: 'clamp(24px, 3vw, 40px)' }}>
-            <p className="kick" style={{ color: 'var(--muted)', fontSize: 12 }}>Selbst machen — oder wir übernehmen das</p>
+            <p className="kick" style={{ color: 'var(--muted)', fontSize: 12 }}>Selbst machen, oder wir übernehmen das</p>
             <p className="display" style={{ fontSize: 'clamp(24px, 2.2vw, 30px)', lineHeight: 1.15, margin: '12px 0 10px' }}>Google-Profil, fertig eingerichtet.</p>
             <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 18px' }}>Wir erstellen oder überarbeiten Ihr Profil, pflegen Leistungen und Angaben ein und bereiten alles für die ersten Bewertungen vor.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
@@ -2104,8 +2112,8 @@ function ChannelSearch() {
                       muster-elektro.de › leistungen
                     </span>
                   </div>
-                  <p style={{ fontSize: 'clamp(17px, 1.5vw, 19px)', lineHeight: 1.3, color: 'var(--electric)', margin: '0 0 6px', fontWeight: 800 }}>Elektriker in Stuttgart — Installation, Smart Home & Notdienst</p>
-                  <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--muted)', margin: '0 0 12px' }}>Was wir tun, wo wir arbeiten und welche Projekte wir in der Region umgesetzt haben — klar erklärt.</p>
+                  <p style={{ fontSize: 'clamp(17px, 1.5vw, 19px)', lineHeight: 1.3, color: 'var(--electric)', margin: '0 0 6px', fontWeight: 800 }}>Elektriker in Stuttgart: Installation, Smart Home & Notdienst</p>
+                  <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--muted)', margin: '0 0 12px' }}>Was wir tun, wo wir arbeiten und welche Projekte wir in der Region umgesetzt haben, klar erklärt.</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {['Leistungen', 'Region', 'Referenzen', 'Kontakt'].map(t => (
                       <span key={t} style={{ fontSize: 12.5, fontWeight: 700, padding: '6px 11px', borderRadius: 8, backgroundColor: 'var(--bone)', color: 'var(--ink)' }}>{t}</span>
@@ -2140,7 +2148,7 @@ function ChannelSocial() {
   const [order, setOrder] = useState(false)
   const pillars = [
     ['Menschen', 'Zeigen Sie sich und Ihr Team. So bekommt das Unternehmen ein Gesicht.', '#ECEBFF', '#6D6A9E'],
-    ['Arbeitsweise', 'Zeigen Sie, wie Sie arbeiten — ohne Inszenierung und Marketing-Floskeln.', '#E6F4EE', '#4D7A66'],
+    ['Arbeitsweise', 'Zeigen Sie, wie Sie arbeiten, ohne Inszenierung und Marketing-Floskeln.', '#E6F4EE', '#4D7A66'],
     ['Ergebnisse', 'Echte Arbeiten, Projekte und Kunden erklären Qualität besser als jedes Werbeversprechen.', '#FFF1DE', '#9A7440'],
   ]
   return (
@@ -2151,7 +2159,7 @@ function ChannelSocial() {
         <div style={{ textAlign: 'center', maxWidth: 820, margin: '0 auto' }}>
           <Reveal><Kicker icon="social">Social Media</Kicker></Reveal>
           <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '20px 0 18px' }}>In sozialen Netzwerken <span className="serif italic-serif">sehen Kunden Menschen</span></h2></Reveal>
-          <Reveal delay={0.1}><p className="lead" style={{ color: 'var(--muted)', margin: 0 }}>Team, Arbeitsweise und echte Ergebnisse machen Ihr Unternehmen vertraut — schon vor dem ersten Anruf. Dafür müssen Sie kein Influencer werden.</p></Reveal>
+          <Reveal delay={0.1}><p className="lead" style={{ color: 'var(--muted)', margin: 0 }}>Team, Arbeitsweise und echte Ergebnisse machen Ihr Unternehmen vertraut, schon vor dem ersten Anruf. Dafür müssen Sie kein Influencer werden.</p></Reveal>
           <Reveal delay={0.12}><a href="/ratgeber/brauchen-handwerker-instagram" className="d-link" style={{ display: 'inline-block', marginTop: 16, fontSize: 15 }}>Im Ratgeber: {articleTitle('brauchen-handwerker-instagram')} <span className="arw">→</span></a></Reveal>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 24, marginTop: 'clamp(40px, 4.4vw, 56px)' }}>
@@ -2172,7 +2180,7 @@ function ChannelSocial() {
         <Reveal delay={0.15}>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'clamp(48px, 5vw, 64px)' }}>
             <div className="d-card-flat" style={{ display: 'flex', alignItems: 'center', gap: '12px 24px', flexWrap: 'wrap', justifyContent: 'center', padding: '12px 12px 12px 26px', borderRadius: 18, backgroundColor: 'var(--bone)' }}>
-              <span style={{ fontSize: 15.5 }}>Auch einzeln buchbar — <strong>Social-Media-Betreuung · {SOCIAL_ADDON.price} €/Monat</strong></span>
+              <span style={{ fontSize: 15.5 }}>Auch einzeln buchbar: <strong>Social-Media-Betreuung · {SOCIAL_ADDON.price} €/Monat</strong></span>
               <span style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <button type="button" onClick={() => setOrder(true)} className="btn btn-md btn-electric">Social Media anfragen <span className="arw">→</span></button>
                 <a href="/services/social-media" className="btn btn-md btn-paper">Mehr erfahren</a>
@@ -2258,7 +2266,7 @@ function BusinessCheck() {
               <MaskHeading
                 className="h-md"
                 style={{ margin: '18px 0 20px', color: '#fff' }}
-                lines={[<>Finden Sie Ihr Unternehmen —</>, <>wir zeigen, wie Google und KI Sie sehen</>]}
+                lines={[<>Finden Sie Ihr Unternehmen:</>, <>wir zeigen, wie Google und KI Sie sehen</>]}
               />
               <Reveal delay={0.1}>
                 <p style={{ fontSize: 17, lineHeight: 1.65, color: '#DCD8FF', margin: '0 0 28px', maxWidth: 540 }}>
@@ -2328,7 +2336,7 @@ function MarketShift() {
           />
           <Reveal delay={0.1}>
             <p className="lead" style={{ color: 'var(--muted)', maxWidth: 620, margin: '22px 0 0' }}>
-              Heute suchen sie bei Google Maps, Google, ChatGPT, Perplexity und in sozialen Netzwerken. Wir machen Ihr Unternehmen überall dort sichtbar — gleichzeitig.
+              Heute suchen sie bei Google Maps, Google, ChatGPT, Perplexity und in sozialen Netzwerken. Wir machen Ihr Unternehmen überall dort sichtbar, gleichzeitig.
             </p>
           </Reveal>
         </div>
@@ -2340,16 +2348,16 @@ function MarketShift() {
               <p className="eyebrow" style={{ color: 'rgba(7,7,12,0.4)', marginBottom: 18 }}>Früher</p>
               <p className="h-sm display" style={{ margin: '0 0 14px', color: 'rgba(7,7,12,0.45)' }}>Suchen, Links vergleichen, anrufen.</p>
               <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: 0 }}>
-                Wer einen Handwerker oder eine Praxis suchte, tippte ein paar Wörter bei Google ein, öffnete zwei, drei Websites aus den ersten Ergebnissen — und rief an. Wer weit oben stand, bekam den Anruf.
+                Wer einen Handwerker oder eine Praxis suchte, tippte ein paar Wörter bei Google ein, öffnete zwei, drei Websites aus den ersten Ergebnissen, und rief an. Wer weit oben stand, bekam den Anruf.
               </p>
             </div>
           </Reveal>
           <Reveal delay={0.08}>
             <div style={{ height: '100%', backgroundColor: 'var(--ink)', color: '#fff', borderRadius: 22, padding: 'clamp(26px, 3vw, 40px)' }}>
               <p className="eyebrow" style={{ color: 'var(--electric-2)', marginBottom: 18 }}>Heute</p>
-              <p className="h-sm display" style={{ margin: '0 0 14px' }}>Die KI prüft Unternehmen — der Kunde wählt.</p>
+              <p className="h-sm display" style={{ margin: '0 0 14px' }}>Die KI prüft Unternehmen. Der Kunde wählt.</p>
               <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.62)', margin: '0 0 24px' }}>
-                Auf die Anfrage eines Kunden antwortet immer öfter direkt eine KI — mit zwei, drei Namen statt einer Linkliste. Welche Unternehmen darauf stehen, entscheidet die KI anhand dessen, was sie findet: Google-Maps-Eintrag, Bewertungen, Website und Erwähnungen. Der Kunde wählt dann nur noch aus dieser kurzen Liste.
+                Auf die Anfrage eines Kunden antwortet immer öfter direkt eine KI, mit zwei, drei Namen statt einer Linkliste. Welche Unternehmen darauf stehen, entscheidet die KI anhand dessen, was sie findet: Google-Maps-Eintrag, Bewertungen, Website und Erwähnungen. Der Kunde wählt dann nur noch aus dieser kurzen Liste.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
                 {journey.map((j, i) => (
@@ -2399,7 +2407,7 @@ const mapsArea: PromoArea = {
     'Gewinnung und Beantwortung von Bewertungen',
     'Regelmäßige Aktualisierung des Profils',
   ],
-  change: 'Bei lokalen Suchen zeigt Google zuerst eine Karte mit drei Unternehmen — dort fällt oft schon die Entscheidung.',
+  change: 'Bei lokalen Suchen zeigt Google zuerst eine Karte mit drei Unternehmen. Dort fällt oft schon die Entscheidung.',
   links: [{ href: '/services/google-maps-business-profile', label: 'Mehr zu Google Maps' }],
 }
 
@@ -2408,7 +2416,7 @@ const promoAreas: PromoArea[] = [
     id: 'leistung-ki',
     label: 'ChatGPT, Perplexity & KI-Suche',
     claim: 'Auch KI-Systeme müssen Ihr Unternehmen finden und verstehen können.',
-    body: 'Immer mehr Menschen stellen ihre Fragen direkt an KI-Systeme. Dafür braucht Ihr Unternehmen klare, zugängliche und glaubwürdige Informationen im Web — keine geheime Zusatz-Optimierung.',
+    body: 'Immer mehr Menschen stellen ihre Fragen direkt an KI-Systeme. Dafür braucht Ihr Unternehmen klare, zugängliche und glaubwürdige Informationen im Web, keine geheime Zusatz-Optimierung.',
     items: ['Inhalte für Suchsysteme abrufbar', 'Leistungen konkret beschrieben', 'Übereinstimmende Angaben auf allen Plattformen', 'Logische Seitenstruktur', 'Externe Erwähnungen und Bestätigungen'],
     change: 'ChatGPT, Perplexity und die KI-Übersichten bei Google fassen zusammen und nennen nur wenige Anbieter.',
     links: [{ href: '/services/ai-search-optimization', label: 'Mehr erfahren' }],
@@ -2419,7 +2427,7 @@ const promoAreas: PromoArea[] = [
     claim: 'Vertrauen entsteht, bevor der erste Kontakt stattfindet.',
     body: 'Bewertungen beeinflussen, ob ein Kunde anruft oder sich für einen Mitbewerber entscheidet. Unser Ziel: mehr echte Bewertungen mit konkreten Erfahrungen.',
     items: ['Wann und wie Sie um Bewertungen bitten', 'Ein kurzer Weg zur Abgabe', 'Antworten auf Lob und Kritik', 'Bewertungen auf Google, Trustpilot und der Website', 'Laufende Beobachtung Ihrer Reputation'],
-    change: 'Kunden vergleichen Sterne, Aktualität und die Antworten des Inhabers — bei Unternehmen, die sie noch nie erlebt haben.',
+    change: 'Kunden vergleichen Sterne, Aktualität und die Antworten des Inhabers, bei Unternehmen, die sie noch nie erlebt haben.',
     links: [{ href: '/services/google-maps-business-profile', label: 'Mehr erfahren' }],
   },
   {
@@ -2435,7 +2443,7 @@ const promoAreas: PromoArea[] = [
     id: 'leistung-verzeichnisse',
     label: 'Lokale Verzeichnisse & Erwähnungen',
     claim: 'Einheitliche Informationen schaffen Klarheit.',
-    body: 'Name, Adresse, Telefon, Website, Leistungen und Beschreibung stimmen auf den wichtigen lokalen Plattformen und Branchenportalen überein — so entsteht ein widerspruchsfreies Bild Ihres Unternehmens.',
+    body: 'Name, Adresse, Telefon, Website, Leistungen und Beschreibung stimmen auf den wichtigen lokalen Plattformen und Branchenportalen überein, so entsteht ein widerspruchsfreies Bild Ihres Unternehmens.',
     items: ['Bestehende Einträge erfassen', 'Falsche und doppelte Einträge bereinigen', 'Fehlende Portale gezielt ergänzen', 'Angaben regelmäßig kontrollieren'],
     change: 'Name, Adresse und Telefonnummer werden zwischen Google, Website und Verzeichnissen verglichen. Widersprüche kosten Vertrauen.',
     links: [{ href: '/services/ai-search-optimization', label: 'Mehr erfahren' }],
@@ -2454,7 +2462,7 @@ const promoAreas: PromoArea[] = [
     label: 'Anzeigen: Google, Meta & offline',
     claim: 'Sichtbarkeit gezielt beschleunigen.',
     body: 'Organische Sichtbarkeit braucht Zeit. Mit lokalen Kampagnen erreichen wir relevante Kunden früher und sehen nebenbei, welche Suchanfragen und Leistungen wirklich Anfragen bringen.',
-    items: ['Lokale Google-Ads- und Maps-Kampagnen', 'Meta-Anzeigen für Ihre Region', 'Plakate, Banner und Print — wo es passt', 'Messung über Anrufe und Anfragen'],
+    items: ['Lokale Google-Ads- und Maps-Kampagnen', 'Meta-Anzeigen für Ihre Region', 'Plakate, Banner und Print, wo es passt', 'Messung über Anrufe und Anfragen'],
     links: [
       { href: '/services/google-meta-ads', label: 'Online-Anzeigen' },
       { href: '/services/offline-advertising', label: 'Offline-Werbung' },
@@ -2494,7 +2502,7 @@ function PromoAreaRow({ area: a, n }: { area: PromoArea; n: number }) {
               <p style={{ fontSize: 16, lineHeight: 1.5, fontWeight: 600, color: 'var(--ink)', margin: '0 0 10px' }}>{a.claim}</p>
               {a.accelerator && (
                 <p style={{ fontSize: 13.5, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 6px' }}>
-                  Organische Sichtbarkeit schafft die Grundlage — Anzeigen beschleunigen sie.
+                  Organische Sichtbarkeit schafft die Grundlage, Anzeigen beschleunigen sie.
                 </p>
               )}
               <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 16 }}>
@@ -2662,7 +2670,7 @@ const allModules = [
     sentence: 'Gefunden werden, wo Menschen in der Nähe suchen.',
     what: 'Ihr Eintrag bei Google Maps und in der Google-Suche mit Kategorie, Leistungen, Öffnungszeiten, Fotos und Bewertungen.',
     how: 'Wir richten das Profil ein oder überarbeiten es, wählen die Hauptkategorie, beschreiben Ihre Leistungen und bereiten alles für die ersten Bewertungen vor.',
-    why: 'Menschen suchen in der Nähe, lesen Bewertungen und rufen direkt an — einer der kürzesten Wege von der Suche zur Anfrage.',
+    why: 'Menschen suchen in der Nähe, lesen Bewertungen und rufen direkt an, einer der kürzesten Wege von der Suche zur Anfrage.',
   },
   {
     Illust: IllustWebsiteSearch,
@@ -2670,7 +2678,7 @@ const allModules = [
     slug: 'website-google-search',
     sentence: 'Eine Website, die Menschen, Suchmaschinen und KI-Systeme klar verstehen.',
     what: 'Ihre Website erklärt Kunden, Google und KI-Systemen, was Sie tun, wo Sie arbeiten und warum man Ihnen vertrauen kann.',
-    how: 'Vom One Pager bis zur mehrseitigen Website mit Seiten für jede Leistung und jeden Ort — mit sauberer Technik, strukturierten Daten und regelmäßigen Updates.',
+    how: 'Vom One Pager bis zur mehrseitigen Website mit Seiten für jede Leistung und jeden Ort, mit sauberer Technik, strukturierten Daten und regelmäßigen Updates.',
     why: 'Google-Profil, Bewertungen und Social Media verweisen alle auf Ihre Website. Fehlen dort klare Antworten, springen Interessenten ab.',
   },
   {
@@ -2678,7 +2686,7 @@ const allModules = [
     label: 'KI-Suche',
     slug: 'ai-search-optimization',
     sentence: 'Genannt werden, wenn Kunden ChatGPT, Perplexity oder Google fragen.',
-    what: 'KI-Assistenten nennen nur wenige Anbieter — die, die sie eindeutig verstehen und für vertrauenswürdig halten.',
+    what: 'KI-Assistenten nennen nur wenige Anbieter, die, die sie eindeutig verstehen und für vertrauenswürdig halten.',
     how: 'Wir sorgen für klare Inhalte, strukturierte Daten und einheitliche Einträge in Verzeichnissen und prüfen regelmäßig, wie die KI Sie darstellt.',
     why: 'Immer mehr Menschen fragen zuerst eine KI. Wer in der Antwort fehlt, wird gar nicht erst verglichen.',
   },
@@ -2706,7 +2714,7 @@ const allModules = [
     slug: 'social-media',
     sentence: 'Kunden sehen die Menschen hinter Ihrem Unternehmen.',
     what: 'Regelmäßige Beiträge auf Instagram und Facebook über Ihr Team, Ihre Arbeitsweise und echte Ergebnisse.',
-    how: 'Wir planen die Themen, bereiten die Beiträge vor und veröffentlichen regelmäßig — passend zu Ihren Leistungen und Ihrer Region.',
+    how: 'Wir planen die Themen, bereiten die Beiträge vor und veröffentlichen regelmäßig, passend zu Ihren Leistungen und Ihrer Region.',
     why: 'Viele Kunden sehen sich vor dem Anruf Ihr Profil an. Ein gepflegter Feed schafft Vertrauen, ein verwaistes wirft Fragen auf.',
   },
   {
@@ -2716,7 +2724,7 @@ const allModules = [
     sentence: 'Sofortige Sichtbarkeit, während organische Rankings wachsen.',
     what: 'Gezielte bezahlte Werbekampagnen auf Google Search, Instagram und Facebook.',
     how: 'Wir erstellen keyword-genaue Suchkampagnen, gestalten konversionsstarke visuelle Anzeigen, schreiben direkte Werbetexte und messen Conversions präzise.',
-    why: 'Organische Sichtbarkeit schafft die Grundlage — Anzeigen beschleunigen sie. Bezahlte Kampagnen bringen früher qualifizierte Anfragen und liefern nebenbei Daten darüber, welche Suchanfragen und Leistungen wirklich Kunden bringen.',
+    why: 'Organische Sichtbarkeit schafft die Grundlage, Anzeigen beschleunigen sie. Bezahlte Kampagnen bringen früher qualifizierte Anfragen und liefern nebenbei Daten darüber, welche Suchanfragen und Leistungen wirklich Kunden bringen.',
   },
   {
     Illust: IllustOffline,
@@ -2746,7 +2754,7 @@ const SERVICE_OFFER: Record<string, { price: string; note: string; order: 'profi
   'ai-search-optimization': { price: '499 €/Monat', note: 'Im Paket AI Plus', order: { pkg: 'aiplus', social: false } },
   'google-maps-business-profile': { price: '149 € einmalig', note: 'Google-Profil schlüsselfertig · auch in Local Website und AI Plus', order: 'profile' },
   'website-google-search': { price: 'ab 30 €/Monat', note: 'One Pager, Local Website oder AI Plus', order: { pkg: 'onepager', social: false } },
-  'social-media': { price: '199 €/Monat', note: 'Zu jedem Paket dazu — oder einzeln', order: { pkg: null, social: true } },
+  'social-media': { price: '199 €/Monat', note: 'Zu jedem Paket dazu, oder einzeln', order: { pkg: null, social: true } },
 }
 
 function QuoteModal({ selected, onClose }: { selected: string[]; onClose: () => void }) {
@@ -2830,11 +2838,11 @@ function ServiceSelector() {
             <MaskHeading
               className="h-lg"
               style={{ maxWidth: 1080 }}
-              lines={[<>Vier Kanäle —</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>ein System</span></>]}
+              lines={[<>Vier Kanäle,</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>ein System</span></>]}
             />
             <Reveal delay={0.12}>
               <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '26px 0 0', maxWidth: 600 }}>
-                Zu jedem Kanal sehen Sie, in welchem Paket er steckt und was er kostet. Wählen Sie ein Paket — wir melden uns und klären alles, bevor Kosten entstehen.{' '}
+                Zu jedem Kanal sehen Sie, in welchem Paket er steckt und was er kostet. Wählen Sie ein Paket, wir melden uns und klären alles, bevor Kosten entstehen.{' '}
                 <a href="/preise" className="d-link">Alle Preise ansehen <span className="arw">→</span></a>
               </p>
             </Reveal>
@@ -2964,7 +2972,7 @@ function TwoRoutes() {
               <div style={{ borderTop: '1px solid var(--line-dark)', paddingTop: 24, height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <span className="eyebrow" style={{ fontSize: 10, color: 'var(--electric-2)' }}>Variante 01</span>
                 <h3 className="display" style={{ fontSize: 'clamp(20px, 1.8vw, 26px)', lineHeight: 1.2, margin: '12px 0 10px' }}>
-                  Sie sind bereits online — werden aber nicht ausreichend gefunden?
+                  Sie sind bereits online, werden aber nicht ausreichend gefunden?
                 </h3>
                 <p style={{ fontSize: 15, lineHeight: 1.65, color: 'rgba(255,255,255,0.55)', margin: '0 0 16px' }}>
                   Wir analysieren kostenlos, wie Ihr Unternehmen aktuell bei Google Maps, in der Google-Suche und in der KI-Suche dargestellt wird.
@@ -2990,7 +2998,7 @@ function TwoRoutes() {
                   Sie starten gerade? Beginnen Sie mit Google Maps
                 </h3>
                 <p style={{ fontSize: 15, lineHeight: 1.65, color: 'rgba(255,255,255,0.55)', margin: '0 0 16px' }}>
-                  Wir erstellen und optimieren Ihr Google-Unternehmensprofil — die professionelle Grundlage für Ihre lokale Sichtbarkeit.
+                  Wir erstellen und optimieren Ihr Google-Unternehmensprofil, die professionelle Grundlage für Ihre lokale Sichtbarkeit.
                 </p>
                 <div style={{ marginBottom: 20 }}>
                   {routeB.map((r, i) => (
@@ -3031,11 +3039,11 @@ function TwoRoutes() {
 // PROCESS
 // ─────────────────────────────────────────────────────────────────────────────
 const steps = [
-  { num: '01', title: 'Analysieren — wir prüfen Ihre aktuelle Sichtbarkeit', desc: 'Wir erfassen Ihr Google-Maps-Ranking, Ihre Website, Ihre KI-Suchpräsenz, Bewertungen und Verzeichniseinträge — und vergleichen sie mit Ihren wichtigsten lokalen Mitbewerbern.' },
-  { num: '02', title: 'Priorisieren — Sie erhalten einen Plan, keine Verkaufsshow', desc: "Sie bekommen einen konkreten Plan: Was bringt jetzt den größten Effekt? Ein persönlicher Berater bespricht die Ergebnisse mit Ihnen, und Sie entscheiden, was aktiviert wird. Kein Paket, das Sie nicht brauchen." },
-  { num: '03', title: 'Optimieren — wir bringen die Grundlagen in Ordnung', desc: 'Wir verbessern Google-Unternehmensprofil, Website, Inhalte, Bewertungen und die relevanten Plattformen. Unser Team übernimmt die Umsetzung, nichts landet wieder auf Ihrem Schreibtisch.' },
-  { num: '04', title: 'Ausbauen — wir erweitern Ihre lokale Präsenz', desc: 'Wir veröffentlichen neue Inhalte, stärken Ihre Reputation und erweitern Ihre Sichtbarkeit Schritt für Schritt auf weitere Kanäle.' },
-  { num: '05', title: 'Messen — Sie sehen, was die Arbeit bewirkt', desc: 'Wir beobachten Rankings, Anrufe, Anfragen, Website-Besuche und Bewertungen und berichten regelmäßig. Echte Zahlen statt Schönwetter-Kennzahlen.' },
+  { num: '01', title: 'Analysieren: Wir prüfen Ihre aktuelle Sichtbarkeit', desc: 'Wir erfassen Ihr Google-Maps-Ranking, Ihre Website, Ihre KI-Suchpräsenz, Bewertungen und Verzeichniseinträge, und vergleichen sie mit Ihren wichtigsten lokalen Mitbewerbern.' },
+  { num: '02', title: 'Priorisieren: Sie erhalten einen Plan, keine Verkaufsshow', desc: "Sie bekommen einen konkreten Plan: Was bringt jetzt den größten Effekt? Ein persönlicher Berater bespricht die Ergebnisse mit Ihnen, und Sie entscheiden, was aktiviert wird. Kein Paket, das Sie nicht brauchen." },
+  { num: '03', title: 'Optimieren: Wir bringen die Grundlagen in Ordnung', desc: 'Wir verbessern Google-Unternehmensprofil, Website, Inhalte, Bewertungen und die relevanten Plattformen. Unser Team übernimmt die Umsetzung, nichts landet wieder auf Ihrem Schreibtisch.' },
+  { num: '04', title: 'Ausbauen: Wir erweitern Ihre lokale Präsenz', desc: 'Wir veröffentlichen neue Inhalte, stärken Ihre Reputation und erweitern Ihre Sichtbarkeit Schritt für Schritt auf weitere Kanäle.' },
+  { num: '05', title: 'Messen: Sie sehen, was die Arbeit bewirkt', desc: 'Wir beobachten Rankings, Anrufe, Anfragen, Website-Besuche und Bewertungen und berichten regelmäßig. Echte Zahlen statt Schönwetter-Kennzahlen.' },
 ]
 
 function Process() {
@@ -3446,11 +3454,11 @@ function AuditQuiz() {
           />
           <Reveal delay={0.12}>
             <p style={{ fontSize: 16, lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', marginBottom: 34, maxWidth: 460 }}>
-              Zeigen Sie uns, was es von Ihrem Unternehmen schon gibt: Google-Maps-Eintrag, Website, Social Media. Wir sehen uns alles an und schicken Ihnen eine klare Anleitung — was Sie zuerst verbessern sollten und welche Schritte danach kommen.
+              Zeigen Sie uns, was es von Ihrem Unternehmen schon gibt: Google-Maps-Eintrag, Website, Social Media. Wir sehen uns alles an und schicken Ihnen eine klare Anleitung: was Sie zuerst verbessern sollten und welche Schritte danach kommen.
             </p>
           </Reveal>
           <div className="audit-bullets" style={{ display: 'flex', flexDirection: 'column' }}>
-            {['Drei kurze Schritte — Ihre Links genügen', 'Konkrete Anleitung statt allgemeiner Tipps', 'Ehrlich: auch was Sie selbst erledigen können'].map((b, i) => (
+            {['Drei kurze Schritte, Ihre Links genügen', 'Konkrete Anleitung statt allgemeiner Tipps', 'Ehrlich: auch was Sie selbst erledigen können'].map((b, i) => (
               <Reveal key={b} delay={0.16 + i * 0.07}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
                   <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em' }}>{String(i + 1).padStart(2, '0')}</span>
@@ -3496,7 +3504,7 @@ function AuditQuiz() {
           {step === 2 && (
             <div>
               <h3 style={h3}>{has(NONE) ? 'Womit und wo sind Sie tätig?' : 'Wo finden wir Sie online?'}</h3>
-              <p style={hint}>{has(NONE) ? 'Dann starten wir bei null — so wissen wir, womit wir anfangen.' : 'Ein Link genügt — den Rest sehen wir uns selbst an.'}</p>
+              <p style={hint}>{has(NONE) ? 'Dann starten wir bei null, so wissen wir, womit wir anfangen.' : 'Ein Link genügt, den Rest sehen wir uns selbst an.'}</p>
               {!has(NONE) && (<>
                 <label style={label} htmlFor="q-link">Link</label>
                 <input id="q-link" style={input} value={link} onChange={e => setLink(e.target.value)} placeholder="Google Maps, Website oder Social Media" inputMode="url" />
@@ -3555,13 +3563,13 @@ function AuditQuiz() {
 // ─────────────────────────────────────────────────────────────────────────────
 const faqs = [
   { q: 'Wie schnell verbessert sich meine lokale Sichtbarkeit?', a: 'Nach der Arbeit an Profil und Verzeichnissen zeigen sich erste Veränderungen bei Aufrufen und Anrufen häufig innerhalb weniger Wochen. Bewertungen, Website-Inhalte und KI-Sichtbarkeit bauen sich über Monate auf. Wir messen von Anfang an, damit Sie sehen, was sich bewegt.' },
-  { q: 'Können Sie Platz 1 bei Google garantieren?', a: "Nein — und niemand kann das seriös versprechen. Google bewertet lokale Ergebnisse unter anderem nach Relevanz, Entfernung zum Suchenden und Bekanntheit des Unternehmens. Auf einen Teil davon haben wir direkten Einfluss, auf anderes nicht. Was wir zusagen: Wir bringen alle beeinflussbaren Faktoren in Ordnung, arbeiten kontinuierlich daran und zeigen Ihnen an konkreten Zahlen, was sich bewegt." },
+  { q: 'Können Sie Platz 1 bei Google garantieren?', a: "Nein. Und niemand kann das seriös versprechen. Google bewertet lokale Ergebnisse unter anderem nach Relevanz, Entfernung zum Suchenden und Bekanntheit des Unternehmens. Auf einen Teil davon haben wir direkten Einfluss, auf anderes nicht. Was wir zusagen: Wir bringen alle beeinflussbaren Faktoren in Ordnung, arbeiten kontinuierlich daran und zeigen Ihnen an konkreten Zahlen, was sich bewegt." },
   { q: 'Brauche ich unbedingt eine Website?', a: "Für den Start nicht zwingend. Ein vollständig gepflegtes Google-Unternehmensprofil kann die erste Grundlage sein. Sobald Sie mehrere Leistungen, mehrere Regionen oder erklärungsbedürftige Angebote haben, wird die Website aber zur Wissensbasis, aus der Google und KI-Systeme ihre Antworten über Sie ziehen." },
   { q: 'Können Sie meine bestehende Website optimieren?', a: 'In den meisten Fällen ja. Wir prüfen Struktur, Inhalte und Technik Ihrer bestehenden Website und verbessern gezielt das, was Sichtbarkeit und Anfragen blockiert. Nur wenn die technische Basis eine sinnvolle Weiterentwicklung nicht zulässt, empfehlen wir einen Neuaufbau.' },
-  { q: 'Wie bekomme ich mehr Google-Bewertungen?', a: 'Indem Sie zu einem festen Zeitpunkt fragen — am besten direkt nach einem gelungenen Auftrag —, den Weg zur Abgabe so kurz wie möglich machen und auf Bewertungen antworten. Gekaufte oder erfundene Bewertungen verstoßen gegen die Google-Richtlinien und können zur Sperrung des Profils führen. Wir richten einen Ablauf ein, der echte Bewertungen mit konkreten Erfahrungen bringt.' },
-  { q: 'Wie kann mein Unternehmen in ChatGPT erscheinen?', a: "Indem die Informationen über Ihr Unternehmen im Web klar, zugänglich und widerspruchsfrei sind: verständlich beschriebene Leistungen, eine logisch strukturierte Website, übereinstimmende Angaben auf allen Plattformen, externe Erwähnungen und Inhalte, die für Suchsysteme abrufbar sind. Eine separate \"KI-Optimierung\" jenseits sauberer Grundlagen gibt es nicht — wir sorgen dafür, dass diese Grundlagen stimmen." },
-  { q: 'Was kostet die laufende Betreuung?', a: 'Die Website gibt es als monatliches Paket: One Pager für 30 €, Local Website für 299 € und AI Plus für 499 € im Monat. Die Social-Media-Betreuung kostet 199 € im Monat — zusätzlich zu einem Paket oder ganz allein. Nur das Google-Unternehmensprofil einzurichten kostet einmalig 149 €. Nach dem kostenlosen Sichtbarkeits-Check erhalten Sie eine Empfehlung, die zu Ihrer Situation und Ihrem Budget passt — ohne versteckte Gebühren.' },
-  { q: 'Für welche Unternehmen eignet sich lokale Optimierung?', a: 'Für alle, deren Kunden aus der Umgebung kommen: Handwerksbetriebe, Werkstätten, Praxen, Kanzleien, Restaurants, Salons und Dienstleister mit Servicegebiet. Entscheidend ist nicht die Branche, sondern dass Kunden lokal suchen — ob Sie ein Ladengeschäft haben oder zu Ihren Kunden fahren.' },
+  { q: 'Wie bekomme ich mehr Google-Bewertungen?', a: 'Indem Sie zu einem festen Zeitpunkt fragen, am besten direkt nach einem gelungenen Auftrag, den Weg zur Abgabe so kurz wie möglich machen und auf Bewertungen antworten. Gekaufte oder erfundene Bewertungen verstoßen gegen die Google-Richtlinien und können zur Sperrung des Profils führen. Wir richten einen Ablauf ein, der echte Bewertungen mit konkreten Erfahrungen bringt.' },
+  { q: 'Wie kann mein Unternehmen in ChatGPT erscheinen?', a: "Indem die Informationen über Ihr Unternehmen im Web klar, zugänglich und widerspruchsfrei sind: verständlich beschriebene Leistungen, eine logisch strukturierte Website, übereinstimmende Angaben auf allen Plattformen, externe Erwähnungen und Inhalte, die für Suchsysteme abrufbar sind. Eine separate \"KI-Optimierung\" jenseits sauberer Grundlagen gibt es nicht, wir sorgen dafür, dass diese Grundlagen stimmen." },
+  { q: 'Was kostet die laufende Betreuung?', a: 'Die Website gibt es als monatliches Paket: One Pager für 30 €, Local Website für 299 € und AI Plus für 499 € im Monat. Die Social-Media-Betreuung kostet 199 € im Monat, zusätzlich zu einem Paket oder ganz allein. Nur das Google-Unternehmensprofil einzurichten kostet einmalig 149 €. Nach dem kostenlosen Sichtbarkeits-Check erhalten Sie eine Empfehlung, die zu Ihrer Situation und Ihrem Budget passt, ohne versteckte Gebühren.' },
+  { q: 'Für welche Unternehmen eignet sich lokale Optimierung?', a: 'Für alle, deren Kunden aus der Umgebung kommen: Handwerksbetriebe, Werkstätten, Praxen, Kanzleien, Restaurants, Salons und Dienstleister mit Servicegebiet. Entscheidend ist nicht die Branche, sondern dass Kunden lokal suchen, ob Sie ein Ladengeschäft haben oder zu Ihren Kunden fahren.' },
 ]
 
 function FAQ() {
@@ -3665,7 +3673,7 @@ function Footer() {
         </div>
 
         <div style={{ borderTop: '1px solid var(--divider)', paddingTop: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-          <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>© 2026 RAG, Regionale Agentur. Alle Rechte vorbehalten.</p>
+          <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>© 2026 RAG Regionale Agentur. Alle Rechte vorbehalten.</p>
           <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>Keine Tracking-Cookies · Schriften und Daten in der EU</p>
         </div>
       </div>
@@ -3705,27 +3713,27 @@ const servicePages: ServicePageData[] = [
     heroTitle: 'Google Maps ist Pflicht für lokale Unternehmen',
     heroSubtitle: 'Menschen suchen in der Nähe, lesen Bewertungen und rufen direkt an. Wir richten Ihr Google-Unternehmensprofil so ein, dass es vollständig, aktuell und vertrauenswürdig ist.',
     whatTitle: 'Was ist das Google-Unternehmensprofil?',
-    whatBody: 'Ihr Eintrag bei Google Maps und in der Google-Suche: Name, Kategorie, Leistungen, Öffnungszeiten, Fotos und Bewertungen. Für viele Kunden ist er der kürzeste Weg von der Suche zum Anruf — oft noch bevor sie Ihre Website sehen.',
+    whatBody: 'Ihr Eintrag bei Google Maps und in der Google-Suche: Name, Kategorie, Leistungen, Öffnungszeiten, Fotos und Bewertungen. Für viele Kunden ist er der kürzeste Weg von der Suche zum Anruf, oft noch bevor sie Ihre Website sehen.',
     howTitle: 'Was wir für Ihr Profil tun',
     howItems: [
       { title: 'Einrichtung', body: 'Wir erstellen Ihr Profil oder übernehmen und überarbeiten ein bestehendes.' },
       { title: 'Hauptkategorie und Leistungen', body: 'Die Hauptkategorie entscheidet, bei welchen Suchen Google Sie überhaupt zeigt. Wir wählen sie sorgfältig und beschreiben Ihre Leistungen klar.' },
-      { title: 'Angaben, die überall stimmen', body: 'Kontaktdaten, Öffnungszeiten, Servicegebiet und die Verbindung zur Website — einheitlich mit Ihren anderen Einträgen im Netz.' },
+      { title: 'Angaben, die überall stimmen', body: 'Kontaktdaten, Öffnungszeiten, Servicegebiet und die Verbindung zur Website, einheitlich mit Ihren anderen Einträgen im Netz.' },
       { title: 'Bewertungen', body: 'Sie bekommen einen Link und eine Vorlage, mit der Sie zufriedene Kunden einfach um eine Bewertung bitten.' },
     ],
     receiveTitle: 'Was Sie erhalten',
     receiveItems: [
-      'Ein vollständig eingerichtetes Google-Profil — einmalig, ohne Abo.',
+      'Ein vollständig eingerichtetes Google-Profil, einmalig, ohne Abo.',
       'Eine klare Kategorie und Leistungen, damit Google versteht, wofür Sie stehen.',
       'Einheitliche Kontaktdaten, Öffnungszeiten und die Verbindung zur Website.',
       'Link und Vorlage für echte Google-Bewertungen.',
     ],
     whyTitle: 'Warum Google Maps zuerst kommt',
-    whyBody: 'Wer einen Handwerker, eine Praxis oder einen Dienstleister in der Nähe sucht, entscheidet meist schnell und zwischen wenigen Anbietern auf der Karte. Ein unvollständiges Profil überlässt diese Anfragen den Mitbewerbern — auch wenn Ihre Arbeit besser ist.',
+    whyBody: 'Wer einen Handwerker, eine Praxis oder einen Dienstleister in der Nähe sucht, entscheidet meist schnell und zwischen wenigen Anbietern auf der Karte. Ein unvollständiges Profil überlässt diese Anfragen den Mitbewerbern, auch wenn Ihre Arbeit besser ist.',
     faq: [
       { q: 'Können Sie Platz 1 auf Google Maps garantieren?', a: 'Nein, das kann niemand seriös versprechen. Google berücksichtigt unter anderem die Entfernung zum Suchenden und die Bekanntheit des Unternehmens. Wir bringen alles in Ordnung, was sich beeinflussen lässt.' },
       { q: 'Brauche ich ein physisches Ladengeschäft, um Google Business Profile zu nutzen?', a: 'Nein. Dienstleistungsunternehmen, die zu ihren Kunden fahren, können optimierte Profile mit festgelegten Servicegebieten betreiben, ohne die Privatadresse offenzulegen.' },
-      { q: 'Was kostet das Google-Profil?', a: 'Die Einrichtung kostet einmalig 149 € — ohne Abo. In den Website-Paketen Local Website (299 € im Monat) und AI Plus (499 € im Monat) ist das Google-Profil bereits enthalten, bei AI Plus mit erweiterter Optimierung.' },
+      { q: 'Was kostet das Google-Profil?', a: 'Die Einrichtung kostet einmalig 149 €, ohne Abo. In den Website-Paketen Local Website (299 € im Monat) und AI Plus (499 € im Monat) ist das Google-Profil bereits enthalten, bei AI Plus mit erweiterter Optimierung. Wechseln Sie innerhalb von 60 Tagen zu Local Website, rechnen wir die 149 € auf den ersten Monat an.' },
     ],
     ctaTitle: 'Kostenloser Check Ihres Google-Profils',
     ctaBody: 'Wir prüfen Ihr Google-Unternehmensprofil und zeigen, was fehlt und was Sie zuerst verbessern sollten.',
@@ -3738,9 +3746,9 @@ const servicePages: ServicePageData[] = [
     heroSubtitle: 'Über den Links stehen heute eine KI-Antwort und eine Karte mit drei Betrieben. Google sammelt Informationen über Sie im ganzen Netz: auf Ihrer Website, im Google-Profil, in Bewertungen und sozialen Netzwerken. Wir sorgen dafür, dass Google Sie findet und jede Kundenfrage beantworten kann.',
     whatTitle: 'Was eine gute lokale Website ausmacht',
     whatBody: 'Eine gute Website sieht nicht nur gut aus. Sie beantwortet die Fragen Ihrer Kunden: Was bieten Sie an, wo sind Sie tätig, welche Arbeiten haben Sie schon gemacht und wie erreicht man Sie. Genau daraus lesen auch Google und KI-Systeme, wer Sie sind.',
-    howTitle: 'Drei Pakete — je nachdem, wo Sie stehen',
+    howTitle: 'Drei Pakete, je nachdem, wo Sie stehen',
     howItems: [
-      { title: 'One Pager', body: 'Eine Seite mit Leistungen und Kontakt, optimiert für das Smartphone — Hosting und Technik inklusive. Der schnelle Einstieg.' },
+      { title: 'One Pager', body: 'Eine Seite mit Leistungen und Kontakt, optimiert für das Smartphone, Hosting und Technik inklusive. Der schnelle Einstieg.' },
       { title: 'Local Website', body: 'Eine Seite pro Leistung und Ort, jeden Monat 3 neue Artikel, laufend aktualisiertes SEO und ein eingerichtetes Google-Unternehmensprofil.' },
       { title: 'AI Plus', body: 'Alles aus Local Website und dazu Arbeit außerhalb Ihrer Website: Links und Erwähnungen auf anderen Seiten, gepflegtes Google-Profil, Bewertungen, Verzeichnisse und monatlicher KI-Monitor.' },
       { title: 'Technik in jedem Paket', body: 'Ladezeiten, mobile Darstellung und strukturierte Daten, damit Ihre Inhalte gefunden und richtig verstanden werden.' },
@@ -3766,27 +3774,27 @@ const servicePages: ServicePageData[] = [
     Illust: IllustAIOptimization,
     kicker: 'KI-SUCHE',
     heroTitle: 'Lokale Suche beginnt immer öfter mit einer Frage an die KI',
-    heroSubtitle: 'ChatGPT, Perplexity und die KI-Übersichten bei Google nennen nur wenige Anbieter — und zwar die, die sie eindeutig verstehen und für vertrauenswürdig halten.',
+    heroSubtitle: 'ChatGPT, Perplexity und die KI-Übersichten bei Google nennen nur wenige Anbieter, und zwar die, die sie eindeutig verstehen und für vertrauenswürdig halten.',
     whatTitle: 'Was heißt „in der KI-Suche sichtbar“?',
     whatBody: 'KI-Assistenten stellen ihre Antworten aus dem zusammen, was im Netz über Ihr Unternehmen steht: Website, Google-Profil, Verzeichnisse, Bewertungen und Social Media. Sichtbar wird, wer dort klar und widerspruchsfrei beschrieben ist. Einen Trick jenseits sauberer Grundlagen gibt es nicht.',
     howTitle: 'Was die KI über Sie verstehen muss',
     howItems: [
-      { title: 'Was Sie anbieten', body: 'Klare Beschreibungen Ihrer Leistungen auf der Website und im Google-Profil — mit strukturierten Daten, die Maschinen lesen können.' },
+      { title: 'Was Sie anbieten', body: 'Klare Beschreibungen Ihrer Leistungen auf der Website und im Google-Profil, mit strukturierten Daten, die Maschinen lesen können.' },
       { title: 'Wo Sie tätig sind', body: 'Ort und Servicegebiet eindeutig und überall gleich angegeben.' },
       { title: 'Was Kunden über Sie sagen', body: 'Echte Bewertungen und Erwähnungen, auf die sich KI-Systeme stützen können.' },
-      { title: 'Ob Ihre Angaben übereinstimmen', body: 'Einheitliche Daten auf Website, Karten, Verzeichnissen und Social Media — widersprüchliche Angaben machen die KI unsicher.' },
+      { title: 'Ob Ihre Angaben übereinstimmen', body: 'Einheitliche Daten auf Website, Karten, Verzeichnissen und Social Media, widersprüchliche Angaben machen die KI unsicher.' },
     ],
     receiveTitle: 'Was Sie erhalten',
     receiveItems: [
-      'Inhalte, die die Fragen Ihrer Kunden direkt beantworten — für Google und die KI-Suche.',
+      'Inhalte, die die Fragen Ihrer Kunden direkt beantworten, für Google und die KI-Suche.',
       'Einheitliche Unternehmensdaten in Branchenverzeichnissen und auf Kartendiensten.',
-      'Regelmäßiges Monitoring, wie KI-Assistenten Ihr Unternehmen darstellen — mit Empfehlungen.',
+      'Regelmäßiges Monitoring, wie KI-Assistenten Ihr Unternehmen darstellen, mit Empfehlungen.',
     ],
     whyTitle: 'Warum das jetzt wichtig wird',
     whyBody: 'Immer mehr Menschen fragen einen KI-Assistenten, bevor sie Google öffnen. Die Antwort nennt nur wenige Anbieter. Wer dort fehlt, wird gar nicht erst verglichen.',
     faq: [
-      { q: 'Wie unterscheidet sich das von klassischem SEO?', a: 'Die Grundlagen sind dieselben: klare Inhalte, saubere Technik, einheitliche Angaben. Der Unterschied: Eine KI zeigt keine Trefferliste, sondern nennt wenige Anbieter — deshalb zählt, wie eindeutig und vertrauenswürdig Ihr Unternehmen beschrieben ist.' },
-      { q: 'Können Sie eine Empfehlung durch ChatGPT garantieren?', a: 'Nein. Niemand kontrolliert, was eine KI antwortet. Wir sorgen dafür, dass alles, was sie über Sie finden kann, klar, aktuell und stimmig ist — und prüfen regelmäßig, wie Sie dargestellt werden.' },
+      { q: 'Wie unterscheidet sich das von klassischem SEO?', a: 'Die Grundlagen sind dieselben: klare Inhalte, saubere Technik, einheitliche Angaben. Der Unterschied: Eine KI zeigt keine Trefferliste, sondern nennt wenige Anbieter, deshalb zählt, wie eindeutig und vertrauenswürdig Ihr Unternehmen beschrieben ist.' },
+      { q: 'Können Sie eine Empfehlung durch ChatGPT garantieren?', a: 'Nein. Niemand kontrolliert, was eine KI antwortet. Wir sorgen dafür, dass alles, was sie über Sie finden kann, klar, aktuell und stimmig ist, und prüfen regelmäßig, wie Sie dargestellt werden.' },
       { q: 'In welchem Paket ist das enthalten?', a: 'Im Paket AI Plus für 499 € im Monat: Website mit monatlich neuen Artikeln, Links und Erwähnungen auf anderen Seiten, laufend gepflegtes Google-Profil, Bewertungen, Verzeichnisse mit überall gleichen Daten und der KI-Monitor: jeden Monat 10 Kundenfragen an ChatGPT, mit Bericht.' },
     ],
     ctaTitle: 'Kostenloser Check Ihrer KI-Sichtbarkeit',
@@ -3826,15 +3834,15 @@ const servicePages: ServicePageData[] = [
     slug: 'local-citations',
     Illust: IllustCitations,
     kicker: 'LOKALE VERZEICHNISSE & ERWÄHNUNGEN',
-    heroTitle: 'Überall dieselben Angaben — überall auffindbar',
+    heroTitle: 'Überall dieselben Angaben, überall auffindbar',
     heroSubtitle: 'Wir bringen Ihre Firmendaten auf allen relevanten Portalen in Übereinstimmung und sorgen dafür, dass Ihr Unternehmen dort auftaucht, wo in Ihrer Branche und Region gesucht wird.',
     whatTitle: 'Was sind lokale Verzeichnisse und Erwähnungen?',
-    whatBody: 'Jede Nennung Ihres Unternehmens außerhalb Ihrer eigenen Kanäle — Branchenportale, Kartendienste, Kammer- und Verbandsverzeichnisse, lokale Medien — bestätigt, dass es Ihren Betrieb gibt und dass die Angaben stimmen. Diese Quellen nutzen Suchmaschinen und KI-Systeme, um sich ein Bild von Ihnen zu machen.',
+    whatBody: 'Jede Nennung Ihres Unternehmens außerhalb Ihrer eigenen Kanäle (Branchenportale, Kartendienste, Kammer- und Verbandsverzeichnisse, lokale Medien) bestätigt, dass es Ihren Betrieb gibt und dass die Angaben stimmen. Diese Quellen nutzen Suchmaschinen und KI-Systeme, um sich ein Bild von Ihnen zu machen.',
     howTitle: 'Wie wir vorgehen',
     howItems: [
-      { title: 'Bestandsaufnahme', body: 'Wir erfassen, wo Ihr Unternehmen bereits eingetragen ist — inklusive vergessener Einträge mit alter Adresse oder alter Rufnummer.' },
+      { title: 'Bestandsaufnahme', body: 'Wir erfassen, wo Ihr Unternehmen bereits eingetragen ist, inklusive vergessener Einträge mit alter Adresse oder alter Rufnummer.' },
       { title: 'Korrektur und Bereinigung', body: 'Wir korrigieren abweichende Angaben, führen Dubletten zusammen und lassen veraltete Einträge entfernen.' },
-      { title: 'Gezielter Ausbau', body: 'Wir legen fehlende Einträge auf den Portalen an, die in Ihrer Branche und Ihrer Region tatsächlich Reichweite haben — statt auf hunderten belanglosen Verzeichnissen.' },
+      { title: 'Gezielter Ausbau', body: 'Wir legen fehlende Einträge auf den Portalen an, die in Ihrer Branche und Ihrer Region tatsächlich Reichweite haben, statt auf hunderten belanglosen Verzeichnissen.' },
       { title: 'Laufende Kontrolle', body: 'Wir prüfen regelmäßig, ob Angaben von Dritten verändert wurden, und halten Name, Adresse und Telefonnummer überall identisch.' },
     ],
     receiveTitle: 'Was Sie erhalten',
@@ -3844,10 +3852,10 @@ const servicePages: ServicePageData[] = [
       'Eine stabilere Grundlage für Ihre Platzierung bei Google Maps und für KI-Antworten über Ihr Unternehmen.',
     ],
     whyTitle: 'Warum widersprüchliche Angaben teuer sind',
-    whyBody: 'Eine alte Telefonnummer in einem vergessenen Portal kostet Sie zweimal: Anrufe, die nirgends ankommen, und Signale, die Ihrer Sichtbarkeit widersprechen. Konsistenz ist unspektakuläre Arbeit — und einer der häufigsten Gründe, warum ein gut gepflegtes Google-Profil trotzdem nicht nach oben kommt.',
+    whyBody: 'Eine alte Telefonnummer in einem vergessenen Portal kostet Sie zweimal: Anrufe, die nirgends ankommen, und Signale, die Ihrer Sichtbarkeit widersprechen. Konsistenz ist unspektakuläre Arbeit, und einer der häufigsten Gründe, warum ein gut gepflegtes Google-Profil trotzdem nicht nach oben kommt.',
     faq: [
       { q: 'Brauche ich Einträge in hunderten Verzeichnissen?', a: 'Nein. Entscheidend sind die Portale, die in Ihrer Branche und Region tatsächlich genutzt und von Suchmaschinen ausgewertet werden. Masse an belanglosen Einträgen bringt nichts und erschwert die Pflege.' },
-      { q: 'Was passiert mit alten, falschen Einträgen?', a: 'Wir beantragen Korrektur oder Löschung. Bei manchen Portalen dauert das einige Wochen, weil die Freigabe beim Betreiber liegt — wir verfolgen den Status und melden zurück.' },
+      { q: 'Was passiert mit alten, falschen Einträgen?', a: 'Wir beantragen Korrektur oder Löschung. Bei manchen Portalen dauert das einige Wochen, weil die Freigabe beim Betreiber liegt, wir verfolgen den Status und melden zurück.' },
     ],
     ctaTitle: 'Kostenloser Check Ihrer Einträge',
     ctaBody: 'Wir prüfen, wo Ihr Unternehmen eingetragen ist, welche Angaben voneinander abweichen und welche Portale in Ihrer Region fehlen.',
@@ -3857,13 +3865,13 @@ const servicePages: ServicePageData[] = [
     Illust: IllustSocial,
     kicker: 'SOCIAL MEDIA',
     heroTitle: 'In sozialen Netzwerken sehen Kunden Menschen',
-    heroSubtitle: 'Team, Arbeitsweise und echte Ergebnisse machen Ihr Unternehmen vertraut — schon vor dem ersten Anruf. Dafür müssen Sie kein Influencer werden.',
+    heroSubtitle: 'Team, Arbeitsweise und echte Ergebnisse machen Ihr Unternehmen vertraut, schon vor dem ersten Anruf. Dafür müssen Sie kein Influencer werden.',
     whatTitle: 'Was wir unter Social-Media-Betreuung verstehen',
-    whatBody: 'Regelmäßige, ehrliche Beiträge auf Instagram und Facebook: wer Sie sind, wie Sie arbeiten und was dabei herauskommt. Wir planen, bereiten vor und veröffentlichen — Sie liefern Einblicke aus Ihrem Alltag.',
+    whatBody: 'Regelmäßige, ehrliche Beiträge auf Instagram und Facebook: wer Sie sind, wie Sie arbeiten und was dabei herauskommt. Wir planen, bereiten vor und veröffentlichen, Sie liefern Einblicke aus Ihrem Alltag.',
     howTitle: 'So läuft die Betreuung',
     howItems: [
       { title: 'Redaktionsplan', body: 'Wir planen Themen rund um Ihre Leistungen, echte Projekte und Ihre Region.' },
-      { title: 'Vorbereitung der Beiträge', body: 'Wir gestalten die Beiträge und schreiben die Texte — Sie geben sie frei.' },
+      { title: 'Vorbereitung der Beiträge', body: 'Wir gestalten die Beiträge und schreiben die Texte, Sie geben sie frei.' },
       { title: 'Regelmäßiges Posten', body: 'Wir veröffentlichen nach Plan, damit Ihr Profil sichtbar aktiv bleibt.' },
       { title: 'Verbindung zu Ihren Leistungen', body: 'Profil, Links und Beiträge führen zu Website, Google-Profil und Anfrage.' },
     ],
@@ -3876,9 +3884,9 @@ const servicePages: ServicePageData[] = [
     whyTitle: 'Warum Social Media Vertrauen schafft',
     whyBody: 'Viele Kunden sehen sich vor dem Anruf kurz Ihr Profil an. Ein gepflegter Feed zeigt, dass Ihr Unternehmen aktiv ist und dass hinter dem Namen Menschen stehen. Ein verwaistes Profil wirft dagegen Fragen auf.',
     faq: [
-      { q: 'Wie oft wird gepostet?', a: 'Die Frequenz legen wir gemeinsam im Redaktionsplan fest — so, dass sie zu Ihrem Alltag und Ihren Themen passt.' },
-      { q: 'Kann ich Social Media ohne Website buchen?', a: 'Ja. Die Social-Media-Betreuung kostet 199 € im Monat und lässt sich zu jedem Paket dazu buchen — oder ganz allein.' },
-      { q: 'Muss ich selbst vor die Kamera?', a: 'Nein. Fotos von Projekten, dem Team oder der Werkstatt reichen oft völlig. Wer mag, zeigt sich — Pflicht ist das nicht.' },
+      { q: 'Wie oft wird gepostet?', a: 'Die Frequenz legen wir gemeinsam im Redaktionsplan fest, so, dass sie zu Ihrem Alltag und Ihren Themen passt.' },
+      { q: 'Kann ich Social Media ohne Website buchen?', a: 'Ja. Die Social-Media-Betreuung kostet 199 € im Monat und lässt sich zu jedem Paket dazu buchen, oder ganz allein.' },
+      { q: 'Muss ich selbst vor die Kamera?', a: 'Nein. Fotos von Projekten, dem Team oder der Werkstatt reichen oft völlig. Wer mag, zeigt sich. Pflicht ist das nicht.' },
     ],
     ctaTitle: 'Kostenlose Social-Media-Analyse',
     ctaBody: 'Wir sehen uns Ihre Profile an und sagen Ihnen, was fehlt und womit Sie anfangen sollten.',
@@ -4002,14 +4010,14 @@ const glossarEntries: GlossarEntry[] = [
     sections: [
       { h: "Was ist lokale Sichtbarkeit?", p: [
         "Lokale Sichtbarkeit ist kein einzelner Kanal, sondern die Summe aus Google-Unternehmensprofil, Website, Bewertungen, Verzeichniseinträgen, sozialen Netzwerken und dem, was KI-Systeme über Sie wiedergeben. Sie entscheidet darüber, ob ein kaufbereiter Kunde Sie überhaupt zu Gesicht bekommt.",
-        "Gemessen wird sie nicht an einer einzigen Position, sondern daran, wie oft und wie überzeugend Ihr Unternehmen bei den Suchanfragen erscheint, die in Ihrem Einzugsgebiet tatsächlich gestellt werden — „Elektriker Hamburg“, „Zahnarzt in der Nähe“, „wer repariert Rollläden“.",
+        "Gemessen wird sie nicht an einer einzigen Position, sondern daran, wie oft und wie überzeugend Ihr Unternehmen bei den Suchanfragen erscheint, die in Ihrem Einzugsgebiet tatsächlich gestellt werden: „Elektriker Hamburg“, „Zahnarzt in der Nähe“, „wer repariert Rollläden“.",
       ] },
       { h: "Woraus lokale Sichtbarkeit besteht", p: [
         "Die wichtigsten Bausteine sind das Google-Unternehmensprofil, eine Website mit einer eigenen Seite je Leistung und Region, aktuelle Bewertungen, einheitliche Einträge in Verzeichnissen sowie Inhalte, die KI-Systeme verlässlich auslesen können.",
         "Keiner dieser Bausteine wirkt allein. Ein starkes Profil mit widersprüchlichen Adressdaten oder eine gute Website ohne Bewertungen verschenkt einen großen Teil ihrer Wirkung.",
       ] },
       { h: "Warum sie für lokale Unternehmen entscheidend ist", p: [
-        "Wer einen Handwerker, eine Praxis oder einen Dienstleister vor Ort sucht, entscheidet meist schnell und zwischen wenigen Optionen. Unternehmen, die in diesem Moment nicht erscheinen, werden nicht abgelehnt — sie werden gar nicht erst in Betracht gezogen.",
+        "Wer einen Handwerker, eine Praxis oder einen Dienstleister vor Ort sucht, entscheidet meist schnell und zwischen wenigen Optionen. Unternehmen, die in diesem Moment nicht erscheinen, werden nicht abgelehnt. Sie werden gar nicht erst in Betracht gezogen.",
       ] },
     ],
     faq: [
@@ -4059,7 +4067,7 @@ const glossarEntries: GlossarEntry[] = [
       ] },
       { h: "Wie Google die drei Plätze vergibt", p: [
         "Google nennt drei Hauptfaktoren: Relevanz (passt das Profil zur Suche?), Entfernung (wie nah ist das Unternehmen am Suchenden oder am genannten Ort?) und Bekanntheit (Bewertungen, Erwähnungen, Links, Qualität der Website).",
-        "Die Entfernung lässt sich nicht beeinflussen. Deshalb sieht das Local Pack je nach Standort des Suchenden unterschiedlich aus — und deshalb ist eine feste Platzierung nicht garantierbar.",
+        "Die Entfernung lässt sich nicht beeinflussen. Deshalb sieht das Local Pack je nach Standort des Suchenden unterschiedlich aus, und deshalb ist eine feste Platzierung nicht garantierbar.",
       ] },
       { h: "Wie Sie Ihre Chancen verbessern", p: [
         "Ein vollständiges Profil mit passender Kategorie, kontinuierlich neue Bewertungen, einheitliche Angaben in Verzeichnissen und eine Website, die jede Leistung und jede Region klar beschreibt.",
@@ -4077,10 +4085,10 @@ const glossarEntries: GlossarEntry[] = [
     slug: "nap-konsistenz",
     term: "NAP-Konsistenz",
     short: "Name, Adresse und Telefonnummer müssen überall identisch geschrieben sein.",
-    body: "NAP steht für Name, Address, Phone. Weichen diese Angaben zwischen Google, Website, Branchenverzeichnissen und sozialen Profilen voneinander ab, entstehen widersprüchliche Signale — für Suchmaschinen ebenso wie für Kunden. Konsistenz ist unspektakulär, aber eine der zuverlässigsten Grundlagen lokaler Sichtbarkeit.",
+    body: "NAP steht für Name, Address, Phone. Weichen diese Angaben zwischen Google, Website, Branchenverzeichnissen und sozialen Profilen voneinander ab, entstehen widersprüchliche Signale, für Suchmaschinen ebenso wie für Kunden. Konsistenz ist unspektakulär, aber eine der zuverlässigsten Grundlagen lokaler Sichtbarkeit.",
     sections: [
       { h: "Was bedeutet NAP-Konsistenz?", p: [
-        "NAP steht für Name, Address, Phone. Weichen diese Angaben zwischen Google, Website, Branchenverzeichnissen und sozialen Profilen voneinander ab, entstehen widersprüchliche Signale — für Suchmaschinen ebenso wie für Kunden. Konsistenz ist unspektakulär, aber eine der zuverlässigsten Grundlagen lokaler Sichtbarkeit.",
+        "NAP steht für Name, Address, Phone. Weichen diese Angaben zwischen Google, Website, Branchenverzeichnissen und sozialen Profilen voneinander ab, entstehen widersprüchliche Signale, für Suchmaschinen ebenso wie für Kunden. Konsistenz ist unspektakulär, aber eine der zuverlässigsten Grundlagen lokaler Sichtbarkeit.",
       ] },
       { h: "Wo die Angaben stimmen müssen", p: [
         "Im Google-Unternehmensprofil, im Impressum und Footer der Website, in Branchenverzeichnissen, bei Apple Maps und Bing, in sozialen Profilen, auf Bewertungsportalen und in Kammer- oder Verbandsverzeichnissen.",
@@ -4133,7 +4141,7 @@ const glossarEntries: GlossarEntry[] = [
         "Bewertungen wirken doppelt: Sie beeinflussen, ob ein Interessent anruft, und sie gehören zu den Signalen, die Google für die Einordnung lokaler Ergebnisse heranzieht. Entscheidend ist nicht nur die Sternebewertung, sondern Aktualität, Anzahl, Inhalt und ob auf Bewertungen geantwortet wird.",
       ] },
       { h: "Wie Sie mehr echte Bewertungen erhalten", p: [
-        "Der wirksamste Weg ist, zufriedene Kunden direkt nach dem Auftrag zu fragen — mit einem kurzen Link oder QR-Code, der ohne Umwege zur Bewertungsseite führt.",
+        "Der wirksamste Weg ist, zufriedene Kunden direkt nach dem Auftrag zu fragen, mit einem kurzen Link oder QR-Code, der ohne Umwege zur Bewertungsseite führt.",
         "Gekaufte oder selbst geschriebene Bewertungen sind verboten. Google löscht sie und kann das Profil einschränken; in Deutschland drohen zusätzlich Abmahnungen.",
       ] },
       { h: "Richtig auf Bewertungen antworten", p: [
@@ -4151,7 +4159,7 @@ const glossarEntries: GlossarEntry[] = [
   {
     slug: "suchintention",
     term: "Suchintention",
-    short: "Die Absicht hinter einer Suchanfrage — Information, Vergleich oder Kauf.",
+    short: "Die Absicht hinter einer Suchanfrage: Information, Vergleich oder Kauf.",
     body: "„Was kostet eine Heizungswartung\" und „Heizungsnotdienst in meiner Nähe\" sind zwei völlig verschiedene Situationen. Inhalte funktionieren dann, wenn sie zur Absicht passen: Ratgeber und Glossar bedienen die Recherche, Leistungs- und Regionenseiten die Entscheidung.",
     sections: [
       { h: "Was ist Suchintention?", p: [
@@ -4184,7 +4192,7 @@ const glossarEntries: GlossarEntry[] = [
       { h: "Welche Angaben für lokale Unternehmen wichtig sind", p: [
         "LocalBusiness oder die passende Unterart mit Name, Adresse, Telefon, Öffnungszeiten und Servicegebiet, dazu Service für Leistungen, FAQPage für häufige Fragen und BreadcrumbList für die Seitenstruktur.",
       ] },
-      { h: "Was strukturierte Daten bewirken — und was nicht", p: [
+      { h: "Was strukturierte Daten bewirken, und was nicht", p: [
         "Sie können zu erweiterten Suchergebnissen führen und helfen Suchmaschinen und KI-Systemen, Angaben eindeutig zuzuordnen. Eine Garantie für bessere Platzierungen sind sie nicht, und die Angaben müssen mit dem sichtbaren Seiteninhalt übereinstimmen.",
       ] },
     ],
@@ -4200,13 +4208,13 @@ const glossarEntries: GlossarEntry[] = [
     slug: "ki-suche-ai-overviews",
     term: "KI-Suche & AI Overviews",
     short: "Antworten, die ein KI-System zusammenfasst, statt eine Linkliste auszugeben.",
-    body: "ChatGPT, Perplexity und die KI-Übersichten in der Google-Suche beantworten Fragen direkt und nennen dabei einige wenige Quellen und Unternehmen. Wer in diesen Antworten nicht vorkommt, ist für diesen Teil der Kundschaft nicht vorhanden — auch bei guter klassischer Platzierung.",
+    body: "ChatGPT, Perplexity und die KI-Übersichten in der Google-Suche beantworten Fragen direkt und nennen dabei einige wenige Quellen und Unternehmen. Wer in diesen Antworten nicht vorkommt, ist für diesen Teil der Kundschaft nicht vorhanden, auch bei guter klassischer Platzierung.",
     sections: [
       { h: "Was ist KI-Suche?", p: [
-        "ChatGPT, Perplexity und die KI-Übersichten in der Google-Suche beantworten Fragen direkt und nennen dabei einige wenige Quellen und Unternehmen. Wer in diesen Antworten nicht vorkommt, ist für diesen Teil der Kundschaft nicht vorhanden — auch bei guter klassischer Platzierung.",
+        "ChatGPT, Perplexity und die KI-Übersichten in der Google-Suche beantworten Fragen direkt und nennen dabei einige wenige Quellen und Unternehmen. Wer in diesen Antworten nicht vorkommt, ist für diesen Teil der Kundschaft nicht vorhanden, auch bei guter klassischer Platzierung.",
       ] },
       { h: "Woher KI-Systeme ihre Informationen nehmen", p: [
-        "Aus Websites, Verzeichnissen, Bewertungsportalen, Presseberichten und Kartendiensten. Die KI fasst zusammen, was sie an mehreren Stellen übereinstimmend findet — widersprüchliche oder fehlende Angaben führen dazu, dass ein Unternehmen nicht genannt wird.",
+        "Aus Websites, Verzeichnissen, Bewertungsportalen, Presseberichten und Kartendiensten. Die KI fasst zusammen, was sie an mehreren Stellen übereinstimmend findet, widersprüchliche oder fehlende Angaben führen dazu, dass ein Unternehmen nicht genannt wird.",
       ] },
       { h: "Was lokale Unternehmen tun können", p: [
         "Klare Seiten zu jeder Leistung und Region, strukturierte Daten, einheitliche Angaben im ganzen Netz, echte Bewertungen und Erwähnungen auf vertrauenswürdigen Seiten. Außerdem dürfen KI-Crawler in der robots.txt nicht ausgesperrt sein.",
@@ -4224,10 +4232,10 @@ const glossarEntries: GlossarEntry[] = [
     slug: "geo",
     term: "GEO (Generative Engine Optimization)",
     short: "Die Arbeit daran, in KI-generierten Antworten korrekt vorzukommen.",
-    body: "GEO ist keine geheime zweite Disziplin neben SEO. Es geht um dieselben Grundlagen — klare Inhalte, saubere Technik, abrufbare Seiten, übereinstimmende Angaben, externe Bestätigung — nur konsequent auf die Frage ausgerichtet, ob ein Sprachmodell Ihr Unternehmen verlässlich wiedergeben kann.",
+    body: "GEO ist keine geheime zweite Disziplin neben SEO. Es geht um dieselben Grundlagen: klare Inhalte, saubere Technik, abrufbare Seiten, übereinstimmende Angaben, externe Bestätigung, nur konsequent auf die Frage ausgerichtet, ob ein Sprachmodell Ihr Unternehmen verlässlich wiedergeben kann.",
     sections: [
       { h: "Was ist GEO?", p: [
-        "GEO ist keine geheime zweite Disziplin neben SEO. Es geht um dieselben Grundlagen — klare Inhalte, saubere Technik, abrufbare Seiten, übereinstimmende Angaben, externe Bestätigung — nur konsequent auf die Frage ausgerichtet, ob ein Sprachmodell Ihr Unternehmen verlässlich wiedergeben kann.",
+        "GEO ist keine geheime zweite Disziplin neben SEO. Es geht um dieselben Grundlagen: klare Inhalte, saubere Technik, abrufbare Seiten, übereinstimmende Angaben, externe Bestätigung, nur konsequent auf die Frage ausgerichtet, ob ein Sprachmodell Ihr Unternehmen verlässlich wiedergeben kann.",
       ] },
       { h: "Der Unterschied zwischen GEO und SEO", p: [
         "SEO zielt auf Platzierungen in einer Ergebnisliste, GEO darauf, in einer zusammengefassten Antwort genannt und richtig beschrieben zu werden. Die Maßnahmen überschneiden sich stark; neu ist vor allem der Blick auf externe Quellen und eindeutige Formulierungen.",
@@ -4247,7 +4255,7 @@ const glossarEntries: GlossarEntry[] = [
   {
     slug: "servicegebiet",
     term: "Servicegebiet",
-    short: "Die Region, in der Sie arbeiten — auch ohne Ladengeschäft vor Ort.",
+    short: "Die Region, in der Sie arbeiten, auch ohne Ladengeschäft vor Ort.",
     body: "Betriebe, die zu ihren Kunden fahren, können im Google-Profil ein Servicegebiet hinterlegen, statt eine Adresse zu veröffentlichen. Auf der Website gehört dazu je eine eigene Seite pro Region, damit für jede Stadt nachvollziehbar ist, welche Leistung Sie dort anbieten.",
     sections: [
       { h: "Was ist ein Servicegebiet?", p: [
@@ -4255,7 +4263,7 @@ const glossarEntries: GlossarEntry[] = [
       ] },
       { h: "Das Servicegebiet im Google-Unternehmensprofil", p: [
         "Sie können Städte, Postleitzahlen oder Regionen angeben. Google empfiehlt, das Gebiet realistisch zu halten: ungefähr zwei Stunden Fahrzeit vom Betriebssitz.",
-        "Ein großes Servicegebiet verbessert nicht automatisch die Platzierung in weiter entfernten Orten — dort zählt vor allem, was Ihre Website über diese Orte aussagt.",
+        "Ein großes Servicegebiet verbessert nicht automatisch die Platzierung in weiter entfernten Orten, dort zählt vor allem, was Ihre Website über diese Orte aussagt.",
       ] },
       { h: "Regionenseiten auf der Website", p: [
         "Für jede wichtige Stadt eine eigene Seite mit echten Informationen: welche Leistungen Sie dort anbieten, wie schnell Sie vor Ort sind, Referenzen aus dem Ort. Kopierte Seiten, in denen nur der Ortsname ausgetauscht ist, bringen wenig.",
@@ -4280,7 +4288,7 @@ const glossarEntries: GlossarEntry[] = [
         "Ihr Google-Unternehmensprofil, die Platzierung bei wichtigen lokalen Suchbegriffen, Website und Technik, Bewertungen im Vergleich zu Mitbewerbern, Einträge in Verzeichnissen und ob KI-Assistenten Ihr Unternehmen nennen.",
       ] },
       { h: "Was Sie danach erhalten", p: [
-        "Eine verständliche Übersicht mit den wichtigsten Lücken und einer Reihenfolge der Maßnahmen — was zuerst, was später und was Sie selbst erledigen können. Ob Sie danach mit uns arbeiten, entscheiden Sie.",
+        "Eine verständliche Übersicht mit den wichtigsten Lücken und einer Reihenfolge der Maßnahmen: was zuerst, was später und was Sie selbst erledigen können. Ob Sie danach mit uns arbeiten, entscheiden Sie.",
       ] },
     ],
     faq: [
@@ -4307,21 +4315,21 @@ const ratgeberArticles: RatgeberArticle[] = [
   {
     slug: 'wie-funktioniert-lokales-seo',
     title: 'Wie funktioniert lokales SEO?',
-    teaser: 'Warum lokale Ergebnisse anders zustande kommen als normale Suchergebnisse — und woran Sie tatsächlich arbeiten können.',
+    teaser: 'Warum lokale Ergebnisse anders zustande kommen als normale Suchergebnisse, und woran Sie tatsächlich arbeiten können.',
     minutes: 6,
     intro: 'Lokales SEO ist die Arbeit daran, bei Suchanfragen mit örtlichem Bezug gefunden zu werden: „Zahnarzt in der Nähe", „Heizung reparieren Köln", „bestes Café Innenstadt". Diese Ergebnisse funktionieren nach anderen Regeln als eine gewöhnliche Websuche.',
     sections: [
       {
         h: 'Der Unterschied zur klassischen Suche',
         p: [
-          'Bei einer normalen Suche ranken Seiten. Bei einer lokalen Suche ranken Unternehmen. Google zeigt zuerst eine Karte mit drei Einträgen — das Local Pack — und erst darunter klassische Ergebnisse. Diese drei Plätze bekommen den größten Teil der Anrufe und Routenanfragen.',
+          'Bei einer normalen Suche ranken Seiten. Bei einer lokalen Suche ranken Unternehmen. Google zeigt zuerst eine Karte mit drei Einträgen (das Local Pack) und erst darunter klassische Ergebnisse. Diese drei Plätze bekommen den größten Teil der Anrufe und Routenanfragen.',
           'Deshalb reicht eine gut gebaute Website allein nicht aus: Ohne gepflegtes Google-Unternehmensprofil fehlt Ihnen der Eintrag, um den es in diesem Block überhaupt geht.',
         ],
       },
       {
         h: 'Die drei Faktoren, die Google selbst nennt',
         p: [
-          'Google beschreibt für lokale Ergebnisse drei Faktoren: Relevanz (passt Ihr Profil zur Suchanfrage?), Entfernung (wie weit sind Sie vom Suchenden entfernt?) und Bekanntheit (wie bekannt ist Ihr Unternehmen — Erwähnungen, Verlinkungen, Bewertungen).',
+          'Google beschreibt für lokale Ergebnisse drei Faktoren: Relevanz (passt Ihr Profil zur Suchanfrage?), Entfernung (wie weit sind Sie vom Suchenden entfernt?) und Bekanntheit (wie bekannt ist Ihr Unternehmen: Erwähnungen, Verlinkungen, Bewertungen).',
           'Die Entfernung können Sie nicht beeinflussen. Genau deshalb sind pauschale Versprechen auf „Platz 1" unseriös: Derselbe Betrieb steht für einen Nutzer zwei Straßen weiter oben und für einen Nutzer am anderen Stadtrand weiter unten.',
         ],
       },
@@ -4336,7 +4344,7 @@ const ratgeberArticles: RatgeberArticle[] = [
         h: 'In welcher Reihenfolge man arbeitet',
         p: [
           'Zuerst das Google-Unternehmensprofil, weil es am schnellsten wirkt. Dann die einheitlichen Firmendaten in den wichtigsten Verzeichnissen, weil widersprüchliche Angaben jede weitere Maßnahme ausbremsen. Dann die Website mit eigenen Seiten je Leistung und je Region. Dann ein verlässlicher Ablauf für Bewertungen.',
-          'Anzeigen kommen zuletzt — nicht weil sie unwichtig wären, sondern weil sie die Lücke überbrücken, solange die organische Sichtbarkeit noch wächst.',
+          'Anzeigen kommen zuletzt, nicht weil sie unwichtig wären, sondern weil sie die Lücke überbrücken, solange die organische Sichtbarkeit noch wächst.',
         ],
       },
       {
@@ -4353,7 +4361,7 @@ const ratgeberArticles: RatgeberArticle[] = [
   {
     slug: 'google-maps-ranking-verbessern',
     title: 'Wie kommt mein Unternehmen bei Google Maps nach oben?',
-    teaser: 'Die Arbeitsschritte, die bei Google Maps tatsächlich etwas bewegen — und die Abkürzungen, die Ihr Profil gefährden.',
+    teaser: 'Die Arbeitsschritte, die bei Google Maps tatsächlich etwas bewegen, und die Abkürzungen, die Ihr Profil gefährden.',
     minutes: 7,
     intro: 'Google Maps ist für die meisten lokalen Betriebe der wichtigste Kanal überhaupt: Wer dort in den ersten Ergebnissen steht, bekommt Anrufe, ohne dass ein einziger Klick bezahlt werden muss. Was dorthin führt, ist keine Geheimwissenschaft, sondern eine Liste, die konsequent abgearbeitet werden will.',
     sections: [
@@ -4366,13 +4374,13 @@ const ratgeberArticles: RatgeberArticle[] = [
       {
         h: '2. Die richtige Hauptkategorie wählen',
         p: [
-          'Die Hauptkategorie entscheidet mit darüber, bei welchen Suchanfragen Ihr Profil überhaupt in Frage kommt. Sie sollte exakt beschreiben, was Sie hauptsächlich tun — nicht das breiteste denkbare Feld. Weitere Tätigkeiten kommen als Nebenkategorien und als Leistungen dazu.',
+          'Die Hauptkategorie entscheidet mit darüber, bei welchen Suchanfragen Ihr Profil überhaupt in Frage kommt. Sie sollte exakt beschreiben, was Sie hauptsächlich tun, nicht das breiteste denkbare Feld. Weitere Tätigkeiten kommen als Nebenkategorien und als Leistungen dazu.',
         ],
       },
       {
         h: '3. Bewertungen zu einem Ablauf machen',
         p: [
-          'Nicht „mehr Bewertungen", sondern mehr echte Bewertungen mit konkreten Erfahrungen. Dafür braucht es einen festen Moment, in dem gefragt wird, einen kurzen Weg zur Abgabe und Antworten auf das, was geschrieben wird — auch auf Kritik.',
+          'Nicht „mehr Bewertungen", sondern mehr echte Bewertungen mit konkreten Erfahrungen. Dafür braucht es einen festen Moment, in dem gefragt wird, einen kurzen Weg zur Abgabe und Antworten auf das, was geschrieben wird, auch auf Kritik.',
           'Alte Bewertungen verlieren an Überzeugungskraft. Ein stetiger Strom frischer Rückmeldungen wirkt auf Kunden wie auf Google anders als ein sehr guter Durchschnitt von vor zwei Jahren.',
         ],
       },
@@ -4385,13 +4393,13 @@ const ratgeberArticles: RatgeberArticle[] = [
       {
         h: '5. Aktivität zeigen',
         p: [
-          'Neue Fotos, aktualisierte Leistungen, gepflegte Öffnungszeiten an Feiertagen, beantwortete Fragen: Ein Profil, an dem sichtbar gearbeitet wird, wirkt für Kunden lebendig — und liefert Google laufend frische Informationen.',
+          'Neue Fotos, aktualisierte Leistungen, gepflegte Öffnungszeiten an Feiertagen, beantwortete Fragen: Ein Profil, an dem sichtbar gearbeitet wird, wirkt für Kunden lebendig, und liefert Google laufend frische Informationen.',
         ],
       },
       {
         h: 'Was Sie nicht tun sollten',
         p: [
-          'Keine gekauften oder erfundenen Bewertungen. Keine Keywords im Unternehmensnamen, die nicht zum tatsächlichen Namen gehören. Keine Adressen, an denen Sie nicht arbeiten. All das verstößt gegen die Google-Richtlinien und kann zur Sperrung des Profils führen — dann ist nicht die Platzierung weg, sondern der gesamte Eintrag.',
+          'Keine gekauften oder erfundenen Bewertungen. Keine Keywords im Unternehmensnamen, die nicht zum tatsächlichen Namen gehören. Keine Adressen, an denen Sie nicht arbeiten. All das verstößt gegen die Google-Richtlinien und kann zur Sperrung des Profils führen, dann ist nicht die Platzierung weg, sondern der gesamte Eintrag.',
         ],
       },
     ],
@@ -4402,14 +4410,14 @@ const ratgeberArticles: RatgeberArticle[] = [
   {
     slug: 'in-chatgpt-und-perplexity-gefunden-werden',
     title: 'Wie wird ein Unternehmen in ChatGPT und Perplexity gefunden?',
-    teaser: 'Was KI-Systeme brauchen, um Ihr Unternehmen zu nennen — und warum es dafür keine getrennte Zauberformel gibt.',
+    teaser: 'Was KI-Systeme brauchen, um Ihr Unternehmen zu nennen, und warum es dafür keine getrennte Zauberformel gibt.',
     minutes: 6,
-    intro: 'Immer mehr Menschen stellen ihre Frage direkt an ein KI-System, statt eine Ergebnisliste durchzusehen. Die Antwort nennt dann zwei, drei Anbieter. Wer dort nicht vorkommt, existiert für diese Kundschaft nicht — auch mit guter klassischer Platzierung.',
+    intro: 'Immer mehr Menschen stellen ihre Frage direkt an ein KI-System, statt eine Ergebnisliste durchzusehen. Die Antwort nennt dann zwei, drei Anbieter. Wer dort nicht vorkommt, existiert für diese Kundschaft nicht, auch mit guter klassischer Platzierung.',
     sections: [
       {
         h: 'Wie eine KI-Antwort entsteht',
         p: [
-          'Moderne KI-Systeme antworten nicht nur aus dem Gedächtnis. Sie rufen bei aktuellen Fragen Webinhalte ab, fassen sie zusammen und geben einige Quellen an. Für Ihr Unternehmen heißt das: Es zählt, was im Web verlässlich über Sie zu finden ist — und ob es abrufbar ist.',
+          'Moderne KI-Systeme antworten nicht nur aus dem Gedächtnis. Sie rufen bei aktuellen Fragen Webinhalte ab, fassen sie zusammen und geben einige Quellen an. Für Ihr Unternehmen heißt das: Es zählt, was im Web verlässlich über Sie zu finden ist, und ob es abrufbar ist.',
         ],
       },
       {
@@ -4422,7 +4430,7 @@ const ratgeberArticles: RatgeberArticle[] = [
       {
         h: 'Abrufbar sein',
         p: [
-          'Inhalte, die technisch nicht erreichbar sind, existieren für KI-Systeme nicht. Dazu gehören blockierte Seiten, Inhalte, die erst nach Interaktion erscheinen, und Zugriffsregeln, die die Crawler der KI-Anbieter aussperren. Wer dort vorkommen möchte, muss diese Zugriffe zulassen — eine bewusste Entscheidung, die man treffen sollte, statt sie dem Zufall zu überlassen.',
+          'Inhalte, die technisch nicht erreichbar sind, existieren für KI-Systeme nicht. Dazu gehören blockierte Seiten, Inhalte, die erst nach Interaktion erscheinen, und Zugriffsregeln, die die Crawler der KI-Anbieter aussperren. Wer dort vorkommen möchte, muss diese Zugriffe zulassen, eine bewusste Entscheidung, die man treffen sollte, statt sie dem Zufall zu überlassen.',
         ],
       },
       {
@@ -4434,8 +4442,8 @@ const ratgeberArticles: RatgeberArticle[] = [
       {
         h: 'Was das mit SEO zu tun hat',
         p: [
-          'Sehr viel. Google selbst hält fest, dass es für die KI-Funktionen der Suche keine gesonderte Optimierung braucht — es gelten die bekannten Grundlagen: nützliche Inhalte, saubere Technik, indexierbare Seiten, interne Verlinkung, ein aktuelles Unternehmensprofil.',
-          'Seriös ist deshalb nicht das Versprechen einer geheimen KI-Optimierung, sondern die konsequente Arbeit an diesen Grundlagen — plus die Beobachtung, ob und wie Ihr Unternehmen in KI-Antworten auftaucht.',
+          'Sehr viel. Google selbst hält fest, dass es für die KI-Funktionen der Suche keine gesonderte Optimierung braucht. Es gelten die bekannten Grundlagen: nützliche Inhalte, saubere Technik, indexierbare Seiten, interne Verlinkung, ein aktuelles Unternehmensprofil.',
+          'Seriös ist deshalb nicht das Versprechen einer geheimen KI-Optimierung, sondern die konsequente Arbeit an diesen Grundlagen, plus die Beobachtung, ob und wie Ihr Unternehmen in KI-Antworten auftaucht.',
         ],
       },
       {
@@ -4452,23 +4460,23 @@ const ratgeberArticles: RatgeberArticle[] = [
   {
     slug: 'brauchen-handwerker-instagram',
     title: 'Brauchen Handwerker Instagram?',
-    teaser: 'Instagram bringt selten von allein Aufträge — aber es entscheidet oft, ob jemand anruft. Wann sich ein Profil lohnt, welcher Kanal passt und was mindestens drin sein muss.',
+    teaser: 'Instagram bringt selten von allein Aufträge, aber es entscheidet oft, ob jemand anruft. Wann sich ein Profil lohnt, welcher Kanal passt und was mindestens drin sein muss.',
     minutes: 6,
-    intro: 'Die ehrliche Antwort: Nicht jeder Handwerksbetrieb braucht Instagram. Aber fast jeder wird dort gesucht. Wer Sie bei Google gefunden hat, schaut oft noch kurz in Ihr Profil, bevor er anruft — und ein Profil, dessen letzter Beitrag zwei Jahre alt ist, wirkt wie ein Betrieb, der aufgegeben hat. In diesem Artikel geht es darum, wann sich der Aufwand lohnt, welcher Kanal zu Ihnen passt und was ein Profil mindestens braucht.',
+    intro: 'Die ehrliche Antwort: Nicht jeder Handwerksbetrieb braucht Instagram. Aber fast jeder wird dort gesucht. Wer Sie bei Google gefunden hat, schaut oft noch kurz in Ihr Profil, bevor er anruft, und ein Profil, dessen letzter Beitrag zwei Jahre alt ist, wirkt wie ein Betrieb, der aufgegeben hat. In diesem Artikel geht es darum, wann sich der Aufwand lohnt, welcher Kanal zu Ihnen passt und was ein Profil mindestens braucht.',
     sections: [
       {
         h: 'Wofür Instagram im Handwerk wirklich da ist',
         p: [
-          'Die meisten Aufträge im Handwerk beginnen mit einer Suche: „Elektriker in der Nähe“, „Bad sanieren Freiburg“ — bei Google, in Google Maps oder inzwischen auch in ChatGPT. Instagram ist selten der Ort, an dem jemand einen Betrieb zum ersten Mal entdeckt.',
+          'Die meisten Aufträge im Handwerk beginnen mit einer Suche: „Elektriker in der Nähe“, „Bad sanieren Freiburg“, bei Google, in Google Maps oder inzwischen auch in ChatGPT. Instagram ist selten der Ort, an dem jemand einen Betrieb zum ersten Mal entdeckt.',
           'Seine Stärke liegt im zweiten Schritt: Der Kunde hat Sie gefunden und prüft jetzt, ob er Ihnen vertraut. Er will sehen, wer dahintersteht, ob der Betrieb gerade arbeitet und wie Ihre Arbeiten aussehen. Genau das zeigt ein gepflegtes Profil besser als jede Website.',
           'Dazu kommt ein Grund, der mit Kunden gar nichts zu tun hat: Nachwuchs. Azubis und junge Fachkräfte schauen sich einen Betrieb zuerst in sozialen Netzwerken an. Für viele Betriebe ist das inzwischen der wichtigere Grund, überhaupt ein Profil zu pflegen.',
         ],
       },
       {
-        h: 'Wann sich ein Profil lohnt — und wann nicht',
+        h: 'Wann sich ein Profil lohnt, und wann nicht',
         p: [
           'Es lohnt sich, wenn Ihre Arbeit sichtbar ist: Bäder, Küchen, Dächer, Gärten, Fassaden, Malerarbeiten, Möbel. Vorher-nachher-Bilder sind hier das stärkste Argument, das es gibt. Es lohnt sich auch, wenn Sie Privatkunden haben, die zwischen mehreren Angeboten abwägen, oder wenn Sie Personal suchen.',
-          'Weniger wichtig ist Instagram, wenn Sie fast nur für Hausverwaltungen, Bauträger oder Industrie arbeiten. Dort entscheidet eher ein gepflegtes LinkedIn-Profil des Inhabers — oder schlicht die Empfehlung.',
+          'Weniger wichtig ist Instagram, wenn Sie fast nur für Hausverwaltungen, Bauträger oder Industrie arbeiten. Dort entscheidet eher ein gepflegtes LinkedIn-Profil des Inhabers, oder schlicht die Empfehlung.',
           'Und: Kein Profil ist besser als ein totes. Wer keine Zeit für regelmäßige Beiträge hat, sollte lieber das Google-Unternehmensprofil mit aktuellen Fotos pflegen, als ein Instagram-Konto anzulegen, das nach drei Wochen verstummt.',
         ],
       },
@@ -4476,14 +4484,14 @@ const ratgeberArticles: RatgeberArticle[] = [
         h: 'Instagram, Facebook, TikTok oder LinkedIn?',
         p: [
           'Ein Kanal, der gepflegt wird, bringt mehr als vier, die halb gepflegt werden. Wählen Sie den Hauptkanal danach, wo Ihre Kunden sind:',
-          'Instagram passt für Privatkunden zwischen etwa 25 und 55 und für sichtbare Arbeiten. Facebook erreicht eher ältere Hausbesitzer und lokale Gruppen im Ort — Beiträge lassen sich aus Instagram automatisch dorthin mitveröffentlichen. TikTok und kurze Videos funktionieren vor allem für die Suche nach Azubis. LinkedIn ist der richtige Ort, wenn Ihre Auftraggeber selbst Unternehmen sind.',
+          'Instagram passt für Privatkunden zwischen etwa 25 und 55 und für sichtbare Arbeiten. Facebook erreicht eher ältere Hausbesitzer und lokale Gruppen im Ort. Beiträge lassen sich aus Instagram automatisch dorthin mitveröffentlichen. TikTok und kurze Videos funktionieren vor allem für die Suche nach Azubis. LinkedIn ist der richtige Ort, wenn Ihre Auftraggeber selbst Unternehmen sind.',
         ],
       },
       {
         h: 'Was ein Profil mindestens braucht',
         p: [
-          'Eine klare Kopfzeile: Wer sind Sie, was machen Sie, wo — zum Beispiel „Sanitär & Heizung · Bad komplett aus einer Hand · Freiburg und 30 km Umkreis“. Dazu ein Knopf zum Anrufen oder für WhatsApp und ein Link zur Website oder zum Google-Profil.',
-          'Ein Impressum: Auch für Instagram-Profile von Betrieben gilt die Impressumspflicht. Ein Link in der Profilbeschreibung auf das Impressum Ihrer Website genügt — fehlt er, sind Abmahnungen möglich.',
+          'Eine klare Kopfzeile: Wer sind Sie, was machen Sie, wo. Zum Beispiel „Sanitär & Heizung · Bad komplett aus einer Hand · Freiburg und 30 km Umkreis“. Dazu ein Knopf zum Anrufen und ein Link zur Website oder zum Google-Profil.',
+          'Ein Impressum: Auch für Instagram-Profile von Betrieben gilt die Impressumspflicht. Ein Link in der Profilbeschreibung auf das Impressum Ihrer Website genügt. Fehlt er, sind Abmahnungen möglich.',
           'Dieselben Angaben wie überall: Name, Adresse und Telefonnummer sollten genau so geschrieben sein wie im Google-Profil und auf der Website. Google und KI-Assistenten gleichen diese Angaben ab; Widersprüche kosten Vertrauen.',
           'Hervorgehobene Stories (Highlights) für das, was Kunden zuerst wissen wollen: Leistungen, Referenzen, Team, Kontakt.',
         ],
@@ -4491,29 +4499,29 @@ const ratgeberArticles: RatgeberArticle[] = [
       {
         h: 'Was Sie posten können, ohne Influencer zu werden',
         p: [
-          'Niemand erwartet, dass Sie tanzen. Im Handwerk funktionieren Inhalte, die ohnehin bei der Arbeit entstehen: Vorher und nachher. Ein kurzer Blick in die Baustelle. Ein Detail, das man nur sieht, wenn man vom Fach ist — und eine Erklärung dazu. Das Team bei der Arbeit. Antworten auf Fragen, die Kunden immer wieder stellen: „Was kostet ein neues Bad ungefähr?“, „Lohnt sich eine Wärmepumpe im Altbau?“',
+          'Niemand erwartet, dass Sie tanzen. Im Handwerk funktionieren Inhalte, die ohnehin bei der Arbeit entstehen: Vorher und nachher. Ein kurzer Blick in die Baustelle. Ein Detail, das man nur sieht, wenn man vom Fach ist, und eine Erklärung dazu. Das Team bei der Arbeit. Antworten auf Fragen, die Kunden immer wieder stellen: „Was kostet ein neues Bad ungefähr?“, „Lohnt sich eine Wärmepumpe im Altbau?“',
           'Wenn Sie nicht vor die Kamera möchten, zeigen Sie Ihre Hände, Ihr Werkzeug, Ihre Ergebnisse. Gesichter schaffen mehr Vertrauen, aber Pflicht sind sie nicht.',
-          'Rechtlich wichtig: Fotos aus der Wohnung eines Kunden und Bilder von Mitarbeitern nur mit deren Einverständnis veröffentlichen — am besten kurz schriftlich festhalten. Hausnummern, Kennzeichen und persönliche Gegenstände nicht zeigen.',
+          'Rechtlich wichtig: Fotos aus der Wohnung eines Kunden und Bilder von Mitarbeitern nur mit deren Einverständnis veröffentlichen, am besten kurz schriftlich festhalten. Hausnummern, Kennzeichen und persönliche Gegenstände nicht zeigen.',
         ],
       },
       {
-        h: 'Wie oft — und wie viel Zeit kostet das?',
+        h: 'Wie oft, und wie viel Zeit kostet das?',
         p: [
           'Als Richtwert reichen drei Beiträge pro Woche und kurze Stories an Arbeitstagen. Wichtiger als die Menge ist, dass es nicht abreißt.',
-          'Der eigentliche Aufwand ist nicht das Fotografieren — das dauert auf der Baustelle zwei Minuten —, sondern Planen, Texten und Veröffentlichen. Genau diesen Teil geben viele Betriebe ab: Das Team schickt Fotos und kurze Videos in einen Chat, jemand anderes macht daraus Beiträge und legt einmal im Monat den Plan zur Freigabe vor.',
+          'Der eigentliche Aufwand ist nicht das Fotografieren (das dauert auf der Baustelle zwei Minuten), sondern Planen, Texten und Veröffentlichen. Genau diesen Teil geben viele Betriebe ab: Das Team schickt Fotos und kurze Videos in einen Chat, jemand anderes macht daraus Beiträge und legt einmal im Monat den Plan zur Freigabe vor.',
         ],
       },
       {
         h: 'Wie Instagram mit Google und KI zusammenspielt',
         p: [
-          'Instagram ersetzt weder Google-Profil noch Website, aber es stärkt beide. Öffentliche Beiträge von Business-Konten können in der Google-Suche erscheinen, und Ihr Profil ist eine weitere Quelle, die bestätigt, dass es Ihren Betrieb gibt und er aktiv ist. Die besten Fotos gehören außerdem ins Google-Unternehmensprofil — dort sehen sie die Menschen, die gerade nach einem Betrieb wie Ihrem suchen.',
-          'Die Reihenfolge ist deshalb klar: zuerst ein vollständiges Google-Profil und echte Bewertungen, dann eine Website, die Ihre Leistungen erklärt — und Instagram als Schaufenster, das zeigt, dass hinter all dem echte Menschen und echte Arbeit stehen.',
+          'Instagram ersetzt weder Google-Profil noch Website, aber es stärkt beide. Öffentliche Beiträge von Business-Konten können in der Google-Suche erscheinen, und Ihr Profil ist eine weitere Quelle, die bestätigt, dass es Ihren Betrieb gibt und er aktiv ist. Die besten Fotos gehören außerdem ins Google-Unternehmensprofil, dort sehen sie die Menschen, die gerade nach einem Betrieb wie Ihrem suchen.',
+          'Die Reihenfolge ist deshalb klar: zuerst ein vollständiges Google-Profil und echte Bewertungen, dann eine Website, die Ihre Leistungen erklärt, und Instagram als Schaufenster, das zeigt, dass hinter all dem echte Menschen und echte Arbeit stehen.',
         ],
       },
     ],
     terms: ['Google-Unternehmensprofil', 'NAP-Konsistenz', 'Bewertungen', 'Lokale Sichtbarkeit'],
     serviceSlug: 'social-media',
-    serviceNote: 'Wir betreuen Ihren Hauptkanal: Profil einrichten, Plan zur Freigabe, Beiträge und Stories aus Ihren Fotos — 199 € im Monat, auch ohne Website.',
+    serviceNote: 'Wir betreuen Ihren Hauptkanal: Profil einrichten, Plan zur Freigabe, Beiträge und Stories aus Ihren Fotos: 199 € im Monat, auch ohne Website.',
   },
 ]
 
@@ -4550,7 +4558,7 @@ function Breadcrumbs({ items, tone = 'dark' }: { items: Crumb[]; tone?: 'dark' |
   )
 }
 
-const SITE_NAME = 'RAG — Regionale Agentur'
+const SITE_NAME = 'RAG Regionale Agentur'
 
 function JsonLd({ data }: { data: object }) {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
@@ -4609,7 +4617,7 @@ function ContentCTA() {
               Wie steht Ihr Unternehmen heute da?
             </h2>
             <p style={{ fontSize: 16.5, lineHeight: 1.65, color: '#DCD8FF', margin: 0 }}>
-              Wir prüfen kostenlos Ihre Sichtbarkeit bei Google Maps, in der Google-Suche und in der KI-Suche — und sagen Ihnen, was zuerst zu tun ist.
+              Wir prüfen kostenlos Ihre Sichtbarkeit bei Google Maps, in der Google-Suche und in der KI-Suche, und sagen Ihnen, was zuerst zu tun ist.
             </p>
           </div>
           <a href="/#audit-quiz" className="btn btn-lg btn-on-brand" style={{ flexShrink: 0 }}>
@@ -4640,7 +4648,7 @@ function ContentHero({ kicker, title, sub, meta, crumbs }: { kicker: string; tit
 
 function RatgeberIndex() {
   usePageMeta(
-    'Ratgeber — lokale Sichtbarkeit verständlich erklärt | RAG',
+    'Ratgeber: lokale Sichtbarkeit verständlich erklärt | RAG',
     'Wie lokales SEO funktioniert, wie Sie bei Google Maps nach oben kommen und wie Ihr Unternehmen in ChatGPT und Perplexity gefunden wird.',
   )
   return (
@@ -4651,7 +4659,7 @@ function RatgeberIndex() {
         crumbs={[{ label: 'Start', href: '/' }, { label: 'Ratgeber' }]}
         kicker="RATGEBER"
         title={<>Lokale Sichtbarkeit, <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>ohne Fachchinesisch</span></>}
-        sub="Die Fragen, die uns Inhaberinnen und Inhaber am häufigsten stellen — ausführlich beantwortet, ohne Versprechen, die niemand halten kann."
+        sub="Die Fragen, die uns Inhaberinnen und Inhaber am häufigsten stellen, ausführlich beantwortet, ohne Versprechen, die niemand halten kann."
       />
       <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 4vw, 56px) clamp(20px,4vw,48px) clamp(56px, 6vw, 88px)' }}>
         <div style={{ ...SHELL, display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -4829,7 +4837,7 @@ const glossarCSS = `
 // Suche, Buchstabenleiste, Begriffe nach Anfangsbuchstaben, jeder Begriff verlinkt auf seine eigene Seite.
 function GlossarPage() {
   usePageMeta(
-    'Glossar — Begriffe der lokalen Sichtbarkeit | RAG',
+    'Glossar: Begriffe der lokalen Sichtbarkeit | RAG',
     'Local Pack, NAP-Konsistenz, GEO, strukturierte Daten: die wichtigsten Begriffe rund um Google Maps, lokale Suche und KI-Suche, kurz erklärt.',
   )
   const [q, setQ] = useState('')
@@ -4864,7 +4872,7 @@ function GlossarPage() {
         crumbs={[{ label: 'Start', href: '/' }, { label: 'Glossar' }]}
         kicker="GLOSSAR"
         title={<>Die Begriffe, <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>kurz erklärt</span></>}
-        sub="Alle Begriffe von A bis Z — mit Suche. Jeder Begriff hat eine eigene Seite mit Erklärung, Praxis-Tipps und häufigen Fragen."
+        sub="Alle Begriffe von A bis Z, mit Suche. Jeder Begriff hat eine eigene Seite mit Erklärung, Praxis-Tipps und häufigen Fragen."
       />
       <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(48px, 6vw, 80px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)' }}>
         <div style={{ ...SHELL }}>
@@ -4943,7 +4951,7 @@ function GlossarPage() {
 function GlossarTermPage({ slug }: { slug: string }) {
   const g = glossarEntries.find(x => x.slug === slug)
   usePageMeta(
-    g ? `${g.term} — einfach erklärt | RAG Glossar` : 'Begriff nicht gefunden | RAG',
+    g ? `${g.term}: einfach erklärt | RAG Glossar` : 'Begriff nicht gefunden | RAG',
     g ? g.short : 'Diesen Begriff gibt es im Glossar nicht.',
     'article',
   )
@@ -5095,8 +5103,8 @@ function GlossarTermPage({ slug }: { slug: string }) {
 
 function ServicesIndex() {
   usePageMeta(
-    'Wo man Sie sucht — woraus lokale Sichtbarkeit besteht | RAG',
-    'KI-Suche, Google Maps, Website & Google Search und Social Media: die vier Kanäle lokaler Sichtbarkeit — einzeln erklärt, mit Preisen und Paketen.',
+    'Wo man Sie sucht: woraus lokale Sichtbarkeit besteht | RAG',
+    'KI-Suche, Google Maps, Website & Google Search und Social Media: die vier Kanäle lokaler Sichtbarkeit, einzeln erklärt, mit Preisen und Paketen.',
   )
   return (
     <>
@@ -5308,7 +5316,7 @@ function ServicePackages({ slug }: { slug: string }) {
 const SERVICE_CONSULT: Record<string, { lead: string; link: string }> = {
   'google-maps-business-profile': { lead: 'Noch kein Google-Profil?', link: 'In 2 Minuten zu Ihrem Plan' },
   'website-google-search': { lead: 'Noch keine Website oder unsicher, welche Sie brauchen?', link: 'Finden Sie es mit 4 kurzen Fragen heraus' },
-  'ai-search-optimization': { lead: 'Sie wissen nicht, wo Sie anfangen sollen?', link: '4 Fragen — und wir zeigen Ihnen den Startpunkt' },
+  'ai-search-optimization': { lead: 'Sie wissen nicht, wo Sie anfangen sollen?', link: '4 Fragen, und wir zeigen Ihnen den Startpunkt' },
   'social-media': { lead: 'Noch kein Profil oder keine Zeit dafür?', link: 'Ihre Ausgangslage in 4 Fragen' },
 }
 
@@ -5735,7 +5743,7 @@ function ProblemVisual({ kind }: { kind: ServiceContent['problem']['visual'] }) 
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, border: '1px dashed #C9C5F7', fontSize: 14 }}>
           <span aria-hidden style={{ width: 9, height: 9, borderRadius: '50%', backgroundColor: '#E5484D' }} />
-          <span><strong>Ihr Betrieb</strong> <span style={muted}>— nicht genannt</span></span>
+          <span><strong>Ihr Betrieb</strong> <span style={muted}>· nicht genannt</span></span>
         </div>
       </div>
     )
@@ -5789,7 +5797,7 @@ function ProblemVisual({ kind }: { kind: ServiceContent['problem']['visual'] }) 
           <div style={{ padding: '14px 16px', borderRadius: 14, border: '1px dashed #C9C5F7' }}>
             <div style={muted}>ihr-betrieb.de</div>
             <div style={{ fontWeight: 800, fontSize: 16, margin: '2px 0 4px' }}>Alle Elektroarbeiten</div>
-            <div style={{ fontSize: 13.5, color: 'var(--muted)' }}>Ihre Website — weit unten, weil es keine Seite zur Wallbox gibt.</div>
+            <div style={{ fontSize: 13.5, color: 'var(--muted)' }}>Ihre Website: weit unten, weil es keine Seite zur Wallbox gibt.</div>
           </div>
         </div>
       </div>
@@ -6352,7 +6360,7 @@ function LandingPage() {
     return () => timers.forEach(clearTimeout)
   }, [])
   usePageMeta(
-    'RAG — System für lokale Sichtbarkeit bei Google Maps, Google & KI-Suche',
+    'RAG: System für lokale Sichtbarkeit bei Google Maps, Google & KI-Suche',
     'Wir machen lokale Unternehmen in Deutschland dort sichtbar, wo Kunden heute suchen: Google Maps, Google, ChatGPT, Perplexity, Bewertungen und soziale Netzwerke. Kostenloser Sichtbarkeits-Check.',
   )
   const widgetSentinel = useRef<HTMLDivElement>(null)
@@ -6366,7 +6374,6 @@ function LandingPage() {
   }, [])
   return (
     <>
-      <style>{responsiveCSS}</style>
       <BookCallWidget sentinelRef={widgetSentinel} />
       <Nav />
       <main id="inhalt">
@@ -6519,7 +6526,7 @@ type QuizRec = { title: string; text: string; href: string; kind: ChannelKind }
 function quizRecommendations(a: QuizAnswers): QuizRec[] {
   const has = (h: QuizHave) => a.have.includes(h)
   const recs: QuizRec[] = []
-  if (!has('profile')) recs.push({ kind: 'maps', title: 'Zuerst: Google-Profil', text: 'Wer Sie in der Nähe sucht, schaut auf die Karte. Ohne Profil tauchen Sie dort nicht auf. Das ist der schnellste Start — schlüsselfertig für 149 € einmalig.', href: '/services/google-maps-business-profile' })
+  if (!has('profile')) recs.push({ kind: 'maps', title: 'Zuerst: Google-Profil', text: 'Wer Sie in der Nähe sucht, schaut auf die Karte. Ohne Profil tauchen Sie dort nicht auf. Das ist der schnellste Start, schlüsselfertig für 149 € einmalig.', href: '/services/google-maps-business-profile' })
   if (!has('website')) recs.push({ kind: 'search', title: 'Eine Website, die Fragen beantwortet', text: 'Damit Google und die KI verstehen, was Sie anbieten und wo. Eine eigene Seite pro Leistung bringt Anfragen genau für die Arbeiten, die Sie wollen.', href: '/services/website-google-search' })
   else if (a.goal === 'service' || a.goal === 'region') recs.push({ kind: 'search', title: 'Seiten für Ihre Leistungen und Orte', text: 'Ihre Website ist eine gute Basis. Mit eigenen Seiten für die Leistung oder den Ort, um den es Ihnen geht, zeigt Google Sie genau bei diesen Suchen.', href: '/services/website-google-search' })
   if (a.sources.includes('portals')) recs.push({ kind: 'maps', title: 'Weniger abhängig von Portalen', text: 'Portale nehmen Provision und zeigen Ihre Konkurrenz direkt daneben. Eigene Sichtbarkeit bei Google bringt Anfragen ohne Zwischenhändler.', href: '/services/google-maps-business-profile' })
@@ -6544,7 +6551,7 @@ function QuizOptionTile({ label, hint, selected, multi, onClick }: { label: stri
 }
 
 function StartQuizPage() {
-  usePageMeta('In 4 Fragen zu Ihrem Plan | RAG', 'Noch keine Website oder kein Google-Profil? Beantworten Sie 4 kurze Fragen — wir zeigen, womit Sie anfangen sollten.')
+  usePageMeta('In 4 Fragen zu Ihrem Plan | RAG', 'Noch keine Website oder kein Google-Profil? Beantworten Sie 4 kurze Fragen, wir zeigen, womit Sie anfangen sollten.')
   const from = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('from') ?? '' : ''
   const [step, setStep] = useState(0)
   const [a, setA] = useState<QuizAnswers>({ have: [], sources: [], goal: null, branche: '', ort: '', firma: '', email: '' })
@@ -6663,7 +6670,7 @@ function StartQuizPage() {
                     <p style={{ fontSize: 15.5, lineHeight: 1.6, color: 'var(--muted)', margin: 0 }}>
                       {fromScratch
                         ? 'Legen Sie Ihren Kundenbereich an und tragen Sie kurz Ihr Unternehmen ein. Danach wählen Sie direkt einen Termin für ein kostenloses Gespräch von 20 Minuten.'
-                        : 'Legen Sie Ihren Kundenbereich an und tragen Sie Ihr Unternehmen ein. Wir analysieren Google, Website, KI-Suche und Social Media — den Bericht und einen Termin für das Gespräch finden Sie danach dort.'}
+                        : 'Legen Sie Ihren Kundenbereich an und tragen Sie Ihr Unternehmen ein. Wir analysieren Google, Website, KI-Suche und Social Media. Den Bericht und einen Termin für das Gespräch finden Sie danach dort.'}
                     </p>
                   </div>
                   <AccountStep submitLabel="Kundenbereich anlegen" loggedInLabel="Weiter zum Kundenbereich" onAuthed={saveAndGo} />

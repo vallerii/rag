@@ -49,7 +49,10 @@ export type Message = { id: string; author: 'client' | 'rag'; body: string; crea
 export type Note = { id: string; body: string; author_id: string | null; created_at: string }
 export type Activity = { id: string; kind: string; detail: Record<string, unknown>; actor: string | null; created_at: string }
 // Angebot gehört zu EINER Anfrage (Unternehmen / Paket-Anfrage / Quiz), nicht zum ganzen Konto.
-export type Offer = { id?: string; client_key: string; user_id: string | null; request_kind: Kind; request_id: string; items: OfferItem[]; note: string | null; status: 'draft' | 'sent' | 'accepted'; sent_at?: string | null; updated_at?: string }
+// Zusatzangebot (supabase/addendum.sql): parent_id = angenommenes Hauptangebot derselben Anfrage.
+export type Offer = { id?: string; client_key: string; user_id: string | null; request_kind: Kind; request_id: string; parent_id?: string | null; items: OfferItem[]; note: string | null; status: 'draft' | 'sent' | 'accepted'; sent_at?: string | null; updated_at?: string }
+/** Hauptangebot einer Anfrage (ohne parent_id). Funktioniert auch, solange addendum.sql noch nicht ausgeführt ist. */
+const mainOffer = (list: Offer[]) => list.find(o => !o.parent_id) ?? null
 
 const db = () => getSupabase()
 
@@ -133,8 +136,8 @@ export async function loadAll(): Promise<{ requests: Request[]; profiles: Profil
 
 export function checkState(c: Check): string {
   if (c.status === 'ready') return 'Bericht veröffentlicht'
-  if (c.scratch) return OPEN.includes(c.stage) ? 'Start bei null — Gespräch vereinbaren' : 'Start bei null'
-  if (!c.sources_confirmed) return 'Quellen nicht bestätigt — Team kann starten'
+  if (c.scratch) return OPEN.includes(c.stage) ? 'Start bei null: Gespräch vereinbaren' : 'Start bei null'
+  if (!c.sources_confirmed) return 'Quellen nicht bestätigt: Team kann starten'
   if (c.report_draft) return 'Berichtsentwurf fertig'
   return 'Daten werden gesammelt'
 }
@@ -181,17 +184,22 @@ export async function loadClient(clientKey: string, userId: string | null, kind:
     userId ? s.from('messages').select('*').eq('user_id', userId).order('created_at') : Promise.resolve({ data: [] }),
     s.from('notes').select('id, body, author_id, created_at').eq('client_key', clientKey).order('created_at', { ascending: false }),
     s.from('activity').select('id, kind, detail, actor, created_at').eq('client_key', clientKey).order('created_at', { ascending: false }).limit(200),
-    s.from('offers').select('*').eq('request_kind', kind).eq('request_id', requestId).maybeSingle(),
+    s.from('offers').select('*').eq('request_kind', kind).eq('request_id', requestId).order('updated_at', { ascending: true }),
     s.from('appointments').select('*').eq('client_key', clientKey).order('starts_at', { ascending: false }),
-    s.from('projects').select('*').eq('request_kind', kind).eq('request_id', requestId).maybeSingle(),
+    s.from('projects').select('*').eq('request_kind', kind).eq('request_id', requestId).order('created_at', { ascending: true }),
     // Berichte: bei einem Check genau dieses Unternehmen; bei Paket-Anfrage/Quiz die Checks des Kunden (falls vorhanden).
     kind === 'check' ? s.from('check_reports').select('report, created_at').eq('check_id', requestId).order('created_at', { ascending: true })
       : userId ? s.from('check_reports').select('report, created_at').eq('user_id', userId).order('created_at', { ascending: true }) : Promise.resolve({ data: [] }),
   ])
+  const offers = (F.data ?? []) as Offer[], projects = (P.data ?? []) as Project[]
+  const offer = mainOffer(offers)
+  const addenda = offers.filter(o => !!o.parent_id)
   return {
     messages: (M.data ?? []) as Message[], notes: (N.data ?? []) as Note[], activity: (A.data ?? []) as Activity[],
-    offer: (F.data ?? null) as Offer | null, appointments: (T.data ?? []) as Appointment[],
-    project: (P.data ?? null) as Project | null,
+    offer, addenda, appointments: (T.data ?? []) as Appointment[],
+    // Projekt des Hauptangebots (Arbeitsplan, Umsetzung, Ergebnis); Zusatzangebote haben nur eine eigene Rechnung.
+    project: projects.find(p => p.offer_id === offer?.id) ?? projects.find(p => !addenda.some(a => a.id === p.offer_id)) ?? null,
+    addendumProjects: addenda.map(a => ({ offer: a, project: projects.find(p => p.offer_id === a.id) ?? null })).filter((x): x is { offer: Offer; project: Project } => !!x.project),
     versions: (V.data ?? []) as ReportVersionRow[],
   }
 }
@@ -204,9 +212,19 @@ export async function addNote(clientKey: string, body: string) {
   const { data, error } = await (await db()).from('notes').insert({ client_key: clientKey, body }).select('id, body, author_id, created_at').single()
   return error ? null : (data as Note)
 }
+/** Angebot speichern. Ohne id: Hauptangebot der Anfrage aktualisieren bzw. anlegen; mit parent_id: Zusatzangebot anlegen. */
 export async function saveOffer(o: Offer) {
-  const row = { client_key: o.client_key, user_id: o.user_id, request_kind: o.request_kind, request_id: o.request_id, items: o.items, note: o.note, status: o.status, sent_at: o.status === 'sent' ? new Date().toISOString() : null, updated_at: new Date().toISOString() }
-  const { data, error } = await (await db()).from('offers').upsert(row, { onConflict: 'request_kind,request_id' }).select('*').single()
+  const s = await db()
+  const row: Record<string, unknown> = { client_key: o.client_key, user_id: o.user_id, request_kind: o.request_kind, request_id: o.request_id, items: o.items, note: o.note, status: o.status, sent_at: o.status === 'sent' ? new Date().toISOString() : null, updated_at: new Date().toISOString() }
+  if (o.parent_id) row.parent_id = o.parent_id
+  let id = o.id
+  if (!id && !o.parent_id) {
+    const { data: list } = await s.from('offers').select('*').eq('request_kind', o.request_kind).eq('request_id', o.request_id)
+    id = mainOffer((list ?? []) as Offer[])?.id
+  }
+  const { data, error } = id
+    ? await s.from('offers').update(row).eq('id', id).select('*').single()
+    : await s.from('offers').insert(row).select('*').single()
   return error ? null : (data as Offer)
 }
 
@@ -233,7 +251,7 @@ export async function loadTeam(): Promise<{ staff: Profile[]; invites: Invite[] 
 }
 const ERR: Record<string, string> = {
   not_admin: 'Das kann nur ein Admin.', bad_role: 'Ungültige Rolle.', bad_email: 'Bitte E-Mail prüfen.', self: 'Die eigene Rolle kann nicht geändert werden.',
-  invalid: 'Der Link ist ungültig oder wurde widerrufen.', used: 'Dieser Link wurde bereits verwendet.', expired: 'Der Link ist abgelaufen — bitten Sie um einen neuen.',
+  invalid: 'Der Link ist ungültig oder wurde widerrufen.', used: 'Dieser Link wurde bereits verwendet.', expired: 'Der Link ist abgelaufen. Bitten Sie um einen neuen.',
   wrong_email: 'Die Einladung gilt für eine andere E-Mail. Melden Sie sich mit dieser Adresse an.', not_signed_in: 'Bitte zuerst anmelden.',
 }
 const errText = (m?: string) => ERR[Object.keys(ERR).find(k => m?.includes(k)) ?? ''] ?? 'Etwas ist schiefgelaufen. Bitte erneut versuchen.'
@@ -260,7 +278,7 @@ export async function currentEmail(): Promise<string | null> {
 export async function signUpStaff(name: string, email: string, password: string): Promise<string | null> {
   const s = await db()
   const { data, error } = await s.auth.signUp({ email: email.trim(), password, options: { data: { name: name.trim() }, captchaToken: (await turnstileToken().catch(() => null)) ?? undefined } })
-  if (error) return /already|exists|registered/i.test(error.message) ? 'exists' : /password/i.test(error.message) ? 'Passwort zu einfach — mindestens 8 Zeichen.' : 'Konto konnte nicht angelegt werden.'
+  if (error) return /already|exists|registered/i.test(error.message) ? 'exists' : /password/i.test(error.message) ? 'Passwort zu einfach: mindestens 8 Zeichen.' : 'Konto konnte nicht angelegt werden.'
   if (!data.session) return 'exists'
   return null
 }
@@ -317,7 +335,7 @@ export async function recollect(checkId: string): Promise<{ ok: boolean; message
     const res = await fetch(`${proxy}/audit-collect`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ checkId, force: true }) })
     const j = await res.json().catch(() => ({})) as { status?: string; error?: string; detail?: string; pagespeed?: number | null }
     if (!res.ok) return { ok: false, message: `${j.error ?? res.status}${j.detail ? `: ${j.detail}` : ''}` }
-    return { ok: true, message: j.pagespeed == null ? 'Daten erfasst. PageSpeed hat nicht geantwortet — bitte manuell eintragen.' : `Daten erfasst. PageSpeed: ${j.pagespeed}/100` }
+    return { ok: true, message: j.pagespeed == null ? 'Daten erfasst. PageSpeed hat nicht geantwortet, bitte manuell eintragen.' : `Daten erfasst. PageSpeed: ${j.pagespeed}/100` }
   } catch (e) { return { ok: false, message: e instanceof Error ? e.message : 'Netzwerkfehler' } }
 }
 export type ReportVersion = { id: string; report: Record<string, unknown>; created_at: string; created_by: string | null }
@@ -388,7 +406,7 @@ export async function changeMyEmail(email: string, password: string): Promise<st
   if (/email_taken/.test(error.message)) return 'Diese E-Mail ist bereits vergeben.'
   if (/bad_email/.test(error.message)) return 'Ungültige E-Mail-Adresse.'
   if (/forbidden/.test(error.message)) return 'Kein Zugriff.'
-  if (/PGRST202|change_my_email|function/i.test(error.message)) return 'Funktion fehlt in der Datenbank — supabase/admin-live.sql ausführen.'
+  if (/PGRST202|change_my_email|function/i.test(error.message)) return 'Funktion fehlt in der Datenbank: supabase/admin-live.sql ausführen.'
   return error.message
 }
 /** Nur mit dem aktuellen Passwort, ohne E-Mail (RPC change_my_password). Andere Sitzungen werden beendet. */
@@ -397,9 +415,9 @@ export async function changeMyPassword(current: string, next: string): Promise<s
   if (!error) return null
   if (/wrong_password/.test(error.message)) return 'Aktuelles Passwort ist falsch.'
   if (/same_password/.test(error.message)) return 'Das neue Passwort muss sich vom alten unterscheiden.'
-  if (/weak_password/.test(error.message)) return 'Passwort zu einfach — mindestens 8 Zeichen.'
+  if (/weak_password/.test(error.message)) return 'Passwort zu einfach: mindestens 8 Zeichen.'
   if (/forbidden/.test(error.message)) return 'Kein Zugriff.'
-  if (/PGRST202|change_my_password|function/i.test(error.message)) return 'Funktion fehlt in der Datenbank — supabase/admin-live.sql ausführen.'
+  if (/PGRST202|change_my_password|function/i.test(error.message)) return 'Funktion fehlt in der Datenbank: supabase/admin-live.sql ausführen.'
   return error.message
 }
 
@@ -410,7 +428,7 @@ export async function sendStaffPasswordReset(email: string): Promise<string | nu
     captchaToken: (await turnstileToken().catch(() => null)) ?? undefined,
   })
   if (!error) return null
-  if (/rate|seconds|security purposes/i.test(error.message)) return 'Zu viele Versuche — bitte in einer Minute erneut.'
+  if (/rate|seconds|security purposes/i.test(error.message)) return 'Zu viele Versuche. Bitte in einer Minute erneut.'
   return 'Link konnte nicht gesendet werden. Bitte später erneut versuchen.'
 }
 export async function hasRecoverySession(): Promise<boolean> {
@@ -428,7 +446,7 @@ export async function setStaffNewPassword(password: string, totp?: string): Prom
   if (!error) return null
   if (error.code === 'insufficient_aal' || /aal2|AAL/i.test(error.message)) return 'mfa'
   if (error.code === 'same_password') return 'Das neue Passwort muss sich vom alten unterscheiden.'
-  if (error.code === 'weak_password') return 'Passwort zu einfach — mindestens 8 Zeichen.'
+  if (error.code === 'weak_password') return 'Passwort zu einfach: mindestens 8 Zeichen.'
   return 'Link abgelaufen oder ungültig. Fordern Sie einen neuen an.'
 }
 
@@ -471,7 +489,7 @@ export async function importProspects(src: { csvUrl?: string; csv?: string }): P
   const r = await prospectsCall({ action: 'import', ...src })
   if (r.error) {
     const e = String(r.error)
-    return { error: e === 'bad_url' ? 'Das ist kein Link auf eine veröffentlichte Google-Tabelle.' : e === 'not_csv' ? 'Unter dem Link liegt keine CSV-Datei — in Google Sheets «Im Web veröffentlichen» → Format «CSV» wählen.'
+    return { error: e === 'bad_url' ? 'Das ist kein Link auf eine veröffentlichte Google-Tabelle.' : e === 'not_csv' ? 'Unter dem Link liegt keine CSV-Datei: in Google Sheets «Im Web veröffentlichen» → Format «CSV» wählen.'
       : e === 'no_name_column' ? 'In der Tabelle fehlt die Spalte «Firma» (oder «Компания»).' : /Failed to fetch|404|function/i.test(e) ? 'Funktion «prospects» ist nicht deployt.' : e }
   }
   return { added: Number(r.added ?? 0), total: Number(r.total ?? 0) }
@@ -494,8 +512,8 @@ export async function prospectByPlace(placeId: string): Promise<Prospect | null>
 }
 /** Angebot einer Anfrage (oder null). */
 export async function loadOfferFor(kind: Kind, id: string): Promise<Offer | null> {
-  const { data } = await (await db()).from('offers').select('*').eq('request_kind', kind).eq('request_id', id).maybeSingle()
-  return (data as Offer | null) ?? null
+  const { data } = await (await db()).from('offers').select('*').eq('request_kind', kind).eq('request_id', id)
+  return mainOffer((data ?? []) as Offer[])
 }
 
 /** Сообщения клиента отмечаются прочитанными (при открытии переписки). */

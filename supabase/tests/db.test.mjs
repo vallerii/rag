@@ -48,6 +48,10 @@ await db.exec(sql('schema.sql'))
 await db.exec(sql('admin.sql'))
 await db.exec(sql('project.sql'))
 await db.exec(sql('project.sql')) // zweimal: muss wiederholbar sein
+await db.exec('create publication supabase_realtime'); await db.exec(sql('prospects.sql'))
+await db.exec(sql('flow.sql'))
+await db.exec(sql('addendum.sql'))
+await db.exec(sql('addendum.sql')) // wiederholbar
 await db.exec(`
 insert into auth.users (id, email) values ('${A}','a@test.de'), ('${B}','b@test.de'), ('${ADM}','admin@test.de'), ('${MGR}','mgr@test.de');
 insert into profiles (id, email) values ('${A}','a@test.de'), ('${B}','b@test.de'), ('${ADM}','admin@test.de'), ('${MGR}','mgr@test.de') on conflict do nothing;
@@ -141,6 +145,14 @@ await test('Rechnung → bezahlt → Arbeit → Ergebnis setzt Zeitstempel', asy
   const p = await one(`select paid_at, started_at, result_at from projects`)
   assert.ok(p.paid_at && p.started_at && p.result_at)
 })
+await test('Arbeitsplan und Neuigkeiten vom Team sieht der Kunde', async () => {
+  await as(MGR)
+  const r = await rows(`update projects set plan = 'Schritt 1', updates = '[{"at":"2026-10-26T10:00:00Z","text":"Profil überarbeitet"}]'::jsonb where request_id = $1 returning id`, a1)
+  assert.equal(r.length, 1)
+  await as(A)
+  const p = await one(`select plan, updates from projects where request_id = $1`, a1)
+  assert.equal(p.plan, 'Schritt 1'); assert.equal(p.updates.length, 1)
+})
 await test('Rechnungslink nur mit https://', async () => {
   await as(ADM)
   await fails(`update projects set invoice_url = 'http://x.de/r.pdf'`)
@@ -169,6 +181,42 @@ await test('Kunde löscht Unternehmen → dessen Angebot und Projekt weg, andere
   assert.equal((await rows(`select id from offers where request_id = $1`, a2)).length, 0)
   assert.equal((await rows(`select id from projects where request_id = $1`, a2)).length, 0)
   assert.equal((await rows(`select id from projects where request_id = $1`, a1)).length, 1)
+})
+
+console.log('\nZusatzangebot (Nachtrag)')
+let addOffer
+await test('Zweites Hauptangebot für dieselbe Anfrage geht nicht', async () => {
+  await as(ADM)
+  await fails(`insert into offers (client_key, user_id, request_kind, request_id, items, status) values ('user:${A}', $1, 'check', $2, '[]', 'sent')`, /duplicate|unique/, A, a1)
+})
+await test('Zusatzangebot zum angenommenen Angebot: Kunde sieht und nimmt an → eigenes Projekt', async () => {
+  await as(ADM)
+  addOffer = (await one(`insert into offers (client_key, user_id, request_kind, request_id, parent_id, items, status) values ('user:${A}', $1, 'check', $2, $3, '[{"id":"sm","name":"Social Media","price":199,"unit":"pro Monat"}]', 'sent') returning id`, A, a1, offer1)).id
+  await as(A)
+  assert.equal((await rows(`select id from offers where parent_id = $1`, offer1)).length, 1)
+  await db.query(`select accept_offer($1)`, [addOffer])
+  await as(null)
+  const p = await rows(`select offer_id, status from projects where request_id = $1`, a1)
+  assert.equal(p.length, 2)
+  assert.equal(p.find(x => x.offer_id === offer1).status, 'result') // Hauptprojekt unverändert
+  assert.equal(p.find(x => x.offer_id === addOffer).status, 'awaiting_payment')
+  assert.equal((await one(`select status from offers where id = $1`, offer1)).status, 'accepted')
+})
+await test('Zusatzangebot nur zu angenommenem Angebot derselben Anfrage', async () => {
+  await as(ADM)
+  await fails(`insert into offers (client_key, user_id, request_kind, request_id, parent_id, items, status) values ('user:${A}', $1, 'check', $2, $3, '[]', 'draft')`, /addendum_invalid/, A, a2, offer1)
+  await fails(`insert into offers (client_key, user_id, request_kind, request_id, parent_id, items, status) values ('user:${B}', $1, 'check', $2, $3, '[]', 'draft')`, /addendum_invalid/, B, a1, offer1)
+  await fails(`insert into offers (client_key, user_id, request_kind, request_id, parent_id, items, status) values ('user:${A}', $1, 'check', $2, $3, '[]', 'draft')`, /addendum_invalid/, A, a1, addOffer)
+})
+await test('Höchstens ein offenes Zusatzangebot gleichzeitig', async () => {
+  await as(ADM)
+  await db.query(`insert into offers (client_key, user_id, request_kind, request_id, parent_id, items, status) values ('user:${A}', $1, 'check', $2, $3, '[]', 'draft')`, [A, a1, offer1])
+  await fails(`insert into offers (client_key, user_id, request_kind, request_id, parent_id, items, status) values ('user:${A}', $1, 'check', $2, $3, '[]', 'draft')`, /duplicate|unique/, A, a1, offer1)
+  await as(null); await db.query(`delete from offers where parent_id = $1 and status = 'draft'`, [offer1])
+})
+await test('Kunde B sieht das Zusatzangebot von A nicht', async () => {
+  await as(B)
+  assert.equal((await rows(`select id from offers where id = $1`, addOffer)).length, 0)
 })
 
 console.log('\nVerlauf')

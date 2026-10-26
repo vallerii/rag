@@ -83,7 +83,7 @@ export default function OrderPanel({ order, onChange, defaults }: {
           <Eyebrow>Ihr nächster Schritt</Eyebrow>
           <h2 className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 30px)', lineHeight: 1.15, margin: '0 0 10px' }}>Erzählen Sie uns von Ihrem Unternehmen</h2>
           <p style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 22px', maxWidth: 620 }}>
-            Zwei Minuten — damit wir das Erstgespräch vorbereiten können und nicht bei null anfangen.
+            Zwei Minuten, damit wir das Erstgespräch vorbereiten können und nicht bei null anfangen.
           </p>
           <div className="ck-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div><label style={labelSt} htmlFor="od-company">Unternehmen</label><input id="od-company" style={field} value={d.company} onChange={e => set('company', e.target.value)} autoComplete="organization" /></div>

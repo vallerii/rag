@@ -10,7 +10,7 @@ const root = process.cwd()
 const dist = path.join(root, 'dist')
 const SITE_URL = (process.env.VITE_SITE_URL || process.env.SITE_URL || 'https://rag-theta-one.vercel.app').replace(/\/+$/, '')
 const OG_IMAGE = `${SITE_URL}/og-image.png`
-const SITE_NAME = 'RAG — Regionale Agentur'
+const SITE_NAME = 'RAG Regionale Agentur'
 
 const { render, prerenderRoutes, organizationJsonLd, COMPANY } = await import(pathToFileURL(path.join(root, 'dist-ssr', 'entry-server.js')).href)
 

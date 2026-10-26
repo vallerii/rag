@@ -1,10 +1,10 @@
 import { COMPANY } from '../company'
 import LangSwitch from '../LangSwitch'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { dateLocale } from '../i18n'
 import { Logo, StarsRow, useNoindex } from './CheckPage'
 import {
-  SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, auditRecentlyStarted, loadLatestOrder, loadMyChecks, loadMyQuiz, loadMessages, deleteMyCheck, loadReportVersions, loadMyAppointments, loadMyContact, loadMyManager, loadMyOffers, loadMyProjects, resultVisible, runAudit, sendMessage, signOut, updateSources,
+  SOURCE_LABELS, SOURCE_ORDER, confirmSources, currentUser, initials, auditRecentlyStarted, loadLatestOrder, loadMyChecks, loadMyQuiz, loadMessages, deleteMyCheck, loadReportVersions, loadMyAppointments, loadMyContact, loadMyManager, loadMyOffers, loadMyProjects, resultVisible, runAudit, sendMessage, signOut, updateSources, watchMyData,
   type Appointment, type ClientProject, type CheckRow, type ReportVersion, type ClientOffer, type MyContact, type Manager, type MessageRow, type OrderRow, type QuizLead, type Source,
 } from './data'
 import SourcesEditor from './SourcesEditor'
@@ -79,7 +79,7 @@ function EmptyState({ onLogout, onKonto }: { onLogout: () => void; onKonto: () =
         <div style={{ ...card, maxWidth: 520, textAlign: 'center', padding: 'clamp(28px, 4vw, 44px)' }}>
           <Eyebrow>Kundenbereich</Eyebrow>
           <h1 className="display" style={{ fontSize: 30, lineHeight: 1.1, margin: '0 0 12px' }}>Noch kein Check gestartet</h1>
-          <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 24px' }}>Finden Sie Ihr Unternehmen — danach sehen Sie hier den Stand der Prüfung und Ihren Bericht.</p>
+          <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 24px' }}>Finden Sie Ihr Unternehmen, danach sehen Sie hier den Stand der Prüfung und Ihren Bericht.</p>
           <a href="/#audit-quiz" className="btn btn-lg btn-electric">Sichtbarkeits-Check starten <span className="arw">→</span></a>
         </div>
       </main>
@@ -159,11 +159,33 @@ export default function CabinetPage() {
     })()
   }, [])
 
-  // Versionen des Berichts (Verlauf, Vergleich mit der vorigen Prüfung)
+  // Änderungen des Teams ohne Neuladen übernehmen (Plan, Neuigkeiten, Rechnung, Angebot, Bericht, Chat).
+  // Lade-Funktionen liefern bei Fehlern [] — dann den bisherigen Stand behalten, statt Blöcke verschwinden zu lassen.
+  const [synced, setSynced] = useState(0)
   useEffect(() => {
-    setVersions([])
-    if (check?.id && check.status === 'ready') void loadReportVersions(check.id).then(setVersions)
-  }, [check?.id, check?.status])
+    if (loading) return
+    let off: (() => void) | undefined, gone = false
+    const keep = <T,>(next: T[]) => (prev: T[]) => (next.length ? next : prev)
+    void watchMyData(async () => {
+      const [c, m, of, ap, pj] = await Promise.all([loadMyChecks(), loadMessages(), loadMyOffers(), loadMyAppointments(), loadMyProjects()])
+      if (gone) return
+      if (c.length) {
+        setChecks(c)
+        setCheck(cur => (cur ? c.find(x => x.id === cur.id) ?? cur : cur))
+      }
+      setMsgs(keep(m)); setOffers(keep(of)); setAppts(keep(ap)); setProjects(keep(pj))
+      setSynced(n => n + 1)
+    }).then(f => { if (gone) f(); else off = f })
+    return () => { gone = true; off?.() }
+  }, [loading])
+
+  // Versionen des Berichts (Verlauf, Vergleich mit der vorigen Prüfung)
+  const versionsOf = useRef('')
+  useEffect(() => {
+    const id = check?.id && check.status === 'ready' ? check.id : ''
+    if (versionsOf.current !== id) { versionsOf.current = id; setVersions([]) }
+    if (id) void loadReportVersions(id).then(v => { if (versionsOf.current === id) setVersions(prev => (v.length || !prev.length ? v : prev)) })
+  }, [check?.id, check?.status, synced])
 
   useEffect(() => {
     if (loading) return
@@ -195,11 +217,16 @@ export default function CabinetPage() {
   const logout = async () => { await signOut(); window.location.href = '/' }
 
   // Angebot/Projekt zum gewählten Unternehmen. Paket-Anfrage oder Quiz nur, wenn es keine anderen Unternehmen gibt.
-  const offerFor = (kind: string, id: string | undefined) => offers.find(o => o.request_kind === kind && o.request_id === id) ?? null
+  // Hauptangebot (ohne parent_id); Zusatzangebote hängen daran und haben je ein eigenes Projekt nur für die Rechnung.
+  const mains = offers.filter(o => !o.parent_id)
+  const offerFor = (kind: string, id: string | undefined) => mains.find(o => o.request_kind === kind && o.request_id === id) ?? null
   const offer: ClientOffer | null = check
-    ? offerFor('check', check.id) ?? (checks.length <= 1 ? (order ? offerFor('order', order.id) : null) ?? offers.find(o => o.request_kind === 'lead') ?? null : null)
-    : (order ? offerFor('order', order.id) : null) ?? offers.find(o => o.request_kind === 'lead') ?? null
+    ? offerFor('check', check.id) ?? (checks.length <= 1 ? (order ? offerFor('order', order.id) : null) ?? mains.find(o => o.request_kind === 'lead') ?? null : null)
+    : (order ? offerFor('order', order.id) : null) ?? mains.find(o => o.request_kind === 'lead') ?? null
   const project: ClientProject | null = offer ? projects.find(p => p.offer_id === offer.id) ?? null : null
+  const addenda = offer ? offers.filter(o => o.parent_id === offer.id) : []
+  const openAddendum = addenda.find(o => o.status === 'sent') ?? null
+  const addendumProjects = projects.filter(p => addenda.some(a => a.id === p.offer_id))
   const onAccepted = (o: ClientOffer) => { setOffers(list => list.map(x => (x.id === o.id ? o : x))); void loadMyProjects().then(setProjects) }
 
   if (loading) return <Loading />
@@ -273,15 +300,16 @@ export default function CabinetPage() {
   const ph = project ? projectHeadline(project) : null
   const nextStep: NextStep | null = intake && !check || !confirmed ? null
     : lost ? { title: 'Anfrage abgeschlossen', text: 'Diese Anfrage haben wir abgeschlossen. Wenn Sie doch weitermachen möchten oder Fragen haben, schreiben Sie uns einfach.', links: [{ label: 'Nachricht schreiben', onClick: write }] }
+    : openAddendum ? { title: 'Ihr Zusatzangebot ist da', text: 'Wir haben weitere Leistungen für Ihr Unternehmen zusammengestellt. Ihr laufender Auftrag bleibt unverändert, Sie können das Zusatzangebot separat annehmen.', links: [{ label: 'Zusatzangebot ansehen', onClick: () => setTab('offer') }, chat] }
     : project && ph ? { title: ph.title, text: ph.text, links: resultVisible(project) && check ? [{ label: 'Ergebnis ansehen', onClick: () => setTab('ergebnis') }, chat] : project.invoice_url && project.invoice_sent_at && project.status === 'awaiting_payment' ? [{ label: 'Rechnung öffnen', href: project.invoice_url }, chat] : [chat] }
-    : offer?.status === 'sent' ? { title: 'Ihr Angebot ist da', text: 'Wir haben ein Angebot für Ihr Unternehmen zusammengestellt. Nehmen Sie es direkt an — oder klären Sie Fragen vorher in einem kurzen Gespräch.', links: [{ label: 'Angebot ansehen', onClick: () => setTab('offer') }, ...(book ? [{ label: 'Termin wählen', href: book }] : [])] }
+    : offer?.status === 'sent' ? { title: 'Ihr Angebot ist da', text: 'Wir haben ein Angebot für Ihr Unternehmen zusammengestellt. Nehmen Sie es direkt an, oder klären Sie Fragen vorher in einem kurzen Gespräch.', links: [{ label: 'Angebot ansehen', onClick: () => setTab('offer') }, ...(book ? [{ label: 'Termin wählen', href: book }] : [])] }
     : nextAppt ? { title: 'Ihr nächster Termin', text: <><strong style={{ color: 'var(--ink)' }}>{fmtWhen(nextAppt.starts_at)}</strong> · {nextAppt.title}</>, links: [nextAppt.location && /^https?:\/\//.test(nextAppt.location) ? { label: 'Zum Videogespräch', href: nextAppt.location } : { label: 'Termine ansehen', onClick: () => setTab('termine') }] }
     : offer?.status === 'accepted' ? { title: 'Wir bereiten den Start vor', text: 'Danke für Ihre Zusage. Ihr Ansprechpartner meldet sich mit den nächsten Schritten und den Unterlagen, die wir von Ihnen brauchen.', links: [chat] }
-    : scratch && !offer ? { title: 'Erstgespräch vereinbaren', text: 'Sie starten bei null — dafür brauchen wir keine Analyse. Wählen Sie einen Termin: Wir besprechen, womit Sie anfangen und was es kostet.', links: [...(book ? [{ label: 'Termin wählen', href: book }] : []), chat] }
+    : scratch && !offer ? { title: 'Erstgespräch vereinbaren', text: 'Sie starten bei null, dafür brauchen wir keine Analyse. Wählen Sie einen Termin: Wir besprechen, womit Sie anfangen und was es kostet.', links: [...(book ? [{ label: 'Termin wählen', href: book }] : []), chat] }
     : !assigned ? { title: 'Ihre Anfrage ist eingegangen', text: check ? 'Ihr persönlicher Ansprechpartner übernimmt sie in der Regel innerhalb von 1 Werktag und analysiert dann Ihr Unternehmen. Fragen können Sie uns schon jetzt im Chat stellen.' : 'Ihr persönlicher Ansprechpartner übernimmt sie in der Regel innerhalb von 1 Werktag. Fragen können Sie uns schon jetzt im Chat stellen.', links: [chat] }
     : check && !ready ? { title: 'Ihr Ansprechpartner analysiert Ihr Unternehmen', text: 'Wir prüfen Google Maps, Website, KI-Suche und Social Media. Den Bericht sehen Sie hier, meist innerhalb von 1–2 Werktagen.', links: [chat] }
-    : check ? { title: 'Ihr Bericht ist fertig', text: rec ? <>Unsere Empfehlung: <strong style={{ color: 'var(--ink)' }}>{rec.name}</strong>. <span>Vereinbaren Sie einen Termin mit Ihrem Ansprechpartner — wir besprechen den Bericht in einem kurzen Gespräch.</span></> : 'Vereinbaren Sie einen Termin mit Ihrem Ansprechpartner — in 20 Minuten gehen wir die Ergebnisse durch.', links: [{ label: 'Bericht ansehen', onClick: () => setTab('report') }, ...(book ? [{ label: 'Termin wählen', href: book }] : [chat])] }
-    : { title: 'Erstgespräch vereinbaren', text: 'Ihr Ansprechpartner hat Ihre Anfrage übernommen. Vereinbaren Sie einen Termin — wir besprechen Ihre Ziele und den Ablauf.', links: [chat] }
+    : check ? { title: 'Ihr Bericht ist fertig', text: rec ? <>Unsere Empfehlung: <strong style={{ color: 'var(--ink)' }}>{rec.name}</strong>. <span>Vereinbaren Sie einen Termin mit Ihrem Ansprechpartner, wir besprechen den Bericht in einem kurzen Gespräch.</span></> : 'Vereinbaren Sie einen Termin mit Ihrem Ansprechpartner, in 20 Minuten gehen wir die Ergebnisse durch.', links: [{ label: 'Bericht ansehen', onClick: () => setTab('report') }, ...(book ? [{ label: 'Termin wählen', href: book }] : [chat])] }
+    : { title: 'Erstgespräch vereinbaren', text: 'Ihr Ansprechpartner hat Ihre Anfrage übernommen. Vereinbaren Sie einen Termin, wir besprechen Ihre Ziele und den Ablauf.', links: [chat] }
 
   const statusSteps: [boolean, string, string][] = scratch ? [
     [true, 'Angaben gespeichert', 'Start bei null'],
@@ -363,7 +391,7 @@ export default function CabinetPage() {
         )}
         {notice === 'bereits' && (
           <div style={{ marginBottom: 18, padding: '14px 18px', borderRadius: 16, backgroundColor: '#EEEBFF', color: 'var(--ink)', fontSize: 14.5, lineHeight: 1.55 }}>
-            <strong>Diese Firma prüfen wir bereits.</strong> Hier sehen Sie den aktuellen Stand — ein zweiter Check ist nicht nötig.
+            <strong>Diese Firma prüfen wir bereits.</strong> Hier sehen Sie den aktuellen Stand, ein zweiter Check ist nicht nötig.
           </div>
         )}
         {notice === 'welcome' && (
@@ -372,7 +400,13 @@ export default function CabinetPage() {
           </div>
         )}
 
-        {tab === 'offer' && offer && <OfferPanel offer={offer} onAccepted={onAccepted} booking={book} />}
+        {tab === 'offer' && offer && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            {openAddendum && <OfferPanel offer={openAddendum} onAccepted={onAccepted} booking={book} />}
+            <OfferPanel offer={offer} onAccepted={onAccepted} booking={book} />
+            {addenda.filter(a => a.status === 'accepted').map(a => <OfferPanel key={a.id} offer={a} onAccepted={onAccepted} booking={book} />)}
+          </div>
+        )}
 
         {tab === 'ergebnis' && check && <ResultView versions={versions} />}
 
@@ -408,13 +442,13 @@ export default function CabinetPage() {
             <Eyebrow>Ihr nächster Schritt</Eyebrow>
             <h2 id="confirm-title" className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 30px)', lineHeight: 1.15, margin: '0 0 10px' }}>Sind das Ihre Website und Profile?</h2>
             <p style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 20px', maxWidth: 640 }}>
-              Diese Quellen haben wir zu Ihrem Unternehmen gefunden. Bitte prüfen Sie die Einträge und ergänzen Sie, was fehlt — danach startet unser Team die Analyse.
+              Diese Quellen haben wir zu Ihrem Unternehmen gefunden. Bitte prüfen Sie die Einträge und ergänzen Sie, was fehlt, danach startet unser Team die Analyse.
             </p>
             <SourcesEditor sources={confirmDraft} onChange={setConfirmDraft} />
             {confirmError && <p role="alert" style={{ color: '#A21C22', fontSize: 14, margin: '14px 0 0' }}>Das Speichern hat nicht geklappt. Bitte versuchen Sie es noch einmal.</p>}
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 22 }}>
               <button type="button" className="btn btn-lg btn-electric" onClick={doConfirm} disabled={confirming}>
-                {confirming ? 'Wird gespeichert…' : 'Alles korrekt — Analyse starten'} <span className="arw">→</span>
+                {confirming ? 'Wird gespeichert…' : 'Alles korrekt: Analyse starten'} <span className="arw">→</span>
               </button>
               <span style={{ fontSize: 13, color: 'var(--muted)' }}>Später jederzeit unter „Unternehmen“ änderbar.</span>
             </div>
@@ -423,7 +457,8 @@ export default function CabinetPage() {
             {intake && <CompanyForm order={order && !order.details ? order : null} quiz={quiz} checks={checks} contact={{ name: contact.name, email: userEmail, phone: contact.phone }} />}
             {nextStep && <NextStepCard step={nextStep} />}
             {!!check?.wish?.length && !offer && !lost && <WishSummary items={check.wish} note={scratch ? SCRATCH_NOTE : undefined} />}
-            {project && <ProjectPanel project={project} />}
+            {project && <ProjectPanel project={project} extra={addendumProjects} />}
+            {openAddendum && <OfferPanel offer={openAddendum} onAccepted={onAccepted} booking={book} />}
             {offer?.status === 'sent' && <OfferPanel offer={offer} onAccepted={onAccepted} booking={book} />}
             {!check && !intake && <ManagerCard manager={manager} assigned={assigned} onWrite={write} canBook={canBook} lockedHint={lockedHint} />}
             {order?.details && (
@@ -502,7 +537,7 @@ export default function CabinetPage() {
             <div style={{ maxWidth: 620 }}>
               <Eyebrow>Kostenlos dazu</Eyebrow>
               <p className="display" style={{ fontSize: 'clamp(20px, 2.2vw, 26px)', lineHeight: 1.2, margin: '0 0 8px' }}>Sichtbarkeits-Check für Ihr Unternehmen</p>
-              <p style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>Wir prüfen Google Maps, Website, KI-Suche und Social Media — so sehen Sie den Ausgangspunkt, bevor wir starten.</p>
+              <p style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>Wir prüfen Google Maps, Website, KI-Suche und Social Media, so sehen Sie den Ausgangspunkt, bevor wir starten.</p>
             </div>
             <a href="/#audit-quiz" className="btn btn-md btn-outline-light">Check starten <span className="arw">→</span></a>
           </div>

@@ -94,7 +94,7 @@ function FirstFindings({ place, found, draft, onDraft }: { place: Place; found: 
       <p style={{ fontWeight: 700, fontSize: 15, margin: '0 0 10px' }}>Das haben wir schon gefunden</p>
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
         {place.manual
-          ? row(false, 'Kein Google-Unternehmensprofil — bei Google Maps erscheinen Sie nicht.')
+          ? row(false, 'Kein Google-Unternehmensprofil: bei Google Maps erscheinen Sie nicht.')
           : row(place.reviews >= 20 && (place.rating ?? 0) >= 4.2, <>Google-Profil: {place.rating !== null ? <>★ {place.rating.toLocaleString('de-DE', { minimumFractionDigits: 1 })} · </> : null}{place.reviews} Bewertungen</>)}
         {row(!!web, web ? <>Website: <span data-no-translate>{site}</span></> : 'Keine Website im Google-Profil hinterlegt')}
         {!place.manual && row(!!place.phone, place.phone ? 'Telefonnummer im Profil' : 'Keine Telefonnummer im Profil')}
@@ -110,7 +110,7 @@ function FirstFindings({ place, found, draft, onDraft }: { place: Place; found: 
       ) : (
         <button type="button" onClick={() => setEdit(true)} className="ul" style={{ marginTop: 12, background: 'none', border: 0, padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, color: 'var(--electric)' }}>Website oder Profil fehlt / stimmt nicht? Korrigieren</button>
       ))}
-      <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.55, margin: '12px 0 0' }}>Mit der Anmeldung starten wir die vollständige Analyse — Platz bei Google Maps, Wettbewerber, KI-Assistenten und Website-Technik. Ein weiterer Schritt ist nicht nötig.</p>
+      <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.55, margin: '12px 0 0' }}>Mit der Anmeldung starten wir die vollständige Analyse: Platz bei Google Maps, Wettbewerber, KI-Assistenten und Website-Technik. Ein weiterer Schritt ist nicht nötig.</p>
     </div>
   )
 }
@@ -159,7 +159,7 @@ function NotListed({ query, nothingFound, startOpen = false, onManual }: { query
     <div style={{ marginTop: 18, border: '1px solid var(--line)', borderRadius: 20, padding: 'clamp(18px, 2.4vw, 24px)', backgroundColor: '#fff' }}>
       <p style={{ fontWeight: 700, fontSize: 16, margin: '0 0 6px' }}>{nothingFound ? 'Dazu haben wir bei Google nichts gefunden.' : 'Nicht dabei?'}</p>
       <p style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 16px' }}>
-        Suchen Sie genauer — mit Ort oder Straße im Suchfeld oben. Ist Ihr Unternehmen nicht bei Google eingetragen, prüfen wir Website und Social Media trotzdem und zeigen, was ein Google-Profil bringen würde.
+        Suchen Sie genauer, mit Ort oder Straße im Suchfeld oben. Ist Ihr Unternehmen nicht bei Google eingetragen, prüfen wir Website und Social Media trotzdem und zeigen, was ein Google-Profil bringen würde.
       </p>
       <form onSubmit={e => { e.preventDefault(); if (ok) onManual(manualPlace(f)) }} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
         <label style={{ fontSize: 13, fontWeight: 600 }}>Firmenname<input value={f.name} onChange={set('name')} required autoComplete="organization" style={{ ...fieldStyle, marginTop: 6 }} /></label>
@@ -273,7 +273,7 @@ export default function CheckPage() {
 
   // Nach Registrierung/Anmeldung: Check anlegen und in den Kundenbereich.
   const createAndGo = async (user: User, contact: Contact): Promise<string | null> => {
-    if (!place) return loadingPlace ? 'Das Profil lädt noch — bitte einen Moment.' : 'Bitte wählen Sie zuerst Ihr Unternehmen.'
+    if (!place) return loadingPlace ? 'Das Profil lädt noch, bitte einen Moment.' : 'Bitte wählen Sie zuerst Ihr Unternehmen.'
     // Diese Firma ist im Konto schon geprüft → keinen zweiten Check anlegen, den vorhandenen öffnen.
     const existing = await findMyCheck(place).catch(() => null)
     if (existing) { window.location.href = `/kabinett?firma=${existing}&bereits=1`; return null }
@@ -295,7 +295,7 @@ export default function CheckPage() {
   }
 
   const stepIdx = step === 'find' ? 0 : 1
-  const STEPS = [['Unternehmen', 'Profil bei Google finden und auswählen'], ['Kundenbereich', 'Konto anlegen — die Analyse startet sofort']]
+  const STEPS = [['Unternehmen', 'Profil bei Google finden und auswählen'], ['Kundenbereich', 'Konto anlegen, die Analyse startet sofort']]
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)' }}>
@@ -389,7 +389,7 @@ export default function CheckPage() {
 
           {step === 'contact' && (
             <>
-              <StepHead n="Schritt 2 von 2" title="Ihr Kundenbereich" sub="Prüfen Sie kurz, was wir gefunden haben, und legen Sie ein Konto an. Danach startet die Analyse — den Bericht sehen Sie im Kundenbereich." />
+              <StepHead n="Schritt 2 von 2" title="Ihr Kundenbereich" sub="Prüfen Sie kurz, was wir gefunden haben, und legen Sie ein Konto an. Danach startet die Analyse, den Bericht sehen Sie im Kundenbereich." />
               {!loadingPlace && notFound ? (
                 <>
                   <p style={{ fontSize: 15, lineHeight: 1.7, margin: '0 0 18px' }}>Dieses Profil konnten wir nicht laden. Bitte suchen Sie noch einmal.</p>

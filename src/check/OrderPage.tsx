@@ -54,7 +54,7 @@ export default function OrderPage({ items }: { items: OrderItem[] }) {
               </div>
             )}
             <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: '20px 0 0' }}>
-              Noch keine Bestellung. Wir analysieren zuerst Ihr Unternehmen und schicken Ihnen ein Angebot auf Basis Ihrer Auswahl — Kosten entstehen erst, wenn Sie es annehmen.
+              Noch keine Bestellung. Wir analysieren zuerst Ihr Unternehmen und schicken Ihnen ein Angebot auf Basis Ihrer Auswahl. Kosten entstehen erst, wenn Sie es annehmen.
             </p>
           </div>
         </aside>
@@ -71,7 +71,7 @@ export default function OrderPage({ items }: { items: OrderItem[] }) {
               <p className="kick" style={{ marginBottom: 12 }}>Schritt 2 von 2</p>
               <h1 className="display" style={{ fontSize: 'clamp(26px, 3vw, 36px)', lineHeight: 1.08, margin: '0 0 12px' }}>Ihr Kundenbereich</h1>
               <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 26px', maxWidth: 540 }}>
-                Legen Sie ein Konto an oder melden Sie sich an. Im Kundenbereich tragen Sie kurz Ihr Unternehmen ein — danach startet die Analyse.
+                Legen Sie ein Konto an oder melden Sie sich an. Im Kundenbereich tragen Sie kurz Ihr Unternehmen ein, danach startet die Analyse.
               </p>
               <AccountStep submitLabel="Weiter" onAuthed={createAndGo} />
             </>

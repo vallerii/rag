@@ -16,7 +16,7 @@ const opt = (on: boolean): React.CSSProperties => ({ flex: 1, padding: '11px 10p
 const PLACEHOLDER: Record<SourceKey, string> = { website: 'z. B. meinbetrieb.de', instagram: 'instagram.com/…', facebook: 'facebook.com/…', linkedin: 'linkedin.com/company/…', tiktok: 'tiktok.com/@…' }
 
 /** Hinweis unter «Ihre Auswahl», wenn keine Analyse läuft (Start bei null). */
-export const SCRATCH_NOTE = 'Noch keine Bestellung: Im Erstgespräch besprechen wir Ihre Auswahl, danach bekommen Sie ein Angebot — Kosten entstehen erst, wenn Sie es annehmen.'
+export const SCRATCH_NOTE = 'Noch keine Bestellung: Im Erstgespräch besprechen wir Ihre Auswahl, danach bekommen Sie ein Angebot. Kosten entstehen erst, wenn Sie es annehmen.'
 
 export function WishSummary({ items, note }: { items: OrderRow['items']; note?: string }) {
   return (
@@ -31,7 +31,7 @@ export function WishSummary({ items, note }: { items: OrderRow['items']; note?: 
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '12px 0 0', borderTop: '1px solid var(--line)', fontSize: 14 }}>
         <span style={{ color: 'var(--muted)' }}>Gesamt</span><strong style={{ textAlign: 'right' }}>{orderTotal(items)}</strong>
       </div>
-      <p style={{ fontSize: 12.5, lineHeight: 1.6, color: 'var(--muted)', margin: '14px 0 0' }}>{note ?? 'Noch keine Bestellung: Nach der Analyse bekommen Sie ein Angebot auf Basis Ihrer Auswahl — Kosten entstehen erst, wenn Sie es annehmen.'}</p>
+      <p style={{ fontSize: 12.5, lineHeight: 1.6, color: 'var(--muted)', margin: '14px 0 0' }}>{note ?? 'Noch keine Bestellung: Nach der Analyse bekommen Sie ein Angebot auf Basis Ihrer Auswahl. Kosten entstehen erst, wenn Sie es annehmen.'}</p>
     </div>
   )
 }
@@ -94,7 +94,7 @@ export default function CompanyForm({ order, quiz, checks, contact }: {
         <h2 className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 30px)', lineHeight: 1.15, margin: '0 0 10px' }}>{scratch ? 'Wie heißt Ihr Unternehmen?' : 'Ihr Unternehmen'}</h2>
         <p style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 22px', maxWidth: 620 }}>
           {scratch
-            ? 'Sie starten bei null — eine Analyse brauchen wir dafür nicht. Nach dem Speichern wählen Sie direkt einen Termin für das Erstgespräch.'
+            ? 'Sie starten bei null, eine Analyse brauchen wir dafür nicht. Nach dem Speichern wählen Sie direkt einen Termin für das Erstgespräch.'
             : 'Damit analysieren wir Ihre Sichtbarkeit: Google, Website, KI-Suche und Social Media. Den Bericht sehen Sie danach hier im Kundenbereich.'}
         </p>
 

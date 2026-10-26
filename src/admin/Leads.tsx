@@ -31,10 +31,10 @@ const COLUMNS: [string, string, boolean, string, string][] = [
   ['Firma', 'Компания', true, 'Name des Unternehmens wie bei Google', 'Müller Haustechnik GmbH'],
   ['Branche', 'Сфера', false, 'Art des Betriebs', 'Heizungsbau'],
   ['Stadt', 'Город', false, 'Stadt oder Gemeinde', 'Siegen'],
-  ['Adresse', 'Адрес', false, 'Straße, PLZ, Ort — für den Brief; sonst von Google', 'Sandstraße 12, 57072 Siegen'],
+  ['Adresse', 'Адрес', false, 'Straße, PLZ, Ort, für den Brief; sonst von Google', 'Sandstraße 12, 57072 Siegen'],
   ['Telefon', 'Телефон', false, 'Nur zur Info', '0271 123456'],
   ['Website', 'Сайт', false, 'Falls bekannt', 'mueller-haustechnik.de'],
-  ['Google Maps', 'Ссылка на Google Maps', false, 'Link zum Profil — hilft, das richtige Unternehmen zu finden', 'https://maps.google.com/?cid=…'],
+  ['Google Maps', 'Ссылка на Google Maps', false, 'Link zum Profil, hilft, das richtige Unternehmen zu finden', 'https://maps.google.com/?cid=…'],
   ['Suchbegriff', 'Запрос', false, 'Wie Kunden so einen Betrieb suchen: Leistung + Ort. Wichtig für Platz und Wettbewerber', 'Heizungsbau Siegen'],
 ]
 function ColumnsHelp() {
@@ -60,7 +60,7 @@ function ColumnsHelp() {
       </div>
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button type="button" className="btn btn-sm btn-outline-light" onClick={copy}>{copied ? 'Kopiert ✓' : 'Spaltennamen kopieren'}</button>
-        <span style={small}>…und in Google Sheets in Zelle A1 einfügen — die Namen verteilen sich auf die Spalten.</span>
+        <span style={small}>…und in Google Sheets in Zelle A1 einfügen, die Namen verteilen sich auf die Spalten.</span>
       </div>
     </div>
   )
@@ -238,7 +238,7 @@ export default function Leads({ onOpenRequest }: { onOpenRequest: (key: string) 
             <span>Unternehmen</span><span>Branche · Ort</span><span>Punktzahl</span><span>Wichtigste Probleme</span><span>Status</span><span />
           </div>
           {!list && <p style={{ padding: 16, color: muted, margin: 0 }}>Wird geladen…</p>}
-          {list && shown.length === 0 && <p style={{ padding: 16, color: muted, margin: 0 }}>{list.length ? 'Hier ist gerade nichts.' : 'Noch keine Leads — Tabelle verbinden und laden.'}</p>}
+          {list && shown.length === 0 && <p style={{ padding: 16, color: muted, margin: 0 }}>{list.length ? 'Hier ist gerade nichts.' : 'Noch keine Leads. Tabelle verbinden und laden.'}</p>}
           {shown.map(p => {
             const [sl, sbg, sfg] = STATUS[p.status]
             return (
@@ -251,7 +251,7 @@ export default function Leads({ onOpenRequest }: { onOpenRequest: (key: string) 
                 <span data-no-translate style={small}>{[p.category, p.city].filter(Boolean).join(' · ')}</span>
                 <strong style={{ fontSize: 18, color: scoreColor(p.score) }}>{p.status === 'checking' ? '…' : p.score ?? '—'}</strong>
                 <span style={{ ...small, minWidth: 0 }}>
-                  {p.status === 'error' ? <span style={{ color: '#9C1F17' }}>{p.error === 'not_found' ? 'Bei Google nicht gefunden — Google-Maps-Link in die Tabelle eintragen und erneut prüfen' : p.error}</span>
+                  {p.status === 'error' ? <span style={{ color: '#9C1F17' }}>{p.error === 'not_found' ? 'Bei Google nicht gefunden: Google-Maps-Link in die Tabelle eintragen und erneut prüfen' : p.error}</span>
                     : p.issues?.length ? p.issues.slice(0, 2).map(i => i.text).join(' · ')
                     : p.status === 'checking' ? 'wird geprüft' : 'noch nicht geprüft'}
                 </span>

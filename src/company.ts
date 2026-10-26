@@ -7,7 +7,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const COMPANY = {
-  brand: 'RAG — Regionale Agentur',
+  brand: 'RAG Regionale Agentur',
   /** TODO: Firmenname mit Rechtsform, z. B. «RAG Regionale Agentur GmbH» oder «Max Muster, RAG Regionale Agentur». */
   legalName: '',
   /** TODO: Bei GmbH/UG: Geschäftsführer. Bei Einzelunternehmen: Inhaber. */
@@ -25,9 +25,8 @@ export const COMPANY = {
   /** TODO bei GmbH/UG: z. B. «Amtsgericht Berlin-Charlottenburg» und «HRB 123456 B». Sonst leer lassen. */
   registerCourt: '',
   registerNumber: '',
-  /** TODO: USt-IdNr. (DE…), falls vorhanden. Bei Kleinunternehmer (§ 19 UStG) leer lassen und `smallBusiness` = true. */
+  /** TODO: USt-IdNr. (DE…). Entscheidung 23.10.2026: Preise netto zzgl. 19 % USt., keine Kleinunternehmerregelung. */
   vatId: '',
-  smallBusiness: false,
   /** Verantwortlich für redaktionelle Inhalte (§ 18 Abs. 2 MStV) — meist dieselbe Person wie oben. */
   contentResponsible: '',
   /** TODO: Bankverbindung für Rechnungen — sieht der Kunde im Kundenbereich bei offener Rechnung. */
@@ -41,19 +40,18 @@ export const COMPANY = {
 }
 
 // Vertragsbedingungen, die auf /preise, in den AGB und in den FAQ stehen.
-// TODO Inhaber: bestätigen oder ändern (offene Fragen aus dem Projekt).
+// Vom Inhaber bestätigt am 23.10.2026: netto zzgl. 19 % USt., Mindestlaufzeit 6 Monate, danach 30 Tage zum Monatsende.
 export const TERMS = {
   /** Preise sind Nettopreise zzgl. gesetzlicher USt. (B2B). */
   pricesNet: true,
   vatRate: 19,
   /** Mindestlaufzeit der Monatspakete in Monaten, danach monatlich kündbar. */
-  minTermMonths: 3,
+  minTermMonths: 6,
   /** Kündigungsfrist nach der Mindestlaufzeit, in Tagen zum Monatsende. */
   noticeDays: 30,
 }
 
 export function priceNote(): string {
-  if (COMPANY.smallBusiness) return 'Alle Preise ohne Umsatzsteuer (Kleinunternehmer, § 19 UStG).'
   return TERMS.pricesNet ? `Alle Preise netto zzgl. ${TERMS.vatRate} % USt.` : `Alle Preise inkl. ${TERMS.vatRate} % USt.`
 }
 

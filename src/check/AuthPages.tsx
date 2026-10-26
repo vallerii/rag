@@ -119,7 +119,7 @@ export function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <AuthShell eyebrow="Passwort vergessen" title="Bitte prüfen Sie Ihr Postfach" sub="Wenn es für diese Adresse ein Konto gibt, haben wir einen Link zum Zurücksetzen geschickt. Der Link ist nur kurze Zeit gültig — schauen Sie auch im Spam-Ordner nach.">
+      <AuthShell eyebrow="Passwort vergessen" title="Bitte prüfen Sie Ihr Postfach" sub="Wenn es für diese Adresse ein Konto gibt, haben wir einen Link zum Zurücksetzen geschickt. Der Link ist nur kurze Zeit gültig, schauen Sie auch im Spam-Ordner nach.">
         <a href="/login" className="btn btn-lg btn-outline-light" style={{ width: '100%' }}>Zurück zur Anmeldung</a>
       </AuthShell>
     )

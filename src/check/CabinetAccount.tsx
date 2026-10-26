@@ -57,7 +57,7 @@ export function AppointmentsPanel({ list, booking, locked, onWrite }: { list: Ap
           <>
             <p className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 28px)', margin: '0 0 8px' }}>Noch kein Termin geplant</p>
             <p style={{ fontSize: 14.5, color: 'var(--muted)', lineHeight: 1.65, margin: '0 0 18px', maxWidth: 620 }}>
-              {locked ? 'Den Termin vereinbaren Sie mit Ihrem Ansprechpartner, sobald er Ihre Anfrage übernommen und vorbereitet hat.' : booking ? 'Wählen Sie eine freie Zeit — der Termin erscheint danach hier.' : 'Schreiben Sie uns, wann es Ihnen passt — wir tragen den Termin hier ein.'}
+              {locked ? 'Den Termin vereinbaren Sie mit Ihrem Ansprechpartner, sobald er Ihre Anfrage übernommen und vorbereitet hat.' : booking ? 'Wählen Sie eine freie Zeit, der Termin erscheint danach hier.' : 'Schreiben Sie uns, wann es Ihnen passt, wir tragen den Termin hier ein.'}
             </p>
           </>
         )}
@@ -189,7 +189,7 @@ export function AccountPanel({ email, contact, onContact }: { email: string; con
           <button type="button" className="btn btn-md btn-outline-danger" onClick={() => setDel(true)}>Konto löschen…</button>
           {del && (
             <ConfirmDialog title="Konto endgültig löschen?" confirmLabel="Endgültig löschen" busyLabel="Wird gelöscht…"
-              errorText="Das Löschen hat nicht geklappt. Bitte schreiben Sie uns — wir erledigen das für Sie."
+              errorText="Das Löschen hat nicht geklappt. Bitte schreiben Sie uns, wir erledigen das für Sie."
               check="Ja, mein Konto und alle Daten endgültig löschen." onConfirm={remove} onClose={() => setDel(false)}>
               <p style={{ margin: 0 }}>Wir löschen Ihr Konto mit allen Firmen, Berichten, Anfragen, Nachrichten, Angeboten und Terminen. Das lässt sich nicht rückgängig machen.</p>
             </ConfirmDialog>

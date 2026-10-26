@@ -55,7 +55,7 @@ export function ManagerCard({ manager, assigned = !!manager, onWrite, canBook, l
         {kick(manager ? (manager.title || 'Ihr Ansprechpartner') : 'Ihr Ansprechpartner')}
         <p className="display" style={{ fontSize: 20, margin: '0 0 4px' }}>{name}</p>
         <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, lineHeight: 1.55 }}>
-          {assigned ? 'Betreut Ihr Projekt persönlich — von der Analyse bis zur Umsetzung.' : 'Sobald sich jemand aus dem Team Ihrer Anfrage annimmt, sehen Sie hier Ihren persönlichen Ansprechpartner.'}
+          {assigned ? 'Betreut Ihr Projekt persönlich, von der Analyse bis zur Umsetzung.' : 'Sobald sich jemand aus dem Team Ihrer Anfrage annimmt, sehen Sie hier Ihren persönlichen Ansprechpartner.'}
         </p>
       </div>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-start' }}>
@@ -70,6 +70,7 @@ export function ManagerCard({ manager, assigned = !!manager, onWrite, canBook, l
 export function OfferPanel({ offer, onAccepted, booking = null }: { offer: ClientOffer; onAccepted: (o: ClientOffer) => void; booking?: string | null }) {
   const [busy, setBusy] = useState(false), [err, setErr] = useState(false)
   const accepted = offer.status === 'accepted'
+  const extra = !!offer.parent_id // Zusatzangebot zu einem bereits angenommenen Angebot
   const accept = async () => {
     setBusy(true); setErr(false)
     const ok = await acceptOffer(offer.id)
@@ -78,10 +79,11 @@ export function OfferPanel({ offer, onAccepted, booking = null }: { offer: Clien
   }
   return (
     <section style={{ ...card, borderLeft: accepted ? '4px solid #3DDC84' : '4px solid var(--electric)' }}>
-      {kick(accepted ? 'Angebot angenommen' : 'Ihr Angebot')}
+      {kick(extra ? (accepted ? 'Zusatzangebot angenommen' : 'Ihr Zusatzangebot') : accepted ? 'Angebot angenommen' : 'Ihr Angebot')}
       <h2 className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 30px)', lineHeight: 1.15, margin: '0 0 16px' }}>
-        {accepted ? 'Danke, wir starten mit der Umsetzung' : 'Das schlagen wir Ihnen vor'}
+        {extra ? (accepted ? 'Danke, wir nehmen das mit auf' : 'Das schlagen wir Ihnen zusätzlich vor') : accepted ? 'Danke, wir starten mit der Umsetzung' : 'Das schlagen wir Ihnen vor'}
       </h2>
+      {extra && !accepted && <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--muted)', margin: '-6px 0 14px' }}>Ergänzt Ihren laufenden Auftrag. Ihr bisheriges Angebot bleibt unverändert, für diese Leistungen erhalten Sie eine eigene Rechnung.</p>}
       <div>
         {offer.items.map(i => (
           <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, padding: '12px 0', borderTop: '1px solid var(--line-soft)' }}>
@@ -99,7 +101,7 @@ export function OfferPanel({ offer, onAccepted, booking = null }: { offer: Clien
       {offer.note && <p style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--muted)', margin: '16px 0 0', whiteSpace: 'pre-wrap' }}>{offer.note}</p>}
       {!accepted && (
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 20 }}>
-          <button type="button" className="btn btn-lg btn-electric" onClick={accept} disabled={busy}>{busy ? 'Einen Moment…' : 'Angebot annehmen'} <span className="arw">→</span></button>
+          <button type="button" className="btn btn-lg btn-electric" onClick={accept} disabled={busy}>{busy ? 'Einen Moment…' : extra ? 'Zusatzangebot annehmen' : 'Angebot annehmen'} <span className="arw">→</span></button>
           {booking
             ? <a href={booking} target="_blank" rel="noopener noreferrer" className="btn btn-lg btn-outline-light">Erst im Gespräch klären</a>
             : <span style={{ fontSize: 13, color: 'var(--muted)' }}>Fragen dazu? Schreiben Sie uns im Chat.</span>}

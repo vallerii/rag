@@ -34,12 +34,12 @@ export type Checklist = {
 export type ManualDef = { id: string; chan: Chan; label: string; weight: number; texts: Partial<Record<Mark, string>>; hint?: string }
 export const MANUAL: ManualDef[] = [
   { id: 'maps_claimed', chan: 'maps', label: 'Profil vom Inhaber bestätigt', weight: 10, hint: 'In Google Maps fehlt der Button «Inhaber dieses Unternehmens?»',
-    texts: { ok: 'Profil ist vom Inhaber bestätigt', bad: 'Profil ist nicht vom Inhaber bestätigt — Dritte können Änderungen vorschlagen' } },
+    texts: { ok: 'Profil ist vom Inhaber bestätigt', bad: 'Profil ist nicht vom Inhaber bestätigt, Dritte können Änderungen vorschlagen' } },
   { id: 'maps_desc', chan: 'maps', label: 'Profilbeschreibung', weight: 8,
     texts: { ok: 'Beschreibung im Profil gepflegt', warn: 'Beschreibung zu kurz oder ohne Leistungen und Ort', bad: 'Keine Beschreibung im Profil' } },
   { id: 'maps_services', chan: 'maps', label: 'Leistungen / Produkte im Profil', weight: 8,
     texts: { ok: 'Leistungen im Profil eingetragen', warn: 'Nur wenige Leistungen eingetragen', bad: 'Keine Leistungen im Profil eingetragen' } },
-  { id: 'maps_posts', chan: 'maps', label: 'Beiträge (Updates) im Profil', weight: 8, hint: 'ok — Beitrag in den letzten 30 Tagen',
+  { id: 'maps_posts', chan: 'maps', label: 'Beiträge (Updates) im Profil', weight: 8, hint: 'ok: Beitrag in den letzten 30 Tagen',
     texts: { ok: 'Regelmäßige Beiträge im Profil', warn: 'Letzter Beitrag ist älter als einen Monat', bad: 'Keine Beiträge im Profil' } },
   { id: 'maps_replies', chan: 'maps', label: 'Antworten auf Bewertungen', weight: 8,
     texts: { ok: 'Auf Bewertungen wird geantwortet', warn: 'Nur auf einen Teil der Bewertungen geantwortet', bad: 'Auf Bewertungen wird nicht geantwortet' } },
@@ -48,11 +48,11 @@ export const MANUAL: ManualDef[] = [
   { id: 'search_firstscreen', chan: 'search', label: 'Erster Bildschirm: klar, was, wo und wie erreichbar', weight: 8,
     texts: { ok: 'Auf den ersten Blick klar: was, wo und wie erreichbar', warn: 'Angebot und Region erst nach dem Scrollen erkennbar', bad: 'Unklar, was angeboten wird und wo' } },
   { id: 'social_bio', chan: 'social', label: 'Profilgestaltung (Beschreibung, Ort, Link, Buttons)', weight: 10,
-    texts: { ok: 'Profil vollständig: Beschreibung mit Leistung, Ort und Link', warn: 'Profil unvollständig — Leistung, Ort oder Link fehlen', bad: 'Profil ohne Beschreibung und Kontakt' } },
+    texts: { ok: 'Profil vollständig: Beschreibung mit Leistung, Ort und Link', warn: 'Profil unvollständig: Leistung, Ort oder Link fehlen', bad: 'Profil ohne Beschreibung und Kontakt' } },
   { id: 'social_active', chan: 'social', label: 'Regelmäßigkeit der Beiträge', weight: 15, hint: 'In der Notiz: Datum des letzten Beitrags, Beiträge in 30 Tagen',
     texts: { ok: 'Regelmäßige Beiträge (mehrmals pro Woche)', warn: 'Unregelmäßige Beiträge', bad: 'Seit über einem Monat keine Beiträge' } },
   { id: 'social_real', chan: 'social', label: 'Echte Inhalte: Projekte, Team, Menschen', weight: 10,
-    texts: { ok: 'Echte Projekte, Team und Menschen', warn: 'Kaum eigene Fotos — überwiegend Stockbilder oder Werbung', bad: 'Keine eigenen Inhalte' } },
+    texts: { ok: 'Echte Projekte, Team und Menschen', warn: 'Kaum eigene Fotos: überwiegend Stockbilder oder Werbung', bad: 'Keine eigenen Inhalte' } },
   { id: 'social_consistent', chan: 'social', label: 'Einheitlicher Name und Logo überall', weight: 5,
     texts: { ok: 'Name und Logo überall einheitlich', warn: 'Name oder Logo nicht einheitlich' } },
 ]
@@ -64,7 +64,7 @@ export const DIRECTORIES: [string, string][] = [
 
 export function defaultQuestions(category: string, city: string): string[] {
   const c = category || 'Firma', o = city || 'meiner Nähe'
-  return [`Wer ist ein guter ${c} in ${o}?`, `Welchen ${c} in ${o} kannst du empfehlen?`, `Ich brauche einen ${c} in ${o} — wen soll ich anrufen?`]
+  return [`Wer ist ein guter ${c} in ${o}?`, `Welchen ${c} in ${o} kannst du empfehlen?`, `Ich brauche einen ${c} in ${o}, wen soll ich anrufen?`]
 }
 
 const pct = (items: Item[]) => {
@@ -74,8 +74,8 @@ const pct = (items: Item[]) => {
 const ORDER: Record<Mark, number> = { bad: 0, warn: 1, ok: 2 }
 
 const SUMMARY: Record<Chan, [string, string, string]> = {
-  ai: ['KI-Assistenten finden und empfehlen Ihr Unternehmen.', 'KI-Assistenten kennen Sie, empfehlen aber oft andere.', 'In KI-Antworten tauchen Sie kaum auf — Kunden bekommen andere Empfehlungen.'],
-  maps: ['Das Google-Profil ist stark und gepflegt.', 'Das Profil ist eine gute Basis, hat aber einige offensichtliche Lücken.', 'Das Profil hat deutliche Lücken — hier verlieren Sie die meisten Anfragen.'],
+  ai: ['KI-Assistenten finden und empfehlen Ihr Unternehmen.', 'KI-Assistenten kennen Sie, empfehlen aber oft andere.', 'In KI-Antworten tauchen Sie kaum auf, Kunden bekommen andere Empfehlungen.'],
+  maps: ['Das Google-Profil ist stark und gepflegt.', 'Das Profil ist eine gute Basis, hat aber einige offensichtliche Lücken.', 'Das Profil hat deutliche Lücken, hier verlieren Sie die meisten Anfragen.'],
   search: ['Die Website ist technisch solide aufgestellt.', 'Die Website funktioniert, verschenkt aber Sichtbarkeit bei Google.', 'Die Website hilft bei Google und in der KI-Suche kaum weiter.'],
   social: ['Die wichtigsten Profile sind vorhanden und aktiv.', 'Es gibt Profile, aber noch Lücken.', 'In Social Media sind Sie kaum zu finden.'],
 }
@@ -118,7 +118,7 @@ export function channelItems(ch: Chan, draft: DraftV2 | null, cl: Checklist, aud
   if (ch === 'search' && !auto.some(i => i.id === 'pagespeed') && typeof cl.pagespeed === 'number') {
     const v = cl.pagespeed
     const mark: Mark = v >= 90 ? 'ok' : v >= 50 ? 'warn' : 'bad'
-    out.push({ id: 'pagespeed', max: 10, pts: 10 * FACTOR[mark], mark, source: 'manual', text: `Google PageSpeed (mobil): ${v}/100${mark === 'bad' ? ' — sehr langsam, Besucher springen ab' : mark === 'warn' ? ' — auf dem Smartphone spürbar langsam' : ''}` })
+    out.push({ id: 'pagespeed', max: 10, pts: 10 * FACTOR[mark], mark, source: 'manual', text: `Google PageSpeed (mobil): ${v}/100${mark === 'bad' ? ': sehr langsam, Besucher springen ab' : mark === 'warn' ? ': auf dem Smartphone spürbar langsam' : ''}` })
   }
   if (ch === 'ai') {
     const { asked, mentioned } = aiStats(cl)
@@ -159,7 +159,7 @@ export function compose(draft: DraftV2 | null, cl: Checklist, audit: Audit | nul
     const ov = cl.scores?.[ch]
     const score = typeof ov === 'number' ? ov : auto
     if (score === null && !items.length) continue
-    channels[ch] = { score, summary: cl.summaries?.[ch]?.trim() || (ch === 'maps' && noProfile ? 'Ihr Unternehmen hat kein Google-Profil — hier verlieren Sie die meisten Anfragen.' : autoSummary(ch, score)), points: items.map(i => [i.mark, i.text]) }
+    channels[ch] = { score, summary: cl.summaries?.[ch]?.trim() || (ch === 'maps' && noProfile ? 'Ihr Unternehmen hat kein Google-Profil, hier verlieren Sie die meisten Anfragen.' : autoSummary(ch, score)), points: items.map(i => [i.mark, i.text]) }
   }
   const c = audit?.competitors
   const p = audit?.place

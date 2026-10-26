@@ -20,7 +20,7 @@ export default function OfferBuilder({ items, onChange }: { items: OfferItem[]; 
   const groups = [...new Set(CATALOG.map(c => c.group))]
   return (
     <div style={{ display: 'grid', gap: 10 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '6px 24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '6px 24px' }}>
         {groups.map(g => (
           <div key={g}>
             <p style={{ ...small, fontWeight: 700, margin: '0 0 4px' }}>{g}</p>
@@ -39,13 +39,13 @@ export default function OfferBuilder({ items, onChange }: { items: OfferItem[]; 
       </div>
       {items.filter(i => i.custom || !CATALOG.some(c => c.id === i.id)).map(i => (
         <div key={i.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
-          <span style={{ flex: 1 }}><strong data-no-translate>{i.name}</strong>{i.description ? <span style={small} data-no-translate> — {i.description}</span> : null}</span>
+          <span style={{ flex: 1 }}><strong data-no-translate>{i.name}</strong>{i.description ? <span style={small} data-no-translate>: {i.description}</span> : null}</span>
           <input type="number" value={i.price} onChange={e => setPrice(i.id, e.target.value)} style={{ ...input, width: 90, padding: '5px 8px' }} aria-label={`Preis ${i.name}`} />
           <span style={{ ...small, width: 52 }}>{i.unit === 'einmalig' ? 'einmalig' : '/Monat'}</span>
           <button type="button" onClick={() => onChange(items.filter(x => x.id !== i.id))} style={{ border: 0, background: 'none', cursor: 'pointer', color: '#B3261E', minWidth: 36, minHeight: 36 }} aria-label="Position löschen">✕</button>
         </div>
       ))}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 6, padding: 10, borderRadius: 12, backgroundColor: 'var(--bone)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))', gap: 6, padding: 10, borderRadius: 12, backgroundColor: 'var(--bone)' }}>
         <input style={input} placeholder="Eigene Position: Bezeichnung" value={custom.name} onChange={e => setCustom(c => ({ ...c, name: e.target.value }))} />
         <input style={input} placeholder="Beschreibung" value={custom.description} onChange={e => setCustom(c => ({ ...c, description: e.target.value }))} />
         <input style={input} type="number" placeholder="Preis, €" value={custom.price} onChange={e => setCustom(c => ({ ...c, price: e.target.value }))} />

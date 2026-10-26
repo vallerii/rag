@@ -48,7 +48,7 @@ function Steps({ step, go, canGo }: { step: number; go: (n: number) => void; can
 function ScoreRow({ r }: { r: { channels?: Record<string, { score: number | null } | undefined> } }) {
   const t = totalScore(r)
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(130px, 100%), 1fr))', gap: 10 }}>
       <div style={{ padding: '10px 14px', borderRadius: 12, backgroundColor: ink, color: '#fff' }}><div style={{ fontSize: 12.5, opacity: 0.75 }}>Gesamt</div><strong style={{ fontSize: 26 }}>{t ?? '—'}</strong></div>
       {CHANS.map(([k, title]) => <div key={k} style={{ padding: '10px 14px', borderRadius: 12, backgroundColor: 'var(--bone)' }}><div style={small}>{title}</div><strong style={{ fontSize: 26 }}>{r.channels?.[k]?.score ?? '—'}</strong></div>)}
     </div>
@@ -66,6 +66,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
   const [step, setStep] = useState(1)
   const [viewing, setViewing] = useState<ReportVersion | null>(null)
   const [fixing, setFixing] = useState<string | null>(null)
+  const [askDiscard, setAskDiscard] = useState(false)
   // Angebot = Empfehlung im Bericht: dieselben Positionen wie im Reiter «Angebot».
   const [offer, setOffer] = useState<Offer | null>(null)
   const [items, setItems] = useState<OfferItem[]>([])
@@ -134,10 +135,30 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
     if (!ok) { setMsg('Speichern fehlgeschlagen.'); return }
     setCl(next); setDirty(false); setMode('wizard'); setStep(1)
   }
+  // Entwurf verwerfen. Nach einer Veröffentlichung: zurück zur letzten Version, «+ Neuer Bericht» wird wieder frei.
+  // Erster Bericht (noch nie veröffentlicht): manuelle Prüfungen, Texte und Angebot zurücksetzen;
+  // Suchbegriffe und gesammelte Daten bleiben (kein erneutes, kostenpflichtiges Sammeln nötig).
   const discard = async () => {
-    const next = { ...cl, draftStarted: null }
-    if (await saveChecklist(full.id, next)) { await reload(); setMode('list') }
+    const next: Checklist = published
+      ? { ...cl, draftStarted: null, offerDraft: null }
+      : { keywords: cl.keywords, aiQuestions: cl.aiQuestions }
+    setBusy('save')
+    const ok = await saveChecklist(full.id, next)
+    setBusy(''); setAskDiscard(false)
+    if (!ok) { setMsg('Verwerfen fehlgeschlagen.'); return }
+    await reload(); setMode('list'); setStep(1); setFixing(null)
+    setMsg(published ? 'Entwurf verworfen. Sie können jetzt einen neuen Bericht beginnen.' : 'Entwurf zurückgesetzt. Suchbegriffe und gesammelte Daten sind erhalten.')
   }
+  const discardLabel = published ? 'Entwurf verwerfen' : 'Entwurf zurücksetzen'
+  const discardBtn = askDiscard ? (
+    <span role="group" aria-label={discardLabel} style={{ display: 'inline-flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+      <span style={{ ...small, color: '#A21C22' }}>{published ? 'Entwurf wirklich verwerfen? Veröffentlichte Berichte bleiben erhalten.' : 'Manuelle Prüfungen, Texte und Angebot zurücksetzen?'}</span>
+      <button type="button" className="btn btn-md btn-outline-light" style={{ color: '#A21C22', borderColor: '#E7B4B0' }} disabled={!!busy} onClick={discard}>Ja, {published ? 'verwerfen' : 'zurücksetzen'}</button>
+      <button type="button" className="btn btn-md btn-outline-light" disabled={!!busy} onClick={() => setAskDiscard(false)}>Abbrechen</button>
+    </span>
+  ) : (
+    <button type="button" className="btn btn-md btn-outline-light" disabled={!!busy} onClick={() => setAskDiscard(true)}>{discardLabel}</button>
+  )
   const collect = async () => {
     if (!keywords[0]?.trim()) { setMsg('Bitte zuerst den Hauptsuchbegriff eintragen.'); return }
     if (!(await save(true)) && dirty) { setMsg('Entwurf konnte vor dem Sammeln nicht gespeichert werden.'); return }
@@ -148,7 +169,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
   }
   const publish = async () => {
     const list = accepted ? offer!.items : items
-    if (!list.length) { setMsg('Stellen Sie das Angebot zusammen — mindestens eine Position.'); return }
+    if (!list.length) { setMsg('Stellen Sie das Angebot zusammen: mindestens eine Position.'); return }
     setBusy('publish')
     const next = { ...cl, draftStarted: null, offerDraft: null }
     await saveChecklist(full.id, next)
@@ -163,7 +184,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
     setBusy('')
     if (!r) { setMsg('Veröffentlichen fehlgeschlagen.'); return }
     onPublished(r); await reload(); setMode('list')
-    setMsg(published ? 'Neue Version veröffentlicht — der Kunde sieht die Änderungen und den Vergleich mit der vorigen.' : 'Veröffentlicht. Der Kunde kann jetzt einen Termin buchen.')
+    setMsg(published ? 'Neue Version veröffentlicht. Der Kunde sieht die Änderungen und den Vergleich mit der vorigen.' : 'Veröffentlicht. Der Kunde kann jetzt einen Termin buchen.')
   }
 
   const pdf = (v: ReportVersion) => {
@@ -193,7 +214,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
           {pdfBtn(viewing)}
         </div>
         <ScoreRow r={v} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 14, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(420px, 100%), 1fr))', gap: 14, alignItems: 'start' }}>
           {CHANS.map(([k, title]) => {
             const ch = v.channels?.[k]
             if (!ch) return null
@@ -209,7 +230,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
         {v.recommendations?.length > 0 && (
           <section style={{ ...card, display: 'grid', gap: 8 }}>
             <strong style={{ fontSize: 16 }}>Empfehlungen</strong>
-            {v.recommendations.map(([p, h, t], i) => <div key={i} style={{ fontSize: 14 }}><span style={small}>{p}</span><div data-no-translate><strong>{h}</strong> — {t}</div></div>)}
+            {v.recommendations.map(([p, h, t], i) => <div key={i} style={{ fontSize: 14 }}><span style={small}>{p}</span><div data-no-translate><strong>{h}</strong>: {t}</div></div>)}
           </section>
         )}
         {v.recommended && <p style={{ margin: 0, fontSize: 14 }}>Empfohlenes Paket: <strong>{v.recommended.name}</strong> · {v.recommended.price} € {v.recommended.unit === 'einmalig' ? 'einmalig' : '/Monat'}</p>}
@@ -224,7 +245,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <p style={{ margin: 0, fontSize: 14, color: muted, maxWidth: 640 }}>Jeder veröffentlichte Bericht bleibt hier gespeichert. Der Kunde sieht den letzten und den Vergleich mit dem vorigen.</p>
           <button type="button" className="btn btn-md btn-electric" disabled={hasDraft || !!busy} onClick={startNew}
-            style={{ opacity: hasDraft ? 0.45 : 1 }} title={hasDraft ? 'Erst den offenen Entwurf abschließen oder verwerfen' : undefined}>+ Neuer Bericht</button>
+            style={{ opacity: hasDraft ? 0.45 : 1 }} title={hasDraft ? (published ? 'Erst den offenen Entwurf veröffentlichen oder verwerfen' : 'Erst den ersten Bericht veröffentlichen') : undefined}>+ Neuer Bericht</button>
         </div>
         {msg && <p role="status" style={{ ...small, color: '#17663A', margin: 0 }}>{msg}</p>}
         {hasDraft && (
@@ -239,7 +260,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button type="button" className="btn btn-md btn-electric" onClick={openWizard}>{needsCollect && !full.audited_at ? 'Beginnen' : 'Weiter'}</button>
-              {published && <button type="button" className="btn btn-md btn-outline-light" onClick={discard}>Entwurf verwerfen</button>}
+              {discardBtn}
             </div>
           </article>
         )}
@@ -281,8 +302,9 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
         <div style={{ display: 'flex', gap: 14, alignItems: 'baseline', flexWrap: 'wrap' }}>
           <button type="button" onClick={closeWizard} style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: accent, fontWeight: 600, cursor: 'pointer' }}>← Alle Berichte</button>
           <strong style={{ fontSize: 18 }}>Bericht Nr. {nr}</strong>
-          <span style={small}>{dirty ? 'Ungespeicherte Änderungen — werden beim Weitergehen gespeichert' : 'Entwurf gespeichert'}</span>
+          <span style={small}>{dirty ? 'Ungespeicherte Änderungen, werden beim Weitergehen gespeichert' : 'Entwurf gespeichert'}</span>
         </div>
+        {discardBtn}
       </div>
       <Steps step={step} go={goStep} canGo={canGo} />
 
@@ -295,7 +317,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
           </div>
           {generic && (
             <div role="note" style={{ padding: '12px 14px', borderRadius: 12, backgroundColor: '#FFF6E5', border: '1px solid #F0D49A', fontSize: 14, lineHeight: 1.55, color: '#5C3300' }}>
-              Die Google-Kategorie «<span data-no-translate>{place.category}</span>» ist zu allgemein — damit landen fremde Branchen bei den Wettbewerbern. Tragen Sie die konkrete Leistung ein, z. B. «Marketing Agentur {place.city ?? 'Berlin'}».
+              Die Google-Kategorie «<span data-no-translate>{place.category}</span>» ist zu allgemein, damit landen fremde Branchen bei den Wettbewerbern. Tragen Sie die konkrete Leistung ein, z. B. «Marketing Agentur {place.city ?? 'Berlin'}».
             </div>
           )}
           <label style={{ display: 'grid', gap: 6 }}>
@@ -314,7 +336,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
                 onChange={e => upd(x => { const k = [...(x.keywords ?? [])]; while (k.length < i) k.push(''); k[i] = e.target.value; return { ...x, keywords: k } })} />
             </label>
           ))}
-          {!full.sources_confirmed && <p style={{ ...small, color: '#B26B00', margin: 0 }}>Der Kunde hat Website und Profile nicht bestätigt. Prüfen Sie die Quellen beim Kunden — mit «Daten sammeln» übernehmen wir sie und starten.</p>}
+          {!full.sources_confirmed && <p style={{ ...small, color: '#B26B00', margin: 0 }}>Der Kunde hat Website und Profile nicht bestätigt. Prüfen Sie die Quellen beim Kunden. Mit «Daten sammeln» übernehmen wir sie und starten.</p>}
           {footer(
             <span style={small}>{busy === 'collect' ? 'Daten werden gesammelt: Google, Website, PageSpeed… bis zu einer Minute.' : 'Das Sammeln dauert etwa 30 Sekunden.'}</span>,
             <>
@@ -330,11 +352,11 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
         <section style={{ display: 'grid', gap: 16 }}>
           <div>
             <h2 style={{ margin: '0 0 6px', fontSize: 22 }}>Was die automatische Prüfung gefunden hat</h2>
-            <p style={{ margin: 0, fontSize: 15, color: muted }}>Prüfen Sie, ob alles stimmt. Ist ein Punkt falsch — «Korrigieren». Alles andere muss nicht angefasst werden.{full.audited_at ? ` Daten vom ${fmt(full.audited_at)}.` : ''}</p>
+            <p style={{ margin: 0, fontSize: 15, color: muted }}>Prüfen Sie, ob alles stimmt. Ist ein Punkt falsch: «Korrigieren». Alles andere muss nicht angefasst werden.{full.audited_at ? ` Daten vom ${fmt(full.audited_at)}.` : ''}</p>
           </div>
           <ScoreRow r={report} />
-          {draft && !draft.items && <p style={{ ...small, color: '#B26B00', margin: 0 }}>Entwurf im alten Format — gehen Sie zu Schritt 1 und sammeln Sie die Daten neu.</p>}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: 14, alignItems: 'start' }}>
+          {draft && !draft.items && <p style={{ ...small, color: '#B26B00', margin: 0 }}>Entwurf im alten Format. Gehen Sie zu Schritt 1 und sammeln Sie die Daten neu.</p>}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(440px, 100%), 1fr))', gap: 14, alignItems: 'start' }}>
             {CHANS.map(([ch, title]) => {
               const auto = draft?.items?.[ch] ?? []
               const shownAll = channelItems(ch, draft, cl, audit)
@@ -374,7 +396,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
                   {ch === 'search' && !auto.some(i => i.id === 'pagespeed') && (
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 14, padding: '8px 0', borderTop: '1px solid #F0EFF6', flexWrap: 'wrap' }}>
                       <span style={{ width: 24, height: 24, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#EFEEF8', color: muted, fontWeight: 800, fontSize: 13 }}>?</span>
-                      <span style={{ flex: 1, minWidth: 220 }}>PageSpeed nicht ermittelt — Wert von <a href={`https://pagespeed.web.dev/analysis?url=${encodeURIComponent(site?.url ? `https://${site.url}` : '')}`} target="_blank" rel="noreferrer">pagespeed.web.dev</a> eintragen</span>
+                      <span style={{ flex: 1, minWidth: 220 }}>PageSpeed nicht ermittelt. Wert von <a href={`https://pagespeed.web.dev/analysis?url=${encodeURIComponent(site?.url ? `https://${site.url}` : '')}`} target="_blank" rel="noreferrer">pagespeed.web.dev</a> eintragen</span>
                       <input type="number" min={0} max={100} aria-label="PageSpeed" style={{ ...input, width: 90 }} value={cl.pagespeed ?? ''} placeholder="0–100"
                         onChange={e => upd(x => ({ ...x, pagespeed: e.target.value === '' ? null : Math.max(0, Math.min(100, Number(e.target.value))) }))} />
                     </div>
@@ -425,9 +447,9 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
         <section style={{ display: 'grid', gap: 16 }}>
           <div>
             <h2 style={{ margin: '0 0 6px', fontSize: 22 }}>Manuelle Prüfungen</h2>
-            <p style={{ margin: 0, fontSize: 15, color: muted }}>Optional — macht den Bericht genauer. Was nicht geprüft ist, kommt nicht in den Bericht.</p>
+            <p style={{ margin: 0, fontSize: 15, color: muted }}>Optional: macht den Bericht genauer. Was nicht geprüft ist, kommt nicht in den Bericht.</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: 14, alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(440px, 100%), 1fr))', gap: 14, alignItems: 'start' }}>
             {CHANS.map(([ch, title]) => {
               const defs = MANUAL.filter(m => m.chan === ch)
               if (!defs.length && ch !== 'ai') return null
@@ -441,13 +463,13 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
                       <div key={m.id} style={{ display: 'grid', gap: 6, fontSize: 14, paddingTop: 8, borderTop: '1px solid #F0EFF6' }}>
                         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                           {mk ? <Badge m={mk} /> : <span style={{ width: 24, textAlign: 'center', color: muted }}>·</span>}
-                          <span style={{ flex: 1 }}>{m.label}{m.hint ? <span style={small}> — {m.hint}</span> : null}</span>
+                          <span style={{ flex: 1 }}>{m.label}{m.hint ? <span style={small}>: {m.hint}</span> : null}</span>
                           <select style={{ ...input, width: 150 }} value={a?.mark ?? ''} onChange={e => answer(m.id, { mark: e.target.value || undefined })} aria-label={m.label}>
                             <option value="">nicht geprüft</option>{(['ok', 'warn', 'bad'] as Mark[]).filter(x => m.texts[x]).map(x => <option key={x} value={x}>{x === 'ok' ? '✓ ok' : x === 'warn' ? '! teilweise' : '✗ schlecht'}</option>)}<option value="na">nicht zutreffend</option>
                           </select>
                         </div>
                         {mk && (
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, paddingLeft: 34 }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))', gap: 6, paddingLeft: 'clamp(0px, 4vw, 34px)' }}>
                             <input style={input} value={a?.text ?? ''} placeholder={m.texts[mk] ?? ''} onChange={e => answer(m.id, { text: e.target.value })} aria-label="Text für den Kunden" />
                             <input style={input} value={a?.note ?? ''} placeholder="Notiz / Link zum Screenshot (nur für das Team)" onChange={e => answer(m.id, { note: e.target.value })} />
                           </div>
@@ -459,7 +481,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
                     <>
                       <div style={{ display: 'grid', gap: 6, paddingTop: 8, borderTop: '1px solid #F0EFF6' }}>
                         <strong style={{ fontSize: 14 }}>KI-Antworten: Stellen Sie die Fragen in ChatGPT, Perplexity und Gemini</strong>
-                        <span style={small}>Fragen bleiben auf Deutsch — so fragen Kunden in Deutschland. Frage kopieren, in ChatGPT, Perplexity und Gemini einfügen und eintragen, ob der Kunde genannt wurde.</span>
+                        <span style={small}>Fragen bleiben auf Deutsch, so fragen Kunden in Deutschland. Frage kopieren, in ChatGPT, Perplexity und Gemini einfügen und eintragen, ob der Kunde genannt wurde.</span>
                         {questions.map((q, qi) => (
                           <div key={qi} style={{ display: 'grid', gap: 4 }}>
                             <input style={input} value={q} onChange={e => upd(x => { const list = [...questions]; const old = list[qi]; list[qi] = e.target.value; const res = { ...x.aiResults }; if (old !== e.target.value && res[old]) { res[e.target.value] = res[old]; delete res[old] } return { ...x, aiQuestions: list, aiResults: res } })} />
@@ -484,7 +506,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
                       </div>
                       <div style={{ display: 'grid', gap: 6, paddingTop: 8, borderTop: '1px solid #F0EFF6' }}>
                         <strong style={{ fontSize: 14 }}>Verzeichnisse</strong>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 6 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(220px, 100%), 1fr))', gap: 6 }}>
                           {DIRECTORIES.map(([k, label]) => (
                             <label key={k} style={{ ...small, display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'space-between' }}>{label}
                               <select style={{ ...input, width: 140, padding: '5px 7px' }} value={cl.dirs?.[k] ?? ''} onChange={e => upd(x => ({ ...x, dirs: { ...x.dirs, [k]: e.target.value as DirState } }))}>
@@ -512,10 +534,10 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
         <section style={{ display: 'grid', gap: 16 }}>
           <div>
             <h2 style={{ margin: '0 0 6px', fontSize: 22 }}>Ergebnis und Veröffentlichung</h2>
-            <p style={{ margin: 0, fontSize: 15, color: muted }}>Fazit, Empfehlungen und Paket. Die Standardtexte passen meist — ändern Sie nur, was nicht stimmt. Alles für den Kunden auf Deutsch.</p>
+            <p style={{ margin: 0, fontSize: 15, color: muted }}>Fazit, Empfehlungen und Paket. Die Standardtexte passen meist, ändern Sie nur, was nicht stimmt. Alles für den Kunden auf Deutsch.</p>
           </div>
           <ScoreRow r={report} />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: 14, alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(440px, 100%), 1fr))', gap: 14, alignItems: 'start' }}>
             {CHANS.map(([ch, title]) => {
               const sc = report.channels[ch]?.score ?? null
               return (
@@ -551,17 +573,17 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
           <section style={{ ...card, display: 'grid', gap: 10 }}>
             <div>
               <strong style={{ fontSize: 16 }}>Angebot für den Kunden <span style={{ color: '#B3261E' }}>*</span></strong>
-              <p style={{ ...small, margin: '4px 0 0' }}>Erscheint im Bericht als Empfehlung mit Preisen — der Kunde kann es sofort annehmen. Dieselben Positionen stehen im Reiter «Angebot» und lassen sich nach dem Gespräch noch ändern.</p>
+              <p style={{ ...small, margin: '4px 0 0' }}>Erscheint im Bericht als Empfehlung mit Preisen, der Kunde kann es sofort annehmen. Dieselben Positionen stehen im Reiter «Angebot» und lassen sich nach dem Gespräch noch ändern.</p>
             </div>
             {accepted ? (
               <div style={{ padding: '10px 14px', borderRadius: 12, backgroundColor: '#F2FAF5', border: '1px solid #CDEBD8', fontSize: 14 }}>
-                <strong>Vom Kunden bereits angenommen</strong> — nicht mehr änderbar: {offer!.items.map(i => i.name).join(' + ')}
+                <strong>Vom Kunden bereits angenommen</strong>, nicht mehr änderbar: {offer!.items.map(i => i.name).join(' + ')}
               </div>
             ) : (
               <>
-                {!!c.wish?.length && <p style={{ ...small, margin: 0, padding: '8px 12px', borderRadius: 10, backgroundColor: '#EEEBFF', color: 'var(--ink)' }}>Kunde wünscht (Auswahl auf /preise): <strong>{c.wish.map(i => i.name).join(' + ')}</strong> — vorausgefüllt, bei Bedarf anpassen.</p>}
+                {!!c.wish?.length && <p style={{ ...small, margin: 0, padding: '8px 12px', borderRadius: 10, backgroundColor: '#EEEBFF', color: 'var(--ink)' }}>Kunde wünscht (Auswahl auf /preise): <strong>{c.wish.map(i => i.name).join(' + ')}</strong>, vorausgefüllt, bei Bedarf anpassen.</p>}
                 <OfferBuilder items={items} onChange={x => { setItems(x); upd(y => ({ ...y, offerDraft: { items: x, why } })) }} />
-                <textarea value={why} onChange={e => { const w = e.target.value; setWhy(w); upd(y => ({ ...y, offerDraft: { items, why: w } })) }} style={{ ...input, minHeight: 56, resize: 'vertical' }} placeholder="Warum genau das — 1–2 Sätze für den Kunden, auf Deutsch (optional)" />
+                <textarea value={why} onChange={e => { const w = e.target.value; setWhy(w); upd(y => ({ ...y, offerDraft: { items, why: w } })) }} style={{ ...input, minHeight: 56, resize: 'vertical' }} placeholder="Warum genau das: 1–2 Sätze für den Kunden, auf Deutsch (optional)" />
               </>
             )}
           </section>

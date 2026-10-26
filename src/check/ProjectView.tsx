@@ -26,53 +26,60 @@ export function projectHeadline(p: ClientProject): { title: string; text: string
       return p.invoice_sent_at
         ? { title: 'Ihre Rechnung ist da', text: 'Sobald die Zahlung eingegangen ist, starten wir mit der Umsetzung. Rechnung und Bankverbindung finden Sie unten.' }
         : { title: 'Wir bereiten den Start vor', text: 'Danke für Ihre Zusage. Die Rechnung erhalten Sie in Kürze hier im Kundenbereich.' }
-    case 'paid': return { title: 'Zahlung eingegangen — danke!', text: 'Ihr Ansprechpartner plant jetzt den Start und meldet sich, falls wir noch etwas von Ihnen brauchen.' }
+    case 'paid': return { title: 'Zahlung eingegangen, danke!', text: 'Ihr Ansprechpartner plant jetzt den Start und meldet sich, falls wir noch etwas von Ihnen brauchen.' }
     case 'in_progress': return { title: 'Wir arbeiten an Ihrer Sichtbarkeit', text: 'Nach der Umsetzung prüfen wir Ihr Unternehmen erneut und zeigen Ihnen hier den Vergleich mit der Ausgangslage.' }
-    case 'support': return { title: 'Ihr Ergebnis ist da — wir bleiben dran', text: 'Im Tab «Ergebnis» sehen Sie, was sich seit der ersten Prüfung verändert hat. Die laufende Betreuung geht weiter.' }
+    case 'support': return { title: 'Ihr Ergebnis ist da, wir bleiben dran', text: 'Im Tab «Ergebnis» sehen Sie, was sich seit der ersten Prüfung verändert hat. Die laufende Betreuung geht weiter.' }
     default: return { title: 'Ihr Ergebnis ist da', text: 'Im Tab «Ergebnis» sehen Sie, was sich seit der ersten Prüfung verändert hat.' }
   }
 }
 
-export function ProjectPanel({ project }: { project: ClientProject }) {
+// Rechnung mit Bankverbindung — für das Projekt und für jedes angenommene Zusatzangebot.
+function InvoiceBlock({ project, title }: { project: ClientProject; title?: string }) {
+  const bank = COMPANY.iban.trim()
+  return (
+    <div style={{ marginTop: 18, paddingTop: 18, borderTop: '1px solid var(--line-soft)' }}>
+      {title && <p className="kick" style={{ fontSize: 12, marginBottom: 8 }}>{title}</p>}
+      <p className="display" style={{ fontSize: 'clamp(20px, 2.2vw, 26px)', margin: '0 0 4px' }}>
+        {project.invoice_amount != null ? fmtEur(Number(project.invoice_amount)) : 'Rechnung'}
+      </p>
+      <p style={{ fontSize: 14, color: 'var(--muted)', margin: '0 0 14px' }}>
+        Rechnung {project.invoice_number}{project.invoice_due ? <> · <span>zahlbar bis</span> {fmtDate(project.invoice_due)}</> : null}
+      </p>
+      <dl style={{ display: 'grid', gridTemplateColumns: 'minmax(120px, 160px) minmax(0, 1fr)', gap: '6px 12px', fontSize: 14, margin: 0 }}>
+        {bank ? <>
+          <dt style={{ color: 'var(--muted)' }}>Empfänger</dt><dd style={{ margin: 0 }}>{COMPANY.legalName || COMPANY.brand}</dd>
+          <dt style={{ color: 'var(--muted)' }}>IBAN</dt><dd style={{ margin: 0, fontFamily: 'ui-monospace, monospace', letterSpacing: '0.03em', overflowWrap: 'anywhere' }} data-no-translate>{COMPANY.iban}</dd>
+          {COMPANY.bic && <><dt style={{ color: 'var(--muted)' }}>BIC</dt><dd style={{ margin: 0 }} data-no-translate>{COMPANY.bic}</dd></>}
+          {COMPANY.bankName && <><dt style={{ color: 'var(--muted)' }}>Bank</dt><dd style={{ margin: 0 }}>{COMPANY.bankName}</dd></>}
+        </> : <><dt style={{ color: 'var(--muted)' }}>Bankverbindung</dt><dd style={{ margin: 0 }}>steht auf der Rechnung</dd></>}
+        <dt style={{ color: 'var(--muted)' }}>Verwendungszweck</dt><dd style={{ margin: 0, fontWeight: 700 }} data-no-translate>{project.invoice_number}</dd>
+      </dl>
+      {project.invoice_url && (
+        <a href={project.invoice_url} target="_blank" rel="noopener noreferrer" className="btn btn-md btn-electric" style={{ marginTop: 16 }}>Rechnung öffnen (PDF) <span className="arw">→</span></a>
+      )}
+    </div>
+  )
+}
+const invoiceOpen = (p: ClientProject) => !!p.invoice_sent_at && p.status === 'awaiting_payment'
+
+export function ProjectPanel({ project, extra = [] }: { project: ClientProject; extra?: ClientProject[] }) {
   // Bezahlt = Rechnung und Zahlung erledigt, als Nächstes kommt die Umsetzung.
   const cur = project.status === 'awaiting_payment' ? (project.invoice_sent_at ? 1 : 0)
     : project.status === 'paid' || project.status === 'in_progress' ? 2 : 3
-  const showInvoice = !!project.invoice_sent_at && project.status === 'awaiting_payment'
-  const bank = COMPANY.iban.trim()
   return (
     <section style={card}>
       {kick('Ihr Projekt')}
       <ol style={{ listStyle: 'none', margin: '0 0 4px', padding: 0, display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8 }}>
         {STEPS.map((s, i) => (
-          <li key={s.label} style={{ display: 'grid', gap: 6 }}>
+          <li key={s.label} style={{ display: 'grid', gap: 6, minWidth: 0 }}>
             <span aria-hidden style={{ height: 6, borderRadius: 999, backgroundColor: i < cur ? 'var(--electric)' : i === cur ? '#B9B0FF' : '#ECEBF3' }} />
-            <span style={{ fontSize: 13, fontWeight: i === cur ? 700 : 600, color: i <= cur ? 'var(--ink)' : 'var(--muted)' }}>{i < cur ? '✓ ' : ''}{s.label}</span>
+            <span style={{ fontSize: 'clamp(11.5px, 3.4vw, 13px)', fontWeight: i === cur ? 700 : 600, color: i <= cur ? 'var(--ink)' : 'var(--muted)' }}>{i < cur ? '✓ ' : ''}{s.label}</span>
           </li>
         ))}
       </ol>
 
-      {showInvoice && (
-        <div style={{ marginTop: 18, paddingTop: 18, borderTop: '1px solid var(--line-soft)' }}>
-          <p className="display" style={{ fontSize: 'clamp(20px, 2.2vw, 26px)', margin: '0 0 4px' }}>
-            {project.invoice_amount != null ? fmtEur(Number(project.invoice_amount)) : 'Rechnung'}
-          </p>
-          <p style={{ fontSize: 14, color: 'var(--muted)', margin: '0 0 14px' }}>
-            Rechnung {project.invoice_number}{project.invoice_due ? <> · <span>zahlbar bis</span> {fmtDate(project.invoice_due)}</> : null}
-          </p>
-          <dl style={{ display: 'grid', gridTemplateColumns: 'minmax(120px, 160px) 1fr', gap: '6px 12px', fontSize: 14, margin: 0 }}>
-            {bank ? <>
-              <dt style={{ color: 'var(--muted)' }}>Empfänger</dt><dd style={{ margin: 0 }}>{COMPANY.legalName || COMPANY.brand}</dd>
-              <dt style={{ color: 'var(--muted)' }}>IBAN</dt><dd style={{ margin: 0, fontFamily: 'ui-monospace, monospace', letterSpacing: '0.03em' }} data-no-translate>{COMPANY.iban}</dd>
-              {COMPANY.bic && <><dt style={{ color: 'var(--muted)' }}>BIC</dt><dd style={{ margin: 0 }} data-no-translate>{COMPANY.bic}</dd></>}
-              {COMPANY.bankName && <><dt style={{ color: 'var(--muted)' }}>Bank</dt><dd style={{ margin: 0 }}>{COMPANY.bankName}</dd></>}
-            </> : <><dt style={{ color: 'var(--muted)' }}>Bankverbindung</dt><dd style={{ margin: 0 }}>steht auf der Rechnung</dd></>}
-            <dt style={{ color: 'var(--muted)' }}>Verwendungszweck</dt><dd style={{ margin: 0, fontWeight: 700 }} data-no-translate>{project.invoice_number}</dd>
-          </dl>
-          {project.invoice_url && (
-            <a href={project.invoice_url} target="_blank" rel="noopener noreferrer" className="btn btn-md btn-electric" style={{ marginTop: 16 }}>Rechnung öffnen (PDF) <span className="arw">→</span></a>
-          )}
-        </div>
-      )}
+      {invoiceOpen(project) && <InvoiceBlock project={project} />}
+      {extra.filter(invoiceOpen).map(p => <InvoiceBlock key={p.id} project={p} title="Rechnung zum Zusatzangebot" />)}
       {project.note && <p style={{ fontSize: 14.5, lineHeight: 1.65, margin: '16px 0 0', padding: '12px 14px', borderRadius: 14, backgroundColor: '#F7F6FF' }}>{project.note}</p>}
       {(project.plan || (project.updates ?? []).length > 0) && (
         <div style={{ marginTop: 22, paddingTop: 18, borderTop: '1px solid var(--line-soft)' }}>

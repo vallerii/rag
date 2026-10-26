@@ -145,7 +145,7 @@ function Login({ onDone }: { onDone: () => void }) {
           <p style={{ fontSize: 14, margin: 0, lineHeight: 1.55 }}>Wenn es für diese Adresse ein Team-Konto gibt, haben wir einen Link zum Zurücksetzen geschickt. Schauen Sie auch im Spam-Ordner nach.</p>
           <button type="button" onClick={() => switchTo('login')} style={linkBtn}>← Zurück zur Anmeldung</button>
         </> : <>
-          {mode === 'forgot' && <p style={{ ...small, margin: 0 }}>Geben Sie Ihre E-Mail ein — wir schicken einen Link, mit dem Sie ein neues Passwort festlegen.</p>}
+          {mode === 'forgot' && <p style={{ ...small, margin: 0 }}>Geben Sie Ihre E-Mail ein, wir schicken einen Link, mit dem Sie ein neues Passwort festlegen.</p>}
           <input style={input} type="email" placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)} autoComplete="username" required autoFocus={mode === 'forgot'} />
           {mode === 'login' && <input style={input} type="password" placeholder="Passwort" value={pw} onChange={e => setPw(e.target.value)} autoComplete="current-password" required />}
           {err && <p role="alert" style={{ color: '#B3261E', fontSize: 14, margin: 0 }}>{err}</p>}
@@ -320,7 +320,7 @@ function LiveBadge() {
   const [color, label, hint] = st === 'live'
     ? ['#1F9D55', 'Live', 'Änderungen erscheinen automatisch']
     : st === 'offline'
-      ? ['#B26B00', 'Offline', 'Keine Live-Verbindung — Daten werden alle 30 Sekunden neu geladen']
+      ? ['#B26B00', 'Offline', 'Keine Live-Verbindung, Daten werden alle 30 Sekunden neu geladen']
       : ['#9A9AA5', 'Verbinde…', 'Live-Verbindung wird aufgebaut']
   return (
     <span title={hint} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: muted }}>
@@ -387,13 +387,13 @@ function Detail({ r, all, profiles, me, onSelect, onBack, onPatch }: { r: Reques
   const ic = (d: string) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
 
   return (
-    <div style={{ maxWidth: 1360, margin: '0 auto', padding: '18px 24px 48px', display: 'grid', gap: 16 }}>
+    <div style={{ maxWidth: 1360, margin: '0 auto', padding: '18px clamp(12px, 4vw, 24px) 48px', display: 'grid', gap: 16, minWidth: 0 }}>
       <button type="button" onClick={onBack} style={{ ...linkBtn, justifySelf: 'start', fontWeight: 600 }}>← Alle Anfragen</button>
-      <section style={{ ...card, padding: '20px 24px', display: 'grid', gap: 16 }}>
+      <section style={{ ...card, padding: 'clamp(16px, 3vw, 20px) clamp(14px, 3vw, 24px)', display: 'grid', gap: 16, minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ display: 'grid', gap: 6 }}>
             <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999, backgroundColor: KIND[r.kind][1], justifySelf: 'start' }}>{KIND[r.kind][0]}</span>
-            <h1 style={{ fontSize: 28, margin: 0, lineHeight: 1.2 }}>{r.title}</h1>
+            <h1 style={{ fontSize: 'clamp(22px, 5vw, 28px)', margin: 0, lineHeight: 1.2, overflowWrap: 'anywhere' }}>{r.title}</h1>
             <p style={{ ...small, margin: 0 }}>{r.sub} · erstellt {fmt(r.created_at)}</p>
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -405,16 +405,16 @@ function Detail({ r, all, profiles, me, onSelect, onBack, onPatch }: { r: Reques
         </div>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <label style={{ ...small, display: 'grid', gap: 4 }}>Status
-            <select value={r.stage} onChange={e => changeStage(e.target.value as Stage)} style={{ ...input, width: 230 }}>
+            <select value={r.stage} onChange={e => changeStage(e.target.value as Stage)} style={{ ...input, width: 230, maxWidth: '100%' }}>
               {STAGES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
             </select>
           </label>
           <label style={{ ...small, display: 'grid', gap: 4 }}>Nächster Kontakt
-            <input type="date" value={r.next ?? ''} onChange={e => changeNext(e.target.value)} style={{ ...input, width: 180 }} />
+            <input type="date" value={r.next ?? ''} onChange={e => changeNext(e.target.value)} style={{ ...input, width: 180, maxWidth: '100%' }} />
           </label>
           <label style={{ ...small, display: 'grid', gap: 4 }}>Verantwortlich
-            <select value={r.assignee ?? ''} onChange={e => changeAssignee(e.target.value || null)} style={{ ...input, width: 220 }}>
-              <option value="">— frei —</option>
+            <select value={r.assignee ?? ''} onChange={e => changeAssignee(e.target.value || null)} style={{ ...input, width: 220, maxWidth: '100%' }}>
+              <option value="">(frei)</option>
               {staff.map(p => <option key={p.id} value={p.id}>{p.id === me ? `Ich (${p.name || p.email})` : p.name || p.email}</option>)}
             </select>
           </label>
@@ -427,10 +427,10 @@ function Detail({ r, all, profiles, me, onSelect, onBack, onPatch }: { r: Reques
               <span>
                 <strong>War ein Lead</strong>{lead.printed_at ? <> · Brief gedruckt {new Date(lead.printed_at).toLocaleDateString('ru-RU')}</> : ' · noch kein Brief gedruckt'}
                 {' · Code '}<span data-no-translate>{lead.code}</span>{lead.score !== null ? <> · Kurzanalyse {lead.score}/100</> : null}
-                {fromLead && <> · Analyse aus dem Lead übernommen — keine neuen Google-Abfragen</>}
+                {fromLead && <> · Analyse aus dem Lead übernommen, keine neuen Google-Abfragen</>}
               </span>
             )}
-            {!lead && r.kind === 'check' && (r.row as Check).from_check && <span>Analyse aus einer anderen Prüfung dieses Unternehmens übernommen — keine neuen Google-Abfragen</span>}
+            {!lead && r.kind === 'check' && (r.row as Check).from_check && <span>Analyse aus einer anderen Prüfung dieses Unternehmens übernommen, keine neuen Google-Abfragen</span>}
             {samePlace.length > 0 && (
               <span>Dieses Unternehmen hat noch {samePlace.length === 1 ? 'eine weitere Prüfung' : `${samePlace.length} weitere Prüfungen`}:{' '}
                 {samePlace.map(x => <button key={x.id} type="button" onClick={() => onSelect(`check:${x.id}`)} style={{ ...linkBtn, fontSize: 13.5, marginRight: 10 }}>{(x.row as Check).email ?? x.title} · {fmt(x.created_at)}</button>)}
@@ -451,17 +451,20 @@ function Detail({ r, all, profiles, me, onSelect, onBack, onPatch }: { r: Reques
         </nav>
         {!client && <p style={{ color: muted, margin: 0 }}>Wird geladen…</p>}
         {client && active === 'project' && client.project && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: 16, alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(380px, 100%), 1fr))', gap: 16, alignItems: 'start' }}>
             <InvoiceCard key={'inv' + client.project.id + client.project.status} project={client.project} offer={client.offer} onSaved={reloadClient} />
             <WorkCard key={'work' + client.project.id} project={client.project} versions={client.versions} onSaved={reloadClient}
               onGoToReport={r.kind === 'check' ? () => setTab('reports') : undefined} />
-            <PlanCard key={'plan' + client.project.id} project={client.project} monthlyItems={(client.offer?.items ?? []).some(i => i.unit === 'pro Monat')} onSaved={reloadClient} />
+            <PlanCard key={'plan' + client.project.id} project={client.project} monthlyItems={[client.offer, ...client.addenda.filter(a => a.status === 'accepted')].flatMap(o => o?.items ?? []).some(i => i.unit === 'pro Monat')} onSaved={reloadClient} />
+            {client.addendumProjects.map(x => (
+              <InvoiceCard key={'inv' + x.project.id + x.project.status} title="Rechnung · Zusatzangebot" project={x.project} offer={x.offer} onSaved={reloadClient} />
+            ))}
           </div>
         )}
         {client && active === 'reports' && r.kind === 'check' && (
           <ReportEditor c={r.row as Check} onPublished={async report => { const assignee = r.assignee ?? await getAssignee(r.kind, r.id); onPatch({ assignee, row: { ...(r.row as Check), status: 'ready', report, assignee_id: assignee } }); reloadClient() }} />
         )}
-        {client && active === 'offer' && <OfferCard key={r.kind + r.id} clientKey={r.clientKey} userId={r.userId} kind={r.kind} requestId={r.id} title={r.title} initial={client.offer} preset={r.kind === 'order' ? (r.row as Order).items ?? [] : r.kind === 'check' ? (r.row as Check).wish ?? [] : []} onSaved={reloadClient} />}
+        {client && active === 'offer' && <OfferCard key={r.kind + r.id + (client.offer?.status ?? '')} clientKey={r.clientKey} userId={r.userId} kind={r.kind} requestId={r.id} title={r.title} initial={client.offer} addenda={client.addenda} preset={r.kind === 'order' ? (r.row as Order).items ?? [] : r.kind === 'check' ? (r.row as Check).wish ?? [] : []} onSaved={reloadClient} />}
         {client && active === 'appointments' && <AppointmentsCard r={r} list={client.appointments} onChanged={async added => {
           if (added && ['new', 'contacted', 'report_sent'].includes(r.stage)) await changeStage('call_booked'); else reloadClient()
         }} />}
@@ -531,11 +534,11 @@ function ClientCard({ r, prof }: { r: Request; prof?: Profile }) {
     rows.push(['E-Mail (Quiz)', le ? <a href={`mailto:${le}`}>{le}</a> : ''], ['Unternehmen', str(a.firma)], ['Branche', str(a.branche)], ['Stadt', str(a.ort)], ['Was vorhanden ist', ql(a.have)],
       ['Woher die Kunden kommen', ql(a.sources)], ['Ziel', ql(a.goal)], ['Weitere Aufträge/Monat', ql(a.capacity)], ['Quiz-Empfehlungen', (l.recommendations ?? []).join('; ')],
       ['Herkunft', l.from_page], ['Terminbuchung', l.booking_clicked_at ? `hat «Termin wählen» geklickt ${fmt(l.booking_clicked_at)}` : 'nicht geklickt'])
-    if (!prof) rows.push(['Konto', 'nein — Kontakt steht in der Google-Calendar-Buchung'])
+    if (!prof) rows.push(['Konto', 'nein, Kontakt steht in der Google-Calendar-Buchung'])
   }
   if (r.kind === 'order') {
     const o = r.row as Order, d = (o.details ?? {}) as Record<string, unknown>
-    rows.push(['Paket', (o.items ?? []).map(i => `${i.name} — ${i.price} € ${i.unit === 'einmalig' ? 'einmalig' : '/Monat'}`).join('; ')],
+    rows.push(['Paket', (o.items ?? []).map(i => `${i.name}: ${i.price} € ${i.unit === 'einmalig' ? 'einmalig' : '/Monat'}`).join('; ')],
       ['Unternehmen', str(d.company)], ['Branche', str(d.industry)], ['Stadt', str(d.city)], ['Website', str(d.website)],
       ['Ziele', Array.isArray(d.goals) ? d.goals.join(', ') : ''], ['Was nicht passt', str(d.problem)], ['Wann anrufen', str(d.reach)],
       ['Telefon (Fragebogen)', str(d.phone)], ['Herkunft', o.source_page])
@@ -548,8 +551,8 @@ function ClientCard({ r, prof }: { r: Request; prof?: Profile }) {
       ['Karte', p.mapsUrl ? <a href={String(p.mapsUrl)} target="_blank" rel="noreferrer">in Google Maps öffnen</a> : null],
       ['Website', str(p.website)], ['Profile', (c.sources ?? []).filter(s => s.value).map(s => `${s.key}: ${s.value}`).join(', ')],
       ['Check', checkState(c)], ['Herkunft', c.source_page])
-    if (p.manual) rows.push(['Google-Profil laut Kunde', ({ yes: 'ja — wird bei der Analyse gesucht', no: 'nein', unknown: 'weiß nicht — wird bei der Analyse gesucht' } as Record<string, string>)[str(c.profile_hint)] ?? ''])
-    if (c.wish?.length) rows.push(['Kunde wünscht', c.wish.map(i => `${i.name} — ${i.price} € ${i.unit === 'einmalig' ? 'einmalig' : '/Monat'}`).join('; ')])
+    if (p.manual) rows.push(['Google-Profil laut Kunde', ({ yes: 'ja, wird bei der Analyse gesucht', no: 'nein', unknown: 'weiß nicht, wird bei der Analyse gesucht' } as Record<string, string>)[str(c.profile_hint)] ?? ''])
+    if (c.wish?.length) rows.push(['Kunde wünscht', c.wish.map(i => `${i.name}: ${i.price} € ${i.unit === 'einmalig' ? 'einmalig' : '/Monat'}`).join('; ')])
     const a = (c.quiz ?? null) as Record<string, unknown> | null
     if (a) rows.push(['Was vorhanden ist (Quiz)', ql(a.have)], ['Woher die Kunden kommen', ql(a.sources)], ['Ziel', ql(a.goal)])
   }
@@ -557,30 +560,62 @@ function ClientCard({ r, prof }: { r: Request; prof?: Profile }) {
 }
 
 
-function OfferCard({ clientKey, userId, kind, requestId, title, initial, preset, onSaved }: { clientKey: string; userId: string | null; kind: Kind; requestId: string; title: string; initial: Offer | null; preset: OfferItem[]; onSaved: () => void }) {
+// Angebot einer Anfrage. Nach der Annahme eingefroren; weitere Leistungen als Zusatzangebot (parentId, supabase/addendum.sql):
+// der Kunde nimmt es separat an und bekommt dafür eine eigene Rechnung.
+function OfferCard({ clientKey, userId, kind, requestId, title, initial, preset, onSaved, addenda = [], parentId }: { clientKey: string; userId: string | null; kind: Kind; requestId: string; title: string; initial: Offer | null; preset: OfferItem[]; onSaved: () => void; addenda?: Offer[]; parentId?: string }) {
   const [items, setItems] = useState<OfferItem[]>(initial?.items ?? preset)
   const [note, setNote] = useState(initial?.note ?? '')
   const [status, setStatus] = useState<Offer['status']>(initial?.status ?? 'draft')
+  const [id, setId] = useState(initial?.id)
   const [msg, setMsg] = useState('')
+  const [adding, setAdding] = useState(false)
   const save = async (next: Offer['status']) => {
-    const r = await saveOffer({ client_key: clientKey, user_id: userId, request_kind: kind, request_id: requestId, items, note: note || null, status: next })
-    if (r) { setStatus(r.status); setMsg(next === 'sent' ? 'Gesendet — der Kunde kann das Angebot im Kundenbereich annehmen.' : 'Gespeichert.'); onSaved() } else setMsg('Speichern fehlgeschlagen.')
+    const r = await saveOffer({ id, client_key: clientKey, user_id: userId, request_kind: kind, request_id: requestId, parent_id: parentId ?? null, items, note: note || null, status: next })
+    if (r) { setStatus(r.status); setId(r.id); setMsg(next === 'sent' ? 'Gesendet. Der Kunde kann das Angebot im Kundenbereich annehmen.' : 'Gespeichert.'); onSaved() }
+    else setMsg(parentId ? 'Speichern fehlgeschlagen. Ist supabase/addendum.sql ausgeführt?' : 'Speichern fehlgeschlagen.')
   }
-  if (status === 'accepted') return (
-    <section style={card}>
-      <h3 style={h3}>Angebot <span style={{ color: '#1F7A4A' }}>· angenommen</span></h3>
-      <p style={{ ...small, margin: '-6px 0 10px' }}>Für <strong style={{ color: ink }}>{title}</strong>. Vom Kunden angenommen — nicht mehr änderbar. Weitere Leistungen: neue Anfrage bzw. neues Angebot.</p>
-      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 4 }}>
-        {items.map(i => <li key={i.id} style={{ display: 'flex', gap: 8, fontSize: 14 }}><span style={{ flex: 1 }}>{i.name}</span><span>{i.price} € {i.unit === 'einmalig' ? 'einmalig' : '/Monat'}</span></li>)}
-      </ul>
-      <p style={{ fontSize: 15, fontWeight: 700, margin: '10px 0 0' }}>Summe: {totals(items)}</p>
-      {note && <p style={{ ...small, marginTop: 6 }} data-no-translate>{note}</p>}
-    </section>
+  const lines = (list: OfferItem[]) => (
+    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 4 }}>
+      {list.map(i => <li key={i.id} style={{ display: 'flex', gap: 8, fontSize: 14 }}><span style={{ flex: 1 }}>{i.name}</span><span>{i.price} € {i.unit === 'einmalig' ? 'einmalig' : '/Monat'}</span></li>)}
+    </ul>
   )
+  if (status === 'accepted') {
+    const open = addenda.find(a => a.status !== 'accepted')
+    const done = addenda.filter(a => a.status === 'accepted')
+    return (
+      <div style={{ display: 'grid', gap: 16 }}>
+        <section style={card}>
+          <h3 style={h3}>Angebot <span style={{ color: '#1F7A4A' }}>· angenommen</span></h3>
+          <p style={{ ...small, margin: '-6px 0 10px' }}>Für <strong style={{ color: ink }}>{title}</strong>. Vom Kunden angenommen, nicht mehr änderbar. Weitere Leistungen: unten als Zusatzangebot.</p>
+          {lines(items)}
+          <p style={{ fontSize: 15, fontWeight: 700, margin: '10px 0 0' }}>Summe: {totals(items)}</p>
+          {note && <p style={{ ...small, marginTop: 6 }} data-no-translate>{note}</p>}
+        </section>
+        {done.map(a => (
+          <section key={a.id} style={card}>
+            <h3 style={h3}>Zusatzangebot <span style={{ color: '#1F7A4A' }}>· angenommen</span></h3>
+            {lines(a.items)}
+            <p style={{ fontSize: 15, fontWeight: 700, margin: '10px 0 0' }}>Summe: {totals(a.items)}</p>
+            {a.note && <p style={{ ...small, marginTop: 6 }} data-no-translate>{a.note}</p>}
+          </section>
+        ))}
+        {open || adding
+          ? <OfferCard key={open?.id ?? 'neu'} clientKey={clientKey} userId={userId} kind={kind} requestId={requestId} title={title} initial={open ?? null} preset={[]} parentId={id} onSaved={() => { setAdding(false); onSaved() }} />
+          : (
+            <section style={{ ...card, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <p style={{ ...small, margin: 0, maxWidth: 520 }}>Weitere Leistungen für dieses Unternehmen, z. B. Social Media zur Website. Der Kunde nimmt das Zusatzangebot separat an und erhält eine eigene Rechnung.</p>
+              <button type="button" className="btn btn-sm btn-electric" disabled={!id} onClick={() => setAdding(true)}>+ Zusatzangebot erstellen</button>
+            </section>
+          )}
+      </div>
+    )
+  }
   return (
     <section style={card}>
-      <h3 style={h3}>Angebot {status !== 'draft' && <span style={{ color: '#1F7A4A' }}>· gesendet</span>}</h3>
-      <p style={{ ...small, margin: '-6px 0 12px' }}>Nur für diese Anfrage: <strong style={{ color: ink }}>{title}</strong>.{kind === 'check' ? ' Wird auch mit dem Bericht (Schritt 4) zusammengestellt — dieselben Positionen.' : ''}</p>
+      <h3 style={h3}>{parentId ? 'Zusatzangebot' : 'Angebot'} {status !== 'draft' && <span style={{ color: '#1F7A4A' }}>· gesendet</span>}</h3>
+      <p style={{ ...small, margin: '-6px 0 12px' }}>{parentId
+        ? <>Zusätzlich zum angenommenen Angebot für <strong style={{ color: ink }}>{title}</strong>. Der Kunde nimmt es separat an und erhält eine eigene Rechnung.</>
+        : <>Nur für diese Anfrage: <strong style={{ color: ink }}>{title}</strong>.{kind === 'check' ? ' Wird auch mit dem Bericht (Schritt 4) zusammengestellt, dieselben Positionen.' : ''}</>}</p>
       <OfferBuilder items={items} onChange={setItems} />
       <textarea style={{ ...input, minHeight: 60, marginTop: 10 }} placeholder="Kommentar zum Angebot (für den Kunden, Deutsch)" value={note} onChange={e => setNote(e.target.value)} />
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10, alignItems: 'center' }}>
@@ -603,7 +638,7 @@ const stepDot = (state: 'done' | 'now' | 'todo') => ({
   backgroundColor: state === 'done' ? '#1F7A4A' : state === 'now' ? '#EEEBFF' : '#F1F1F4',
 } as React.CSSProperties)
 
-function InvoiceCard({ project, offer, onSaved }: { project: Project; offer: Offer | null; onSaved: () => void }) {
+function InvoiceCard({ project, offer, onSaved, title = 'Rechnung' }: { project: Project; offer: Offer | null; onSaved: () => void; title?: string }) {
   const once = (offer?.items ?? []).filter(i => i.unit === 'einmalig').reduce((a, i) => a + i.price, 0)
   const monthly = (offer?.items ?? []).filter(i => i.unit !== 'einmalig').reduce((a, i) => a + i.price, 0)
   const paid = project.status !== 'awaiting_payment'
@@ -635,7 +670,7 @@ function InvoiceCard({ project, offer, onSaved }: { project: Project; offer: Off
   if (paid && !edit) {
     return (
       <section style={card}>
-        <h3 style={h3}>Rechnung</h3>
+        <h3 style={h3}>{title}</h3>
         <p style={{ fontSize: 14.5, margin: 0, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <span style={stepDot('done')}>✓</span>
           <span><strong>Bezahlt</strong>{project.paid_at ? ` ${fmt(project.paid_at)}` : ''} · {project.invoice_number || '—'} · {project.invoice_amount != null ? `${project.invoice_amount} €` : '—'}</span>
@@ -647,12 +682,12 @@ function InvoiceCard({ project, offer, onSaved }: { project: Project; offer: Off
 
   return (
     <section style={card}>
-      <h3 style={h3}>Rechnung</h3>
+      <h3 style={h3}>{title}</h3>
       <ol style={{ listStyle: 'none', margin: '0 0 14px', padding: 0, display: 'flex', gap: 18, flexWrap: 'wrap', fontSize: 14 }}>
         <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={stepDot(sent ? 'done' : 'now')}>{sent ? '✓' : '1'}</span>An den Kunden senden</li>
         <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={stepDot(paid ? 'done' : sent ? 'now' : 'todo')}>{paid ? '✓' : '2'}</span>Zahlung erhalten</li>
       </ol>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(170px, 100%), 1fr))', gap: 8 }}>
         <label style={{ ...small, display: 'grid', gap: 3 }}>Rechnungsnummer<input style={input} value={f.invoice_number} onChange={e => setF({ ...f, invoice_number: e.target.value })} placeholder="RE-2026-001" /></label>
         <label style={{ ...small, display: 'grid', gap: 3 }}>Betrag, €<input style={input} type="number" value={f.invoice_amount} onChange={e => setF({ ...f, invoice_amount: e.target.value })} /></label>
         <label style={{ ...small, display: 'grid', gap: 3 }}>Zahlbar bis<input style={input} type="date" value={f.invoice_due} onChange={e => setF({ ...f, invoice_due: e.target.value })} /></label>
@@ -691,7 +726,7 @@ function PlanCard({ project, monthlyItems, onSaved }: { project: Project; monthl
       <h3 style={h3}>Was wir tun</h3>
       <p style={{ ...small, margin: '0 0 10px' }}>Sieht der Kunde im Kundenbereich unter «Ihr Projekt».</p>
       <label style={{ ...small, display: 'grid', gap: 4 }}>Arbeitsplan
-        <textarea style={{ ...input, minHeight: 90 }} value={plan} onChange={e => setPlan(e.target.value)} placeholder="Was wir in welcher Reihenfolge machen — in eigenen Worten, auf Deutsch." />
+        <textarea style={{ ...input, minHeight: 90 }} value={plan} onChange={e => setPlan(e.target.value)} placeholder="Was wir in welcher Reihenfolge machen, in eigenen Worten, auf Deutsch." />
       </label>
       <button type="button" className="btn btn-sm btn-outline-light" style={{ marginTop: 8 }} disabled={busy || plan === (project.plan ?? '')} onClick={() => set({ plan: plan.trim() || null }, 'Arbeitsplan gespeichert.')}>Arbeitsplan speichern</button>
 
@@ -807,7 +842,7 @@ function WorkCard({ project, versions, onSaved, onGoToReport }: { project: Proje
 
 function Chat({ userId, messages, onSent }: { userId: string | null; messages: Message[]; onSent: (m: Message) => void }) {
   const [text, setText] = useState(''), [busy, setBusy] = useState(false)
-  if (!userId) return <section style={card}><h3 style={h3}>Nachrichten</h3><p style={{ fontSize: 14, margin: 0 }}>Der Kunde hat kein Konto — Nachrichten erscheinen nach der Registrierung.</p></section>
+  if (!userId) return <section style={card}><h3 style={h3}>Nachrichten</h3><p style={{ fontSize: 14, margin: 0 }}>Der Kunde hat kein Konto, Nachrichten erscheinen nach der Registrierung.</p></section>
   const send = async () => {
     if (!text.trim()) return
     setBusy(true)
@@ -827,7 +862,7 @@ function Chat({ userId, messages, onSent }: { userId: string | null; messages: M
           </div>
         ))}
       </div>
-      <textarea style={{ ...input, minHeight: 70 }} placeholder="Antwort an den Kunden — er sieht sie im Kundenbereich" value={text} onChange={e => setText(e.target.value)} />
+      <textarea style={{ ...input, minHeight: 70 }} placeholder="Antwort an den Kunden, er sieht sie im Kundenbereich" value={text} onChange={e => setText(e.target.value)} />
       <button type="button" className="btn btn-sm btn-electric" style={{ marginTop: 8 }} disabled={busy || !text.trim()} onClick={send}>Senden</button>
     </section>
   )
@@ -853,7 +888,7 @@ function activityText(a: Activity, profiles: Profile[]): string {
   const d = a.detail ?? {}
   switch (a.kind) {
     case 'lead_created': return 'Quiz ausgefüllt'
-    case 'lead_claimed': return 'Registriert — Quiz dem Konto zugeordnet'
+    case 'lead_claimed': return 'Registriert: Quiz dem Konto zugeordnet'
     case 'booking_clicked': return 'Hat «Termin wählen» geklickt (Terminbuchung)'
     case 'check_created': return `Sichtbarkeits-Check gestartet: ${str(d.name)}`
     case 'sources_confirmed': return 'Website und Profile bestätigt'
@@ -883,7 +918,7 @@ function History({ items, profiles, current }: { items: Activity[]; profiles: Pr
   return (
     <section style={card}>
       <h3 style={h3}>Verlauf</h3>
-      <p style={{ ...small, marginTop: -4 }}>Alle Ereignisse dieser Person. Grau — andere Unternehmen.</p>
+      <p style={{ ...small, marginTop: -4 }}>Alle Ereignisse dieser Person. Grau: andere Unternehmen.</p>
       {items.length === 0 && <p style={small}>Noch leer.</p>}
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 6 }}>
         {items.map(a => {
@@ -891,7 +926,7 @@ function History({ items, profiles, current }: { items: Activity[]; profiles: Pr
           const other = req !== null && req !== current
           return (
             <li key={a.id} style={{ fontSize: 13.5, opacity: other ? 0.5 : 1 }}>
-              <span style={small}>{fmt(a.created_at)}</span> — {activityText(a, profiles)}
+              <span style={small}>{fmt(a.created_at)}</span>: {activityText(a, profiles)}
               {name && !NAME_IN_TEXT.has(a.kind) ? <b data-no-translate style={{ fontWeight: 600 }}> · {name}</b> : null}
               {a.actor ? <span style={small}> · {staffName(profiles, a.actor)}</span> : null}
             </li>
@@ -922,7 +957,7 @@ function AppointmentsCard({ r, list, onChanged }: { r: Request; list: Appointmen
   return (
     <section style={card}>
       <h3 style={h3}>Termine</h3>
-      {!r.userId && <p style={{ ...small, margin: '0 0 10px', color: '#B26B00' }}>Der Kunde hat noch kein Konto — den Termin sieht er nach der Registrierung.</p>}
+      {!r.userId && <p style={{ ...small, margin: '0 0 10px', color: '#B26B00' }}>Der Kunde hat noch kein Konto, den Termin sieht er nach der Registrierung.</p>}
       {list.length === 0 && !open && <p style={{ ...small, margin: '0 0 10px' }}>Noch keine Termine.</p>}
       {list.map(a => (
         <div key={a.id} style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', padding: '8px 0', borderTop: `1px solid ${line}`, opacity: a.status === 'cancelled' ? 0.55 : 1 }}>
@@ -974,12 +1009,12 @@ function MyProfile() {
     <div style={{ maxWidth: 860, margin: '0 auto', padding: 20, display: 'grid', gap: 16 }}>
       <section style={card}>
         <h3 style={h3}>Mein Profil</h3>
-        <p style={{ ...small, margin: '0 0 14px' }}>Diese Angaben sieht der Kunde im Kundenbereich in der Karte «Ihr Ansprechpartner» — bei allen Anfragen, für die Sie verantwortlich sind.</p>
+        <p style={{ ...small, margin: '0 0 14px' }}>Diese Angaben sieht der Kunde im Kundenbereich in der Karte «Ihr Ansprechpartner», bei allen Anfragen, für die Sie verantwortlich sind.</p>
         <form onSubmit={save} style={{ display: 'grid', gap: 10 }}>
           <label style={small}>Name<input style={input} value={f.name} onChange={set('name')} required /></label>
           <label style={small}>Position (auf Deutsch, z. B. «Projektleiterin»)<input style={input} value={f.title} onChange={set('title')} /></label>
-          <label style={small}>Foto — Link zum Bild (https://…)<input style={input} value={f.photo} onChange={set('photo')} placeholder="https://…" /></label>
-          <label style={small}>Link zur Terminbuchung (Calendly o. Ä.). Leer — allgemeiner Link der Website<input style={input} value={f.booking} onChange={set('booking')} placeholder="https://…" /></label>
+          <label style={small}>Foto: Link zum Bild (https://…)<input style={input} value={f.photo} onChange={set('photo')} placeholder="https://…" /></label>
+          <label style={small}>Link zur Terminbuchung (Calendly o. Ä.). Leer: allgemeiner Link der Website<input style={input} value={f.booking} onChange={set('booking')} placeholder="https://…" /></label>
           <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
             <button className="btn btn-md btn-electric" disabled={busy}>{busy ? 'Wird gespeichert…' : 'Speichern'}</button>
             {msg && <span style={small}>{msg}</span>}
@@ -1034,7 +1069,7 @@ function EmailModal({ current, onClose, onDone }: { current: string | null; onCl
   return (
     <Modal title="E-Mail ändern" onClose={onClose}>
       <form onSubmit={submit} style={{ display: 'grid', gap: 10 }}>
-        <p style={{ ...small, margin: 0 }}>Die neue E-Mail gilt sofort für den Login — ohne Bestätigungs-E-Mail.</p>
+        <p style={{ ...small, margin: 0 }}>Die neue E-Mail gilt sofort für den Login, ohne Bestätigungs-E-Mail.</p>
         <label style={small}>Neue E-Mail<input style={input} type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required autoFocus /></label>
         <label style={small}>Aktuelles Passwort<input style={input} type="password" autoComplete="current-password" value={pw} onChange={e => setPw(e.target.value)} required /></label>
         {err && <p role="alert" style={{ color: '#B3261E', fontSize: 13.5, margin: 0 }}>{err}</p>}
@@ -1052,7 +1087,7 @@ function PasswordModal({ onClose, onDone }: { onClose: () => void; onDone: () =>
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF(x => ({ ...x, [k]: e.target.value }))
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setErr('')
-    if (f.a.length < 8) { setErr('Passwort zu einfach — mindestens 8 Zeichen.'); return }
+    if (f.a.length < 8) { setErr('Passwort zu einfach: mindestens 8 Zeichen.'); return }
     if (f.a !== f.b) { setErr('Die Passwörter stimmen nicht überein.'); return }
     setBusy(true)
     const r = await changeMyPassword(f.cur, f.a)
@@ -1116,7 +1151,7 @@ function StaffResetPassword() {
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF(x => ({ ...x, [k]: e.target.value }))
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setErr('')
-    if (f.a.length < 8) { setErr('Passwort zu einfach — mindestens 8 Zeichen.'); return }
+    if (f.a.length < 8) { setErr('Passwort zu einfach: mindestens 8 Zeichen.'); return }
     if (f.a !== f.b) { setErr('Die Passwörter stimmen nicht überein.'); return }
     if (needCode && f.code.replace(/\s/g, '').length < 6) { setErr('Bitte den 6-stelligen Code eingeben.'); return }
     setBusy(true)
@@ -1183,7 +1218,7 @@ function Team() {
             <code style={{ fontSize: 13, overflowWrap: 'anywhere' }}>{link}</code>
             <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <button type="button" className="btn btn-sm btn-electric" onClick={copy}>{copied ? 'Kopiert ✓' : 'Link kopieren'}</button>
-              <span style={small}>Der Link wird nur jetzt angezeigt — später lässt er sich nicht wiederherstellen, nur neu erstellen.</span>
+              <span style={small}>Der Link wird nur jetzt angezeigt, später lässt er sich nicht wiederherstellen, nur neu erstellen.</span>
             </span>
           </div>
         )}
@@ -1234,7 +1269,7 @@ function AcceptInvite() {
     e.preventDefault(); setBusy(true); setErr('')
     if (mode === 'new') {
       const r = await signUpStaff(f.name, f.email, f.pw)
-      if (r === 'exists') { setMode('login'); setErr('Für diese E-Mail gibt es bereits ein Konto — melden Sie sich mit dessen Passwort an.'); setBusy(false); return }
+      if (r === 'exists') { setMode('login'); setErr('Für diese E-Mail gibt es bereits ein Konto, melden Sie sich mit dessen Passwort an.'); setBusy(false); return }
       if (r) { setErr(r); setBusy(false); return }
     } else {
       const r = await signInPlain(f.email, f.pw)
@@ -1253,7 +1288,7 @@ function AcceptInvite() {
           <>
             <p style={{ margin: 0, fontSize: 14.5 }}>Angemeldet als <strong>{email}</strong>.</p>
             <button type="button" className="btn btn-md btn-electric" disabled={busy} onClick={async () => { setBusy(true); setErr(''); await accept(); setBusy(false) }}>Einladung annehmen</button>
-            <button type="button" style={{ ...linkBtn, color: ink, fontSize: 13 }} onClick={async () => { await signOutStaff(); setEmailState(null) }}>Das ist nicht meine E-Mail — mit einer anderen anmelden</button>
+            <button type="button" style={{ ...linkBtn, color: ink, fontSize: 13 }} onClick={async () => { await signOutStaff(); setEmailState(null) }}>Das ist nicht meine E-Mail, mit einer anderen anmelden</button>
           </>
         )}
         {token && email === null && (
