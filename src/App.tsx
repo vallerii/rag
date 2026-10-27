@@ -1882,10 +1882,8 @@ function ChannelOverview() {
       <DotsCorner style={{ right: -80, top: -60 }} />
       <div style={{ ...SHELL, position: 'relative' }}>
         <div style={{ textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
-          <Reveal><Kicker>Die Suche hat sich verändert</Kicker></Reveal>
           <MaskHeading
             className="h-lg"
-            style={{ marginTop: 18 }}
             lines={[<>Ihre Kunden suchen Sie nicht mehr an einem Ort</>]}
           />
           <Reveal delay={0.1}>
@@ -1927,9 +1925,8 @@ function ChannelBlock({ id, label, title, body, actions, aside, article, tone = 
   const inner = (
     <div className={`chan-grid${reverse ? ' chan-rev' : ''}`} style={{ position: 'relative', display: 'grid', gridTemplateColumns: stacked ? 'minmax(0, 1fr)' : 'minmax(0, 1fr) minmax(0, 1fr)', gap: stacked ? 'clamp(36px, 4vw, 56px)' : 'clamp(36px, 5.5vw, 88px)', alignItems: 'center' }}>
       <div style={reverse ? { order: 2 } : undefined}>
-        <Reveal><Kicker icon={channelKindOf(id)}>{label}</Kicker></Reveal>
         <Reveal delay={0.05}>
-          <h2 className="display h-md" style={{ margin: '20px 0 18px', maxWidth: stacked ? 760 : 580 }}>{title}</h2>
+            <h2 className="display h-md" style={{ margin: '0 0 18px', maxWidth: stacked ? 760 : 580 }}>{title}</h2>
         </Reveal>
         <Reveal delay={0.1}>
           <p style={{ fontSize: 'clamp(16px, 1.3vw, 18px)', lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 28px', maxWidth: stacked ? 680 : 540 }}>{body}</p>
@@ -1937,7 +1934,7 @@ function ChannelBlock({ id, label, title, body, actions, aside, article, tone = 
         <Reveal delay={0.14}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px 24px', flexWrap: 'wrap' }}>
             {actions}
-            {article && <a href={article.href} className="d-link chan-article" style={{ fontSize: 14.5 }}>
+            {article && <a href={article.href} className="d-link chan-article" style={{ fontSize: 14.5, color: 'var(--muted)', fontWeight: 600 }}>
               {article.title} <span aria-hidden className="chan-arrow arw">→</span>
             </a>}
           </div>
@@ -1987,7 +1984,7 @@ function articleTitle(slug: string) {
 
 // KI-Suche
 function ChannelAI() {
-  const signals = ['Was Sie anbieten', 'Wo Sie tätig sind', 'Was Kunden über Sie sagen', 'Ob Ihre Angaben auf Website, Karten, Verzeichnissen und Social Media übereinstimmen']
+  const signals = ['Was Sie anbieten', 'Wo Sie tätig sind', 'Was Kunden über Sie sagen', 'Übereinstimmung zwischen Website, Karten, Verzeichnissen und Social Media']
   return (
     <ChannelBlock
       id="ki" label="KI-Suche"
@@ -2009,7 +2006,6 @@ function ChannelAI() {
               <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6 }}>In Leipzig wird häufig <strong>Muster Elektrotechnik</strong> empfohlen: Installation, Smart Home und Notdienst, sehr gute Bewertungen bei Google.</p>
             </div>
             <div style={{ borderTop: '1px solid var(--divider)', paddingTop: 14 }}>
-              <p className="eyebrow" style={{ color: 'var(--muted)', fontSize: 11.5, marginBottom: 10 }}>Die KI muss verstehen</p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px 16px' }}>
                 {signals.map(sig => (
                   <div key={sig} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
@@ -2034,9 +2030,7 @@ function ChannelMaps() {
   const [order, setOrder] = useState(false)
   const included = [
     'Erstellung oder Einrichtung des Profils',
-    'Auswahl der Hauptkategorie',
     'Unternehmensbeschreibung und Leistungen',
-    'Kontaktdaten, Öffnungszeiten, Verbindung zur Website',
     'Link und Vorlage für die ersten Bewertungen',
   ]
   return (
@@ -2052,7 +2046,6 @@ function ChannelMaps() {
         </>}
         aside={
           <div className="d-card" style={{ position: 'relative', padding: 'clamp(24px, 3vw, 40px)' }}>
-            <p className="kick" style={{ color: 'var(--muted)', fontSize: 12 }}>Selbst machen, oder wir übernehmen das</p>
             <p className="display" style={{ fontSize: 'clamp(24px, 2.2vw, 30px)', lineHeight: 1.15, margin: '12px 0 10px' }}>Google-Profil, fertig eingerichtet.</p>
             <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 18px' }}>Wir erstellen oder überarbeiten Ihr Profil, pflegen Leistungen und Angaben ein und bereiten alles für die ersten Bewertungen vor.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
@@ -2065,7 +2058,7 @@ function ChannelMaps() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px 20px', flexWrap: 'wrap', paddingTop: 20, borderTop: '1px solid var(--divider)' }}>
               <span>
                 <span className="display" style={{ display: 'block', fontSize: 'clamp(38px, 3.4vw, 48px)', lineHeight: 1, letterSpacing: '-0.04em' }}>149 €</span>
-                <span style={{ fontSize: 13.5, color: 'var(--muted)' }}>einmalig · ohne Abo</span>
+                <span style={{ fontSize: 13.5, color: 'var(--muted)' }}>einmalig</span>
               </span>
               <button type="button" onClick={() => setOrder(true)} className="btn btn-md btn-electric">Google-Profil starten <span className="arw">→</span></button>
             </div>
@@ -2104,21 +2097,14 @@ function ChannelSearch() {
               </div>
               <div style={{ padding: 'clamp(18px, 2.4vw, 28px)' }}>
                 <div style={{ position: 'relative', padding: '18px 18px 16px', borderRadius: 16, border: '2px solid var(--electric)' }}>
-                  <span className="kick" style={{ fontSize: 11 }}>Ihr Unternehmen</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '8px 0' }}>
                     <span aria-hidden style={{ width: 26, height: 26, borderRadius: 8, backgroundColor: 'var(--electric)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 800 }}>M</span>
                     <span style={{ fontSize: 12.5, lineHeight: 1.3, color: 'var(--muted)' }}>
                       <span style={{ display: 'block', color: 'var(--ink)', fontWeight: 700 }}>Muster Elektrotechnik</span>
-                      muster-elektro.de › leistungen
                     </span>
                   </div>
                   <p style={{ fontSize: 'clamp(17px, 1.5vw, 19px)', lineHeight: 1.3, color: 'var(--electric)', margin: '0 0 6px', fontWeight: 800 }}>Elektriker in Stuttgart: Installation, Smart Home & Notdienst</p>
                   <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--muted)', margin: '0 0 12px' }}>Was wir tun, wo wir arbeiten und welche Projekte wir in der Region umgesetzt haben, klar erklärt.</p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    {['Leistungen', 'Region', 'Referenzen', 'Kontakt'].map(t => (
-                      <span key={t} style={{ fontSize: 12.5, fontWeight: 700, padding: '6px 11px', borderRadius: 8, backgroundColor: 'var(--bone)', color: 'var(--ink)' }}>{t}</span>
-                    ))}
-                  </div>
                 </div>
                 {[0.62, 0.48].map((w, i) => (
                   <div key={i} aria-hidden style={{ padding: '16px 18px 0', opacity: 0.8 - i * 0.3 }}>
@@ -2157,10 +2143,9 @@ function ChannelSocial() {
     <section id="social" style={{ backgroundColor: 'var(--paper)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', scrollMarginTop: 70, position: 'relative', overflow: 'clip' }}>
       <div style={{ ...SHELL, position: 'relative' }}>
         <div style={{ textAlign: 'center', maxWidth: 820, margin: '0 auto' }}>
-          <Reveal><Kicker icon="social">Social Media</Kicker></Reveal>
-          <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '20px 0 18px' }}>In sozialen Netzwerken <span className="serif italic-serif">sehen Kunden Menschen</span></h2></Reveal>
+          <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '0 0 18px' }}>In sozialen Netzwerken <span className="serif italic-serif">sehen Kunden Menschen</span></h2></Reveal>
           <Reveal delay={0.1}><p className="lead" style={{ color: 'var(--muted)', margin: 0 }}>Team, Arbeitsweise und echte Ergebnisse machen Ihr Unternehmen vertraut, schon vor dem ersten Anruf. Dafür müssen Sie kein Influencer werden.</p></Reveal>
-          <Reveal delay={0.12}><a href="/ratgeber/brauchen-handwerker-instagram" className="d-link" style={{ display: 'inline-block', marginTop: 16, fontSize: 15 }}>Im Ratgeber: {articleTitle('brauchen-handwerker-instagram')} <span className="arw">→</span></a></Reveal>
+          <Reveal delay={0.12}><a href="/ratgeber/brauchen-handwerker-instagram" className="d-link" style={{ display: 'inline-block', marginTop: 16, fontSize: 15, color: 'var(--muted)', fontWeight: 600 }}>Im Ratgeber: {articleTitle('brauchen-handwerker-instagram')} <span className="arw">→</span></a></Reveal>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 24, marginTop: 'clamp(40px, 4.4vw, 56px)' }}>
           {pillars.map(([t, d, bg, fg], i) => (
@@ -2212,10 +2197,8 @@ function ChannelSummary() {
     <section style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'var(--bone)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)' }}>
       <div style={{ ...SHELL, position: 'relative' }}>
         <div style={{ textAlign: 'center', maxWidth: 880, margin: '0 auto' }}>
-          <Reveal><Kicker>Das Zusammenspiel</Kicker></Reveal>
           <MaskHeading
             className="h-md"
-            style={{ marginTop: 18 }}
             lines={[<>Alle Kanäle sollten eine <span className="serif italic-serif">klare Geschichte</span> über Ihr Unternehmen erzählen</>]}
           />
         </div>
@@ -2262,10 +2245,9 @@ function BusinessCheck() {
           <RingsBackdrop size={900} color="rgba(255,255,255,0.14)" style={{ right: -240, top: -220 }} />
           <div className="audit-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 440px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
             <div>
-              <Reveal><p className="kick" style={{ color: '#C9C2FF' }}>Kostenloser Sichtbarkeits-Check</p></Reveal>
               <MaskHeading
                 className="h-md"
-                style={{ margin: '18px 0 20px', color: '#fff' }}
+                style={{ margin: '0 0 20px', color: '#fff' }}
                 lines={[<>Finden Sie Ihr Unternehmen:</>, <>wir zeigen, wie Google und KI Sie sehen</>]}
               />
               <Reveal delay={0.1}>
@@ -2288,7 +2270,6 @@ function BusinessCheck() {
               <div className="d-card" style={{ color: 'var(--ink)', padding: 'clamp(24px, 3vw, 32px)', boxShadow: '0 40px 80px rgba(11,11,26,0.25)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 20 }}>
                   <p style={{ fontWeight: 800, margin: 0 }}>Beispielbericht</p>
-                  <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 999, backgroundColor: 'var(--bone)', color: 'var(--muted)' }}>nur Beispiel</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
                   <div aria-hidden style={{ width: 104, height: 104, borderRadius: '50%', background: 'conic-gradient(#2600FF 0 62%, #ECEBFF 62% 100%)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
@@ -2304,7 +2285,6 @@ function BusinessCheck() {
                     </div>
                   ))}
                 </div>
-                <p style={{ fontSize: 12.5, lineHeight: 1.6, color: 'var(--muted)', margin: '14px 0 0' }}>Die Zahlen sind nur ein Beispiel für den späteren Bericht.</p>
               </div>
             </Reveal>
           </div>
@@ -3587,8 +3567,7 @@ function FAQ() {
       }} />
       <div style={{ ...SHELL, maxWidth: 940 }}>
         <div style={{ textAlign: 'center', marginBottom: 'clamp(32px, 4vw, 48px)' }}>
-          <Reveal><Kicker>FAQ</Kicker></Reveal>
-          <MaskHeading className="h-md" style={{ marginTop: 16 }} lines={[<>Häufige Fragen beantwortet</>]} />
+          <MaskHeading className="h-md" lines={[<>Häufige Fragen beantwortet</>]} />
           <Reveal delay={0.12}>
             <p style={{ fontSize: 16, color: 'var(--muted)', margin: '14px auto 0', maxWidth: 520 }}>Alles, was Sie wissen müssen, bevor Sie Ihren Sichtbarkeits-Check starten.</p>
           </Reveal>
