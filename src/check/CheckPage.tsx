@@ -18,7 +18,7 @@ import AccountStep from './AccountStep'
 type Step = 'find' | 'review' | 'account'
 
 const DRAFT_KEY = 'rag-check-draft'
-type ReturnDraft = { place: Place; sources: Source[] | null; phone?: string }
+type ReturnDraft = { place: Place; sources: Source[] | null }
 
 /** Rückkehr von Google (?step=3): Firma und Quellen aus Schritt 2 liegen noch im Browser. Wird erst beim Start der Suche verbraucht. */
 function readReturnDraft(): ReturnDraft | null {
@@ -111,7 +111,7 @@ function FieldRow({ id, label, value, original, placeholder, type, inputMode, au
 }
 
 /** Schritt 2: «Das haben wir schon gefunden» — Google-Profil nur zur Ansicht, Telefon, Website und Profile direkt editierbar. */
-function Findings({ place, found, draft, onDraft, phone, onPhone }: { place: Place; found: Source[] | null; draft: Source[] | null; onDraft: (next: Source[]) => void; phone: string; onPhone: (v: string) => void }) {
+function Findings({ place, found, draft, onDraft }: { place: Place; found: Source[] | null; draft: Source[] | null; onDraft: (next: Source[]) => void }) {
   const row = (ok: boolean | null, text: React.ReactNode) => (
     <li style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 13.5, lineHeight: 1.4 }}>
       <StatusDot ok={ok} /><span>{text}</span>
@@ -130,9 +130,9 @@ function Findings({ place, found, draft, onDraft, phone, onPhone }: { place: Pla
         {place.manual
           ? row(false, 'Kein Google-Unternehmensprofil: bei Google Maps erscheinen Sie nicht.')
           : row(place.reviews >= 20 && (place.rating ?? 0) >= 4.2, <>Google-Profil: {place.rating !== null ? <>★ {place.rating.toLocaleString('de-DE', { minimumFractionDigits: 1 })} · </> : null}{place.reviews} Bewertungen</>)}
+        {!place.manual && row(!!place.phone, place.phone ? 'Telefon im Google-Profil angegeben' : 'Kein Telefon im Google-Profil angegeben')}
       </ul>
       <ul style={{ listStyle: 'none', margin: 0, padding: '10px 0 0', borderTop: '1px solid var(--line-soft)', display: 'grid', gap: 6 }}>
-        <FieldRow id="src-phone" type="tel" inputMode="tel" autoComplete="tel" label="Telefon" value={phone} original={place.phone ?? ''} placeholder="Nicht gefunden, hier eintragen" onChange={onPhone} />
         {draft === null ? (
           <li style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, color: 'var(--muted)' }}><span className="ck-spin" aria-hidden="true" />Wir suchen Ihre Website und Social-Media-Profile…</li>
         ) : draft.map(s => (
@@ -216,8 +216,6 @@ export default function CheckPage() {
   const [place, setPlace] = useState<Place | null>(null)
   const [loadingPlace, setLoadingPlace] = useState(!!initialPlace || !!briefCode)
   const [notFound, setNotFound] = useState(false)
-  // Telefon, das der Kunde ergänzt, wenn im Google-Profil keins steht.
-  const [phoneInput, setPhoneInput] = useState<string>(() => readReturnDraft()?.phone ?? '')
   // Website + Social-Profile werden im Hintergrund gesucht. Bestätigt werden sie in Schritt 2.
   const discovery = useRef<Promise<Source[]> | null>(null)
   const [found, setFound] = useState<Source[] | null>(null)
@@ -272,14 +270,12 @@ export default function CheckPage() {
   const loadPlace = (id: string, next: Step = 'review') => {
     setPlace(null); setStep(next); setLoadingPlace(true); setNotFound(false)
     // Telefon der vorherigen Firma nicht übernehmen; bei der Rückkehr von Google bleibt es erhalten.
-    if (!restoreRef.current) setPhoneInput('')
     discovery.current = null; setFound(null)
     getCompany(id, token.current)
       .then(p => {
         setPlace(p); setNotFound(!p)
         if (p) {
           // Telefon aus dem Profil vorbelegen; bei der Rückkehr von Google gilt die Eingabe von vorher.
-          setPhoneInput(restoreRef.current ? (restoreRef.current.phone ?? p.phone ?? '') : (p.phone ?? ''))
           startDiscovery(p)
         }
       })
@@ -313,12 +309,12 @@ export default function CheckPage() {
 
   // Ohne Google-Profil: Angaben des Kunden übernehmen und direkt zu Schritt 2.
   const goManual = (p: Place) => {
-    setPlace(p); setStep('review'); setLoadingPlace(false); setNotFound(false); setPhoneInput('')
+    setPlace(p); setStep('review'); setLoadingPlace(false); setNotFound(false)
     startDiscovery(p)
   }
 
   // Ergänztes Telefon ins Firmenprofil übernehmen (landet mit dem Check in der Datenbank).
-  const withPhone = (p: Place): Place => ({ ...p, phone: phoneInput.trim() || null })
+  const withPhone = (p: Place): Place => p
 
   // Nach Registrierung/Anmeldung: Check anlegen und in den Kundenbereich weiter.
   const createAndGo = async (user: User, contact: Contact): Promise<string | null> => {
@@ -333,7 +329,7 @@ export default function CheckPage() {
       : await Promise.race([discovery.current ?? Promise.resolve(empty), new Promise<Source[]>(r => setTimeout(() => r(empty), 4000))])
     // Anmeldung = Bestätigung der Quellen: die Analyse startet sofort (Kundenbereich ruft audit-collect auf).
     const id = await createCheck({
-      place: withPhone(place), region: `${place.city} + 30 km`, sources: found.length ? found : empty, contact: { ...contact, phone: contact.phone || phoneInput.trim() }, confirmed: true,
+      place: withPhone(place), region: `${place.city} + 30 km`, sources: found.length ? found : empty, contact, confirmed: true,
       sourcePage: params.get('from') ?? (briefCode ? `brief-${briefCode}` : null),
     })
     if (!id) return 'Das Speichern hat nicht geklappt. Bitte versuchen Sie es noch einmal.'
@@ -351,7 +347,7 @@ export default function CheckPage() {
   })() : undefined
   const keepDraftForGoogle = () => {
     if (!place) return
-    try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ place: withPhone(place), sources: srcDraft, phone: phoneInput } satisfies ReturnDraft)) } catch { /* Speicher gesperrt: Korrekturen gehen verloren, Analyse läuft trotzdem */ }
+    try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ place, sources: srcDraft } satisfies ReturnDraft)) } catch { /* Speicher gesperrt: Korrekturen gehen verloren, Analyse läuft trotzdem */ }
   }
 
   const stepIdx = step === 'find' ? 0 : step === 'review' ? 1 : 2
@@ -432,7 +428,7 @@ export default function CheckPage() {
               <StepHead n="Schritt 2 von 3" title="Prüfen Sie, was wir gefunden haben" />
               <SelectedCompany place={place} loading={loadingPlace} onChange={backToFind} />
               {DEMO && !place?.manual && <div style={{ margin: '-10px 0 20px' }}><DemoNote>Die Google-Anbindung ist noch nicht aktiv. Angezeigt werden Beispieldaten.</DemoNote></div>}
-              {place && !loadingPlace && <Findings place={place} found={found} draft={srcDraft} onDraft={editSources} phone={phoneInput} onPhone={setPhoneInput} />}
+              {place && !loadingPlace && <Findings place={place} found={found} draft={srcDraft} onDraft={editSources} />}
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 20 }}>
                 <button type="button" className="btn btn-lg btn-electric" disabled={!place || loadingPlace} onClick={() => setStep('account')}
                   style={{ opacity: place && !loadingPlace ? 1 : 0.45, cursor: place && !loadingPlace ? 'pointer' : 'default' }}>
