@@ -4,21 +4,32 @@ import type { User } from '@supabase/supabase-js'
 import CompanySearch from './CompanySearch'
 import {
   DEMO, SOURCE_LABELS, SOURCE_ORDER, createCheck, placeFromCode, discoverSources, findMyCheck, getCompany, loadMyChecks, manualPlace, newSessionToken, searchCompanies,
-  type Contact, type Place, type Source, type Suggestion,
+  type Contact, type Place, type Source, type SourceKey, type Suggestion,
 } from './data'
 import AccountStep from './AccountStep'
-import SourcesEditor from './SourcesEditor'
 
-// /check — Onboarding nach der Unternehmenssuche (Prototyp «rag_client_cabinet_v1», 25.09.2026).
-// Reihenfolge: 1 Unternehmen suchen (Trefferliste) → 2 Konto anlegen oder anmelden → Kundenbereich.
-// Seit 06.10.2026 ohne eigenen Bestätigungsschritt: Treffer wählen führt direkt zu Schritt 2,
-// die gewählte Firma steht dort oben (mit «Ändern»). ?place=<id> öffnet direkt Schritt 2,
-// ?manual=1 öffnet Schritt 1 direkt mit dem Formular «nicht in der Liste» (ohne Google-Suche).
-// Website und Social-Profile prüft der Kunde in Schritt 2 («Das haben wir schon gefunden», korrigierbar).
-// Seit 19.10.2026 gilt die Anmeldung als Bestätigung (sources_confirmed = true): die Analyse startet sofort,
-// das Team wartet nicht mehr auf einen zweiten Schritt im Kundenbereich.
+// /check — Onboarding nach der Unternehmenssuche. Drei Schritte:
+// 1 Unternehmen suchen (Trefferliste) → 2 Gefundenes prüfen und direkt korrigieren («Vollständige Analyse erhalten»)
+// → 3 Konto anlegen oder anmelden (E-Mail oder Google) → Kundenbereich, dort startet die Analyse.
+// Treffer wählen führt direkt zu Schritt 2. ?place=<id> öffnet Schritt 2, ?place=<id>&step=3 öffnet Schritt 3
+// (Rückkehr von Google). ?manual=1 öffnet Schritt 1 direkt mit dem Formular «nicht in der Liste».
+// Seit 19.10.2026 gilt die Anmeldung als Bestätigung (sources_confirmed = true): die Analyse startet sofort.
 
-type Step = 'find' | 'contact'
+type Step = 'find' | 'review' | 'account'
+
+const DRAFT_KEY = 'rag-check-draft'
+type ReturnDraft = { place: Place; sources: Source[] | null; phone?: string }
+
+/** Rückkehr von Google (?step=3): Firma und Quellen aus Schritt 2 liegen noch im Browser. Wird erst beim Start der Suche verbraucht. */
+function readReturnDraft(): ReturnDraft | null {
+  try {
+    if (new URLSearchParams(window.location.search).get('step') !== '3') return null
+    const raw = sessionStorage.getItem(DRAFT_KEY)
+    return raw ? (JSON.parse(raw) as ReturnDraft) : null
+  } catch {
+    return null
+  }
+}
 
 export function useNoindex(title: string) {
   useEffect(() => {
@@ -53,14 +64,11 @@ export function DemoNote({ children }: { children: React.ReactNode }) {
   )
 }
 
-
-
-function StepHead({ n, title, sub }: { n: string; title: string; sub: string }) {
+function StepHead({ title, sub }: { n?: string; title: string; sub?: string }) {
   return (
     <>
-      <p className="kick" style={{ marginBottom: 12 }}>{n}</p>
-      <h1 className="display" style={{ fontSize: 'clamp(26px, 3vw, 36px)', lineHeight: 1.08, margin: '0 0 12px' }}>{title}</h1>
-      <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 26px', maxWidth: 520 }}>{sub}</p>
+      <h1 className="display" style={{ fontSize: 'clamp(24px, 2.6vw, 32px)', lineHeight: 1.08, margin: sub ? '0 0 10px' : '0 0 18px' }}>{title}</h1>
+      {sub && <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)', margin: '0 0 18px', maxWidth: 900 }}>{sub}</p>}
     </>
   )
 }
@@ -73,52 +81,72 @@ function Spinner({ label }: { label: string }) {
   )
 }
 
-/** Erste Eindrücke in Schritt 2 — nur aus Daten, die schon geladen sind (keine zusätzlichen Google-Anfragen). */
-function FirstFindings({ place, found, draft, onDraft }: { place: Place; found: Source[] | null; draft: Source[] | null; onDraft: (next: Source[]) => void }) {
-  const [edit, setEdit] = useState(false)
-  const row = (ok: boolean | null, text: React.ReactNode) => (
-    <li style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, lineHeight: 1.5 }}>
-      <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800,
-        backgroundColor: ok === null ? '#EFEEF8' : ok ? '#E3F4EA' : '#FFF1D6', color: ok === null ? 'var(--muted)' : ok ? '#17663A' : '#8A4B00' }}>{ok === null ? '…' : ok ? '✓' : '!'}</span>
-      <span>{text}</span>
+function StatusDot({ ok }: { ok: boolean | null }) {
+  return (
+    <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800,
+      backgroundColor: ok === null ? '#EFEEF8' : ok ? '#E3F4EA' : '#FFF1D6', color: ok === null ? 'var(--muted)' : ok ? '#17663A' : '#8A4B00' }}>{ok === null ? '…' : ok ? '✓' : '!'}</span>
+  )
+}
+
+const fieldStyle: React.CSSProperties = { width: '100%', padding: '11px 14px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14.5, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
+
+/** Eine Zeile je Feld: Name, Eingabefeld, Status — alles in einer Reihe, damit die Liste kurz bleibt. Umbruch nur auf schmalen Bildschirmen. */
+function FieldRow({ id, label, value, original, placeholder, type, inputMode, autoComplete, onChange }: {
+  id: string; label: string; value: string; original?: string; placeholder: string; type?: string; inputMode?: 'tel' | 'url'; autoComplete?: string; onChange: (v: string) => void
+}) {
+  const filled = value.trim().length > 0
+  const status = !filled ? 'Nicht gefunden' : value.trim() === (original ?? '').trim() ? 'Gefunden ✓' : 'Ergänzt'
+  const chip = status === 'Gefunden ✓'
+    ? { color: '#0F7A3E', bg: '#E6F6EC' }
+    : status === 'Ergänzt' ? { color: 'var(--electric)', bg: '#EEEBFF' } : { color: 'var(--muted)', bg: 'var(--bone)' }
+  return (
+    <li style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+      <StatusDot ok={filled} />
+      <label htmlFor={id} style={{ fontWeight: 600, fontSize: 14, width: 92, flexShrink: 0 }}>{label}</label>
+      <input id={id} type={type ?? 'text'} inputMode={inputMode} autoComplete={autoComplete ?? 'off'} spellCheck={false} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        style={{ ...fieldStyle, width: 'auto', flex: '1 1 200px', minWidth: 0, padding: '7px 12px' }} />
+      <span style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', padding: '3px 10px', borderRadius: 999, color: chip.color, backgroundColor: chip.bg }}>{status}</span>
     </li>
   )
-  const list = draft ?? found
-  const social = (list ?? []).filter(s => s.key !== 'website')
-  const yes = social.filter(s => !!s.value?.trim()).map(s => SOURCE_LABELS[s.key])
-  const no = social.filter(s => !s.value?.trim()).map(s => SOURCE_LABELS[s.key])
-  const web = list?.find(s => s.key === 'website')?.value?.trim() || place.website
-  const site = web?.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '')
+}
+
+/** Schritt 2: «Das haben wir schon gefunden» — Google-Profil nur zur Ansicht, Telefon, Website und Profile direkt editierbar. */
+function Findings({ place, found, draft, onDraft, phone, onPhone }: { place: Place; found: Source[] | null; draft: Source[] | null; onDraft: (next: Source[]) => void; phone: string; onPhone: (v: string) => void }) {
+  const row = (ok: boolean | null, text: React.ReactNode) => (
+    <li style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 13.5, lineHeight: 1.4 }}>
+      <StatusDot ok={ok} /><span>{text}</span>
+    </li>
+  )
+  const setValue = (key: SourceKey) => (value: string) => {
+    if (draft) onDraft(draft.map(s => (s.key === key ? { ...s, value } : s)))
+  }
+  // Ausgangswert je Quelle: was wir gefunden haben (Website notfalls aus dem Google-Profil), zum Erkennen von «Ergänzt».
+  const originalOf = (key: SourceKey): string | undefined => found?.find(s => s.key === key)?.value ?? (key === 'website' ? place.website ?? '' : undefined)
   return (
-    <div style={{ border: '1px solid var(--line)', borderRadius: 18, padding: '16px 18px', margin: '-8px 0 24px', backgroundColor: '#fff' }}>
-      <p style={{ fontWeight: 700, fontSize: 15, margin: '0 0 10px' }}>Das haben wir schon gefunden</p>
-      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
+    <div style={{ border: '1px solid var(--line)', borderRadius: 18, padding: '14px 16px', backgroundColor: '#fff' }}>
+      <p style={{ fontWeight: 700, fontSize: 15.5, margin: '0 0 2px' }}>Das haben wir schon gefunden</p>
+      <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, margin: '0 0 12px' }}>Stimmt etwas nicht? Ändern oder ergänzen Sie es direkt hier.</p>
+      <ul style={{ listStyle: 'none', margin: '0 0 10px', padding: 0, display: 'grid', gap: 4 }}>
         {place.manual
           ? row(false, 'Kein Google-Unternehmensprofil: bei Google Maps erscheinen Sie nicht.')
           : row(place.reviews >= 20 && (place.rating ?? 0) >= 4.2, <>Google-Profil: {place.rating !== null ? <>★ {place.rating.toLocaleString('de-DE', { minimumFractionDigits: 1 })} · </> : null}{place.reviews} Bewertungen</>)}
-        {row(!!web, web ? <>Website: <span data-no-translate>{site}</span></> : 'Keine Website im Google-Profil hinterlegt')}
-        {!place.manual && row(!!place.phone, place.phone ? 'Telefonnummer im Profil' : 'Keine Telefonnummer im Profil')}
-        {found === null
-          ? row(null, 'Wir suchen Ihre Social-Media-Profile…')
-          : row(yes.length >= 2, yes.length ? <>Social Media: {yes.join(', ')}{no.length ? <span style={{ color: 'var(--muted)' }}> · nicht gefunden: {no.join(', ')}</span> : null}</> : 'Keine Social-Media-Profile gefunden')}
       </ul>
-      {found !== null && draft && (edit ? (
-        <div style={{ marginTop: 14 }}>
-          <SourcesEditor sources={draft} onChange={onDraft} />
-          <button type="button" onClick={() => setEdit(false)} className="ul" style={{ marginTop: 10, background: 'none', border: 0, padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, color: 'var(--electric)' }}>Fertig</button>
-        </div>
-      ) : (
-        <button type="button" onClick={() => setEdit(true)} className="ul" style={{ marginTop: 12, background: 'none', border: 0, padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, color: 'var(--electric)' }}>Website oder Profil fehlt / stimmt nicht? Korrigieren</button>
-      ))}
-      <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.55, margin: '12px 0 0' }}>Mit der Anmeldung starten wir die vollständige Analyse: Platz bei Google Maps, Wettbewerber, KI-Assistenten und Website-Technik. Ein weiterer Schritt ist nicht nötig.</p>
+      <ul style={{ listStyle: 'none', margin: 0, padding: '10px 0 0', borderTop: '1px solid var(--line-soft)', display: 'grid', gap: 6 }}>
+        <FieldRow id="src-phone" type="tel" inputMode="tel" autoComplete="tel" label="Telefon" value={phone} original={place.phone ?? ''} placeholder="Nicht gefunden, hier eintragen" onChange={onPhone} />
+        {draft === null ? (
+          <li style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, color: 'var(--muted)' }}><span className="ck-spin" aria-hidden="true" />Wir suchen Ihre Website und Social-Media-Profile…</li>
+        ) : draft.map(s => (
+          <FieldRow key={s.key} id={`src-${s.key}`} label={SOURCE_LABELS[s.key]} value={s.value} original={originalOf(s.key)} placeholder="Nicht gefunden, hier eintragen" onChange={setValue(s.key)} />
+        ))}
+      </ul>
     </div>
   )
 }
 
-/** Gewählte Firma oben in Schritt 2 — kompakt, mit «Ändern». */
+/** Gewählte Firma oben — kompakt, mit «Ändern». */
 function SelectedCompany({ place, loading, onChange }: { place: Place | null; loading: boolean; onChange: () => void }) {
   return (
-    <div style={{ display: 'flex', gap: 14, alignItems: 'center', border: '1px solid var(--line)', borderRadius: 18, padding: '14px 16px', backgroundColor: '#FAFAFD', marginBottom: 24 }}>
+    <div style={{ display: 'flex', gap: 14, alignItems: 'center', border: '1px solid var(--line)', borderRadius: 18, padding: '10px 14px', backgroundColor: '#FAFAFD', marginBottom: 14 }}>
       <span style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: 'var(--electric)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
       </span>
@@ -139,8 +167,6 @@ function SelectedCompany({ place, loading, onChange }: { place: Place | null; lo
     </div>
   )
 }
-
-const fieldStyle: React.CSSProperties = { width: '100%', padding: '11px 14px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14.5, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
 
 /** «Mein Unternehmen ist nicht dabei»: genauer suchen oder ohne Google-Profil prüfen lassen. */
 function NotListed({ query, nothingFound, startOpen = false, onManual }: { query: string; nothingFound: boolean; startOpen?: boolean; onManual: (p: Place) => void }) {
@@ -182,22 +208,29 @@ export default function CheckPage() {
   // Code aus dem Brief (QR-Code / Link): /check?c=ABC123 → Unternehmen ist schon ausgewählt.
   const briefCode = (params.get('c') ?? '').trim().toUpperCase()
   const initialQ = params.get('q') ?? ''
+  const returning = params.get('step') === '3'
   // Von der Startseite über «Mein Unternehmen ist nicht in der Liste»: Formular sofort offen, keine neue Google-Suche.
   const [manualMode, setManualMode] = useState(params.get('manual') === '1')
 
-  const [step, setStep] = useState<Step>(initialPlace || briefCode ? 'contact' : 'find')
+  const [step, setStep] = useState<Step>(initialPlace || briefCode ? (returning ? 'account' : 'review') : 'find')
   const [place, setPlace] = useState<Place | null>(null)
   const [loadingPlace, setLoadingPlace] = useState(!!initialPlace || !!briefCode)
   const [notFound, setNotFound] = useState(false)
-  // Website + Social-Profile werden im Hintergrund gesucht, während das Konto angelegt wird.
-  // Bestätigt werden sie danach im Kundenbereich.
+  // Telefon, das der Kunde ergänzt, wenn im Google-Profil keins steht.
+  const [phoneInput, setPhoneInput] = useState<string>(() => readReturnDraft()?.phone ?? '')
+  // Website + Social-Profile werden im Hintergrund gesucht. Bestätigt werden sie in Schritt 2.
   const discovery = useRef<Promise<Source[]> | null>(null)
   const [found, setFound] = useState<Source[] | null>(null)
   // Vom Kunden korrigierte Quellen (Schritt 2). touched = Kunde hat etwas geändert → genau so übernehmen.
   const [srcDraft, setSrcDraft] = useState<Source[] | null>(null)
   const touched = useRef(false)
+  const restoreRef = useRef<ReturnDraft | null>(readReturnDraft())
+
   const startDiscovery = (p: Place) => {
-    setFound(null); setSrcDraft(null); touched.current = false
+    // Rückkehr von Google: die Korrekturen aus Schritt 2 bleiben erhalten.
+    const keep = restoreRef.current?.sources ?? null
+    if (restoreRef.current) { restoreRef.current = null; try { sessionStorage.removeItem(DRAFT_KEY) } catch { /* ignore */ } }
+    setFound(null); setSrcDraft(keep); touched.current = !!keep
     const job = discoverSources(p).catch(() => [] as Source[])
     discovery.current = job
     job.then(r => {
@@ -236,42 +269,58 @@ export default function CheckPage() {
   }
 
   // Treffer gewählt → sofort Schritt 2; das Profil lädt dort oben, die Quellensuche startet, sobald es da ist.
-  const loadPlace = (id: string) => {
-    setPlace(null); setStep('contact'); setLoadingPlace(true); setNotFound(false)
+  const loadPlace = (id: string, next: Step = 'review') => {
+    setPlace(null); setStep(next); setLoadingPlace(true); setNotFound(false)
+    // Telefon der vorherigen Firma nicht übernehmen; bei der Rückkehr von Google bleibt es erhalten.
+    if (!restoreRef.current) setPhoneInput('')
     discovery.current = null; setFound(null)
     getCompany(id, token.current)
       .then(p => {
         setPlace(p); setNotFound(!p)
-        if (p) startDiscovery(p)
+        if (p) {
+          // Telefon aus dem Profil vorbelegen; bei der Rückkehr von Google gilt die Eingabe von vorher.
+          setPhoneInput(restoreRef.current ? (restoreRef.current.phone ?? p.phone ?? '') : (p.phone ?? ''))
+          startDiscovery(p)
+        }
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoadingPlace(false))
   }
 
-  // Zurück zur Suche (z. B. «Ändern» in Schritt 2).
+  // Zurück zur Suche (z. B. «Ändern» oder «Zurück» in Schritt 2).
   const backToFind = () => {
     const sp = new URLSearchParams(window.location.search)
-    sp.delete('place')
+    sp.delete('place'); sp.delete('step')
     if (query) sp.set('q', query)
     history.replaceState(null, '', `/check?${sp.toString()}`)
     setStep('find')
   }
 
   useEffect(() => {
-    if (initialPlace) loadPlace(initialPlace)
-    else if (briefCode) placeFromCode(briefCode).then(id => { if (id) loadPlace(id); else { setLoadingPlace(false); setStep('find') } })
+    if (initialPlace) {
+      // Manuell eingetragene Firma (ohne Google-Profil) lässt sich nicht von Google neu laden → aus dem Browser übernehmen.
+      const kept = restoreRef.current?.place
+      if (returning && kept?.manual && kept.id === initialPlace) {
+        setPlace(kept); setLoadingPlace(false); startDiscovery(kept); setStep('account')
+      } else {
+        loadPlace(initialPlace, returning ? 'account' : 'review')
+      }
+    } else if (briefCode) {
+      placeFromCode(briefCode).then(id => { if (id) loadPlace(id); else { setLoadingPlace(false); setStep('find') } })
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { topRef.current?.scrollIntoView({ block: 'start' }) }, [step])
 
-  const goContact = (p: Place | null = place) => {
-    if (!p) return
+  // Ohne Google-Profil: Angaben des Kunden übernehmen und direkt zu Schritt 2.
+  const goManual = (p: Place) => {
+    setPlace(p); setStep('review'); setLoadingPlace(false); setNotFound(false); setPhoneInput('')
     startDiscovery(p)
-    setStep('contact')
   }
-  // Ohne Google-Profil: Angaben des Kunden übernehmen und direkt zum Konto.
-  const goManual = (p: Place) => { setPlace(p); goContact(p) }
 
-  // Nach Registrierung/Anmeldung: Check anlegen und in den Kundenbereich.
+  // Ergänztes Telefon ins Firmenprofil übernehmen (landet mit dem Check in der Datenbank).
+  const withPhone = (p: Place): Place => ({ ...p, phone: phoneInput.trim() || null })
+
+  // Nach Registrierung/Anmeldung: Check anlegen und in den Kundenbereich weiter.
   const createAndGo = async (user: User, contact: Contact): Promise<string | null> => {
     if (!place) return loadingPlace ? 'Das Profil lädt noch, bitte einen Moment.' : 'Bitte wählen Sie zuerst Ihr Unternehmen.'
     // Diese Firma ist im Konto schon geprüft → keinen zweiten Check anlegen, den vorhandenen öffnen.
@@ -284,7 +333,7 @@ export default function CheckPage() {
       : await Promise.race([discovery.current ?? Promise.resolve(empty), new Promise<Source[]>(r => setTimeout(() => r(empty), 4000))])
     // Anmeldung = Bestätigung der Quellen: die Analyse startet sofort (Kundenbereich ruft audit-collect auf).
     const id = await createCheck({
-      place, region: `${place.city} + 30 km`, sources: found.length ? found : empty, contact, confirmed: true,
+      place: withPhone(place), region: `${place.city} + 30 km`, sources: found.length ? found : empty, contact: { ...contact, phone: contact.phone || phoneInput.trim() }, confirmed: true,
       sourcePage: params.get('from') ?? (briefCode ? `brief-${briefCode}` : null),
     })
     if (!id) return 'Das Speichern hat nicht geklappt. Bitte versuchen Sie es noch einmal.'
@@ -294,8 +343,18 @@ export default function CheckPage() {
     return null
   }
 
-  const stepIdx = step === 'find' ? 0 : 1
-  const STEPS = [['Unternehmen', 'Profil bei Google finden und auswählen'], ['Kundenbereich', 'Konto anlegen, die Analyse startet sofort']]
+  // Adresse, zu der Google nach der Anmeldung zurückleitet: dieselbe Firma, Schritt 3.
+  const googleNext = place ? (() => {
+    const sp = new URLSearchParams(window.location.search)
+    sp.set('place', place.id); sp.set('step', '3'); sp.delete('c'); sp.delete('manual'); sp.delete('q')
+    return `/check?${sp.toString()}`
+  })() : undefined
+  const keepDraftForGoogle = () => {
+    if (!place) return
+    try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ place: withPhone(place), sources: srcDraft, phone: phoneInput } satisfies ReturnDraft)) } catch { /* Speicher gesperrt: Korrekturen gehen verloren, Analyse läuft trotzdem */ }
+  }
+
+  const stepIdx = step === 'find' ? 0 : step === 'review' ? 1 : 2
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)' }}>
@@ -308,45 +367,20 @@ export default function CheckPage() {
             <a href="/" className="ul" style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>Abbrechen</a>
           </span>
         </div>
-        {(
-          <div style={{ height: 3, backgroundColor: 'var(--line-soft)' }}>
-            <div style={{ height: '100%', width: `${((stepIdx + 1) / 2) * 100}%`, backgroundColor: 'var(--electric)', transition: 'width 0.6s var(--ease)' }} />
-          </div>
-        )}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 4, height: 4 }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{ backgroundColor: i <= stepIdx ? 'var(--electric)' : 'var(--line-soft)', transition: 'background-color 0.4s var(--ease)' }} />
+          ))}
+        </div>
       </header>
 
       <div ref={topRef} style={{ scrollMarginTop: 80 }} />
-      <main id="inhalt" className="ck-grid" style={{ maxWidth: 1240, margin: '0 auto', padding: 'clamp(28px, 5vw, 64px) clamp(20px, 4vw, 48px) 96px' }}>
-        <aside className="ck-aside" style={{ backgroundColor: 'var(--brand-soft)', color: 'var(--ink)', borderRadius: 26, padding: 'clamp(24px, 3vw, 34px)', position: 'sticky', top: 96, alignSelf: 'start', overflow: 'hidden' }}>
-          <div aria-hidden className="d-dots" style={{ position: 'absolute', right: -60, bottom: -60, width: 240, height: 240, pointerEvents: 'none' }} />
-          <div style={{ position: 'relative' }}>
-            <p className="kick" style={{ marginBottom: 14 }}>Sichtbarkeits-Check</p>
-            <p className="display" style={{ fontSize: 26, lineHeight: 1.12, margin: '0 0 26px' }}>So sehen Google und KI<br /><span className="serif italic-serif">Ihr Unternehmen.</span></p>
-            <ol style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-              {STEPS.map(([t, s], i) => {
-                const state = i < stepIdx ? 'done' : i === stepIdx ? 'now' : 'next'
-                return (
-                  <li key={t} style={{ display: 'flex', gap: 14, padding: '14px 0', borderTop: '1px solid #DAD8F5', opacity: state === 'next' ? 0.55 : 1 }}>
-                    <span style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#fff', backgroundColor: state === 'next' ? '#fff' : 'var(--electric)', border: state === 'next' ? '1px solid #C9C5F7' : 'none' }}>
-                      {state === 'done' ? '✓' : state === 'now' ? <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#fff' }} /> : null}
-                    </span>
-                    <span>
-                      <span style={{ display: 'block', fontWeight: 600, fontSize: 15 }}>{t}</span>
-                      <span style={{ display: 'block', fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>{s}</span>
-                    </span>
-                  </li>
-                )
-              })}
-            </ol>
-            <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: '18px 0 0' }}>Kostenlos und unverbindlich. Den Bericht prüft ein Mensch aus unserem Team, nicht nur ein Tool.</p>
-          </div>
-        </aside>
-
-        <section style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(24px, 4vw, 48px)', boxShadow: '0 30px 70px rgba(7,7,12,0.06)', minWidth: 0 }}>
+      <main id="inhalt" style={{ maxWidth: 1240, margin: '0 auto', padding: '20px clamp(20px, 4vw, 48px) 40px' }}>
+        <section className="ck-card" style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(20px, 2.6vw, 30px)', boxShadow: '0 30px 70px rgba(7,7,12,0.06)', minWidth: 0 }}>
 
           {step === 'find' && (
             <>
-              <StepHead n="Schritt 1 von 2" title="Welches Unternehmen sollen wir prüfen?" sub="Geben Sie den Namen oder die Adresse ein und klicken Sie auf «Mein Unternehmen finden». Danach wählen Sie Ihr Unternehmen aus der Liste." />
+              <StepHead n="Schritt 1 von 3" title="Welches Unternehmen sollen wir prüfen?" sub="Geben Sie den Namen oder die Adresse ein und klicken Sie auf «Mein Unternehmen finden». Danach wählen Sie Ihr Unternehmen aus der Liste." />
               <CompanySearch variant="plain" initial={initialQ} autoFocus={!initialQ} onSubmitQuery={newSearch} />
               <div style={{ marginTop: 22 }}>
                 {manualMode && <NotListed query={query} nothingFound={false} startOpen onManual={goManual} />}
@@ -384,27 +418,37 @@ export default function CheckPage() {
                 Ihr Unternehmen ist noch nicht bei Google?{' '}
                 <a href="/start?from=check" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>Beantworten Sie 4 kurze Fragen →</a>
               </p>
+              <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: '18px 0 0' }}>Kostenlos und unverbindlich. Den Bericht prüft ein Mensch aus unserem Team, nicht nur ein Tool.</p>
             </>
           )}
 
-          {step === 'contact' && (
+          {step !== 'find' && !loadingPlace && notFound ? (
             <>
-              <StepHead n="Schritt 2 von 2" title="Ihr Kundenbereich" sub="Prüfen Sie kurz, was wir gefunden haben, und legen Sie ein Konto an. Danach startet die Analyse, den Bericht sehen Sie im Kundenbereich." />
-              {!loadingPlace && notFound ? (
-                <>
-                  <p style={{ fontSize: 15, lineHeight: 1.7, margin: '0 0 18px' }}>Dieses Profil konnten wir nicht laden. Bitte suchen Sie noch einmal.</p>
-                  <button type="button" className="btn btn-md btn-ink" onClick={backToFind}>Neu suchen</button>
-                </>
-              ) : (
-                <>
-                  <SelectedCompany place={place} loading={loadingPlace} onChange={backToFind} />
-                  {place && !loadingPlace && <FirstFindings place={place} found={found} draft={srcDraft} onDraft={editSources} />}
-                  {DEMO && !place?.manual && <div style={{ margin: '-10px 0 20px' }}><DemoNote>Die Google-Anbindung ist noch nicht aktiv. Angezeigt werden Beispieldaten.</DemoNote></div>}
-                  <AccountStep submitLabel="Weiter zum Kundenbereich" onAuthed={createAndGo} onBack={backToFind} />
-                </>
-              )}
+              <p style={{ fontSize: 15, lineHeight: 1.7, margin: '0 0 18px' }}>Dieses Profil konnten wir nicht laden. Bitte suchen Sie noch einmal.</p>
+              <button type="button" className="btn btn-md btn-ink" onClick={backToFind}>Neu suchen</button>
             </>
-          )}
+          ) : step === 'review' ? (
+            <>
+              <StepHead n="Schritt 2 von 3" title="Prüfen Sie, was wir gefunden haben" />
+              <SelectedCompany place={place} loading={loadingPlace} onChange={backToFind} />
+              {DEMO && !place?.manual && <div style={{ margin: '-10px 0 20px' }}><DemoNote>Die Google-Anbindung ist noch nicht aktiv. Angezeigt werden Beispieldaten.</DemoNote></div>}
+              {place && !loadingPlace && <Findings place={place} found={found} draft={srcDraft} onDraft={editSources} phone={phoneInput} onPhone={setPhoneInput} />}
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 20 }}>
+                <button type="button" className="btn btn-lg btn-electric" disabled={!place || loadingPlace} onClick={() => setStep('account')}
+                  style={{ opacity: place && !loadingPlace ? 1 : 0.45, cursor: place && !loadingPlace ? 'pointer' : 'default' }}>
+                  Vollständige Analyse erhalten <span className="arw">→</span>
+                </button>
+                <button type="button" className="btn btn-lg btn-outline-light" onClick={backToFind}>Zurück</button>
+              </div>
+              <p style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.55, margin: '12px 0 0' }}>Die vollständige Prüfung zeigt: Ihren Platz bei Google Maps im Vergleich zu Wettbewerbern, ob ChatGPT, Perplexity und Gemini Sie empfehlen, die Technik und Smartphone-Geschwindigkeit Ihrer Website sowie Ihre Bewertungen und Einträge in wichtigen Verzeichnissen.</p>
+            </>
+          ) : step === 'account' ? (
+            <>
+              <StepHead n="Schritt 3 von 3" title="Ihr Kundenbereich" sub="In Ihrem Kundenbereich sehen Sie den Stand der Analyse und Ihren Bericht: wo Sie bei Google Maps stehen, wie Sie im Vergleich zu Wettbewerbern dastehen und was Sie an Ihrer Website verbessern können. Der Bericht ist in der Regel innerhalb von 1 Werktag fertig." />
+              <AccountStep submitLabel="Analyse starten" loggedInLabel="Analyse starten" onAuthed={createAndGo} onBack={() => setStep('review')}
+                googleNext={googleNext} onBeforeGoogle={keepDraftForGoogle} />
+            </>
+          ) : null}
         </section>
       </main>
     </div>

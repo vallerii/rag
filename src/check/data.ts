@@ -199,7 +199,7 @@ export async function signUp(email: string, password: string, name: string, phon
   const { data, error } = await (await getSupabase()).auth.signUp({
     email: email.trim(), password, options: {
       // Werbe-Einwilligung mit Zeitpunkt und Wortlaut speichern (Nachweispflicht Art. 7 Abs. 1 DSGVO).
-      data: { name: name.trim(), phone: phone.trim(), ...(marketingOptIn ? { marketing_opt_in_at: new Date().toISOString(), marketing_opt_in_text: 'Tipps zur lokalen Sichtbarkeit per E-Mail' } : {}) },
+      data: { name: name.trim(), phone: phone.trim(), privacy_accepted_at: new Date().toISOString(), ...(marketingOptIn ? { marketing_opt_in_at: new Date().toISOString(), marketing_opt_in_text: 'Tipps zur lokalen Sichtbarkeit per E-Mail und Telefon' } : {}) },
       captchaToken: await captcha(),
     },
   })
@@ -212,6 +212,15 @@ export async function signUp(email: string, password: string, name: string, phon
 export async function signIn(email: string, password: string): Promise<{ user: User | null; error?: AuthError }> {
   const { data, error } = await (await getSupabase()).auth.signInWithPassword({ email: email.trim(), password, options: { captchaToken: await captcha() } })
   return error ? { user: null, error: mapAuthError(error) } : { user: data.user }
+}
+
+/** Anmeldung mit Google (Supabase-OAuth). Nach Google kommt der Besucher auf next innerhalb der Website zurück. */
+export async function signInWithGoogle(next: string): Promise<AuthError | null> {
+  const { error } = await (await getSupabase()).auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: `${window.location.origin}${next}`, queryParams: { prompt: 'select_account' } },
+  })
+  return error ? mapAuthError(error) : null
 }
 
 export async function sendPasswordReset(email: string): Promise<AuthError | null> {

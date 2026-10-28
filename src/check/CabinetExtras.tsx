@@ -121,10 +121,9 @@ export type NextStep = { title: string; text: React.ReactNode; links?: StepActio
 
 const linkStyle: React.CSSProperties = { background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14.5, fontWeight: 600, color: 'var(--electric)', display: 'inline-flex', alignItems: 'center', gap: 6 }
 
-export function NextStepCard({ step }: { step: NextStep }) {
+export function NextStepCard({ step, onWrite }: { step: NextStep; onWrite?: () => void }) {
   return (
     <section style={{ ...card, borderLeft: '4px solid var(--electric)' }}>
-      {kick('Ihr nächster Schritt')}
       <p className="display" style={{ fontSize: 'clamp(20px, 2.2vw, 26px)', lineHeight: 1.2, margin: '0 0 8px' }}>{step.title}</p>
       <p style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--muted)', margin: 0, maxWidth: 680 }}>{step.text}</p>
       {!!step.links?.length && (
@@ -132,6 +131,12 @@ export function NextStepCard({ step }: { step: NextStep }) {
           {step.links.map(a => a.href
             ? <a key={a.label} href={a.href} target="_blank" rel="noopener noreferrer" className="ul" style={linkStyle}>{a.label} <span aria-hidden className="arw">→</span></a>
             : <button key={a.label} type="button" onClick={a.onClick} className="ul" style={linkStyle}>{a.label} <span aria-hidden className="arw">→</span></button>)}
+        </p>
+      )}
+      {onWrite && (
+        <p style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'baseline', margin: '18px 0 0', paddingTop: 14, borderTop: '1px solid var(--line-soft)', fontSize: 14, color: 'var(--muted)' }}>
+          <span>Fragen? Schreiben Sie uns.</span>
+          <button type="button" onClick={onWrite} className="ul" style={linkStyle}>Im Chat schreiben <span aria-hidden className="arw">→</span></button>
         </p>
       )}
     </section>

@@ -295,3 +295,7 @@ em, i, cite, address, dfn { font-style: normal; }
   .cs-wrap .bc-form input { padding: 12px 14px !important; }
   .cs-wrap .bc-form button { justify-content: center; }
 }
+
+/* Sichtbarkeits-Check: die Karte behält ihre Höhe, damit die Schritte nicht springen. Auf dem Smartphone ohne Mindesthöhe. */
+.ck-card { min-height: 700px; }
+@media (max-width: 640px) { .ck-card { min-height: 0; } }

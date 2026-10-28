@@ -13,7 +13,7 @@ import CompanyForm, { SCRATCH_NOTE, WishSummary } from './CompanyForm'
 import { AccountPanel, AppointmentsPanel, ConfirmDialog, ContactForm, fmtWhen, upcoming } from './CabinetAccount'
 import { AiCard, CompetitorsCard, Delta, HistoryCard, deltas } from './ReportExtras'
 import { ProjectPanel, ResultView, projectHeadline } from './ProjectView'
-import { CompanySwitcher, ManagerCard, RecommendedCard, NextStepCard, OfferPanel, bookingLink, type NextStep } from './CabinetExtras'
+import { CompanySwitcher, RecommendedCard, NextStepCard, OfferPanel, bookingLink, type NextStep } from './CabinetExtras'
 
 /** Immer alle fünf Quellen in fester Reihenfolge — auch wenn die Suche nichts geliefert hat. */
 function allSources(list: Source[] | null | undefined): Source[] {
@@ -90,11 +90,9 @@ function EmptyState({ onLogout, onKonto }: { onLogout: () => void; onKonto: () =
 function PendingCard({ assigned }: { assigned: boolean }) {
   return (
     <div style={{ ...card, textAlign: 'center', padding: 'clamp(32px, 5vw, 60px) 24px' }}>
-      <p className="display" style={{ fontSize: 22, margin: '0 0 8px' }}>{assigned ? 'Ihr Ansprechpartner erstellt den Bericht.' : 'Ihre Anfrage ist eingegangen.'}</p>
+      <p className="display" style={{ fontSize: 22, margin: '0 0 8px' }}>Ihr Bericht wird gerade erstellt.</p>
       <p style={{ fontSize: 14.5, color: 'var(--muted)', margin: '0 auto', maxWidth: 460, lineHeight: 1.65 }}>
-        {assigned
-          ? 'Sobald die Analyse fertig ist, finden Sie hier die Ergebnisse, konkrete Probleme und unsere Empfehlung.'
-          : 'Ihr persönlicher Ansprechpartner übernimmt sie in der Regel innerhalb von 1 Werktag und startet dann die Analyse.'}
+        Er ist in der Regel innerhalb von 1 Werktag fertig. Danach finden Sie hier die Ergebnisse, konkrete Probleme und unsere Empfehlung.
       </p>
     </div>
   )
@@ -128,6 +126,14 @@ export default function CabinetPage() {
     const h = window.location.hash.slice(1) as Tab
     return TABS.some(([t]) => t === h) ? h : 'overview'
   })
+  // Punkt am Tab «Nachrichten»: neue Nachrichten vom Team seit dem letzten Öffnen des Tabs.
+  const [seenAt, setSeenAt] = useState<number>(() => { try { return Number(localStorage.getItem('rag-msgs-seen') ?? 0) } catch { return 0 } })
+  useEffect(() => {
+    if (tab !== 'messages') return
+    const now = Date.now()
+    try { localStorage.setItem('rag-msgs-seen', String(now)) } catch { /* Speicher gesperrt: Punkt bleibt sichtbar */ }
+    setSeenAt(now)
+  }, [tab])
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
   const [editing, setEditing] = useState(false)
@@ -248,6 +254,7 @@ export default function CabinetPage() {
   const statusLabel = intake && !check ? 'Angaben zum Unternehmen' : orderFirst && order ? orderStatusLabel(order) : checkLabel
   const statusDone = orderFirst ? order?.status === 'active' || order?.status === 'closed' : project ? ['result', 'support', 'done'].includes(project.status) : ready && !offer
   const statusWaiting = intake || (orderFirst ? !order?.details : !confirmed)
+  const unseenMsgs = tab === 'messages' ? 0 : msgs.filter(x => x.author === 'rag' && new Date(x.created_at).getTime() > seenAt).length
   const tabs = TABS.filter(([t]) => t !== 'konto' && (t === 'ergebnis' ? resultVisible(project) && !!check : t === 'offer' ? !!offer : t === 'report' && scratch && !ready ? false : check || (t !== 'report' && t !== 'company')))
   const scored = ready
   const chans: Channel[] = CHANNELS.map(c => {
@@ -306,26 +313,14 @@ export default function CabinetPage() {
     : nextAppt ? { title: 'Ihr nächster Termin', text: <><strong style={{ color: 'var(--ink)' }}>{fmtWhen(nextAppt.starts_at)}</strong> · {nextAppt.title}</>, links: [nextAppt.location && /^https?:\/\//.test(nextAppt.location) ? { label: 'Zum Videogespräch', href: nextAppt.location } : { label: 'Termine ansehen', onClick: () => setTab('termine') }] }
     : offer?.status === 'accepted' ? { title: 'Wir bereiten den Start vor', text: 'Danke für Ihre Zusage. Ihr Ansprechpartner meldet sich mit den nächsten Schritten und den Unterlagen, die wir von Ihnen brauchen.', links: [chat] }
     : scratch && !offer ? { title: 'Erstgespräch vereinbaren', text: 'Sie starten bei null, dafür brauchen wir keine Analyse. Wählen Sie einen Termin: Wir besprechen, womit Sie anfangen und was es kostet.', links: [...(book ? [{ label: 'Termin wählen', href: book }] : []), chat] }
-    : !assigned ? { title: 'Ihre Anfrage ist eingegangen', text: check ? 'Ihr persönlicher Ansprechpartner übernimmt sie in der Regel innerhalb von 1 Werktag und analysiert dann Ihr Unternehmen. Fragen können Sie uns schon jetzt im Chat stellen.' : 'Ihr persönlicher Ansprechpartner übernimmt sie in der Regel innerhalb von 1 Werktag. Fragen können Sie uns schon jetzt im Chat stellen.', links: [chat] }
-    : check && !ready ? { title: 'Ihr Ansprechpartner analysiert Ihr Unternehmen', text: 'Wir prüfen Google Maps, Website, KI-Suche und Social Media. Den Bericht sehen Sie hier, meist innerhalb von 1–2 Werktagen.', links: [chat] }
+    : !assigned && check ? { title: 'Ihre Prüfung läuft', text: 'Ihr vollständiger Bericht ist in der Regel innerhalb von 1 Werktag fertig. Den Stand sehen Sie oben.', links: [] }
+    : !assigned ? { title: 'Ihre Anfrage ist eingegangen', text: 'Ihr persönlicher Ansprechpartner übernimmt sie in der Regel innerhalb von 1 Werktag. Fragen können Sie uns schon jetzt im Chat stellen.', links: [chat] }
+    : check && !ready ? { title: 'Ihr Bericht entsteht', text: 'Wir prüfen Google Maps, Website, KI-Suche und Social Media. Der Bericht ist in der Regel innerhalb von 1 Werktag fertig.', links: [] }
     : check ? { title: 'Ihr Bericht ist fertig', text: rec ? <>Unsere Empfehlung: <strong style={{ color: 'var(--ink)' }}>{rec.name}</strong>. <span>Vereinbaren Sie einen Termin mit Ihrem Ansprechpartner, wir besprechen den Bericht in einem kurzen Gespräch.</span></> : 'Vereinbaren Sie einen Termin mit Ihrem Ansprechpartner, in 20 Minuten gehen wir die Ergebnisse durch.', links: [{ label: 'Bericht ansehen', onClick: () => setTab('report') }, ...(book ? [{ label: 'Termin wählen', href: book }] : [chat])] }
     : { title: 'Erstgespräch vereinbaren', text: 'Ihr Ansprechpartner hat Ihre Anfrage übernommen. Vereinbaren Sie einen Termin, wir besprechen Ihre Ziele und den Ablauf.', links: [chat] }
 
-  const statusSteps: [boolean, string, string][] = scratch ? [
-    [true, 'Angaben gespeichert', 'Start bei null'],
-    [assigned, 'Ansprechpartner übernimmt', assigned ? (manager?.name || 'Ihr Ansprechpartner ist zugeteilt') : 'In der Regel innerhalb von 1 Werktag'],
-    [!!nextAppt || !!offer, 'Erstgespräch', nextAppt ? fmtWhen(nextAppt.starts_at) : offer ? 'Erledigt' : lost ? 'Anfrage abgeschlossen' : 'Termin jetzt wählbar'],
-    [!!offer, 'Angebot', offer ? 'Liegt vor' : 'Nach dem Gespräch'],
-  ] : [
-    [true, 'Unternehmen bestätigt', place?.manual ? 'Angaben gespeichert' : 'Google-Profil gespeichert'],
-    [confirmed, 'Website & Profile bestätigt', confirmed ? 'Öffentliche Quellen bestätigt' : 'Wartet auf Ihre Bestätigung'],
-    [assigned, 'Ansprechpartner übernimmt', assigned ? (manager?.name || 'Ihr Ansprechpartner ist zugeteilt') : confirmed ? 'In der Regel innerhalb von 1 Werktag' : 'Nach Ihrer Bestätigung'],
-    [ready, 'Analyse & Bericht', ready ? 'Bericht und Empfehlung sind fertig' : assigned ? 'Ihr Ansprechpartner analysiert Ihr Unternehmen' : 'Startet, sobald die Anfrage übernommen ist'],
-  ]
-  // Nach dem Angebot: Auftrag und Umsetzung als weitere Schritte — sonst endet die Liste beim Erstgespräch / Bericht.
-  if (offer) statusSteps.push([offer.status === 'accepted', 'Auftrag', offer.status === 'accepted' ? 'Angebot angenommen' : 'Angebot liegt vor'])
-  if (project) statusSteps.push([['result', 'support', 'done'].includes(project.status), 'Umsetzung', PROJECT_LABEL[project.status] ?? ''])
-  if (scratch && offer) statusSteps.splice(3, 1) // «Angebot» aus dem Erstgespräch-Ablauf nicht doppelt zeigen
+  // Fortschritt für Kunden: nur drei Etappen, ohne interne Schritte (Zuteilung, Zuständigkeiten).
+  const progressStages: string[] = ['Anfrage eingegangen', 'Analyse läuft', 'Bericht']
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)' }}>
@@ -376,6 +371,8 @@ export default function CabinetPage() {
               <button key={t} type="button" onClick={() => setTab(t)} aria-current={tab === t ? 'page' : undefined}
                 style={{ background: 'none', border: 'none', fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap', padding: '14px 16px', fontSize: 14.5, fontWeight: 600, color: tab === t ? 'var(--electric)' : 'var(--muted)', borderBottom: `2px solid ${tab === t ? 'var(--electric)' : 'transparent'}`, transition: 'color 0.25s ease' }}>
                 {l}
+                {t === 'company' && (!contact.name.trim() || !contact.phone.trim()) && <span aria-label="Kontakte ergänzen" style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', backgroundColor: 'var(--electric)', marginLeft: 7, verticalAlign: 'middle' }} />}
+                {t === 'messages' && unseenMsgs > 0 && <span aria-label="Neue Nachrichten" style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', backgroundColor: 'var(--electric)', marginLeft: 7, verticalAlign: 'middle' }} />}
               </button>
             ))}
           </nav>
@@ -413,33 +410,27 @@ export default function CabinetPage() {
         {tab === 'overview' && (
           <>
           <style>{`@keyframes cab-skel { 0%, 100% { opacity: 0.45 } 50% { opacity: 1 } } .cab-skel { animation: cab-skel 1.6s ease-in-out infinite; background-color: #E6E3FB; border-radius: 6px; } @media (prefers-reduced-motion: reduce) { .cab-skel { animation: none; } }`}</style>
-          <div className={check ? 'cab-overview' : undefined} style={check ? { display: 'grid', gridTemplateColumns: 'minmax(260px, 340px) minmax(0, 1fr)', gap: 18, alignItems: 'start' } : undefined}>
-            {check && (
-              <aside style={{ position: 'sticky', top: 20 }}>
-              <div style={card}>
-                <Eyebrow>{scratch ? 'Stand der Anfrage' : 'Stand der Prüfung'}</Eyebrow>
-                <p className="display" style={{ fontSize: 22, margin: '0 0 16px' }}>{statusLabel}</p>
-                {statusSteps.map(([done, t, s], i) => (
-                  <div key={t} style={{ display: 'flex', gap: 14, padding: '12px 0', borderTop: '1px solid var(--line-soft)' }}>
-                    <span style={{ width: 26, height: 26, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: done ? '#fff' : 'var(--electric)', backgroundColor: done ? 'var(--electric)' : '#EEEBFF' }}>
-                      {done ? '✓' : <span className="blink">•</span>}
-                    </span>
-                    <span>
-                      <span style={{ display: 'block', fontWeight: 600, fontSize: 14.5 }}>{t}</span>
-                      <span style={{ display: 'block', fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>{s}</span>
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: 18 }}>
-                <ManagerCard manager={manager} assigned={assigned} onWrite={write} canBook={canBook} lockedHint={lockedHint} compact />
-              </div>
-              </aside>
-            )}
+          <div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 18, minWidth: 0 }}>
+            {check && !scratch && (
+              <div style={{ ...card, padding: 'clamp(18px, 2.4vw, 24px)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
+                  {progressStages.map((label, i) => {
+                    const done = i === 0 || (i === 1 && ready) || (i === 2 && ready)
+                    const active = i === 1 && !ready
+                    const lit = done || active
+                    return (
+                      <div key={label}>
+                        <div style={{ height: 6, borderRadius: 3, backgroundColor: lit ? 'var(--electric)' : '#EEEBFF', opacity: active ? 0.45 : 1 }} />
+                        <p style={{ margin: '10px 0 0', fontSize: 14, fontWeight: lit ? 600 : 500, color: lit ? 'var(--ink)' : 'var(--muted)' }}>{label}</p>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
             {!confirmed && (
           <section aria-labelledby="confirm-title" style={{ ...card, borderLeft: '4px solid var(--electric)', padding: 'clamp(22px, 3vw, 32px)' }}>
-            <Eyebrow>Ihr nächster Schritt</Eyebrow>
             <h2 id="confirm-title" className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 30px)', lineHeight: 1.15, margin: '0 0 10px' }}>Sind das Ihre Website und Profile?</h2>
             <p style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 20px', maxWidth: 640 }}>
               Diese Quellen haben wir zu Ihrem Unternehmen gefunden. Bitte prüfen Sie die Einträge und ergänzen Sie, was fehlt, danach startet unser Team die Analyse.
@@ -455,12 +446,11 @@ export default function CabinetPage() {
           </section>
             )}
             {intake && <CompanyForm order={order && !order.details ? order : null} quiz={quiz} checks={checks} contact={{ name: contact.name, email: userEmail, phone: contact.phone }} />}
-            {nextStep && <NextStepCard step={nextStep} />}
+            {nextStep && <NextStepCard step={nextStep} onWrite={write} />}
             {!!check?.wish?.length && !offer && !lost && <WishSummary items={check.wish} note={scratch ? SCRATCH_NOTE : undefined} />}
             {project && <ProjectPanel project={project} extra={addendumProjects} />}
             {openAddendum && <OfferPanel offer={openAddendum} onAccepted={onAccepted} booking={book} />}
             {offer?.status === 'sent' && <OfferPanel offer={offer} onAccepted={onAccepted} booking={book} />}
-            {!check && !intake && <ManagerCard manager={manager} assigned={assigned} onWrite={write} canBook={canBook} lockedHint={lockedHint} />}
             {order?.details && (
           <div>
             <OrderPanel order={order} onChange={setOrder}
@@ -502,33 +492,24 @@ export default function CabinetPage() {
             )}
             {scored && recs.length > 0 ? (
               <div style={card}>
-                <Eyebrow>Was wir zuerst empfehlen</Eyebrow>
-                <div className="cab-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 18, marginTop: 8 }}>
+                <p style={{ fontWeight: 700, fontSize: 16, margin: '0 0 18px' }}>Was wir zuerst empfehlen</p>
+                <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 18 }}>
                   {recs.map(([p, t, d], i) => (
-                    <div key={t} style={{ paddingTop: 16, borderTop: `2px solid ${i === 0 ? 'var(--electric)' : 'var(--line)'}` }}>
-                      <p style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? 'var(--electric)' : 'var(--muted)', margin: '0 0 8px' }}>{p}</p>
-                      <p style={{ fontWeight: 700, fontSize: 16.5, margin: '0 0 8px', letterSpacing: '-0.01em' }}>{t}</p>
-                      <p style={{ fontSize: 13.5, lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>{d}</p>
-                    </div>
+                    <li key={t} style={{ display: 'flex', gap: 14 }}>
+                      <span style={{ fontWeight: 700, fontSize: 15, color: i === 0 ? 'var(--electric)' : 'var(--muted)', minWidth: 18 }}>{i + 1}.</span>
+                      <span style={{ minWidth: 0 }}>
+                        <span style={{ display: 'block', fontSize: 13, color: 'var(--muted)', marginBottom: 2 }}>{p}</span>
+                        <span style={{ display: 'block', fontWeight: 700, fontSize: 16, lineHeight: 1.4, marginBottom: 4 }}>{t}</span>
+                        <span style={{ display: 'block', fontSize: 14, lineHeight: 1.65, color: 'var(--muted)' }}>{d}</span>
+                      </span>
+                    </li>
                   ))}
-                </div>
+                </ol>
               </div>
             ) : check && !scored && !scratch ? (
               <div style={card}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
-                  <Eyebrow>Was wir zuerst empfehlen</Eyebrow>
-                  <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>Erscheint mit Ihrem Bericht</span>
-                </div>
-                <div className="cab-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 18, marginTop: 8 }} aria-hidden>
-                  {[0, 1, 2].map(i => (
-                    <div key={i} style={{ paddingTop: 16, borderTop: `2px solid ${i === 0 ? 'var(--electric)' : 'var(--line)'}` }}>
-                      <p style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? 'var(--electric)' : 'var(--muted)', margin: '0 0 10px' }}>{i + 1}</p>
-                      <div className="cab-skel" style={{ height: 14, width: '70%', marginBottom: 12, animationDelay: `${i * 0.2}s` }} />
-                      <div className="cab-skel" style={{ height: 9, width: '100%', marginBottom: 7, animationDelay: `${i * 0.2 + 0.1}s` }} />
-                      <div className="cab-skel" style={{ height: 9, width: '85%', animationDelay: `${i * 0.2 + 0.2}s` }} />
-                    </div>
-                  ))}
-                </div>
+                <p style={{ fontWeight: 700, fontSize: 16, margin: '0 0 6px' }}>Was wir zuerst empfehlen</p>
+                <p style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>Die drei wichtigsten Schritte für Ihr Unternehmen stehen im Bericht.</p>
               </div>
             ) : null}
             {rec && !offer && <RecommendedCard rec={rec} booking={book} onWrite={write} />}

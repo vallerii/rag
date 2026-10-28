@@ -116,6 +116,7 @@ export function DatenschutzBody() {
 
       <h2 style={h2}>8. Kontakt per E-Mail und Telefon</h2>
       <p style={p}>Wenn Sie uns schreiben oder anrufen, verarbeiten wir Ihre Angaben, um die Anfrage zu beantworten (Art. 6 Abs. 1 lit. b bzw. f DSGVO).</p>
+      <p style={p}>Wir können Sie anrufen oder anschreiben, wenn es Rückfragen zu Ihrem Check gibt oder Ihr Bericht fertig ist. Dafür nutzen wir die Telefonnummer, die Sie bei der Registrierung oder im Kundenbereich angeben. Die Angabe ist freiwillig. Rechtsgrundlage ist die Durchführung des Checks bzw. Vertrags (Art. 6 Abs. 1 lit. b DSGVO). Anrufe zu Werbezwecken machen wir nur mit Ihrer ausdrücklichen Einwilligung (§ 7 UWG), die Sie jederzeit widerrufen können.</p>
       <p style={p}>E-Mails aus dem Kundenbereich (z. B. Bestätigung, Passwort zurücksetzen, neue Nachricht, Ansprechpartner zugeteilt, Bericht ist fertig, Angebot, Termin, Rechnung, Projektstand) versenden wir über Brevo (Sendinblue GmbH, Köpenicker Str. 126, 10179 Berlin) als Auftragsverarbeiter. Dabei verarbeitet Brevo Ihre E-Mail-Adresse, Ihren Namen und den Inhalt der Benachrichtigung; die Daten liegen auf Servern in der EU. Rechtsgrundlage ist die Durchführung des Checks bzw. Vertrags (Art. 6 Abs. 1 lit. b DSGVO). Ein Auftragsverarbeitungsvertrag besteht.</p>
 
       <h2 style={h2}>9. Tipps per E-Mail (nur mit Einwilligung)</h2>
