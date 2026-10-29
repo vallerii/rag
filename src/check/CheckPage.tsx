@@ -146,7 +146,7 @@ function Findings({ place, found, draft, onDraft }: { place: Place; found: Sourc
 /** Gewählte Firma oben — kompakt, mit «Ändern». */
 function SelectedCompany({ place, loading, onChange }: { place: Place | null; loading: boolean; onChange: () => void }) {
   return (
-    <div style={{ display: 'flex', gap: 14, alignItems: 'center', border: '1px solid var(--line)', borderRadius: 18, padding: '10px 14px', backgroundColor: '#FAFAFD', marginBottom: 14 }}>
+    <div style={{ display: 'flex', gap: 18, alignItems: 'center', border: '1px solid var(--line)', borderRadius: 18, padding: '28px 20px', backgroundColor: '#FAFAFD', marginBottom: 22 }}>
       <span style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: 'var(--electric)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
       </span>
@@ -372,7 +372,7 @@ export default function CheckPage() {
 
       <div ref={topRef} style={{ scrollMarginTop: 80 }} />
       <main id="inhalt" style={{ maxWidth: 1240, margin: '0 auto', padding: '20px clamp(20px, 4vw, 48px) 40px' }}>
-        <section className="ck-card" style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(20px, 2.6vw, 30px)', boxShadow: '0 30px 70px rgba(7,7,12,0.06)', minWidth: 0, maxWidth: step === 'review' ? 800 : undefined, margin: '0 auto' }}>
+        <section className="ck-card" style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(20px, 2.6vw, 30px)', boxShadow: '0 30px 70px rgba(7,7,12,0.06)', minWidth: 0, maxWidth: step === 'review' ? 680 : undefined, margin: '0 auto' }}>
 
           {step === 'find' && (
             <>
