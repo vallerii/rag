@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { DEMO, searchCompanies, type Suggestion } from './data'
+import { searchCompanies, type Suggestion } from './data'
 
 // Suchfeld «Unternehmen in Google finden» — Startseite (BusinessCheck), Leistungsseiten und /check.
 // Keine Vorschläge beim Tippen: erst «Finden» klicken → eine Google-Anfrage pro Suche.
@@ -74,7 +74,7 @@ export default function CompanySearch({ variant = 'hero', initial = '', autoFocu
 
       {!onSubmitQuery && (error || results) && (
         <div id={`cs-${variant}-list`} role="region" aria-live="polite"
-          style={{ marginTop: 8, backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 16, border: hero ? 'none' : '1px solid var(--border)', boxShadow: '0 18px 40px rgba(11,11,26,.18)', overflow: 'hidden', textAlign: 'left' }}>
+          style={{ marginTop: 16, backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 16, border: hero ? 'none' : '1px solid var(--border)', boxShadow: '0 18px 40px rgba(11,11,26,.18)', overflow: 'hidden', textAlign: 'left' }}>
           {error && (
             <p role="alert" style={{ fontSize: 14, lineHeight: 1.6, margin: 0, padding: '14px 18px', color: '#B3261E' }}>Die Suche ist gerade nicht erreichbar. Bitte versuchen Sie es in einer Minute noch einmal.</p>
           )}
@@ -83,11 +83,11 @@ export default function CompanySearch({ variant = 'hero', initial = '', autoFocu
           )}
           {!error && results && results.map((r, i) => (
             <button key={r.id} type="button" onClick={() => goToCheck({ place: r.id })} className="ck-result"
-              style={{ display: 'flex', gap: 12, alignItems: 'center', width: '100%', padding: '12px 16px', border: 'none', borderTop: i ? '1px solid var(--line-soft)' : 'none', backgroundColor: '#fff', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', color: 'var(--ink)' }}>
+              style={{ display: 'flex', gap: 16, alignItems: 'center', width: '100%', padding: '24px 20px', border: 'none', borderTop: i ? '1px solid var(--line-soft)' : 'none', backgroundColor: '#fff', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', color: 'var(--ink)' }}>
               <span style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: '#EEEBFF', color: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><PinIcon /></span>
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ display: 'block', fontWeight: 600, fontSize: 14.5, lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.main}</span>
-                <span style={{ display: 'block', fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.45, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.secondary}</span>
+                <span style={{ display: 'block', fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.45, marginTop: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.secondary}</span>
               </span>
               <span className="ck-hide-sm" style={{ fontSize: 13, fontWeight: 600, color: 'var(--electric)', whiteSpace: 'nowrap' }}>Auswählen →</span>
             </button>
@@ -95,7 +95,6 @@ export default function CompanySearch({ variant = 'hero', initial = '', autoFocu
           {!error && results && (
             <div style={{ padding: '12px 16px 14px', borderTop: results.length ? '1px solid var(--line-soft)' : 'none', backgroundColor: results.length ? '#FAFAFD' : '#fff' }}>
               <button type="button" onClick={notListed} className="ul" style={linkBtn}>Mein Unternehmen ist nicht in der Liste</button>
-              {DEMO && <p style={{ fontSize: 12, color: 'var(--muted)', margin: '6px 0 0' }}>Demo: Die Google-Anbindung ist noch nicht aktiv, angezeigt werden Beispieldaten.</p>}
             </div>
           )}
         </div>
