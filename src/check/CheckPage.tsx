@@ -104,7 +104,7 @@ function FieldRow({ id, label, value, original, placeholder, type, inputMode, au
       <StatusDot ok={filled} />
       <label htmlFor={id} style={{ fontWeight: 600, fontSize: 14, width: 92, flexShrink: 0 }}>{label}</label>
       <input id={id} type={type ?? 'text'} inputMode={inputMode} autoComplete={autoComplete ?? 'off'} spellCheck={false} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        style={{ ...fieldStyle, width: 'auto', flex: '1 1 200px', minWidth: 0, padding: '7px 12px' }} />
+        style={{ ...fieldStyle, width: 'auto', flex: '1 1 200px', minWidth: 0, minHeight: 52, padding: '14px 16px' }} />
       <span style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', padding: '3px 10px', borderRadius: 999, color: chip.color, backgroundColor: chip.bg }}>{status}</span>
     </li>
   )
@@ -132,7 +132,7 @@ function Findings({ place, found, draft, onDraft }: { place: Place; found: Sourc
           : row(place.reviews >= 20 && (place.rating ?? 0) >= 4.2, <>Google-Profil: {place.rating !== null ? <>★ {place.rating.toLocaleString('de-DE', { minimumFractionDigits: 1 })} · </> : null}{place.reviews} Bewertungen</>)}
         {!place.manual && row(!!place.phone, place.phone ? 'Telefon im Google-Profil angegeben' : 'Kein Telefon im Google-Profil angegeben')}
       </ul>
-      <ul style={{ listStyle: 'none', margin: 0, padding: '10px 0 0', borderTop: '1px solid var(--line-soft)', display: 'grid', gap: 6 }}>
+      <ul style={{ listStyle: 'none', margin: 0, padding: '16px 0 0', display: 'grid', gap: 18 }}>
         {draft === null ? (
           <li style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, color: 'var(--muted)' }}><span className="ck-spin" aria-hidden="true" />Wir suchen Ihre Website und Social-Media-Profile…</li>
         ) : draft.map(s => (
@@ -372,7 +372,7 @@ export default function CheckPage() {
 
       <div ref={topRef} style={{ scrollMarginTop: 80 }} />
       <main id="inhalt" style={{ maxWidth: 1240, margin: '0 auto', padding: '20px clamp(20px, 4vw, 48px) 40px' }}>
-        <section className="ck-card" style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(20px, 2.6vw, 30px)', boxShadow: '0 30px 70px rgba(7,7,12,0.06)', minWidth: 0, maxWidth: step === 'review' ? 680 : undefined, margin: '0 auto' }}>
+        <section className="ck-card" style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(20px, 2.6vw, 30px)', boxShadow: '0 30px 70px rgba(7,7,12,0.06)', minWidth: 0, maxWidth: step !== 'find' ? 680 : undefined, margin: '0 auto' }}>
 
           {step === 'find' && (
             <>
