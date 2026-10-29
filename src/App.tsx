@@ -1605,7 +1605,7 @@ function ServicesNavDropdown({ fg }: { fg: string }) {
       }}>
         {modules.map(m => (
           <a key={m.slug} href={`/services/${m.slug}`}
-            style={{ display: 'flex', gap: 18, alignItems: 'flex-start', padding: '18px 16px', borderRadius: 12, textDecoration: 'none', transition: 'background 0.25s' }}
+            style={{ display: 'flex', gap: 22, alignItems: 'flex-start', padding: '24px 20px', borderRadius: 12, textDecoration: 'none', transition: 'background 0.25s' }}
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bone)')}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
             <IconTile kind={channelKindOf(m.slug)} small />
