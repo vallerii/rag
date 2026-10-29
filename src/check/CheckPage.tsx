@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import CompanySearch from './CompanySearch'
 import {
-  DEMO, SOURCE_LABELS, SOURCE_ORDER, createCheck, placeFromCode, discoverSources, findMyCheck, getCompany, loadMyChecks, manualPlace, newSessionToken, searchCompanies,
+  SOURCE_LABELS, SOURCE_ORDER, createCheck, placeFromCode, discoverSources, findMyCheck, getCompany, loadMyChecks, manualPlace, newSessionToken, searchCompanies,
   type Contact, type Place, type Source, type SourceKey, type Suggestion,
 } from './data'
 import AccountStep from './AccountStep'
@@ -372,7 +372,7 @@ export default function CheckPage() {
 
       <div ref={topRef} style={{ scrollMarginTop: 80 }} />
       <main id="inhalt" style={{ maxWidth: 1240, margin: '0 auto', padding: '20px clamp(20px, 4vw, 48px) 40px' }}>
-        <section className="ck-card" style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(20px, 2.6vw, 30px)', boxShadow: '0 30px 70px rgba(7,7,12,0.06)', minWidth: 0 }}>
+        <section className="ck-card" style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(20px, 2.6vw, 30px)', boxShadow: '0 30px 70px rgba(7,7,12,0.06)', minWidth: 0, maxWidth: step === 'review' ? 800 : undefined, margin: '0 auto' }}>
 
           {step === 'find' && (
             <>
@@ -387,19 +387,18 @@ export default function CheckPage() {
                     <div style={{ border: '1px solid var(--line)', borderRadius: 20, overflow: 'hidden' }}>
                       {results.map((r, i) => (
                         <button key={r.id} type="button" onClick={() => loadPlace(r.id)} className="ck-result"
-                          style={{ display: 'flex', gap: 14, alignItems: 'center', width: '100%', padding: '15px 18px', border: 'none', borderTop: i ? '1px solid var(--line-soft)' : 'none', backgroundColor: '#fff', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', color: 'var(--ink)' }}>
+                          style={{ display: 'flex', gap: 18, alignItems: 'center', width: '100%', padding: '24px 20px', border: 'none', borderTop: i ? '1px solid var(--line-soft)' : 'none', backgroundColor: '#fff', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', color: 'var(--ink)' }}>
                           <span style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: '#EEEBFF', color: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
                           </span>
                           <span style={{ flex: 1, minWidth: 0 }}>
                             <span style={{ display: 'block', fontWeight: 600, fontSize: 15, lineHeight: 1.35 }}>{r.main}</span>
-                            <span style={{ display: 'block', fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>{r.secondary}</span>
+                            <span style={{ display: 'block', fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, marginTop: 6 }}>{r.secondary}</span>
                           </span>
                           <span className="ck-hide-sm" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--electric)', whiteSpace: 'nowrap' }}>Auswählen →</span>
                         </button>
                       ))}
                     </div>
-                    {DEMO && <div style={{ marginTop: 12 }}><DemoNote>Die Google-Anbindung ist noch nicht aktiv. Angezeigt werden Beispieldaten.</DemoNote></div>}
                     <NotListed query={query} nothingFound={false} onManual={goManual} />
                   </>
                 )}
@@ -427,7 +426,6 @@ export default function CheckPage() {
             <>
               <StepHead n="Schritt 2 von 3" title="Prüfen Sie, was wir gefunden haben" />
               <SelectedCompany place={place} loading={loadingPlace} onChange={backToFind} />
-              {DEMO && !place?.manual && <div style={{ margin: '-10px 0 20px' }}><DemoNote>Die Google-Anbindung ist noch nicht aktiv. Angezeigt werden Beispieldaten.</DemoNote></div>}
               {place && !loadingPlace && <Findings place={place} found={found} draft={srcDraft} onDraft={editSources} />}
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 20 }}>
                 <button type="button" className="btn btn-lg btn-electric" disabled={!place || loadingPlace} onClick={() => setStep('account')}
