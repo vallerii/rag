@@ -1600,12 +1600,12 @@ function ServicesNavDropdown({ fg }: { fg: string }) {
         transform: `translateY(${open ? '0px' : '-8px'})`,
         opacity: open ? 1 : 0,
         transition: `opacity 0.28s ease, transform 0.4s ${EASE}`,
-        backgroundColor: '#fff', borderRadius: 20, padding: 10, minWidth: 340,
+        backgroundColor: '#fff', borderRadius: 20, padding: 16, minWidth: 380,
         boxShadow: '0 30px 70px rgba(11,11,26,0.14)', border: '1px solid var(--border)',
       }}>
         {modules.map(m => (
           <a key={m.slug} href={`/services/${m.slug}`}
-            style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '11px 13px', borderRadius: 12, textDecoration: 'none', transition: 'background 0.25s' }}
+            style={{ display: 'flex', gap: 18, alignItems: 'flex-start', padding: '18px 16px', borderRadius: 12, textDecoration: 'none', transition: 'background 0.25s' }}
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bone)')}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
             <IconTile kind={channelKindOf(m.slug)} small />
