@@ -1,8 +1,7 @@
 import LangSwitch from '../LangSwitch'
-import GoogleG from './GoogleG'
 import { useEffect, useState } from 'react'
 import { Logo, useNoindex } from './CheckPage'
-import { authErrorText, currentUser, getSupabase, sendPasswordReset, setNewPassword, signIn, signInWithGoogle, type AuthError } from './data'
+import { authErrorText, currentUser, getSupabase, sendPasswordReset, setNewPassword, signIn, type AuthError } from './data'
 
 // Anmeldung für Bestandskunden: /login · /passwort-vergessen · /passwort-neu
 // Konto entsteht im Check (Schritt 3) — hier nur Anmelden und Passwort zurücksetzen.
@@ -77,26 +76,8 @@ export function LoginPage() {
   }
 
   const ok = /^\S+@\S+\.\S+$/.test(email.trim()) && password.length > 0
-  const google = async () => {
-    if (busy) return
-    setBusy(true); setError(null)
-    try {
-      const err = await signInWithGoogle(nextPath())
-      if (err) { setError(err); setBusy(false) }
-    } catch {
-      setError('network'); setBusy(false)
-    }
-  }
-
   return (
     <AuthShell eyebrow="Kundenbereich" title="Anmelden" sub="Melden Sie sich an, um den Stand Ihres Sichtbarkeits-Checks und Ihren Bericht zu sehen.">
-      <button type="button" onClick={google} disabled={busy}
-        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '13px 16px', borderRadius: 14, border: '1px solid rgba(7,7,12,0.14)', backgroundColor: '#fff', color: 'var(--ink)', fontFamily: 'inherit', fontSize: 15, fontWeight: 600, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1 }}>
-        <GoogleG />Mit Google fortfahren
-      </button>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '14px 0', color: 'var(--muted)', fontSize: 13 }}>
-        <span style={{ flex: 1, height: 1, backgroundColor: 'var(--line)' }} />oder mit E-Mail<span style={{ flex: 1, height: 1, backgroundColor: 'var(--line)' }} />
-      </div>
       <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div><label style={labelSt} htmlFor="li-email">E-Mail</label><input id="li-email" type="email" style={field} value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" /></div>
         <div>
