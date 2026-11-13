@@ -42,7 +42,7 @@ export type Place = {
   manual?: boolean
 }
 
-export type SourceKey = 'website' | 'instagram' | 'facebook' | 'linkedin' | 'tiktok'
+export type SourceKey = 'website' | 'instagram' | 'facebook' | 'linkedin' | 'tiktok' | 'other'
 export type Source = { key: SourceKey; value: string; found: boolean }
 
 export type Contact = { name: string; email: string; phone: string; role?: string; okEmail: boolean; okPhone: boolean }
@@ -55,7 +55,7 @@ const PROXY = (import.meta.env.VITE_PLACES_PROXY as string | undefined)?.replace
 export const DEMO = !PROXY
 
 export const SOURCE_LABELS: Record<SourceKey, string> = {
-  website: 'Website', instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn', tiktok: 'TikTok',
+  website: 'Website', instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn', tiktok: 'TikTok', other: 'Weiteres Profil',
 }
 export const SOURCE_ORDER: SourceKey[] = ['website', 'instagram', 'facebook', 'linkedin', 'tiktok']
 
@@ -492,16 +492,20 @@ export type MyContact = { name: string; phone: string }
 export async function loadMyContact(u: User): Promise<MyContact> {
   const { data } = await (await getSupabase()).from('profiles').select('name, phone').eq('id', u.id).maybeSingle()
   return {
-    name: (data?.name as string | null) ?? (u.user_metadata?.name as string | undefined) ?? '',
-    phone: (data?.phone as string | null) ?? (u.user_metadata?.phone as string | undefined) ?? '',
+    name: (data?.name as string | null)?.trim() || (u.user_metadata?.name as string | undefined) || (u.user_metadata?.full_name as string | undefined) || '',
+    phone: (data?.phone as string | null)?.trim() || (u.user_metadata?.phone as string | undefined) || '',
   }
 }
-export async function saveMyContact(c: MyContact): Promise<boolean> {
+export async function saveMyContact(c: MyContact, consent?: { privacy: boolean; marketing: boolean }): Promise<boolean> {
   const s = await getSupabase()
   const { error } = await s.rpc('update_my_contact', { p_name: c.name, p_phone: c.phone })
   if (error) return false
-  await s.auth.updateUser({ data: { name: c.name.trim(), phone: c.phone.trim() } })
-  return true
+  const { error: authError } = await s.auth.updateUser({ data: {
+    name: c.name.trim(), phone: c.phone.trim(),
+    ...(consent?.privacy ? { privacy_accepted_at: new Date().toISOString() } : {}),
+    ...(consent?.marketing ? { marketing_opt_in_at: new Date().toISOString(), marketing_opt_in_text: 'Tipps zur lokalen Sichtbarkeit per E-Mail und Telefon' } : {}),
+  } })
+  return !authError
 }
 /** Neues Passwort — vorher das aktuelle prüfen. */
 export async function changePassword(email: string, current: string, next: string): Promise<'ok' | 'wrong' | 'error'> {

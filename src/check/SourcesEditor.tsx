@@ -3,7 +3,7 @@ import { SOURCE_LABELS, type Source } from './data'
 // Liste Website + Social-Media-Profile mit Status «Gefunden / Ergänzt / Nicht gefunden».
 // Wird im Kundenbereich zum Bestätigen der gefundenen Quellen verwendet.
 
-const SOURCE_ICON: Record<string, string> = { website: 'W', instagram: 'IG', facebook: 'FB', linkedin: 'in', tiktok: 'TT' }
+const SOURCE_ICON: Record<string, string> = { website: 'W', instagram: 'IG', facebook: 'FB', linkedin: 'in', tiktok: 'TT', other: '+' }
 const field: React.CSSProperties = { width: '100%', padding: '9px 12px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
 
 export default function SourcesEditor({ sources, onChange }: { sources: Source[]; onChange: (next: Source[]) => void }) {

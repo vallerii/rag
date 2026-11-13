@@ -64,10 +64,10 @@ export function DemoNote({ children }: { children: React.ReactNode }) {
   )
 }
 
-function StepHead({ title, sub }: { n?: string; title: string; sub?: string }) {
+function StepHead({ title, sub, compact = false }: { n?: string; title: string; sub?: string; compact?: boolean }) {
   return (
     <>
-      <h1 className="display" style={{ fontSize: 'clamp(24px, 2.6vw, 32px)', lineHeight: 1.08, margin: sub ? '0 0 10px' : '0 0 18px' }}>{title}</h1>
+      <h1 className="display" style={{ fontSize: compact ? 'clamp(22px, 2.3vw, 28px)' : 'clamp(24px, 2.6vw, 32px)', lineHeight: 1.08, margin: sub ? '0 0 10px' : '0 0 18px' }}>{title}</h1>
       {sub && <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)', margin: '0 0 18px', maxWidth: 900 }}>{sub}</p>}
     </>
   )
@@ -125,7 +125,7 @@ function Findings({ place, found, draft, onDraft }: { place: Place; found: Sourc
   return (
     <div style={{ border: '1px solid var(--line)', borderRadius: 18, padding: '14px 16px', backgroundColor: '#fff' }}>
       <p style={{ fontWeight: 700, fontSize: 15.5, margin: '0 0 2px' }}>Das haben wir schon gefunden</p>
-      <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, margin: '0 0 12px' }}>Stimmt etwas nicht? Ändern oder ergänzen Sie es direkt hier.</p>
+      <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, margin: '0 0 24px' }}>Stimmt etwas nicht? Ändern oder ergänzen Sie es direkt hier.</p>
       <ul style={{ listStyle: 'none', margin: '0 0 10px', padding: 0, display: 'grid', gap: 4 }}>
         {place.manual
           ? row(false, 'Kein Google-Unternehmensprofil: bei Google Maps erscheinen Sie nicht.')
@@ -139,14 +139,20 @@ function Findings({ place, found, draft, onDraft }: { place: Place; found: Sourc
           <FieldRow key={s.key} id={`src-${s.key}`} label={SOURCE_LABELS[s.key]} value={s.value} original={originalOf(s.key)} placeholder="Nicht gefunden, hier eintragen" onChange={setValue(s.key)} />
         ))}
       </ul>
+      {draft !== null && !draft.some(s => s.key === 'other') && (
+        <button type="button" className="ul" onClick={() => onDraft([...draft, { key: 'other', value: '', found: false }])}
+          style={{ marginTop: 24, padding: '6px 0', background: 'none', border: 0, color: 'var(--electric)', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
+          + Weiteres Social-Media-Profil hinzufügen
+        </button>
+      )}
     </div>
   )
 }
 
-/** Gewählte Firma oben — kompakt, mit «Ändern». */
+/** Gefundene Firma als hervorgehobene Bestätigung, mit «Ändern». */
 function SelectedCompany({ place, loading, onChange }: { place: Place | null; loading: boolean; onChange: () => void }) {
   return (
-    <div style={{ display: 'flex', gap: 18, alignItems: 'center', border: '1px solid var(--line)', borderRadius: 18, padding: '28px 20px', backgroundColor: '#FAFAFD', marginBottom: 22 }}>
+    <div style={{ display: 'flex', gap: 18, alignItems: 'center', border: '1px solid var(--line)', borderRadius: 18, minHeight: 112, padding: '26px 24px', backgroundColor: '#FAFAFD', marginBottom: 26 }}>
       <span style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: 'var(--electric)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
       </span>
@@ -155,8 +161,8 @@ function SelectedCompany({ place, loading, onChange }: { place: Place | null; lo
           <span style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--muted)', fontSize: 14 }}><span className="ck-spin" aria-hidden="true" />Wir laden das Profil…</span>
         ) : (
           <>
-            <span style={{ display: 'block', fontWeight: 700, fontSize: 15.5, lineHeight: 1.3 }}>{place.name}</span>
-            <span style={{ display: 'block', fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>
+            <span style={{ display: 'block', fontWeight: 700, fontSize: 18, lineHeight: 1.3 }}>{place.name}</span>
+            <span style={{ display: 'block', fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, marginTop: 8 }}>
               {[place.category, place.address || place.city].filter(Boolean).join(' · ')}
               {place.rating !== null && !place.manual ? ` · ★ ${place.rating.toLocaleString('de-DE', { minimumFractionDigits: 1 })} (${place.reviews})` : ''}
             </span>
@@ -354,7 +360,7 @@ export default function CheckPage() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)' }}>
-      <header style={{ borderBottom: '1px solid var(--line)', backgroundColor: 'rgba(241,240,235,0.9)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', position: 'sticky', top: 0, zIndex: 20 }}>
+      <header style={{ borderBottom: '1px solid var(--line)', backgroundColor: '#fff', position: 'sticky', top: 0, zIndex: 20 }}>
         <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 clamp(20px, 4vw, 48px)', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <Logo />
           <p className="eyebrow ck-hide-sm" style={{ color: 'var(--muted)' }}>Kostenloser Sichtbarkeits-Check</p>
@@ -371,8 +377,8 @@ export default function CheckPage() {
       </header>
 
       <div ref={topRef} style={{ scrollMarginTop: 80 }} />
-      <main id="inhalt" style={{ maxWidth: 1240, margin: '0 auto', padding: '20px clamp(20px, 4vw, 48px) 40px' }}>
-        <section className="ck-card" style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(20px, 2.6vw, 30px)', boxShadow: '0 30px 70px rgba(7,7,12,0.06)', minWidth: 0, maxWidth: step !== 'find' ? 680 : undefined, margin: '0 auto' }}>
+      <main id="inhalt" style={{ maxWidth: 1240, margin: '0 auto', padding: 'clamp(36px, 5vh, 56px) clamp(20px, 4vw, 48px) 40px' }}>
+        <section className="ck-card" style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(20px, 2.6vw, 30px)', paddingBottom: step === 'account' ? 20 : step === 'review' ? 44 : undefined, minHeight: step === 'account' ? 0 : undefined, boxShadow: '0 30px 70px rgba(7,7,12,0.06)', minWidth: 0, maxWidth: step !== 'find' ? 680 : undefined, margin: '0 auto' }}>
 
           {step === 'find' && (
             <>
@@ -424,7 +430,7 @@ export default function CheckPage() {
             </>
           ) : step === 'review' ? (
             <>
-              <StepHead n="Schritt 2 von 3" title="Prüfen Sie, was wir gefunden haben" />
+              <StepHead compact n="Schritt 2 von 3" title="Prüfen Sie, was wir gefunden haben" />
               <SelectedCompany place={place} loading={loadingPlace} onChange={backToFind} />
               {place && !loadingPlace && <Findings place={place} found={found} draft={srcDraft} onDraft={editSources} />}
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 20 }}>
