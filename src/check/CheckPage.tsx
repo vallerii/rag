@@ -207,6 +207,8 @@ export default function CheckPage() {
   const initialPlace = params.get('place')
   // Code aus dem Brief (QR-Code / Link): /check?c=ABC123 → Unternehmen ist schon ausgewählt.
   const briefCode = (params.get('c') ?? '').trim().toUpperCase()
+  // Brief aus der Lead-CRM: /check?place=<place_id>&ref=<Code> → Herkunft «crm-<Code>» in der Anfrage.
+  const crmRef = (params.get('ref') ?? '').trim().replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64)
   const initialQ = params.get('q') ?? ''
   const returning = params.get('step') === '3'
   // Von der Startseite über «Mein Unternehmen ist nicht in der Liste»: Formular sofort offen, keine neue Google-Suche.
@@ -330,7 +332,7 @@ export default function CheckPage() {
     // Anmeldung = Bestätigung der Quellen: die Analyse startet sofort (Kundenbereich ruft audit-collect auf).
     const id = await createCheck({
       place: withPhone(place), region: `${place.city} + 30 km`, sources: found.length ? found : empty, contact, confirmed: true,
-      sourcePage: params.get('from') ?? (briefCode ? `brief-${briefCode}` : null),
+      sourcePage: params.get('from') ?? (crmRef ? `crm-${crmRef}` : briefCode ? `brief-${briefCode}` : null),
     })
     if (!id) return 'Das Speichern hat nicht geklappt. Bitte versuchen Sie es noch einmal.'
     // Neues Konto (gerade angelegt) → Begrüßung; bestehendes Konto → Hinweis «weitere Firma hinzugefügt».

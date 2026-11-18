@@ -458,17 +458,11 @@ export type Prospect = {
   score: number | null; issues: { mark: 'ok' | 'warn' | 'bad'; text: string }[]; audited_at: string | null; printed_at: string | null
   responded_at: string | null; check_id: string | null; code: string
 }
-export type ProspectFull = Prospect & { report_draft: { channels?: Record<string, { score: number } | undefined> } | null; audit: { competitors?: { query: string; rank: number | null; list: unknown[] } | null } | null }
 const PROSPECT_COLS = 'id, created_at, name, category, city, address, phone, website, maps_url, query, place_id, status, error, score, issues, audited_at, printed_at, responded_at, check_id, code'
 
 export async function loadProspects(): Promise<Prospect[] | null> {
   const { data, error } = await (await db()).from('prospects').select(PROSPECT_COLS).order('created_at', { ascending: false }).limit(2000)
   return error ? null : (data as Prospect[])
-}
-export async function loadProspectsFull(ids: string[]): Promise<ProspectFull[]> {
-  const { data } = await (await db()).from('prospects').select(`${PROSPECT_COLS}, report_draft, audit`).in('id', ids)
-  const byId = new Map(((data ?? []) as ProspectFull[]).map(p => [p.id, p]))
-  return ids.map(id => byId.get(id)).filter((x): x is ProspectFull => !!x)
 }
 export async function updateProspects(ids: string[], patch: Partial<Prospect>): Promise<boolean> {
   return !(await (await db()).from('prospects').update(patch).in('id', ids)).error

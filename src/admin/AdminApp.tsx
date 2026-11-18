@@ -425,7 +425,7 @@ function Detail({ r, all, profiles, me, onSelect, onBack, onPatch }: { r: Reques
           <div style={{ display: 'grid', gap: 4, padding: '10px 14px', borderRadius: 12, backgroundColor: '#F2FAF5', border: '1px solid #CDEBD8', fontSize: 13.5 }}>
             {lead && (
               <span>
-                <strong>War ein Lead</strong>{lead.printed_at ? <> · Brief gedruckt {new Date(lead.printed_at).toLocaleDateString('ru-RU')}</> : ' · noch kein Brief gedruckt'}
+                <strong>War ein Lead</strong>{lead.printed_at ? <> · Brief gedruckt {new Date(lead.printed_at).toLocaleDateString('ru-RU')}</> : null}
                 {' · Code '}<span data-no-translate>{lead.code}</span>{lead.score !== null ? <> · Kurzanalyse {lead.score}/100</> : null}
                 {fromLead && <> · Analyse aus dem Lead übernommen, keine neuen Google-Abfragen</>}
               </span>

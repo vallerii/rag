@@ -1,9 +1,8 @@
 // Druckfertige Briefe im Stil eines sachlichen Amtsschreibens (DIN 5008, Form B — Anschrift im Fenster eines DIN-lang-Umschlags).
 // Öffnet ein Druckfenster: drucken oder im Druckdialog «Als PDF speichern».
-// Leads: Kurzanalyse aus den automatischen Prüfungen. Anfragen: veröffentlichter Prüfbericht.
+// Anfragen: veröffentlichter Prüfbericht. Briefe an Leads erstellt die Lead-CRM (LetterXpress).
 // Bewusst ohne Hoheitszeichen, Behördennamen oder Zahlungsaufforderung: Absender ist immer klar RAG (UWG § 5).
 import { COMPANY, TERMS, fill } from '../company'
-import type { ProspectFull } from './api'
 
 type Mark = 'ok' | 'warn' | 'bad'
 const CHAN_DE: [string, string][] = [['maps', 'Google Maps'], ['search', 'Website & Google-Suche'], ['social', 'Social Media'], ['ai', 'KI-Suche']]
@@ -124,15 +123,6 @@ ol.rec small { font-size: 8pt; }
 .ch h2 { break-after: avoid; }
 .t tr { break-inside: avoid; }
 
-/* Werbebrief muss auf eine Seite passen */
-.lead { font-size: 9.4pt; line-height: 1.33; }
-.lead .subj { margin-bottom: 4mm; }
-.lead p { margin-bottom: 2mm; }
-.lead table.t { margin: 1.5mm 0 2.5mm; font-size: 8.6pt; }
-.lead .t th, .lead .t td { padding: 0.6mm 2mm; }
-.lead .hinw { margin: 3mm 0; padding: 2mm 3mm; }
-.lead .sig { margin-top: 3mm; }
-.lead .small { font-size: 7.2pt; }
 .keep { break-inside: avoid; }
 .hint { position: fixed; top: 0; left: 0; right: 0; background: #000; color: #fff; padding: 10px 16px; font: 14px Arial, sans-serif; text-align: center; z-index: 9; }
 @media print { .hint { display: none; } }
@@ -176,30 +166,6 @@ const frame = (h: Head, inner: string) => `<span class="fold" style="top:105mm">
   ${inner}${footer()}`
 
 const MACH = '<p class="mach">Dieses Schreiben wurde maschinell erstellt und ist ohne Unterschrift gültig.</p>'
-
-async function leadLetter(p: ProspectFull): Promise<string> {
-  const link = `${siteUrl()}/check?c=${p.code}`
-  const qr = await qrSvg(link)
-  const comp = p.audit?.competitors
-  const issues = (p.issues ?? []).slice(0, 5)
-  // Steht die Position schon in den Problemen («Bei «…» …»), nicht doppelt erwähnen.
-  const rankLine = comp?.query && !issues.some(i => i.text.startsWith('Bei «'))
-    ? comp.rank && comp.rank <= 3 ? '' : `<p>Wer in Ihrer Region bei Google Maps nach «${esc(comp.query)}» sucht, findet Sie ${comp.rank ? `erst auf Platz ${comp.rank}` : 'nicht unter den ersten Treffern'}. Die ersten drei Einträge bekommen die meisten Anrufe.</p>`
-    : ''
-  const ref = `KA-${String(p.code).toUpperCase()}`
-  return `<section class="page lead">${frame({ ref, refNote: '(Bitte bei Rückfragen angeben)', date: today(), kind: 'Kurzanalyse', qr, qrCap: 'ONLINE ABRUFEN', recipient: p.name, address: addressLines(p.address, p.city) }, `
-    <div class="body">
-      <div class="subj">Kurzanalyse Ihrer Sichtbarkeit bei Google, Google Maps und Social Media<span>Unternehmen: ${esc(p.name)}${p.city ? `, ${esc(p.city)}` : ''}</span></div>
-      <p>Sehr geehrte Damen und Herren,</p>
-      <p>wir haben geprüft, wie Ihr Unternehmen bei Google Maps, in der Google-Suche und in Social Media erscheint, dort, wo Kunden heute nach ${esc(p.category || 'Anbietern')} in ${esc(p.city || 'Ihrer Region')} suchen. Das Ergebnis im Überblick:</p>
-      ${scoreTable(p.report_draft?.channels, today())}
-      ${issues.length ? findings(issues.slice(0, rankLine ? 4 : 5).map(i => [i.mark, i.text] as [Mark, string]), 'Feststellung') : ''}
-      ${rankLine}
-      <div class="hinw"><div><span class="k">Abruf Ihrer ausführlichen Analyse (kostenlos und unverbindlich)</span>QR-Code oben im Anschriftfeld scannen oder im Browser eingeben: <span class="url mono">${esc(shortUrl(link))}</span><br><span class="small">Dort finden Sie zusätzlich Ihre Wettbewerber, Ihre Sichtbarkeit in KI-Assistenten wie ChatGPT und konkrete nächste Schritte.</span></div></div>
-      <p class="sig">Mit freundlichen Grüßen<br>Ihr RAG-Prüfteam</p>
-      <p class="small">Grundlage sind öffentlich zugängliche Daten (Google-Unternehmensprofil, Ihre Website), Stand ${today()}. Dies ist ein Schreiben eines privaten Dienstleisters, keine behördliche Mitteilung. Möchten Sie keine weiteren Schreiben erhalten, genügt eine kurze Nachricht an ${esc(COMPANY.email)}.</p>
-    </div>`)}</section>`
-}
 
 /** Prüfbericht einer Anfrage (veröffentlichte Version) — mehrseitig im Fluss. */
 export type ReportForPrint = {
@@ -276,17 +242,6 @@ function fillPrint(w: Window, title: string, pages: string, extraCss = '') {
   w.document.close()
 }
 
-/** Briefe für Leads — eine Seite pro Unternehmen, alle in einem Dokument. */
-export async function printLeadLetters(load: () => Promise<ProspectFull[]>): Promise<number> {
-  const title = `RAG Briefe ${today()}`
-  const w = openPrint(title)
-  if (!w) return 0
-  const list = (await load()).filter(p => p.report_draft)
-  const pages = (await Promise.all(list.map(leadLetter))).join('')
-  fillPrint(w, title, pages || '<p style="padding:40px">Keine geprüften Leads ausgewählt.</p>')
-  return list.length
-}
-
 export async function printReport(r: ReportForPrint) {
   const title = `Prüfbericht ${r.company}`
   const w = openPrint(title)
@@ -294,4 +249,4 @@ export async function printReport(r: ReportForPrint) {
 }
 
 /** Nur für Vorschau/Tests. */
-export const __preview = { leadLetter, reportDoc, CSS, flowPageCss, reportRef }
+export const __preview = { reportDoc, CSS, flowPageCss, reportRef }

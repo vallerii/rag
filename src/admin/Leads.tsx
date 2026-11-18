@@ -1,9 +1,8 @@
 // Admin: Leads — potenzielle Kunden aus der Google-Tabelle.
-// Laden → Kurzanalyse (in Paketen) → Briefe drucken (ein Dokument) → als gedruckt markieren.
+// Laden → Kurzanalyse (in Paketen). Briefe erstellt und versendet jetzt die Lead-CRM (LetterXpress).
 // Reagiert ein Unternehmen (Check auf der Website begonnen), erscheint es als normale Anfrage.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { auditProspect, getSetting, importProspects, loadProspects, loadProspectsFull, setSetting, updateProspects, type Prospect, type ProspectStatus } from './api'
-import { printLeadLetters } from './letter'
+import { auditProspect, getSetting, importProspects, loadProspects, setSetting, updateProspects, type Prospect, type ProspectStatus } from './api'
 import { useLive } from './live'
 
 const ink = 'var(--ink)', muted = 'var(--muted)', line = 'var(--line)', accent = 'var(--electric)'
@@ -12,8 +11,8 @@ const input: React.CSSProperties = { width: '100%', boxSizing: 'border-box', pad
 const small: React.CSSProperties = { fontSize: 12.5, color: muted }
 const CSV_KEY = 'leads_csv_url'
 
-type Filter = 'all' | 'new' | 'checked' | 'printed' | 'responded' | 'hidden'
-const FILTERS: [Filter, string][] = [['all', 'Alle'], ['new', 'Neue'], ['checked', 'Geprüft'], ['printed', 'Gedruckt'], ['responded', 'Reagiert'], ['hidden', 'Ausgeblendet']]
+type Filter = 'all' | 'new' | 'checked' | 'responded' | 'hidden'
+const FILTERS: [Filter, string][] = [['all', 'Alle'], ['new', 'Neue'], ['checked', 'Geprüft'], ['responded', 'Reagiert'], ['hidden', 'Ausgeblendet']]
 const inFilter = (p: Prospect, f: Filter) =>
   f === 'all' ? p.status !== 'hidden'
   : f === 'new' ? ['new', 'checking', 'error'].includes(p.status)
@@ -73,7 +72,7 @@ export default function Leads({ onOpenRequest }: { onOpenRequest: (key: string) 
   const [city, setCity] = useState(''), [cat, setCat] = useState(''), [q, setQ] = useState('')
   const [sel, setSel] = useState<Set<string>>(new Set())
   const [csvUrl, setCsvUrl] = useState(''), [setup, setSetup] = useState(false), [paste, setPaste] = useState('')
-  const [msg, setMsg] = useState(''), [busy, setBusy] = useState<'' | 'import' | 'audit' | 'print'>('')
+  const [msg, setMsg] = useState(''), [busy, setBusy] = useState<'' | 'import' | 'audit'>('')
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
   const stop = useRef(false)
 
@@ -129,14 +128,6 @@ export default function Leads({ onOpenRequest }: { onOpenRequest: (key: string) 
     await Promise.all([worker(), worker(), worker()])
     setBusy(''); setProgress(null); reload()
     setMsg([`Geprüft: ${done - failed - dup - client - notFound}`, notFound ? `bei Google nicht gefunden: ${notFound}` : '', failed ? `Fehler: ${failed}` : '', dup ? `Dubletten ausgeblendet: ${dup}` : '', client ? `schon Kunden (Anfrage vorhanden): ${client}` : '', stop.current ? 'angehalten' : ''].filter(Boolean).join(' · '))
-  }
-  const printable = chosen.filter(p => p.audited_at && p.status !== 'hidden')
-  const doPrint = async () => {
-    if (!printable.length) return
-    setBusy('print')
-    const n = await printLeadLetters(() => loadProspectsFull(printable.map(p => p.id)))
-    setBusy('')
-    if (n) setMsg(`Briefe vorbereitet: ${n}. Nach dem Drucken «Als gedruckt markieren».`)
   }
   const mark = async (patch: Partial<Prospect>, text: string) => {
     if (await updateProspects([...sel], patch)) { setMsg(text); setSel(new Set()); reload() }
@@ -207,8 +198,6 @@ export default function Leads({ onOpenRequest }: { onOpenRequest: (key: string) 
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {([
               ['Prüfen', runAudit, !busy],
-              [`Briefe drucken (${printable.length})`, doPrint, !busy && printable.length > 0, true],
-              ['Als gedruckt markieren', () => mark({ status: 'printed', printed_at: new Date().toISOString() }, 'Als gedruckt markiert.'), !busy],
               filter === 'hidden' ? ['Wieder einblenden', () => mark({ status: 'new' }, 'Wieder eingeblendet.'), !busy] : ['Ausblenden', () => mark({ status: 'hidden' }, 'Ausgeblendet.'), !busy],
               ['Auswahl aufheben', () => setSel(new Set()), true],
             ] as [string, () => void, boolean, boolean?][]).map(([l, fn, ok, strong]) => (
@@ -260,7 +249,6 @@ export default function Leads({ onOpenRequest }: { onOpenRequest: (key: string) 
                 </span>
                 <span style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }} onClick={e => e.stopPropagation()}>
                   {p.status === 'responded' && p.check_id && <button type="button" onClick={() => onOpenRequest(`check:${p.check_id}`)} style={{ background: 'none', border: 0, padding: 0, font: 'inherit', fontSize: 13, fontWeight: 700, color: '#0F6B35', cursor: 'pointer' }}>Anfrage →</button>}
-                  {p.audited_at && <button type="button" onClick={() => printLeadLetters(() => loadProspectsFull([p.id]))} style={{ background: 'none', border: 0, padding: 0, font: 'inherit', fontSize: 13, fontWeight: 700, color: accent, cursor: 'pointer' }}>Brief</button>}
                   {p.maps_url && <a href={p.maps_url} target="_blank" rel="noreferrer" style={{ fontSize: 13, fontWeight: 700 }}>Maps</a>}
                 </span>
               </label>
@@ -268,7 +256,7 @@ export default function Leads({ onOpenRequest }: { onOpenRequest: (key: string) 
           })}
         </div>
       </div>
-      <p style={{ ...small, margin: 0 }}>Wenn ein Unternehmen über den Link oder QR-Code im Brief einen Check beginnt, steht es als «Reagiert» hier und als normale Anfrage unter «Anfragen».</p>
+      <p style={{ ...small, margin: 0 }}>Briefe werden in der Lead-CRM erstellt und per LetterXpress versendet. Beginnt ein Unternehmen über den QR-Code einen Check, erscheint es als normale Anfrage unter «Anfragen» (Herkunft «crm-…»).</p>
       <style>{'.lead-row{display:grid;grid-template-columns:40px minmax(0,1.6fr) minmax(0,1fr) 70px minmax(0,2fr) 130px 150px;gap:12px;align-items:center;padding:12px 16px}'}</style>
     </div>
   )
