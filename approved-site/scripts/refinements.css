@@ -22,6 +22,14 @@
 }
 
 /* Direction changes affect only the two menu islands, never the wordmark. */
+.rx-header .rx-brand-placeholder{visibility:hidden;pointer-events:none}
+.rx-floating-wordmark{
+  --rx-accent:#ff5b2e;position:fixed;z-index:110;margin:0;
+  font-family:"Recto Geist",system-ui,sans-serif;text-decoration:none;
+  -webkit-font-smoothing:antialiased;
+}
+@media(max-width:1100px){.rx-floating-wordmark{font-size:27px}}
+@media(max-width:640px){.rx-floating-wordmark{font-size:26px}}
 .rx-header .rx-nav,.rx-header .rx-header-actions{
   opacity:1;visibility:visible;transform:translateY(0);
   transition:opacity .22s ease,transform .25s ease,visibility 0s,background-color .25s ease,border-color .25s ease,box-shadow .25s ease;

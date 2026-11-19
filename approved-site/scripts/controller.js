@@ -44,13 +44,41 @@ export function mountApprovedSections() {
   listen(window, 'scroll', () => { if (!headerFrame) headerFrame = requestAnimationFrame(updateHeader); }, { passive: true });
   listen(header, 'focusin', () => showMenu(true));
   updateHeader();
+  // Keep the brand in its own viewport layer. This avoids clipping of the
+  // sticky header's text while its two backdrop-filter islands fade away.
+  const originalBrand = header.querySelector('.rx-wordmark');
+  const fixedBrand = originalBrand?.cloneNode(true);
+  if (fixedBrand) {
+    fixedBrand.id = 'ortsfuchs-fixed-brand';
+    fixedBrand.classList.add('rx-floating-wordmark');
+    document.body.appendChild(fixedBrand);
+    originalBrand.classList.add('rx-brand-placeholder');
+    originalBrand.setAttribute('aria-hidden', 'true');
+    originalBrand.setAttribute('tabindex', '-1');
+    listen(fixedBrand, 'focusin', () => showMenu(true));
+    cleanups.push(() => {
+      fixedBrand.remove();
+      originalBrand.classList.remove('rx-brand-placeholder');
+      originalBrand.removeAttribute('aria-hidden');
+      originalBrand.removeAttribute('tabindex');
+    });
+  }
   function measureFaqOffset() {
-    const logo = header.querySelector('.rx-wordmark');
-    if (logo) page.style.setProperty('--faq-sticky-top', Math.ceil(logo.getBoundingClientRect().bottom) + 24 + 'px');
+    if (!originalBrand) return;
+    const rect = originalBrand.getBoundingClientRect();
+    page.style.setProperty('--faq-sticky-top', Math.ceil(rect.bottom) + 24 + 'px');
+    if (fixedBrand) {
+      fixedBrand.style.left = rect.left + 'px';
+      fixedBrand.style.top = rect.top + 'px';
+      fixedBrand.style.color = getComputedStyle(page).getPropertyValue('--rx-ink');
+    }
   }
   measureFaqOffset();
   listen(window, 'resize', measureFaqOffset, { passive: true });
   document.fonts?.ready.then(() => { if (!signal.aborted) measureFaqOffset(); });
+  const brandTheme = new MutationObserver(measureFaqOffset);
+  brandTheme.observe(page, { attributes: true, attributeFilter: ['data-theme'] });
+  cleanups.push(() => brandTheme.disconnect());
   cleanups.push(() => cancelAnimationFrame(headerFrame));
 
   const portraits = [...page.querySelectorAll('.rx-hero .rx-portrait')];
