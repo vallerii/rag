@@ -381,6 +381,7 @@
   --rx-accent:#ff5b2e;position:fixed;z-index:110;margin:0;
   font-family:"Recto Geist",system-ui,sans-serif;text-decoration:none;
   -webkit-font-smoothing:antialiased;transition:color .16s ease;
+  transform:translateZ(0);backface-visibility:hidden;
 }
 @media(max-width:1100px){.rx-floating-wordmark{font-size:27px}}
 @media(max-width:640px){.rx-floating-wordmark{font-size:26px}}
