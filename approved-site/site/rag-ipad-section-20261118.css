@@ -1,0 +1,238 @@
+.rx #unternehmen.rx-check-report-section{grid-template-columns:1fr 1fr;align-items:center;gap:74px;padding-block:112px;display:grid;position:relative}
+.rx #unternehmen .rx-check-report-copy h2{font-size:clamp(36px,3.8vw,49px)}
+.rx #unternehmen .rx-check-report-copy>p:not(.rx-kicker){max-width:410px;color:var(--rx-muted);margin-top:28px;font-size:15px;line-height:1.8}
+.rx #unternehmen .rx-measured-signals{color:var(--rx-muted);grid-template-columns:1fr;gap:9px;margin:27px 0 30px;padding:0;font-size:12px;list-style:none;display:grid}
+.rx #unternehmen .rx-measured-signals li:before{content:"↗";color:var(--rx-accent);margin-right:11px}
+.rx #unternehmen .rx-check-report-form{background:var(--rx-surface);border:1px solid var(--rx-border);border-radius:19px;padding:25px}
+.rx #unternehmen .rx-check-report-form h3{letter-spacing:-.025em;font-size:18px;font-weight:500}
+.rx #unternehmen .rx-check-report-form>p{color:var(--rx-muted);margin:9px 0 19px;font-size:12px}
+.rx #unternehmen .rx-check-report-form>small{color:var(--rx-muted);margin-top:13px;font-size:10px;display:block}
+.rx #unternehmen .rx-check-report-form .bc-form{border:1px solid var(--rx-border)!important;background:var(--rx-bg)!important;box-shadow:none!important;border-radius:14px!important;flex-direction:column!important;padding:6px!important;display:flex!important}
+.rx #unternehmen .rx-check-report-form .bc-form input{color:var(--rx-ink)!important;background:0 0!important;padding:12px!important;font-size:13px!important}
+.rx #unternehmen .rx-check-report-form .bc-form button{min-height:40px;background:var(--rx-ink)!important;color:var(--rx-bg)!important;box-shadow:none!important;border:0!important;border-radius:999px!important;font-size:12px!important}
+.rx #unternehmen .rx-check-report-form .bc-form button:before{display:none}
+.rx #unternehmen .rx-example-report{isolation:isolate;background:var(--rx-surface);border:1px solid #ff5b2e45;border-radius:25px;min-width:0;padding:31px;position:relative;box-shadow:0 30px 90px -60px #ff5b2e90}
+.rx #unternehmen .rx-example-report:before{content:"";z-index:-1;filter:blur(35px);pointer-events:none;background:radial-gradient(#ff5b2e1a,#0000 70%);position:absolute;inset:-60px}
+.rx #unternehmen .rx-report-label{justify-content:space-between;align-items:center;gap:12px;font-size:13px;font-weight:500;display:flex}
+.rx #unternehmen .rx-report-label>span{color:var(--rx-muted);font-size:9px;font-weight:400}
+.rx #unternehmen .rx-report-summary{align-items:center;gap:23px;padding-block:30px;display:flex}
+.rx #unternehmen .rx-score-ring{flex-shrink:0;place-items:center;width:115px;height:115px;display:grid;position:relative}
+.rx #unternehmen .rx-score-ring svg{fill:none;stroke-width:11px;width:100%;height:100%;position:absolute;inset:0;transform:rotate(-90deg)}
+.rx #unternehmen .rx-ring-track{stroke:var(--rx-inset)}
+.rx #unternehmen .rx-ring-value{stroke:var(--rx-accent);stroke-dasharray:0 100;transition:stroke-dasharray 1.4s cubic-bezier(.2,.7,.2,1)}
+.rx #unternehmen .is-visible .rx-ring-value{stroke-dasharray:62 100}
+.rx #unternehmen .rx-score-ring strong{letter-spacing:-.04em;font-size:37px;font-weight:500}
+.rx #unternehmen .rx-report-summary h3{letter-spacing:-.035em;font-size:25px;font-weight:500;line-height:1.13}
+.rx #unternehmen .rx-report-summary>div>span{color:var(--rx-muted);margin-top:10px;font-size:9px;display:block}
+.rx #unternehmen .rx-report-scores{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0;display:grid}
+.rx #unternehmen .rx-report-scores>div{background:var(--rx-warm);border-radius:14px;min-width:0;padding:17px}
+.rx #unternehmen .rx-report-scores dt{color:var(--rx-muted);font-size:11px}
+.rx #unternehmen .rx-report-scores dd{letter-spacing:-.035em;margin:8px 0 12px;font-size:30px;font-weight:500}
+.rx #unternehmen .rx-report-scores dd>span{letter-spacing:0;color:var(--rx-muted);margin-left:5px;font-size:9px;font-weight:400}
+.rx #unternehmen .rx-report-scores .needs-attention dd{color:var(--rx-accent)}
+.rx #unternehmen .rx-report-scores i{background:var(--rx-accent);border-radius:999px;height:3px;display:block;width:0}
+.rx #unternehmen .rx-report-directories{border-top:1px solid var(--rx-border);align-items:flex-start;gap:12px;margin-top:23px;padding-top:23px;display:flex}
+.rx #unternehmen .rx-report-directory-mark{color:var(--rx-accent);font-size:22px;line-height:1}
+.rx #unternehmen .rx-report-directories h4{margin:0;font-size:12px;font-weight:500;line-height:1.4}
+.rx #unternehmen .rx-report-directories p{color:var(--rx-muted);margin-top:7px;font-size:10px;line-height:1.6}
+.rx #unternehmen .rx-report-directories div>span{color:var(--rx-muted);margin-top:8px;font-size:9px;display:block}
+@media  (width<=1000px){.rx #unternehmen.rx-check-report-section{gap:32px}
+.rx #unternehmen .rx-example-report{padding:25px}
+.rx #unternehmen .rx-report-summary{gap:16px}
+.rx #unternehmen .rx-score-ring{width:96px;height:96px}
+.rx #unternehmen .rx-report-summary h3{font-size:23px}
+.rx #unternehmen .rx-report-label>span{text-align:right;max-width:105px}}
+@media  (width<=640px){.rx #unternehmen.rx-check-report-section{grid-template-columns:1fr;gap:32px;padding-block:68px}
+.rx #unternehmen .rx-check-report-copy h2{font-size:37px}
+.rx #unternehmen .rx-check-report-copy>p:not(.rx-kicker){font-size:13px}
+.rx #unternehmen .rx-measured-signals{gap:10px;margin-block:22px;font-size:11px}
+.rx #unternehmen .rx-check-report-form{padding:21px}
+.rx #unternehmen .rx-example-report{padding:24px}
+.rx #unternehmen .rx-report-label{font-size:12px}
+.rx #unternehmen .rx-report-label>span{max-width:none;font-size:8px}
+.rx #unternehmen .rx-report-summary{gap:20px;padding-block:27px}
+.rx #unternehmen .rx-score-ring{width:104px;height:104px}
+.rx #unternehmen .rx-report-summary h3{font-size:24px}
+.rx #unternehmen .rx-report-scores{gap:10px}
+.rx #unternehmen .rx-report-scores>div{padding:16px}
+.rx #unternehmen .rx-report-directories h4{font-size:11px}}
+.rx #unternehmen.rx-check-report-section{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:center;gap:clamp(36px,6vw,86px);padding-block:100px;display:grid}
+.rx #unternehmen .rx-example-report{box-sizing:border-box;background:var(--rx-surface);border:1px solid var(--rx-border);border-radius:24px;flex-direction:column;align-items:stretch;gap:26px;width:100%;min-width:0;margin:0;padding:32px;display:flex;box-shadow:0 24px 70px -50px #24242435}
+.rx #unternehmen .rx-example-report:before{display:none}
+.rx #unternehmen .rx-report-company{justify-content:space-between;align-items:center;gap:16px;display:flex}
+.rx #unternehmen .rx-report-label{color:var(--rx-muted);margin:0 0 8px;font-size:10px;line-height:1.4;display:block}
+.rx #unternehmen .rx-report-company h3{letter-spacing:-.035em;margin:0;font-size:22px;font-weight:500;line-height:1.2}
+.rx #unternehmen .rx-report-company-icon{border:1px solid var(--rx-border);width:42px;height:42px;color:var(--rx-muted);border-radius:12px;place-items:center;display:grid}
+.rx #unternehmen .rx-report-company-icon svg{width:24px;height:24px}
+.rx #unternehmen .rx-report-summary{text-align:left;flex-direction:row;justify-content:flex-start;align-items:center;gap:24px;padding:8px 0 4px;display:flex}
+.rx #unternehmen .rx-score-ring{width:126px;height:126px}
+.rx #unternehmen .rx-score-ring svg{stroke-width:3px;stroke-linecap:round}
+.rx #unternehmen .rx-score-ring strong{font-size:44px;font-weight:400}
+.rx #unternehmen .rx-report-summary h3{font-size:26px;font-weight:400;line-height:1.2}
+.rx #unternehmen .rx-report-scores{gap:12px}
+.rx #unternehmen .rx-report-scores>div{color:#242424;background:#fff;border:1px solid #e7e5e2;border-radius:14px;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:20px 8px;min-width:0;padding:18px;display:grid;position:relative}
+.rx #unternehmen .rx-report-scores dt{color:#626262;flex-direction:column;align-items:flex-start;gap:10px;min-width:0;font-size:11px;line-height:1.4;display:flex}
+.rx #unternehmen .rx-score-logo{flex-shrink:0;justify-content:center;align-items:center;width:24px;height:24px;display:inline-flex}
+.rx #unternehmen .rx-score-logo img,.rx #unternehmen .rx-score-logo svg{object-fit:contain;width:22px;height:22px}
+.rx #unternehmen .rx-report-scores dd{white-space:nowrap;letter-spacing:-.04em;justify-content:flex-end;align-items:baseline;margin:0;font-size:25px;line-height:1;display:flex}
+.rx #unternehmen .rx-report-scores dd>span{letter-spacing:0;margin-left:4px;font-size:9px}
+.rx #unternehmen .rx-score-track{background:#efedeb;border-radius:99px;grid-column:1/-1;height:3px;display:block;overflow:hidden}
+.rx #unternehmen .rx-check-report-copy{text-align:left;min-width:0;max-width:none;margin:0}
+.rx #unternehmen .rx-check-report-copy h2{font-size:clamp(36px,3.7vw,50px);line-height:1.15}
+.rx #unternehmen .rx-check-report-copy>p{max-width:420px!important;margin:24px 0 30px!important;font-size:14px!important;line-height:1.85!important}
+.rx #unternehmen .rx-check-report-form{box-sizing:border-box;text-align:left;background:0 0;border:0;border-radius:0;width:100%;max-width:470px;padding:0}
+.rx #unternehmen .rx-check-report-form h3{font-size:16px;font-weight:500}
+.rx #unternehmen .rx-check-report-form>p{margin:8px 0 16px;font-size:12px;line-height:1.6}
+.rx #unternehmen .rx-check-report-form .bc-form{background:var(--rx-surface)!important;border-radius:16px!important;flex-direction:column!important;padding:7px!important}
+.rx #unternehmen .rx-check-report-form .bc-form input{box-sizing:border-box;flex:1;width:100%;min-width:0;padding:14px 12px!important}
+.rx #unternehmen .rx-check-report-form .bc-form button{min-height:44px;padding-inline:22px!important}
+.rx #unternehmen .rx-check-report-form>small{margin-top:14px}
+@media  (width<=1000px) and (width>=761px){.rx #unternehmen .rx-example-report{padding:24px}
+.rx #unternehmen .rx-report-scores>div{padding:14px}
+.rx #unternehmen .rx-report-scores dd{font-size:21px}
+.rx #unternehmen .rx-report-summary{gap:16px}
+.rx #unternehmen .rx-score-ring{width:104px;height:104px}}
+@media  (width<=760px){.rx #unternehmen.rx-check-report-section{grid-template-columns:1fr;gap:38px;padding-block:64px}
+.rx #unternehmen .rx-example-report{max-width:540px;margin-inline:auto;padding:25px}
+.rx #unternehmen .rx-check-report-copy{width:100%;max-width:540px;margin-inline:auto}
+.rx #unternehmen .rx-check-report-copy h2{font-size:clamp(36px,7vw,46px)}
+.rx #unternehmen .rx-check-report-form{max-width:none}
+.rx #unternehmen .rx-report-summary{gap:22px}
+.rx #unternehmen .rx-score-ring{width:114px;height:114px}
+.rx #unternehmen .rx-score-ring strong{font-size:41px}
+.rx #unternehmen .rx-report-summary h3{font-size:24px}}
+@media  (width<=380px){.rx #unternehmen .rx-example-report{padding:20px}
+.rx #unternehmen .rx-report-scores{gap:9px}
+.rx #unternehmen .rx-report-scores>div{gap:16px 5px;padding:13px}
+.rx #unternehmen .rx-report-scores dd{font-size:22px}
+.rx #unternehmen .rx-report-scores dd>span{font-size:8px}
+.rx #unternehmen .rx-report-company h3{font-size:20px}}
+@media  (prefers-reduced-motion:reduce){.rx #unternehmen.rx-check-report-section .rx-ring-value{stroke-dasharray:62 100;transition:none}}
+.rx #unternehmen .rx-report-carousel{width:100%;min-width:0;max-width:570px;margin-inline:auto}
+.rx #unternehmen .rx-report-tablet{background:linear-gradient(145deg,#424247,#202023 45%,#303035);border:1px solid #333338;border-radius:25px;padding:3px;position:relative;box-shadow:inset 0 1px #ffffff30,0 25px 45px -35px #17171765,0 2px 4px #17171710}
+.rx #unternehmen .rx-report-camera{z-index:2;background:#5c5c61;border-radius:50%;width:2px;height:2px;position:absolute;top:1px;left:50%}
+.rx #unternehmen .rx-report-tablet .rx-example-report{box-shadow:none;background:var(--rx-bg);border:0;border-radius:21px;gap:0;padding:clamp(22px,2.6vw,34px);overflow:hidden}
+.rx #unternehmen .rx-report-slide{animation:.45s both rx-report-appear}
+.rx #unternehmen .rx-report-company{align-items:center;gap:13px;min-height:72px}
+.rx #unternehmen .rx-report-avatar{background:var(--rx-warm);width:47px;height:47px;color:var(--rx-accent);letter-spacing:-.04em;border-radius:13px;flex-shrink:0;place-items:center;font-size:17px;display:grid}
+.rx #unternehmen .rx-report-company-details{flex:1;min-width:0}
+.rx #unternehmen .rx-report-company-details .rx-report-label{letter-spacing:.03em;margin-bottom:5px;font-size:9px}
+.rx #unternehmen .rx-report-company h3{font-size:clamp(18px,1.8vw,23px);line-height:1.2}
+.rx #unternehmen .rx-report-company-details>p{color:var(--rx-muted);margin-top:7px;font-size:10px;line-height:1.6}
+.rx #unternehmen .rx-report-maps-logo{object-fit:contain;flex-shrink:0;width:24px;height:29px}
+.rx #unternehmen .rx-report-rating{border-bottom:1px solid var(--rx-border);color:var(--rx-muted);align-items:center;gap:9px;padding:17px 0 22px;font-size:10px;display:flex}
+.rx #unternehmen .rx-report-rating strong{color:var(--rx-ink);font-size:15px;font-weight:500}
+.rx #unternehmen .rx-report-stars{color:#e7a326;letter-spacing:2px;font-size:15px;line-height:1}
+.rx #unternehmen .rx-report-tablet .rx-report-summary{gap:22px;padding:25px 0}
+.rx #unternehmen .rx-report-tablet .rx-score-ring{width:108px;height:108px}
+.rx #unternehmen .rx-report-tablet .rx-score-ring strong{font-size:39px}
+.rx #unternehmen .rx-report-tablet .rx-report-summary h3{font-size:24px}
+.rx #unternehmen .rx-report-summary>div>span{margin-top:9px;font-size:10px}
+.rx #unternehmen .rx-report-tablet .rx-report-scores>div{gap:17px 8px;padding:15px}
+.rx #unternehmen .rx-report-tablet .rx-report-scores dt{gap:8px;font-size:10px}
+.rx #unternehmen .rx-report-tablet .rx-report-scores dd{font-size:24px}
+.rx #unternehmen .rx-report-controls{justify-content:center;align-items:center;min-height:48px;margin-top:12px;display:flex;position:relative}
+.rx #unternehmen .rx-report-dots{align-items:center;gap:2px;display:flex}
+.rx #unternehmen .rx-report-dots button{cursor:pointer;background:0 0;border:0;border-radius:50%;place-items:center;width:36px;height:36px;padding:0;display:grid}
+.rx #unternehmen .rx-report-dots button span{background:var(--rx-muted);opacity:.3;border-radius:50%;width:6px;height:6px;transition:background .2s,opacity .2s,transform .2s}
+.rx #unternehmen .rx-report-dots button[aria-current] span{background:var(--rx-accent);opacity:1;transform:scale(1.3)}
+.rx #unternehmen .rx-report-controls button:focus-visible{outline:2px solid var(--rx-accent);outline-offset:2px}
+@keyframes  rx-report-appear{0%{opacity:.3;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media  (width<=760px){.rx #unternehmen .rx-report-tablet .rx-example-report{padding:24px}
+.rx #unternehmen .rx-report-company h3{font-size:21px}
+.rx #unternehmen .rx-report-tablet .rx-report-summary{padding-block:22px}
+.rx #unternehmen .rx-report-controls{margin-top:7px}
+.rx #unternehmen .rx-report-company{min-height:75px}}
+@media  (width<=380px){.rx #unternehmen .rx-report-tablet{border-radius:22px;padding:2px}
+.rx #unternehmen .rx-report-tablet .rx-example-report{border-radius:19px;padding:18px}
+.rx #unternehmen .rx-report-avatar{border-radius:10px;width:35px;height:35px;font-size:13px}
+.rx #unternehmen .rx-report-company{gap:9px}
+.rx #unternehmen .rx-report-company h3{font-size:18px}
+.rx #unternehmen .rx-report-company-details>p{font-size:9px}
+.rx #unternehmen .rx-report-maps-logo{width:20px}
+.rx #unternehmen .rx-report-tablet .rx-report-scores>div{gap:15px 4px;padding:12px}
+.rx #unternehmen .rx-report-tablet .rx-report-scores dd{font-size:21px}}
+@media  (prefers-reduced-motion:reduce){.rx #unternehmen .rx-report-slide{animation:none}
+.rx #unternehmen .rx-report-dots button span{transition:none}}
+.rx #unternehmen.rx-check-report-section{padding-block:48px;min-height:100vh;box-sizing:border-box}
+.rx #unternehmen .rx-report-tablet{align-self:center}
+.rx #unternehmen .rx-check-report-form{margin-top:30px}
+.rx #unternehmen .rx-check-report-form h3{margin-bottom:18px}
+.rx #unternehmen .rx-report-tablet .rx-example-report{background:#fff}
+.rx #unternehmen .rx-company-card{padding:20px 21px 18px;background:#fff;border:1px solid #e8e8e8;border-radius:17px;box-shadow:0 3px 12px #17171704}
+.rx #unternehmen .rx-company-card .rx-report-company{min-height:0;gap:13px;align-items:center}
+.rx #unternehmen .rx-company-card .rx-report-avatar{width:44px;height:44px;background:#fff;border:1px solid #ededed;border-radius:12px;font-size:15px}
+.rx #unternehmen .rx-company-card .rx-report-company h3{font-size:21px;letter-spacing:-.04em;line-height:1.25}
+.rx #unternehmen .rx-company-card .rx-report-label{font-size:8px;letter-spacing:.06em;margin-bottom:5px}
+.rx #unternehmen .rx-company-card .rx-report-company-details>p{font-size:10px;margin-top:5px}
+.rx #unternehmen .rx-company-card .rx-report-maps-logo{width:23px;height:28px;align-self:center}
+.rx #unternehmen .rx-company-card .rx-report-rating{padding:0;margin-top:16px;border:0;gap:10px;flex-wrap:wrap}
+.rx #unternehmen .rx-company-card .rx-report-rating strong{font-size:25px;font-weight:500;line-height:1;letter-spacing:-.05em;color:#222}
+.rx #unternehmen .rx-company-card .rx-report-stars{color:#ffca00;font-size:19px;letter-spacing:2px;line-height:1}
+.rx #unternehmen .rx-company-card .rx-report-rating>span:last-child{font-size:10px;color:#777;margin-left:auto}
+.rx #unternehmen .rx-report-tablet .rx-report-summary{padding-block:28px}
+@media (max-width:420px){.rx #unternehmen .rx-company-card{padding:16px}
+.rx #unternehmen .rx-company-card .rx-report-avatar{width:35px;height:35px;font-size:12px}
+.rx #unternehmen .rx-company-card .rx-report-company{gap:10px}
+.rx #unternehmen .rx-company-card .rx-report-company h3{font-size:18px}
+.rx #unternehmen .rx-company-card .rx-report-maps-logo{width:20px}
+.rx #unternehmen .rx-company-card .rx-report-rating{gap:8px;padding-top:0;margin-top:14px}
+.rx #unternehmen .rx-company-card .rx-report-rating strong{font-size:23px}
+.rx #unternehmen .rx-company-card .rx-report-stars{font-size:17px;letter-spacing:1px}
+.rx #unternehmen .rx-company-card .rx-report-rating>span:last-child{font-size:9px}}
+.rx #unternehmen .rx-check-report-form{position:relative;isolation:isolate;margin-top:30px;padding:27px;background:#fff;border:1px solid #ff5b2e35;border-radius:23px;box-shadow:0 16px 40px -30px #ff5b2e60}
+.rx #unternehmen .rx-check-report-form:before{content:"";position:absolute;z-index:-1;inset:auto 16% -20px;height:45px;background:#ff5b2e20;filter:blur(25px);border-radius:50%;pointer-events:none}
+.rx #unternehmen .rx-check-report-form h3{font-size:20px!important;font-weight:500;letter-spacing:-.035em;margin-bottom:21px;line-height:1.3}
+.rx #unternehmen .rx-check-report-form .bc-form{background:#fff!important;border:0!important;padding:0!important;border-radius:0!important;gap:12px!important}
+.rx #unternehmen .rx-check-report-form .bc-form input{background:#fff!important;border:1px solid #dedbd7!important;border-radius:12px!important;padding:16px!important;min-height:52px;font-size:14px!important;transition:border-color .18s,box-shadow .18s}
+.rx #unternehmen .rx-check-report-form .bc-form input:focus{border-color:#ff5b2e!important;box-shadow:0 0 0 3px #ff5b2e17!important;outline:0!important}
+.rx #unternehmen .rx-check-report-form .bc-form input::placeholder{color:#8a8580}
+.rx #unternehmen .rx-check-report-form .bc-form button{background:#ff5b2e!important;color:#fff!important;min-height:50px;font-size:13px!important;font-weight:500;box-shadow:0 5px 14px #ff5b2e23!important;transition:background .18s,transform .18s!important}
+.rx #unternehmen .rx-check-report-form .bc-form button:hover{background:#e94e24!important;transform:translateY(-1px)}
+.rx #unternehmen .rx-check-report-form .bc-form button:focus-visible{outline:2px solid #ff5b2e;outline-offset:3px}
+.rx #unternehmen .rx-check-report-form>small{text-align:center;font-size:10px;margin-top:15px;color:#87817a}
+.rx #unternehmen .rx-report-tablet .rx-example-report{background:#fff!important}
+@media (max-width:420px){.rx #unternehmen .rx-check-report-form{padding:23px}
+.rx #unternehmen .rx-check-report-form h3{font-size:19px!important}}
+.rx #unternehmen .rx-check-report-form{border:1px solid #fff;box-shadow:0 10px 35px -25px #17171720}
+.rx #unternehmen .rx-check-report-form:before{display:none}
+.rx #unternehmen .rx-check-report-form .bc-form button{background:#111215!important;color:#fff!important;box-shadow:none!important}
+.rx #unternehmen .rx-check-report-form .bc-form button:hover{background:#292a2e!important}
+.rx #unternehmen .rx-check-report-form .bc-form button:focus-visible{outline-color:#111215}
+.rx #unternehmen .rx-check-report-copy>.rx-discover-subtitle{font-size:18px!important;line-height:1.5!important;margin:18px 0 0!important;color:var(--rx-ink)!important;letter-spacing:-.02em}
+.rx #unternehmen .rx-check-report-copy .rx-check-report-form{margin-top:24px}
+.rx #unternehmen .rx-report-tablet .rx-report-summary h3{font-size:clamp(18px,2vw,23px);line-height:1.25;overflow-wrap:anywhere}
+.rx #unternehmen .rx-report-avatar{overflow:hidden;padding:0!important}
+.rx #unternehmen .rx-report-avatar img{display:block;width:100%;height:100%;object-fit:cover;object-position:center center}
+.rx #unternehmen .rx-report-tablet .rx-report-scores>div:nth-child(1){--rx-bar-color:#26935b}
+.rx #unternehmen .rx-report-tablet .rx-report-scores>div:nth-child(2),
+.rx #unternehmen .rx-report-tablet .rx-report-scores>div:nth-child(3),
+.rx #unternehmen .rx-report-tablet .rx-report-scores>div:nth-child(4){--rx-bar-color:#F2B800}
+.rx #unternehmen .rx-report-tablet .rx-score-track i{background:var(--rx-bar-color,#F2B800)}
+.rx #unternehmen .rx-report-tablet .rx-report-scores i{
+  display: block;
+  transform: none !important;
+  transition: none !important;
+  transform-origin: left center;
+  will-change: width;
+}
+.rx #unternehmen .rx-report-tablet .rx-ring-value{ transition: none !important; }
+.rx #unternehmen .rx-report-tablet .rx-report-scores dd,
+.rx #unternehmen .rx-report-tablet .rx-score-ring strong{ font-variant-numeric: tabular-nums; }
+@media  (prefers-reduced-motion: reduce) {.rx #unternehmen .rx-report-tablet .rx-report-scores i{ will-change: auto; }}
+/* RAG iPad final overrides: exact latest-preview frame and form. */
+.rx #unternehmen.rx-check-report-section{--rx-bg:#f8f7f5;--rx-surface:#fff;--rx-ink:#101114;--rx-muted:#66676c;--rx-border:#1011141a;--rx-warm:#f8f7f5;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:center;gap:clamp(36px,6vw,86px);padding-block:100px;background:transparent}
+.rx #unternehmen .rx-report-carousel{max-width:570px;min-width:0;width:100%}
+.rx #unternehmen .rx-report-tablet{box-sizing:border-box!important;background:linear-gradient(145deg,#424247,#202023 45%,#303035)!important;border:1px solid #333338!important;border-radius:25px!important;padding:3px!important;box-shadow:inset 0 1px #ffffff30,0 25px 45px -35px #17171765,0 2px 4px #17171710!important}
+.rx #unternehmen .rx-report-tablet .rx-example-report{box-sizing:border-box!important;background:#fff!important;border:0!important;border-radius:21px!important;padding:clamp(22px,2.6vw,34px)!important;margin:0!important;box-shadow:none!important}
+.rx #unternehmen .rx-check-report-copy h2{font-size:clamp(36px,3.7vw,50px);line-height:1.15;letter-spacing:-.045em}
+.rx #unternehmen .rx-check-report-copy>.rx-discover-subtitle{margin:18px 0 0!important;font-size:18px!important;line-height:1.5!important;color:#101114!important;max-width:420px!important}
+.rx #unternehmen .rx-check-report-form{box-sizing:border-box!important;margin-top:24px!important;padding:27px!important;max-width:470px!important;width:100%!important;background:#fff!important;border:1px solid #fff!important;border-radius:23px!important;box-shadow:0 10px 35px -25px #17171720!important}
+.rx #unternehmen .rx-check-report-form::before{display:none!important}
+.rx #unternehmen .rx-check-report-form>h3,.rx #unternehmen .rx-check-report-form>p{display:none!important}
+.rx #unternehmen .rx-check-report-form .bc-form{display:flex!important;flex-direction:column!important;gap:12px!important;background:#fff!important;border:0!important;border-radius:0!important;padding:0!important;box-shadow:none!important;width:100%!important}
+.rx #unternehmen .rx-check-report-form .bc-form input{box-sizing:border-box!important;width:100%!important;min-height:56px!important;border:1px solid #dedbd7!important;border-radius:12px!important;background:#fff!important;padding:16px!important;font-size:14px!important;color:#101114!important}
+.rx #unternehmen .rx-check-report-form .bc-form button{box-sizing:border-box!important;width:100%!important;min-height:50px!important;justify-content:center!important;background:#111215!important;border:0!important;color:#fff!important;border-radius:999px!important;padding:13px 22px!important;font-size:13px!important;box-shadow:none!important}
+.rx #unternehmen .rx-check-report-form>small{display:block!important;text-align:center!important;margin-top:15px!important;color:#87817a!important;font-size:10px!important}
+@media (max-width:760px){.rx #unternehmen.rx-check-report-section{grid-template-columns:minmax(0,1fr);gap:38px;padding-block:64px}.rx #unternehmen .rx-report-carousel{max-width:540px;margin-inline:auto}.rx #unternehmen .rx-check-report-copy{max-width:540px;width:100%;margin-inline:auto}.rx #unternehmen .rx-check-report-form{max-width:none!important}.rx #unternehmen .rx-check-report-copy h2{font-size:clamp(36px,7vw,46px)}}
+@media(max-width:380px){.rx #unternehmen .rx-report-tablet{border-radius:22px!important;padding:2px!important}.rx #unternehmen .rx-report-tablet .rx-example-report{border-radius:19px!important;padding:18px!important}}

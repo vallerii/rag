@@ -1,0 +1,8 @@
+{
+  "name": "ortsfuchs-approved-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/verify.mjs"
+  }
+}

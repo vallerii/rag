@@ -1,0 +1,20 @@
+/* RAG homepage visual cleanup — 2026-11-18.
+   Scope to existing, uniquely identified sections; preserve all functional UI. */
+.rx[data-theme="light"] #leistungen .channel.channel-maps,
+.rx[data-theme="light"] #leistungen .channel.channel-social {
+  background-color: #fff !important;
+}
+
+#faq > div:first-child > p,
+#faq > div:first-child > a.rx-text-link[href="/preise"],
+.rx-closing > p.rx-kicker,
+.rx-footer > p,
+#maps .rx-channel-copy > p.rx-kicker,
+#maps .rx-channel-copy > a.rx-article-link[href="/ratgeber/google-maps-ranking-verbessern"],
+#website .rx-channel-copy > p.rx-kicker,
+#website .rx-channel-copy > p:nth-of-type(3),
+#website .rx-channel-copy > a.rx-article-link[href="/ratgeber/wie-funktioniert-lokales-seo"],
+#social .rx-section-heading > p.rx-kicker,
+#social p > small {
+  display: none !important;
+}

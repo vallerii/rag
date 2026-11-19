@@ -1,0 +1,28 @@
+# robots.txt — RAG
+# Die Domain in der Sitemap-Zeile setzt der Build (VITE_SITE_URL) automatisch.
+
+# Suchmaschinen und KI-Assistenten ausdrücklich zugelassen —
+# ohne diesen Zugriff kann kein KI-System das Unternehmen korrekt wiedergeben.
+# Kundenbereich und Admin sind gesperrt (zusätzlich per X-Robots-Tag: noindex).
+User-agent: *
+User-agent: Googlebot
+User-agent: Google-Extended
+User-agent: Bingbot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: GPTBot
+User-agent: PerplexityBot
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Applebot
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /rag-intern
+Disallow: /kabinett
+Disallow: /check
+Disallow: /anfrage
+Disallow: /login
+Disallow: /passwort-vergessen
+Disallow: /passwort-neu
+
+Sitemap: https://rag-theta-one.vercel.app/sitemap.xml
