@@ -342,3 +342,49 @@
 #new-block .rx-order-band.is-transforming{transform:none;transition:opacity .18s ease,visibility 0s}
 #new-block .rx-order-band.is-transforming.is-scroll-hidden{transform:none}
 @media(prefers-reduced-motion:reduce){#new-block .rx-order-band{transition:none!important}}
+
+/* Quiet energy on both visibility-index buttons. */
+.rx .rx-header-cta,.rx .rx-actions .rx-primary{
+  position:relative;isolation:isolate;overflow:hidden;
+  background-image:linear-gradient(115deg,#ffffff06,transparent 45%,#ff5b2e0a);
+  animation:ortsfuchs-soft-breathe 12s ease-in-out infinite;
+}
+.rx .rx-header-cta::before,.rx .rx-actions .rx-primary::before{
+  content:"";position:absolute;z-index:-1;inset:-90% -20%;pointer-events:none;
+  background:radial-gradient(ellipse at center,#ff793f99 0%,#ff5b2e40 25%,transparent 62%);
+  opacity:0;transform:translateX(-72%);animation:ortsfuchs-soft-sweep 12s ease-in-out infinite;
+}
+.rx .rx-actions .rx-primary,.rx .rx-actions .rx-primary::before{animation-delay:1.5s}
+@keyframes ortsfuchs-soft-sweep{
+  0%,58%{transform:translateX(-72%) scale(.85);opacity:0}
+  67%{opacity:.16}
+  79%{opacity:.22}
+  92%,100%{transform:translateX(72%) scale(1.08);opacity:0}
+}
+@keyframes ortsfuchs-soft-breathe{
+  0%,58%,100%{box-shadow:0 0 0 #ff5b2e00}
+  76%{box-shadow:0 0 22px -10px #ff5b2e35}
+}
+
+/* Direction changes affect only the two menu islands, never the wordmark. */
+.rx-header .rx-nav,.rx-header .rx-header-actions{
+  opacity:1;visibility:visible;transform:translateY(0);
+  transition:opacity .22s ease,transform .25s ease,visibility 0s,background-color .25s ease,border-color .25s ease,box-shadow .25s ease;
+}
+.rx-header.is-menu-hidden .rx-nav,.rx-header.is-menu-hidden .rx-header-actions{
+  opacity:0;visibility:hidden;transform:translateY(-6px);pointer-events:none;
+  transition:opacity .2s ease,transform .25s ease,visibility 0s .25s,background-color .25s ease,border-color .25s ease,box-shadow .25s ease;
+}
+
+/* The offer is visible page content, closer to the Maps section above it. */
+.rx .rx-profile-cta{margin-top:24px}
+
+/* The left FAQ column stops 24px below the measured wordmark. */
+@media(min-width:761px){
+  .rx-faq>div:first-child{position:sticky;top:var(--faq-sticky-top,94px);align-self:start}
+}
+@media(prefers-reduced-motion:reduce){
+  .rx .rx-header-cta,.rx .rx-actions .rx-primary,
+  .rx .rx-header-cta::before,.rx .rx-actions .rx-primary::before{animation:none}
+  .rx-header .rx-nav,.rx-header .rx-header-actions{transition:none}
+}

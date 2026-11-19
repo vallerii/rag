@@ -131,21 +131,12 @@ css += '''
 #new-block .rx-order-band.is-transforming.is-scroll-hidden{transform:none}
 @media(prefers-reduced-motion:reduce){#new-block .rx-order-band{transition:none!important}}
 '''
+css += '\n' + (ROOT / 'scripts/refinements.css').read_text()
 (OUT / 'approved-blocks.css').write_text(css)
+css_version = hashlib.sha256(css.encode()).hexdigest()[:12]
 
 controller = (ROOT / 'scripts/controller.js').read_text()
-maps_js = re.findall(r'<script[^>]*>(.*?)</script>', maps, re.S)[0]
-maps_js = maps_js.replace("document.getElementById('preview')", "document.getElementById('approved-maps')")
-maps_js = re.sub(r"const before=.*?;\nconst after=.*?;\n", '', maps_js)
-maps_js = re.sub(r"\s*before\.style\.height=.*?;", '', maps_js)
-maps_js = re.sub(r"\s*after\.style\.height=.*?;", '', maps_js)
-maps_js = maps_js.replace("document.querySelectorAll('[data-open]')", "preview.querySelectorAll('[data-open]')").replace("document.querySelectorAll('dialog')", "preview.querySelectorAll('dialog')")
-maps_js = maps_js.replace("document.getElementById(link.dataset.open)", "preview.querySelector('#'+link.dataset.open)")
-maps_js = maps_js.replace('window.addEventListener(', 'listen(window,').replace('reducedMotion.addEventListener(', 'listen(reducedMotion,')
-maps_js = maps_js.replace("link.addEventListener('click',", "listen(link,'click',").replace("dialog.querySelector('[data-close]').addEventListener('click',", "listen(dialog.querySelector('[data-close]'),'click',").replace("dialog.addEventListener('click',", "listen(dialog,'click',")
-maps_js = maps_js.replace('document.fonts.ready.then(fitPreview)', 'document.fonts.ready.then(()=>{if(!signal.aborted)fitPreview()})')
-maps_js += '\ncleanups.push(()=>cancelAnimationFrame(scrollFrame));'
-controller = controller.replace('/* MAPS_CONTROLLER */', '(()=>{\n' + maps_js + '\n})();')
+controller = controller.replace('/* MAPS_CONTROLLER */', (ROOT / 'scripts/maps-controller.js').read_text())
 
 search_js = re.findall(r'<script[^>]*>(.*?)</script>', search, re.S)[0]
 search_js = search_js.replace('(() => {', "(() => {\n  const root=document.getElementById('approved-search');", 1)
@@ -155,6 +146,7 @@ search_js = search_js.replace('  update();\n})();', '  update();\n  cleanups.pus
 controller = controller.replace('/* SEARCH_CONTROLLER */', search_js)
 module = 'export const approvedTemplates=' + json.dumps(templates, ensure_ascii=False) + ';\n' + controller
 (OUT / 'approved-blocks.js').write_text(module)
+module_version = hashlib.sha256(module.encode()).hexdigest()[:12]
 
 baseline = (ROOT / 'baseline/index.html').read_text()
 old_bundle_name = re.search(r'<script[^>]*src="(/assets/index-[^\"]+\.js)"', baseline).group(1)
@@ -182,8 +174,10 @@ component = component.replace('function mn(){', 'function mn(){' + effect, 1)
 footer = component.index('(0,C.jsxs)(`footer`,')
 button = '(0,C.jsx)(`button`,{className:`rx-theme`,type:`button`,onClick:i,"aria-label":e?`Helle Ansicht aktivieren`:`Dunkle Ansicht aktivieren`,"aria-pressed":e,children:(0,C.jsx)(pn,{dark:e})}),'
 component = component[:footer] + component[footer:].replace('children:[', 'children:[' + button, 1)
-bundle = 'import{approvedTemplates,mountApprovedSections}from"/ortsfuchs/approved-blocks.js";\n' + bundle[:start] + component + bundle[end:]
-new_bundle = '/assets/index-ortsfuchs-20261119.js'
+bundle = 'import{approvedTemplates,mountApprovedSections}from"/ortsfuchs/approved-blocks.js?v=' + module_version + '";\n' + bundle[:start] + component + bundle[end:]
+new_bundle = '/assets/index-ortsfuchs-' + hashlib.sha256(bundle.encode()).hexdigest()[:12] + '.js'
+for old in (SITE / 'assets').glob('index-ortsfuchs-*.js'):
+    old.unlink()
 (SITE / new_bundle.lstrip('/')).write_text(bundle)
 
 def wrap(name):
@@ -198,7 +192,7 @@ index = re.sub(r'<section class="rx-channel rx-container rx-google-section" id="
 theme = fragment(hero, '//footer/button')
 index = index.replace('<footer class="rx-footer rx-container">', '<footer class="rx-footer rx-container">' + theme, 1)
 index = index.replace(old_bundle_name, new_bundle, 1)
-index = index.replace('</head>', '<link rel="stylesheet" href="/ortsfuchs/approved-blocks.css">\n</head>', 1)
+index = index.replace('</head>', '<link rel="stylesheet" href="/ortsfuchs/approved-blocks.css?v=' + css_version + '">\n</head>', 1)
 (SITE / 'index.html').write_text(index)
 
 # Exact identity checks for every untouched server-rendered section.

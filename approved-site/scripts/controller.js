@@ -18,9 +18,39 @@ export function mountApprovedSections() {
     }
   }
   let headerFrame = 0;
-  const updateHeader = () => { headerFrame = 0; header.classList.toggle('is-scrolled', window.scrollY > 16); };
+  let previousHeaderY = window.scrollY;
+  let headerTravel = 0;
+  let headerDirection = 1;
+  const nav = header.querySelector('.rx-nav');
+  const actions = header.querySelector('.rx-header-actions');
+  function showMenu(visible) {
+    header.classList.toggle('is-menu-hidden', !visible);
+    nav.inert = !visible;
+    actions.inert = !visible;
+  }
+  function updateHeader() {
+    headerFrame = 0;
+    const y = Math.max(0, window.scrollY);
+    const delta = y - previousHeaderY;
+    previousHeaderY = y;
+    header.classList.toggle('is-scrolled', y > 16);
+    if (y <= 16) { headerTravel = 0; showMenu(true); return; }
+    if (Math.abs(delta) < .1) return;
+    const direction = delta > 0 ? 1 : -1;
+    if (direction !== headerDirection) { headerDirection = direction; headerTravel = 0; }
+    headerTravel += Math.abs(delta);
+    if (headerTravel >= 7) showMenu(direction < 0);
+  }
   listen(window, 'scroll', () => { if (!headerFrame) headerFrame = requestAnimationFrame(updateHeader); }, { passive: true });
+  listen(header, 'focusin', () => showMenu(true));
   updateHeader();
+  function measureFaqOffset() {
+    const logo = header.querySelector('.rx-wordmark');
+    if (logo) page.style.setProperty('--faq-sticky-top', Math.ceil(logo.getBoundingClientRect().bottom) + 24 + 'px');
+  }
+  measureFaqOffset();
+  listen(window, 'resize', measureFaqOffset, { passive: true });
+  document.fonts?.ready.then(() => { if (!signal.aborted) measureFaqOffset(); });
   cleanups.push(() => cancelAnimationFrame(headerFrame));
 
   const portraits = [...page.querySelectorAll('.rx-hero .rx-portrait')];
@@ -116,13 +146,21 @@ export function mountApprovedSections() {
         travel += Math.abs(delta);
         if (travel >= 7) direction = candidate;
       }
-      // Hide on upward scrolling, without reversing a visible morph.
-      if (candidate < 0 || direction < 0) { show(false); return; }
       const anchor = section.getBoundingClientRect();
-      const start = Math.min(innerHeight * .78, innerHeight - geometry.full.h - 32);
+      // The full strip is ordinary page content from the first render. Give it
+      // another 22% of a screen after it is fully visible before shrinking it.
+      const start = Math.max(96, innerHeight - geometry.full.h - 24 - innerHeight * .22);
+      if (candidate < 0 || direction < 0) {
+        if (anchor.top >= start) {
+          band.classList.remove('is-transforming', 'is-condensed');
+          parts.heading.inert = false;
+          show(true);
+        } else show(false);
+        return;
+      }
       const raw = clamp((start - anchor.top) / Math.min(320, Math.max(180, innerHeight * .34)));
       const p = motion.matches ? (raw >= 1 ? 1 : 0) : raw * raw * (3 - 2 * raw);
-      const visible = anchor.top < innerHeight * .9 && search.getBoundingClientRect().top > -innerHeight * .45;
+      const visible = search.getBoundingClientRect().top > -innerHeight * .45;
       if (p === 0) {
         band.classList.remove('is-transforming', 'is-condensed');
       } else {
@@ -142,6 +180,7 @@ export function mountApprovedSections() {
         }
       }
       parts.heading.inert = raw >= .4;
+      band.dataset.scrollState = raw === 0 ? 'full' : raw < 1 ? 'morph' : 'compact';
       show(visible);
     }
     function schedule() { if (!frame) frame = requestAnimationFrame(update); }
