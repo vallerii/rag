@@ -22,29 +22,47 @@ export function mountApprovedSections() {
   let previousHeaderY = window.scrollY;
   let headerTravel = 0;
   let headerDirection = 1;
+  let headerMode = 'flow';
+  let headerExit = 0;
   const nav = header.querySelector('.rx-nav');
   const actions = header.querySelector('.rx-header-actions');
-  function showMenu(visible) {
-    header.classList.toggle('is-menu-hidden', !visible);
-    nav.inert = !visible;
-    actions.inert = !visible;
+  function setHeaderMode(mode) {
+    headerMode = mode;
+    header.classList.toggle('is-menu-pinned', mode !== 'flow');
+    header.classList.toggle('is-menu-leaving', mode === 'leaving');
+    if (mode !== 'leaving') headerExit = 0;
+    header.style.setProperty('--header-scroll-offset', -headerExit + 'px');
+    nav.inert = false;
+    actions.inert = false;
   }
   function updateHeader() {
     headerFrame = 0;
     const y = Math.max(0, window.scrollY);
     const delta = y - previousHeaderY;
     previousHeaderY = y;
-    header.classList.toggle('is-scrolled', y > 16);
-    if (y <= 16) { headerTravel = 0; showMenu(true); return; }
-    if (Math.abs(delta) < .1) return;
-    const direction = delta > 0 ? 1 : -1;
-    if (direction !== headerDirection) { headerDirection = direction; headerTravel = 0; }
-    headerTravel += Math.abs(delta);
-    if (headerTravel >= 7) showMenu(direction < 0);
+    if (y <= 1) {
+      headerTravel = 0;
+      setHeaderMode('flow');
+    } else if (Math.abs(delta) >= .1) {
+      const direction = delta > 0 ? 1 : -1;
+      if (direction !== headerDirection) { headerDirection = direction; headerTravel = 0; }
+      headerTravel += Math.abs(delta);
+      if (headerTravel >= 7 && direction < 0) setHeaderMode('pinned');
+      else if (direction > 0 && headerMode !== 'flow') {
+        if (headerTravel >= 7) {
+          if (headerMode !== 'leaving') setHeaderMode('leaving');
+          headerExit += Math.max(0, delta);
+          header.style.setProperty('--header-scroll-offset', -headerExit + 'px');
+          if (headerExit >= header.offsetHeight + 12) setHeaderMode('flow');
+        }
+      }
+    }
+    header.classList.toggle('is-scrolled', y > 16 && headerMode !== 'flow');
+    header.dataset.scrollMode = headerMode;
+    updateBrandTone();
   }
   listen(window, 'scroll', () => { if (!headerFrame) headerFrame = requestAnimationFrame(updateHeader); }, { passive: true });
-  listen(header, 'focusin', () => showMenu(true));
-  updateHeader();
+  listen(header, 'focusin', () => { if (window.scrollY > 1) setHeaderMode('pinned'); });
   // Keep the brand in its own viewport layer. This avoids clipping of the
   // sticky header's text while its two backdrop-filter islands fade away.
   const originalBrand = header.querySelector('.rx-wordmark');
@@ -56,7 +74,7 @@ export function mountApprovedSections() {
     originalBrand.classList.add('rx-brand-placeholder');
     originalBrand.setAttribute('aria-hidden', 'true');
     originalBrand.setAttribute('tabindex', '-1');
-    listen(fixedBrand, 'focusin', () => showMenu(true));
+    listen(fixedBrand, 'focusin', () => { if (window.scrollY > 1) setHeaderMode('pinned'); });
     cleanups.push(() => {
       fixedBrand.remove();
       originalBrand.classList.remove('rx-brand-placeholder');
@@ -64,15 +82,34 @@ export function mountApprovedSections() {
       originalBrand.removeAttribute('tabindex');
     });
   }
+  function updateBrandTone() {
+    if (!fixedBrand) return;
+    const rect = fixedBrand.getBoundingClientRect();
+    const stack = document.elementsFromPoint(rect.left + Math.min(25, rect.width / 3), rect.top + rect.height / 2);
+    let dark = page.dataset.theme === 'dark';
+    for (const el of stack) {
+      if (fixedBrand.contains(el) || header.contains(el)) continue;
+      const color = getComputedStyle(el).backgroundColor;
+      const values = color.match(/[\d.]+/g)?.map(Number);
+      if (!values || values.length < 3 || (values[3] ?? 1) < .65) continue;
+      const scale = color.startsWith('color(') ? 255 : 1;
+      const brightness = (.2126 * values[0] + .7152 * values[1] + .0722 * values[2]) * scale / 255;
+      dark = brightness < .48;
+      break;
+    }
+    fixedBrand.style.color = dark ? '#fff' : '#101114';
+    fixedBrand.dataset.onDark = String(dark);
+  }
   function measureFaqOffset() {
     if (!originalBrand) return;
     const rect = originalBrand.getBoundingClientRect();
-    page.style.setProperty('--faq-sticky-top', Math.ceil(rect.bottom) + 24 + 'px');
+    const top = rect.top - header.getBoundingClientRect().top;
+    page.style.setProperty('--faq-sticky-top', Math.ceil(top + rect.height) + 24 + 'px');
     if (fixedBrand) {
       fixedBrand.style.left = rect.left + 'px';
-      fixedBrand.style.top = rect.top + 'px';
-      fixedBrand.style.color = getComputedStyle(page).getPropertyValue('--rx-ink');
+      fixedBrand.style.top = top + 'px';
     }
+    updateBrandTone();
   }
   measureFaqOffset();
   listen(window, 'resize', measureFaqOffset, { passive: true });
@@ -81,6 +118,7 @@ export function mountApprovedSections() {
   brandTheme.observe(page, { attributes: true, attributeFilter: ['data-theme'] });
   cleanups.push(() => brandTheme.disconnect());
   cleanups.push(() => cancelAnimationFrame(headerFrame));
+  updateHeader();
 
   const portraits = [...page.querySelectorAll('.rx-hero .rx-portrait')];
   let active = 2;
@@ -283,8 +321,7 @@ export function mountApprovedSections() {
   (() => {
     const section = page.querySelector('#new-block');
     const band = section?.querySelector('.rx-order-band');
-    const search = page.querySelector('#website');
-    if (!band || !search) return;
+    if (!band) return;
     const motion = matchMedia('(prefers-reduced-motion: reduce)');
     const selectors = { logo: '.rx-order-logo', heading: 'h2', amount: '.rx-order-price strong', note: '.rx-order-price small', button: '.rx-order-button' };
     const parts = Object.fromEntries(Object.entries(selectors).map(([key, selector]) => [key, band.querySelector(selector)]));
@@ -346,20 +383,22 @@ export function mountApprovedSections() {
         if (travel >= 7) direction = candidate;
       }
       const anchor = section.getBoundingClientRect();
-      // The full strip is ordinary page content from the first render. Give it
-      // another 22% of a screen after it is fully visible before shrinking it.
-      const start = Math.max(96, innerHeight - geometry.full.h - 24 - innerHeight * .22);
+      // Remain in normal document flow all the way to the viewport center.
+      // Only then shrink into the bottom bar, which stays throughout downward scrolling.
+      const start = Math.max(96, (innerHeight - geometry.full.h) / 2);
       if (candidate < 0 || direction < 0) {
         if (anchor.top >= start) {
           band.classList.remove('is-transforming', 'is-condensed');
+          band.classList.add('is-natural');
+          band.dataset.scrollState = 'full';
           parts.heading.inert = false;
-          show(true);
-        } else show(false);
+        }
+        show(false);
         return;
       }
       const raw = clamp((start - anchor.top) / Math.min(320, Math.max(180, innerHeight * .34)));
       const p = motion.matches ? (raw >= 1 ? 1 : 0) : raw * raw * (3 - 2 * raw);
-      const visible = search.getBoundingClientRect().top > -innerHeight * .45;
+      band.classList.toggle('is-natural', raw === 0);
       if (p === 0) {
         band.classList.remove('is-transforming', 'is-condensed');
       } else {
@@ -380,7 +419,7 @@ export function mountApprovedSections() {
       }
       parts.heading.inert = raw >= .4;
       band.dataset.scrollState = raw === 0 ? 'full' : raw < 1 ? 'morph' : 'compact';
-      show(visible);
+      show(true);
     }
     function schedule() { if (!frame) frame = requestAnimationFrame(update); }
     Object.values(parts).forEach(el => el.classList.add('rx-morph-part'));
