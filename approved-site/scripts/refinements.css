@@ -27,8 +27,9 @@
   transition:opacity .22s ease,transform .25s ease,visibility 0s,background-color .25s ease,border-color .25s ease,box-shadow .25s ease;
 }
 .rx-header.is-menu-hidden .rx-nav,.rx-header.is-menu-hidden .rx-header-actions{
-  opacity:0;visibility:hidden;transform:translateY(-6px);pointer-events:none;
-  transition:opacity .2s ease,transform .25s ease,visibility 0s .25s,background-color .25s ease,border-color .25s ease,box-shadow .25s ease;
+  opacity:0;transform:translateY(-6px);pointer-events:none;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  transition:opacity .2s ease,transform .25s ease,background-color .25s ease,border-color .25s ease,box-shadow .25s ease;
 }
 
 /* The offer is visible page content, closer to the Maps section above it. */
