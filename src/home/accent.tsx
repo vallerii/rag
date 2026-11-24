@@ -1,4 +1,5 @@
 import { Fragment } from 'react'
+import { getLang, tr } from '../i18n'
 
 // Markenzeichen des Recto-Stils: Überschriften mischen zwei Schriften — der Hauptteil in Geist,
 // der betonte Schluss in Instrument Serif kursiv und orange (<em>, gestylt in index.css / home.css).
@@ -24,10 +25,18 @@ function split(text: string): [string, string] | null {
 
 export function accent(node: React.ReactNode): React.ReactNode {
   if (typeof node !== 'string') return node
-  if (node.includes('*')) {
-    return node.split(/\*([^*]+)\*/).map((part, i) => (i % 2 ? <em key={i}>{part}</em> : <Fragment key={i}>{part}</Fragment>))
+  let text: string = node
+  // Russisch: Der Übersetzer ersetzt nur ganze Textknoten. Deshalb hier zuerst den ganzen Satz übersetzen
+  // (Schlüssel = Text ohne Sternchen) und erst danach den Akzent setzen.
+  if (typeof window !== 'undefined' && getLang() === 'ru') {
+    const plain = text.replace(/\*/g, '')
+    const ru = tr(plain)
+    if (ru !== plain) text = ru
   }
-  const parts = split(node)
-  if (!parts) return node
+  if (text.includes('*')) {
+    return text.split(/\*([^*]+)\*/).map((part, i) => (i % 2 ? <em key={i}>{part}</em> : <Fragment key={i}>{part}</Fragment>))
+  }
+  const parts = split(text)
+  if (!parts) return text
   return <>{parts[0]}<em>{parts[1]}</em></>
 }
