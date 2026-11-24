@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './home.css'
 import AiSection from './AiSection'
 import ChannelStory from './ChannelStory'
@@ -11,6 +11,7 @@ import SearchTimeline from './SearchTimeline'
 import SiteHeader from './SiteHeader'
 import SocialStory from './SocialStory'
 import { Arrow, ThemeIcon } from './icons'
+import { mountSceneSnaps } from './motion'
 
 // Startseite im Recto-Stil (Design + Texte aus codex/rag-style-exploration).
 // Stilbeschreibung mit Farben, Schrift, Bewegung und Interaktionen: DESIGN.md im Projektordner.
@@ -34,13 +35,16 @@ export default function HomePage({ children, headerMenu }: { children?: React.Re
   useEffect(() => {
     try { setDark(localStorage.getItem(THEME_KEY) === 'dark') } catch { /* Speicher gesperrt */ }
   }, [])
+  // Schnelle Übergänge: Google Search → Social Media → Kanal-Geschichte → Sichtbarkeitsindex.
+  const rootRef = useRef<HTMLDivElement>(null)
+  useEffect(() => (rootRef.current ? mountSceneSnaps(rootRef.current) : undefined), [])
   const toggleTheme = () => setDark(d => {
     try { localStorage.setItem(THEME_KEY, d ? 'light' : 'dark') } catch { /* ignore */ }
     return !d
   })
 
   return (
-    <div className="rx" data-theme={dark ? 'dark' : 'light'}>
+    <div ref={rootRef} className="rx" data-theme={dark ? 'dark' : 'light'}>
       {children}
       <SiteHeader home menu={headerMenu} />
       <main id="inhalt">

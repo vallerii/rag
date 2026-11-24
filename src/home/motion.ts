@@ -461,3 +461,64 @@ export function mountSocialStory(story: HTMLElement): Cleanup {
   }
   return () => abort.abort()
 }
+
+// ── Schnelle Übergänge zwischen den gepinnten Szenen ─────────────────────────────
+// Ist eine Szene am Ende angekommen (Google Search: Bestell-CTA, Social Media: Artikel-Einladung,
+// Kanal-Geschichte: letzter Punkt), genügt ein Scroll nach unten: die Seite fährt in einer
+// Bewegung zum Anfang des nächsten Blocks, statt den Rest der Szenenstrecke leer abzuscrollen.
+// Während der Fahrt (≈700 ms) werden Mausrad/Touch/Tasten ignoriert, damit nichts ruckelt.
+type Snap = { scene: string; at: number; next: string }
+const SNAPS: Snap[] = [
+  { scene: '#approved-search .search-timeline', at: 0.9, next: '#rag-story' },
+  { scene: '#rag-story', at: 0.84, next: '#rx-scroll-story' },
+  { scene: '#rx-scroll-story', at: 0.95, next: '#unternehmen' },
+]
+
+export function mountSceneSnaps(root: HTMLElement): Cleanup {
+  const abort = new AbortController()
+  const { signal } = abort
+  let lastY = window.scrollY
+  let busy = false
+  let frame = 0
+  const block = (e: Event) => { if (busy) e.preventDefault() }
+  const keys = new Set(['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', ' ', 'Home', 'End'])
+  window.addEventListener('wheel', block, { passive: false, signal })
+  window.addEventListener('touchmove', block, { passive: false, signal })
+  window.addEventListener('keydown', e => { if (busy && keys.has(e.key)) e.preventDefault() }, { signal })
+
+  const topOf = (el: Element) => el.getBoundingClientRect().top + window.scrollY
+  function glide(to: number) {
+    const from = window.scrollY
+    if (reducedMotion().matches) { window.scrollTo({ top: to, behavior: 'instant' as ScrollBehavior }); return }
+    busy = true
+    const dur = Math.min(900, Math.max(520, Math.abs(to - from) * 0.35))
+    const t0 = performance.now()
+    const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
+    const step = (now: number) => {
+      const t = clamp01((now - t0) / dur)
+      window.scrollTo({ top: from + (to - from) * ease(t), behavior: 'instant' as ScrollBehavior })
+      if (t < 1 && !signal.aborted) frame = requestAnimationFrame(step)
+      else { busy = false; lastY = window.scrollY }
+    }
+    frame = requestAnimationFrame(step)
+  }
+  function onScroll() {
+    if (busy) return
+    const y = window.scrollY
+    const down = y > lastY
+    lastY = y
+    if (!down || innerWidth <= 760) return
+    for (const s of SNAPS) {
+      const scene = root.querySelector<HTMLElement>(s.scene)
+      const next = root.querySelector<HTMLElement>(s.next)
+      if (!scene || !next) continue
+      const start = topOf(scene)
+      const travel = Math.max(1, scene.offsetHeight - innerHeight)
+      const progress = (y - start) / travel
+      const target = topOf(next)
+      if (progress >= s.at && y < target - 4) { glide(target); return }
+    }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true, signal })
+  return () => { abort.abort(); cancelAnimationFrame(frame); busy = false }
+}
