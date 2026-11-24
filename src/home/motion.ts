@@ -463,15 +463,14 @@ export function mountSocialStory(story: HTMLElement): Cleanup {
 }
 
 // ── Schnelle Übergänge zwischen den gepinnten Szenen ─────────────────────────────
-// Ist eine Szene am Ende angekommen (Google Search: Bestell-CTA, Social Media: Artikel-Einladung,
-// Kanal-Geschichte: letzter Punkt), genügt ein Scroll nach unten: die Seite fährt in einer
+// Ist eine Szene am Ende angekommen (Google Search: Bestell-CTA, Social Media: Artikel-Einladung),
+// genügt ein Scroll nach unten: die Seite fährt in einer
 // Bewegung zum Anfang des nächsten Blocks, statt den Rest der Szenenstrecke leer abzuscrollen.
 // Während der Fahrt (≈700 ms) werden Mausrad/Touch/Tasten ignoriert, damit nichts ruckelt.
 type Snap = { scene: string; at: number; next: string }
 const SNAPS: Snap[] = [
   { scene: '#approved-search .search-timeline', at: 0.9, next: '#rag-story' },
   { scene: '#rag-story', at: 0.84, next: '#rx-scroll-story' },
-  { scene: '#rx-scroll-story', at: 0.95, next: '#unternehmen' },
 ]
 
 export function mountSceneSnaps(root: HTMLElement): Cleanup {

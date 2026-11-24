@@ -110,7 +110,7 @@ Grundsatz: Bewegung erklärt (Scroll-Geschichte), sie dekoriert nicht. Alles res
 | Google Search | gepinnte Szene: Suchfeld → G-Logo wächst ×20 → 5 Karten blättern (±3px/9px/1.2° je Tiefe) → CTA | Phasen 0–12 % / 12–80 % / ≥ 80 % |
 | Social Media | Instagram-Feed scrollt mit, rechts Text-Wechsel (Menschen → Arbeit → Ergebnis → Artikel) | Feed bis 70 %, Artikel ab 80.5 % |
 | Kanal-Geschichte | gepinnt, 13 Prüfpunkte in 4 Kanälen, Häkchen werden gesetzt, Fortschritt + «Weiter: …» unten | statisch bei ≤ 640px Höhe |
-| Szenen-Übergänge | Ende einer gepinnten Szene (Search-CTA, Social-Artikel, letzter Kanal-Punkt) + ein Scroll nach unten → Seite gleitet zum nächsten Block (Search → Social → Kanal-Geschichte → Sichtbarkeitsindex); währenddessen Eingaben gesperrt; nur Desktop > 760px | 520–900 ms, ease-in-out-cubic |
+| Szenen-Übergänge | Ende einer gepinnten Szene (Search-CTA, Social-Artikel, letzter Kanal-Punkt) + ein Scroll nach unten → Seite gleitet zum nächsten Block (Search → Social → Kanal-Geschichte; zum Sichtbarkeitsindex normal scrollen); währenddessen Eingaben gesperrt; nur Desktop > 760px | 520–900 ms, ease-in-out-cubic |
 | Sichtbarkeitsindex | iPad wechselt alle 4s, Zahlen/Ring zählen hoch | 1350ms, ease-out-cubic, Ampelfarben |
 
 Easing-Standard: `cubic-bezier(.2,.7,.2,1)` (weich raus). Hover-Dauer .18–.25s. Nie Bounce außer beim Plattform-Pop.
