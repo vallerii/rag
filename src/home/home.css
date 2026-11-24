@@ -2009,6 +2009,8 @@
   .rx .rx-fan{margin-bottom:22px}
   .rx .rx-hero h1{margin-bottom:18px}
   .rx .rx-actions{margin-top:24px}
+  /* Erster Bildschirm gehört dem Hero: die Plattform-Leiste darunter beginnt erst unterhalb der Falz. */
+  .rx .rx-hero{min-height:calc(100svh - 96px);box-sizing:border-box}
 }
 @media (min-width:881px) and (max-height:980px){
   .rx .rx-fan{height:330px}
