@@ -71,7 +71,7 @@ function MarkIcon({ m }: { m: Mark }) {
 function EmptyState({ onLogout, onKonto }: { onLogout: () => void; onKonto: () => void }) {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ padding: '0 clamp(20px, 4vw, 48px)', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--line)' }}>
+      <header style={{ padding: '0 var(--rx-edge)', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--line)' }}>
         <Logo />
         <span style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
           <LangSwitch />
@@ -333,7 +333,7 @@ export default function CabinetPage() {
         <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
           <div className="d-dots" style={{ position: 'absolute', right: -40, top: -40, width: 360, height: 360, opacity: 0.8 }} />
         </div>
-        <div style={{ position: 'relative', maxWidth: 1240, margin: '0 auto', padding: '0 clamp(20px, 4vw, 48px)' }}>
+        <div style={{ position: 'relative', maxWidth: 1280, margin: '0 auto', padding: '0 var(--rx-edge)' }}>
           <div style={{ height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, borderBottom: '1px solid #E4E1DB' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <Logo />
@@ -384,7 +384,7 @@ export default function CabinetPage() {
         </div>
       </header>
 
-      <main id="inhalt" style={{ maxWidth: 1240, margin: '0 auto', padding: 'clamp(24px, 4vw, 44px) clamp(20px, 4vw, 48px) 96px' }}>
+      <main id="inhalt" style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(24px, 4vw, 44px) var(--rx-edge) 96px' }}>
         {notice === 'neu' && (
           <div style={{ marginBottom: 18, padding: '14px 18px', borderRadius: 16, backgroundColor: '#E6F6EC', color: '#0B5E30', fontSize: 14.5, lineHeight: 1.55 }}>
             <strong>Weitere Firma hinzugefügt.</strong> Oben über dem Namen wechseln Sie zwischen Ihren Firmen.

@@ -2022,3 +2022,12 @@
 /* 149-€-Band: horizontale Position kommt aus motion.ts (--morph-left), Abstand darunter steuert die Sektionshöhe. */
 #new-block .rx-order-band.is-transforming{left:var(--morph-left,calc(50% - var(--morph-width)/2))!important}
 #new-block{box-sizing:content-box}
+
+/* ── Ein Raster für alles (24.11.): Inhalte beginnen auf der Linie der Wortmarke ──
+   Kopfzeile: max. 1280px, Rand --rx-edge (48 / 28 / 16px) → Inhaltsbreite min(1280px, 100%) − 2 × Rand.
+   Ausnahmen mit eigener Bühne: Google Maps (skaliert auf ganze Breite) und die Google-Search-Szene (zentriert). */
+.rx .rx-container{width:calc(min(1280px,100%) - 2 * var(--rx-edge));max-width:none}
+.rx-header{max-width:1280px;padding-inline:var(--rx-edge)!important}
+@media (min-width:641px){.rag-wrap{width:calc(min(1280px,100%) - 2 * var(--rx-edge))}}
+@media (min-width:761px){.rx-scroll-host .pin{max-width:1280px!important;padding-inline:var(--rx-edge)!important}}
+@media (min-width:881px){.rx #unternehmen .rx-report-carousel{justify-self:start;margin-left:0!important;margin-right:auto!important}}

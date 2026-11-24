@@ -22,7 +22,7 @@ export default function OrderPage({ items }: { items: OrderItem[] }) {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)' }}>
       <header style={{ borderBottom: '1px solid var(--line)', backgroundColor: 'rgba(247,246,244,0.9)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', position: 'sticky', top: 0, zIndex: 20 }}>
-        <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 clamp(20px, 4vw, 48px)', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 var(--rx-edge)', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <Logo />
           <p className="eyebrow ck-hide-sm" style={{ color: 'var(--muted)' }}>Paket anfragen</p>
           <span style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -35,7 +35,7 @@ export default function OrderPage({ items }: { items: OrderItem[] }) {
         </div>
       </header>
 
-      <main id="inhalt" className="ck-grid" style={{ maxWidth: 1240, margin: '0 auto', padding: 'clamp(28px, 5vw, 64px) clamp(20px, 4vw, 48px) 96px' }}>
+      <main id="inhalt" className="ck-grid" style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(28px, 5vw, 64px) var(--rx-edge) 96px' }}>
         <aside style={{ backgroundColor: 'var(--brand-soft)', color: 'var(--ink)', borderRadius: 26, padding: 'clamp(24px, 3vw, 34px)', alignSelf: 'start', position: 'relative', overflow: 'hidden' }}>
           <div aria-hidden className="d-dots" style={{ position: 'absolute', right: -60, bottom: -60, width: 240, height: 240, pointerEvents: 'none' }} />
           <div style={{ position: 'relative' }}>

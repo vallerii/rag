@@ -366,7 +366,7 @@ export default function CheckPage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)' }}>
       <header style={{ borderBottom: '1px solid var(--line)', backgroundColor: 'rgba(247,246,244,0.9)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', position: 'sticky', top: 0, zIndex: 20 }}>
-        <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 clamp(20px, 4vw, 48px)', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 var(--rx-edge)', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <Logo />
           <p className="eyebrow ck-hide-sm" style={{ color: 'var(--muted)' }}>Kostenloser Sichtbarkeits-Check</p>
           <span style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -382,7 +382,7 @@ export default function CheckPage() {
       </header>
 
       <div ref={topRef} style={{ scrollMarginTop: 80 }} />
-      <main id="inhalt" style={{ maxWidth: 1240, margin: '0 auto', padding: '20px clamp(20px, 4vw, 48px) 40px' }}>
+      <main id="inhalt" style={{ maxWidth: 1280, margin: '0 auto', padding: '20px var(--rx-edge) 40px' }}>
         <section className="ck-card" style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(20px, 2.6vw, 30px)', boxShadow: '0 30px 70px rgba(16,17,20,0.06)', minWidth: 0, maxWidth: step !== 'find' ? 680 : undefined, margin: '0 auto' }}>
 
           {step === 'find' && (

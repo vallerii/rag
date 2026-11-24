@@ -66,7 +66,11 @@
   --shadow-float: 0 18px 38px -22px rgba(16, 17, 20, 0.28);
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --serif: 'Recto Serif', Georgia, serif;
+  /* Seitenrand – identisch mit der Kopfzeile, damit alles auf der Linie der Wortmarke beginnt. */
+  --rx-edge: 48px;
 }
+@media (max-width: 1100px) { :root { --rx-edge: 28px; } }
+@media (max-width: 640px) { :root { --rx-edge: 16px; } }
 
 html, body, button, input, select, textarea {
   font-family: 'Recto Geist', 'RAG Cyrillic Sans', ui-sans-serif, system-ui, sans-serif;

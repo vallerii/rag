@@ -422,7 +422,8 @@ function PerplexityLogo() {
 // MOTION / LAYOUT HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 const EASE = 'cubic-bezier(0.16,1,0.3,1)'
-const SHELL: React.CSSProperties = { maxWidth: 1240, margin: '0 auto', width: '100%' }
+// Inhaltsbreite = Kopfzeile (1280 − 2 × 48): Text und Blöcke beginnen auf der Linie der Wortmarke.
+const SHELL: React.CSSProperties = { maxWidth: 1184, margin: '0 auto', width: '100%' }
 
 function useInView(threshold = 0.15) {
   const ref = useRef<any>(null)
@@ -1354,7 +1355,7 @@ function Pricing() {
       {profile && <ProfileOrderModal initialSocial={profileSocial} onClose={() => setProfile(false)} />}
       <style>{`@media (max-width: 900px) { .price-addon, .price-profile { grid-template-columns: 1fr !important; } }
 @media (max-width: 560px) { .price-profile-list { grid-template-columns: 1fr !important; } }`}</style>
-      <section id="pakete" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 4vw, 56px) clamp(20px, 4vw, 48px) clamp(56px, 6vw, 88px)' }}>
+      <section id="pakete" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 4vw, 56px) var(--rx-edge) clamp(56px, 6vw, 88px)' }}>
         <div style={{ ...SHELL }}>
 
           {/* 01 — Google-Profil schlüsselfertig, volle Breite */}
@@ -1483,7 +1484,7 @@ function PreisePage() {
 // «Gut zu wissen» unter den Preisen: USt., Laufzeit, was dem Kunden gehört (Quelle: src/company.ts → TERMS).
 function PriceFacts() {
   return (
-    <section id="gut-zu-wissen" style={{ backgroundColor: 'var(--bone)', padding: '0 clamp(20px,4vw,48px) clamp(40px, 5vw, 64px)' }}>
+    <section id="gut-zu-wissen" style={{ backgroundColor: 'var(--bone)', padding: '0 var(--rx-edge) clamp(40px, 5vw, 64px)' }}>
       <div style={{ ...SHELL }}>
         <Kicker>Gut zu wissen</Kicker>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginTop: 18 }}>
@@ -1516,8 +1517,8 @@ function LegalPage({ kind }: { kind: LegalKind }) {
       <Nav />
       <main id="inhalt">
         <ContentHero crumbs={[{ label: 'Start', href: '/' }, { label: title }]} kicker="RECHTLICHES" title={title} sub={`Stand: ${LEGAL_UPDATED}`} />
-        <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(48px, 6vw, 80px) clamp(20px,4vw,48px)' }}>
-          <div style={{ ...SHELL, maxWidth: 1240 }}><div style={{ maxWidth: 780 }}>
+        <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(48px, 6vw, 80px) var(--rx-edge)' }}>
+          <div style={{ ...SHELL }}><div style={{ maxWidth: 780 }}>
             {!isServer && getLang() === 'ru' && <p style={{ fontSize: 14, fontWeight: 600, margin: '0 0 24px' }}>Die Texte unten sind rechtlich nur auf Deutsch verbindlich.</p>}
             <Body />
           </div></div>
@@ -1700,7 +1701,7 @@ function Hero() {
     <>
       <section ref={ref} className={`mask ${seen ? 'in' : ''}`} style={{
         position: 'relative', backgroundColor: 'var(--bone)', color: 'var(--ink)',
-        padding: 'clamp(132px, 16vh, 196px) clamp(20px, 4vw, 48px) 0', overflow: 'hidden',
+        padding: 'clamp(132px, 16vh, 196px) var(--rx-edge) 0', overflow: 'hidden',
       }}>
         <MapBackdrop />
 
@@ -1790,7 +1791,7 @@ const channels = [
 // 1 — Die Suche hat sich verändert: vier Kanäle, jede Karte springt zu ihrem Block.
 function ChannelOverview() {
   return (
-    <section id="kanaele" style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'var(--paper)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', scrollMarginTop: 90 }}>
+    <section id="kanaele" style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'var(--paper)', padding: 'var(--sec-y) var(--rx-edge)', scrollMarginTop: 90 }}>
       <DotsCorner style={{ right: -80, top: -60 }} />
       <div style={{ ...SHELL, position: 'relative' }}>
         <div style={{ textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
@@ -1856,7 +1857,7 @@ function ChannelBlock({ id, label, title, body, actions, aside, article, tone = 
     </div>
   )
   return (
-    <section id={id} style={{ backgroundColor: bg, color: 'var(--ink)', padding: soft ? 'clamp(24px, 3vw, 40px) clamp(20px, 4vw, 48px)' : 'var(--sec-y) clamp(20px, 4vw, 48px)', scrollMarginTop: 70, position: 'relative', overflow: 'clip' }}>
+    <section id={id} style={{ backgroundColor: bg, color: 'var(--ink)', padding: soft ? 'clamp(24px, 3vw, 40px) var(--rx-edge)' : 'var(--sec-y) var(--rx-edge)', scrollMarginTop: 70, position: 'relative', overflow: 'clip' }}>
       {!soft && backdrop}
       {soft ? (
         <div className="d-panel" style={{ ...SHELL, backgroundColor: 'var(--brand-soft)', padding: 'clamp(40px, 5.4vw, 80px) clamp(20px, 4.8vw, 72px)' }}>
@@ -2052,7 +2053,7 @@ function ChannelSocial() {
   return (
     <>
     {order && <PackageOrderModal initial={{ pkg: null, social: true }} onClose={() => setOrder(false)} />}
-    <section id="social" style={{ backgroundColor: 'var(--paper)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', scrollMarginTop: 70, position: 'relative', overflow: 'clip' }}>
+    <section id="social" style={{ backgroundColor: 'var(--paper)', padding: 'var(--sec-y) var(--rx-edge)', scrollMarginTop: 70, position: 'relative', overflow: 'clip' }}>
       <div style={{ ...SHELL, position: 'relative' }}>
         <div style={{ textAlign: 'center', maxWidth: 820, margin: '0 auto' }}>
           <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '0 0 18px' }}>In sozialen Netzwerken <span className="serif italic-serif">sehen Kunden Menschen</span></h2></Reveal>
@@ -2106,7 +2107,7 @@ function ChannelSummary() {
     </div>
   )
   return (
-    <section style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'var(--bone)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)' }}>
+    <section style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'var(--bone)', padding: 'var(--sec-y) var(--rx-edge)' }}>
       <div style={{ ...SHELL, position: 'relative' }}>
         <div style={{ textAlign: 'center', maxWidth: 880, margin: '0 auto' }}>
           <MaskHeading
@@ -2152,7 +2153,7 @@ function BusinessCheck() {
   return (
     <>
       {order && <ProfileOrderModal onClose={() => setOrder(false)} />}
-      <section id="audit-quiz" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 3vw, 40px) clamp(20px, 4vw, 48px) var(--sec-y)', scrollMarginTop: 70 }}>
+      <section id="audit-quiz" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 3vw, 40px) var(--rx-edge) var(--sec-y)', scrollMarginTop: 70 }}>
         <div className="d-panel on-brand" style={{ ...SHELL, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(40px, 5.4vw, 80px) clamp(20px, 4.8vw, 72px)' }}>
           <RingsBackdrop size={900} color="rgba(255,255,255,0.14)" style={{ right: -240, top: -220 }} />
           <div className="audit-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 440px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
@@ -2217,7 +2218,7 @@ function BusinessCheck() {
 function MarketShift() {
   const journey = ['Google Maps', 'Bewertungen', 'Website', 'KI-Antwort', 'Auswahl', 'Anruf']
   return (
-    <section id="markt" style={{ backgroundColor: 'var(--paper)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)' }}>
+    <section id="markt" style={{ backgroundColor: 'var(--paper)', padding: 'var(--sec-y) var(--rx-edge)' }}>
       <div style={{ ...SHELL }}>
         <Reveal><Kicker>Der Markt hat sich verändert</Kicker></Reveal>
 
@@ -2426,7 +2427,7 @@ function LocalPromotion() {
     ['Suchmaschinen und KI-Systeme', 'verbinden diese Informationen.'],
   ]
   return (
-    <section id="modules" style={{ backgroundColor: 'var(--paper)', padding: '0 clamp(20px, 4vw, 48px) var(--sec-y)', scrollMarginTop: 90 }}>
+    <section id="modules" style={{ backgroundColor: 'var(--paper)', padding: '0 var(--rx-edge) var(--sec-y)', scrollMarginTop: 90 }}>
       <div style={{ ...SHELL }}>
         <Reveal><Kicker>Die neue Realität</Kicker></Reveal>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(24px, 4vw, 72px)', alignItems: 'end', marginTop: 26, marginBottom: 'clamp(40px, 5vw, 64px)' }}>
@@ -2521,7 +2522,7 @@ function LocalPromotion() {
 // 7 — Ratgeber: kurz einordnen, dann in die drei Artikel verweisen.
 function RatgeberTeaser() {
   return (
-    <section id="ratgeber" style={{ backgroundColor: 'var(--paper)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)' }}>
+    <section id="ratgeber" style={{ backgroundColor: 'var(--paper)', padding: 'var(--sec-y) var(--rx-edge)' }}>
       <div className="ratgeber-row" style={{ ...SHELL, display: 'grid', gridTemplateColumns: 'minmax(0, 0.8fr) minmax(0, 2.2fr)', gap: 'clamp(24px, 4vw, 64px)', alignItems: 'stretch' }}>
         <Reveal>
           <div>
@@ -2723,7 +2724,7 @@ function ServiceSelector() {
     <>
       {pkgOrder && <PackageOrderModal initial={pkgOrder} onClose={() => setPkgOrder(null)} />}
       {profileOrder && <ProfileOrderModal onClose={() => setProfileOrder(false)} />}
-      <section id="auswahl" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 4vw, 56px) clamp(20px, 4vw, 48px) var(--sec-y, 110px)' }}>
+      <section id="auswahl" style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 4vw, 56px) var(--rx-edge) var(--sec-y, 110px)' }}>
         <div style={{ ...SHELL }}>
           <Reveal><Kicker>Leistungen & Pakete</Kicker></Reveal>
           <div className="sol-head" style={{ marginTop: 26, marginBottom: 'clamp(40px, 5vw, 64px)' }}>
@@ -2848,7 +2849,7 @@ function TwoRoutes() {
   return (
     <>
       {order && <ProfileOrderModal onClose={() => setOrder(false)} />}
-      <section id="start" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'clip' }}>
+      <section id="start" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'var(--sec-y) var(--rx-edge)', position: 'relative', overflow: 'clip' }}>
         <div aria-hidden style={{ position: 'absolute', inset: 0, opacity: 0.55 }}><CrossBackdrop tone="dark" /></div>
         <div style={{ ...SHELL, position: 'relative' }}>
           <Reveal><Kicker tone="light">Zwei Wege</Kicker></Reveal>
@@ -2942,7 +2943,7 @@ function Process() {
   const { ref, p } = useScrollProgress()
 
   return (
-    <section ref={ref} style={{ backgroundColor: 'var(--bone)', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)' }}>
+    <section ref={ref} style={{ backgroundColor: 'var(--bone)', padding: 'var(--sec-y) var(--rx-edge)' }}>
       <div style={{ ...SHELL }}>
         <Reveal><Kicker>Der Ablauf</Kicker></Reveal>
         <MaskHeading
@@ -3175,7 +3176,7 @@ function RealResults() {
   }
 
   return (
-    <section id="results" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'var(--sec-y) clamp(20px, 4vw, 48px) clamp(110px, 11vw, 160px)', position: 'relative', overflow: 'hidden' }}>
+    <section id="results" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: 'var(--sec-y) var(--rx-edge) clamp(110px, 11vw, 160px)', position: 'relative', overflow: 'hidden' }}>
       {/* growth graph lives in its own strip under the content, so its line never crosses text */}
       <div aria-hidden style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 'clamp(130px, 13vw, 190px)', pointerEvents: 'none' }}>
         <GrowthBackdrop />
@@ -3329,7 +3330,7 @@ function AuditQuiz() {
   return (
     <>
     {order && <ProfileOrderModal onClose={() => setOrder(false)} />}
-    <section id="audit-quiz" style={{ backgroundColor: 'var(--electric)', color: '#fff', padding: 'var(--sec-y) clamp(20px, 4vw, 48px)', position: 'relative', overflow: 'hidden' }}>
+    <section id="audit-quiz" style={{ backgroundColor: 'var(--electric)', color: '#fff', padding: 'var(--sec-y) var(--rx-edge)', position: 'relative', overflow: 'hidden' }}>
       <ScanBackdrop />
       <div className="audit-grid" style={{ ...SHELL, position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0, 500px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
         <div className="audit-copy">
@@ -3467,7 +3468,7 @@ const faqs = [
 function FAQ() {
   const [open, setOpen] = useState<number | null>(0)
   return (
-    <section id="faq" style={{ backgroundColor: 'var(--bone)', padding: '0 clamp(20px, 4vw, 48px) var(--sec-y)' }}>
+    <section id="faq" style={{ backgroundColor: 'var(--bone)', padding: '0 var(--rx-edge) var(--sec-y)' }}>
       <JsonLd data={{
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
@@ -3528,8 +3529,8 @@ function Footer() {
   const linkStyle: React.CSSProperties = { display: 'block', width: 'fit-content', fontSize: 13.5, color: 'var(--muted)', marginBottom: 10 }
   const head: React.CSSProperties = { fontWeight: 500, fontSize: 12, color: 'var(--ink)', margin: '0 0 16px' }
   return (
-    <footer className="rx-site-footer" style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(56px, 6vw, 80px) clamp(20px, 4vw, 48px) 32px', position: 'relative', borderTop: '1px solid var(--border)' }}>
-      <div style={{ ...SHELL, maxWidth: 1120, position: 'relative' }}>
+    <footer className="rx-site-footer" style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(56px, 6vw, 80px) var(--rx-edge) 32px', position: 'relative', borderTop: '1px solid var(--border)' }}>
+      <div style={{ ...SHELL, position: 'relative' }}>
         <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) repeat(3, minmax(0,1fr))', gap: 'clamp(28px, 4vw, 56px)', marginBottom: 'clamp(40px, 5vw, 64px)' }}>
           <div>
             <p style={{ fontWeight: 500, fontSize: 29, letterSpacing: '-1.4px', lineHeight: 1, margin: '0 0 16px' }}>RAG<em style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1.28em', color: 'var(--accent)', fontWeight: 400 }}>.</em></p>
@@ -4499,7 +4500,7 @@ function usePageMeta(title: string, description: string, ogType: 'website' | 'ar
 
 function ContentCTA() {
   return (
-    <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 3vw, 40px) clamp(20px, 4vw, 48px) clamp(56px, 7vw, 96px)' }}>
+    <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 3vw, 40px) var(--rx-edge) clamp(56px, 7vw, 96px)' }}>
       <div className="d-panel on-brand" style={{ ...SHELL, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(40px, 5vw, 72px) clamp(20px, 4.8vw, 72px)' }}>
         <RingsBackdrop size={760} color="rgba(255,255,255,0.14)" style={{ right: -180, top: -260 }} />
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
@@ -4523,7 +4524,7 @@ function ContentCTA() {
 
 function ContentHero({ kicker, title, sub, meta, crumbs }: { kicker: string; title: React.ReactNode; sub: string; meta?: string; crumbs?: Crumb[] }) {
   return (
-    <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(64px, 7vw, 104px)', position: 'relative', overflow: 'hidden' }}>
+    <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) var(--rx-edge) clamp(64px, 7vw, 104px)', position: 'relative', overflow: 'hidden' }}>
       <MapBackdrop fade="left" shift={120} pins={false} />
       <div style={{ ...SHELL, position: 'relative' }}>
         {crumbs && <Breadcrumbs items={crumbs} tone="light" />}
@@ -4551,7 +4552,7 @@ function RatgeberIndex() {
         title={<>Lokale Sichtbarkeit, <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>ohne Fachchinesisch</span></>}
         sub="Die Fragen, die uns Inhaberinnen und Inhaber am häufigsten stellen, ausführlich beantwortet, ohne Versprechen, die niemand halten kann."
       />
-      <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 4vw, 56px) clamp(20px,4vw,48px) clamp(56px, 6vw, 88px)' }}>
+      <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 4vw, 56px) var(--rx-edge) clamp(56px, 6vw, 88px)' }}>
         <div style={{ ...SHELL, display: 'flex', flexDirection: 'column', gap: 16 }}>
           {ratgeberArticles.map(a => (
             <a key={a.slug} href={`/ratgeber/${a.slug}`} className="d-card d-lift" style={{
@@ -4596,7 +4597,7 @@ function RatgeberArticlePage({ slug }: { slug: string }) {
     return (
       <>
         <Nav />
-        <main id="inhalt" style={{ padding: '180px clamp(20px,4vw,48px) 120px' }}>
+        <main id="inhalt" style={{ padding: '180px var(--rx-edge) 120px' }}>
           <div style={{ ...SHELL }}>
             <h1 className="display" style={{ fontSize: 30, marginBottom: 14 }}>{accent('Artikel nicht gefunden')}</h1>
             <a href="/ratgeber" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>← Zurück zum Ratgeber</a>
@@ -4634,8 +4635,8 @@ function RatgeberArticlePage({ slug }: { slug: string }) {
         meta={`${a.minutes} Minuten Lesezeit`}
       />
 
-      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(56px, 7vw, 90px) clamp(20px,4vw,48px)' }}>
-        <div style={{ ...SHELL, maxWidth: 1240 }}><div style={{ maxWidth: 760 }}>
+      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(56px, 7vw, 90px) var(--rx-edge)' }}>
+        <div style={{ ...SHELL }}><div style={{ maxWidth: 760 }}>
           <p className="lead" style={{ color: 'var(--ink)', margin: '0 0 clamp(34px, 4vw, 52px)' }}>{a.intro}</p>
           {a.sections.map(sec => (
             <div key={sec.h} style={{ marginBottom: 'clamp(30px, 4vw, 48px)' }}>
@@ -4649,8 +4650,8 @@ function RatgeberArticlePage({ slug }: { slug: string }) {
       </section>
 
       {/* Glossar → Begriffe aus dem Artikel */}
-      <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(50px, 6vw, 80px) clamp(20px,4vw,48px)' }}>
-        <div style={{ ...SHELL, maxWidth: 1240 }}><div style={{ maxWidth: 760 }}>
+      <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(50px, 6vw, 80px) var(--rx-edge)' }}>
+        <div style={{ ...SHELL }}><div style={{ maxWidth: 760 }}>
           <Kicker>Begriffe aus diesem Artikel</Kicker>
           <div style={{ marginTop: 22, borderTop: '1px solid var(--line)' }}>
             {terms.map(t => (
@@ -4668,8 +4669,8 @@ function RatgeberArticlePage({ slug }: { slug: string }) {
 
       {/* Ratgeber → Leistung */}
       {service && (
-        <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(50px, 6vw, 80px) clamp(20px,4vw,48px)' }}>
-          <div style={{ ...SHELL, maxWidth: 1240 }}><div style={{ maxWidth: 760 }}>
+        <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(50px, 6vw, 80px) var(--rx-edge)' }}>
+          <div style={{ ...SHELL }}><div style={{ maxWidth: 760 }}>
             <Kicker>Passende Leistung</Kicker>
             <div className="d-card" style={{ marginTop: 22, padding: 'clamp(24px, 3vw, 36px)' }}>
               <div style={{ marginBottom: 16 }}><IconTile kind={channelKindOf(service.slug)} /></div>
@@ -4764,7 +4765,7 @@ function GlossarPage() {
         title={<>Die Begriffe, <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>kurz erklärt</span></>}
         sub="Alle Begriffe von A bis Z, mit Suche. Jeder Begriff hat eine eigene Seite mit Erklärung, Praxis-Tipps und häufigen Fragen."
       />
-      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(48px, 6vw, 80px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)' }}>
+      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(48px, 6vw, 80px) var(--rx-edge) clamp(70px, 8vw, 110px)' }}>
         <div style={{ ...SHELL }}>
           {/* Suche */}
           <label htmlFor="glossar-suche" className="display" style={{ display: 'block', fontSize: 'clamp(18px, 1.8vw, 24px)', marginBottom: 14 }}>
@@ -4849,7 +4850,7 @@ function GlossarTermPage({ slug }: { slug: string }) {
     return (
       <>
         <Nav />
-        <main id="inhalt" style={{ padding: '180px clamp(20px,4vw,48px) 120px' }}>
+        <main id="inhalt" style={{ padding: '180px var(--rx-edge) 120px' }}>
           <div style={{ ...SHELL }}>
             <h1 className="display" style={{ fontSize: 30, marginBottom: 14 }}>{accent('Begriff nicht gefunden')}</h1>
             <a href="/glossar" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>← Zurück zum Glossar</a>
@@ -4898,7 +4899,7 @@ function GlossarTermPage({ slug }: { slug: string }) {
         sub={g.short}
       />
 
-      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(48px, 6vw, 84px) clamp(20px,4vw,48px)' }}>
+      <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(48px, 6vw, 84px) var(--rx-edge)' }}>
         <div style={{ ...SHELL, display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 'clamp(32px, 5vw, 80px)' }}>
           {/* Navigation */}
           <aside className="gl-aside" style={{ flex: '1 1 220px', maxWidth: 300 }}>
@@ -4965,7 +4966,7 @@ function GlossarTermPage({ slug }: { slug: string }) {
 
       {/* Verwandte Begriffe */}
       {related.length > 0 && (
-        <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(50px, 6vw, 84px) clamp(20px,4vw,48px)' }}>
+        <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(50px, 6vw, 84px) var(--rx-edge)' }}>
           <div style={{ ...SHELL }}>
             <Kicker>Das könnte Sie auch interessieren</Kicker>
             <div style={{ marginTop: 22, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
@@ -5011,7 +5012,7 @@ function ServicesIndex() {
           url: siteOrigin() + '/services/' + m.slug,
         })),
       }} />
-      <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
+      <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) var(--rx-edge) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
         <MapBackdrop fade="left" shift={120} pins={false} />
         <div style={{ ...SHELL, position: 'relative' }}>
           <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Wo man Sie sucht' }]} tone="light" />
@@ -5086,7 +5087,7 @@ function ServicePackages({ slug }: { slug: string }) {
     <>
       {pkgOrder && <PackageOrderModal initial={pkgOrder} onClose={() => setPkgOrder(null)} />}
       {profileOrder && <ProfileOrderModal initialSocial={profileOrder.social} initialWeb={profileOrder.web} onClose={() => setProfileOrder(null)} />}
-      <section id="pakete" style={{ backgroundColor: 'var(--bone)', padding: '0 clamp(20px,4vw,48px) var(--sec-y, 110px)', scrollMarginTop: 80 }}>
+      <section id="pakete" style={{ backgroundColor: 'var(--bone)', padding: '0 var(--rx-edge) var(--sec-y, 110px)', scrollMarginTop: 80 }}>
         <div style={{ ...SHELL }}>
           <div style={{ textAlign: 'center', maxWidth: 1120, margin: '0 auto' }}>
             <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 16px' }}>{accent(cfg.title ?? 'Was es kostet')}</h2></Reveal>
@@ -5727,7 +5728,7 @@ function ServicePage({ slug }: { slug: string }) {
     return (
       <>
         <Nav />
-        <main id="inhalt" style={{ padding: '180px clamp(20px,4vw,48px) 120px' }}>
+        <main id="inhalt" style={{ padding: '180px var(--rx-edge) 120px' }}>
           <div style={{ ...SHELL }}>
           <h1 className="display" style={{ fontSize: 30, marginBottom: 14 }}>{accent('Leistung nicht gefunden')}</h1>
           <a href="/services" className="d-link">← Zurück zu den Leistungen</a>
@@ -5743,7 +5744,7 @@ function ServicePage({ slug }: { slug: string }) {
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     window.setTimeout(() => (el?.querySelector('input') as HTMLInputElement | null)?.focus({ preventScroll: true }), 500)
   }
-  const sec: React.CSSProperties = { padding: 'var(--sec-y, 110px) clamp(20px,4vw,48px)', position: 'relative', overflow: 'hidden' }
+  const sec: React.CSSProperties = { padding: 'var(--sec-y, 110px) var(--rx-edge)', position: 'relative', overflow: 'hidden' }
 
   return (
     <>
@@ -5769,7 +5770,7 @@ function ServicePage({ slug }: { slug: string }) {
       }} />
 
       {/* 1 — Hero + Check-Formular */}
-      <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
+      <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) var(--rx-edge) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
         <MapBackdrop fade="left" shift={120} pins={false} />
         <div style={{ ...SHELL, position: 'relative' }}>
           <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Wo man Sie sucht', href: '/services' }, { label: moduleLabel ?? content.title }]} tone="light" />
@@ -5867,7 +5868,7 @@ function ServicePage({ slug }: { slug: string }) {
       )}
 
       {/* 3 — Was Sie brauchen — und wobei wir helfen: großes Brand-Soft-Panel mit Stadtplan */}
-      <section style={{ backgroundColor: 'var(--bone)', padding: 'var(--sec-y, 110px) clamp(20px, 4vw, 48px)' }}>
+      <section style={{ backgroundColor: 'var(--bone)', padding: 'var(--sec-y, 110px) var(--rx-edge)' }}>
         <div className="d-panel" style={{ ...SHELL, backgroundColor: 'var(--brand-soft)', padding: 'clamp(48px, 7vw, 104px) clamp(20px, 6vw, 100px) clamp(44px, 6vw, 96px)' }}>
           {/* Recto: ruhige Fläche statt Stadtplan-Kacheln. */}
           <div style={{ position: 'relative' }}>
@@ -5958,7 +5959,7 @@ function ServicePage({ slug }: { slug: string }) {
       </section>
 
       {/* 6 — Abschluss: Brand-Panel mit Formular und Beispielbericht (wie der Check auf der Startseite) */}
-      <section style={{ backgroundColor: 'var(--paper)', padding: '0 clamp(20px, 4vw, 48px) var(--sec-y, 110px)' }}>
+      <section style={{ backgroundColor: 'var(--paper)', padding: '0 var(--rx-edge) var(--sec-y, 110px)' }}>
         <div className="d-panel on-brand" style={{ ...SHELL, backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(40px, 5.4vw, 88px) clamp(20px, 5.6vw, 96px)' }}>
           <RingsBackdrop size={900} color="rgba(255,255,255,0.14)" style={{ right: -240, top: -220 }} />
           <div className="audit-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 420px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
@@ -6482,7 +6483,7 @@ function StartQuizPage() {
     <>
       <Nav />
       <main id="inhalt">
-        <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(130px, 15vh, 170px) clamp(20px,4vw,48px) var(--sec-y, 110px)', position: 'relative', overflow: 'hidden', minHeight: '80vh' }}>
+        <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(130px, 15vh, 170px) var(--rx-edge) var(--sec-y, 110px)', position: 'relative', overflow: 'hidden', minHeight: '80vh' }}>
           <MapBackdrop fade="center" pins={!done} />
           <div style={{ position: 'relative', maxWidth: done ? 980 : 680, margin: '0 auto' }}>
             {!done ? (

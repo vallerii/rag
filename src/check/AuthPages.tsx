@@ -20,7 +20,7 @@ function AuthShell({ eyebrow, title, sub, children }: { eyebrow: string; title: 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)', display: 'flex', flexDirection: 'column' }}>
       <header style={{ borderBottom: '1px solid var(--line)' }}>
-        <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 clamp(20px, 4vw, 48px)', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 var(--rx-edge)', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Logo />
           <span style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <LangSwitch />

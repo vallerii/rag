@@ -61,7 +61,7 @@ Headline-Muster: zwei Zeilen, zweite Zeile kursiv-orange.
 
 ## 4. Raster & Abstände
 
-- Inhaltsbreite `.rx-container`: `min(1120px, 100% − 96px)`; ≤1000px: −56px; ≤640px: −40px. Kopfzeile bis 1280px.
+- **Eine Linie für alles:** Text und Blöcke beginnen dort, wo die Wortmarke beginnt. Seitenrand `--rx-edge` 48px (≤1100px: 28px, ≤640px: 16px), Inhaltsbreite `min(1280px, 100%) − 2 × Rand` (max. 1184px) — `.rx-container`, `SHELL` in App.tsx, Kopfzeile, Footer. Ausnahmen mit eigener Bühne: Google Maps (über die ganze Breite skaliert) und die zentrierte Google-Search-Szene.
 - Sektionen: 64–112px vertikal (mobil ~68px). Zwischen Headline und Text 32px (`--rx-heading-copy-gap`), in Karten 20px.
 - Zweispaltig: Text links / Bild rechts mit 64–80px Spalt; FAQ 0.8fr / 1.2fr, linke Spalte sticky.
 - Breakpoints: 1100 · 1000 · 880 (Menü in zweite Zeile) · 760 (Scroll-Szenen werden statisch) · 640.
