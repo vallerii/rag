@@ -106,7 +106,7 @@ Grundsatz: Bewegung erklärt (Scroll-Geschichte), sie dekoriert nicht. Alles res
 | Kanal-Karten | Licht folgt Maus (`--mx/--my`), hover −4px + oranger Rand | .25s |
 | KI-Check | Licht folgt Maus (`--rx-glow-x`), Orbits der KI-Marken | — |
 | Google Maps | Profil-Fächer spreizt sich mit Scroll (`--spread` 0→1); Artikelkarte läuft linear mit, blendet weich ein/aus | Desktop > 760px, Zoom auf 1228.8px-Raster |
-| 149-€-Band | ab Bildschirmmitte rein scrollgekoppelt (geglättet) zur kompakten Leiste unten, rückwärts zurück an seinen Platz; der Abstand darunter schrumpft mit, der nächste Abschnitt rückt nach; vor dem Seitenende ausgeblendet | Strecke 260–440px, Glättung 0.2/Frame |
+| 149-€-Band | Auslöser statt Scroll-Kopplung: steigt die Band-Mitte über 60 % der Fensterhöhe, fährt es in einer Bewegung zur kompakten Leiste unten, sein Platz schließt sich gleichzeitig (nächster Abschnitt rückt nach); zurück genauso; vor dem Seitenende ausgeblendet | 650 ms, ease-in-out-cubic, 40 px Hysterese |
 | Google Search | gepinnte Szene: Suchfeld → G-Logo wächst ×20 → 5 Karten blättern (±3px/9px/1.2° je Tiefe) → CTA | Phasen 0–12 % / 12–80 % / ≥ 80 % |
 | Social Media | Instagram-Feed scrollt mit, rechts Text-Wechsel (Menschen → Arbeit → Ergebnis → Artikel) | Feed bis 70 %, Artikel ab 80.5 % |
 | Kanal-Geschichte | gepinnt, 13 Prüfpunkte in 4 Kanälen, Häkchen werden gesetzt, Fortschritt + «Weiter: …» unten | statisch bei ≤ 640px Höhe |

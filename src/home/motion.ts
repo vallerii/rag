@@ -311,6 +311,7 @@ export function mountOfferBand(section: HTMLElement): Cleanup {
     geometry = { full: snapshot(false), compact: snapshot(true) }
     geometry.compact.items.heading = { ...geometry.full.items.heading, w: 0 }
     computeTarget()
+    anim = null
     shown = target
     render(shown)
   }
@@ -322,17 +323,21 @@ export function mountOfferBand(section: HTMLElement): Cleanup {
   }
   // Abstand unter dem Band im Ruhezustand – schrumpft beim Verwandeln mit, damit der nächste Abschnitt nachrückt.
   const gap = () => Math.round(Math.min(300, Math.max(160, innerHeight * 0.28)))
-  // Geglätteter Fortschritt: folgt dem Scroll-Ziel weich (auch bei groben Mausrad-Schritten kein Springen).
+  // Ein Auslöser statt Scroll-Kopplung: überquert das Band die Bildschirmmitte, fährt es in einer
+  // Bewegung (650 ms) zur Leiste unten, sein Platz schließt sich gleichzeitig; zurück genauso.
+  const DURATION = 650
+  const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
   let shown = 0
   let target = 0
-  let raw = 0
+  let anim: { from: number; to: number; t0: number; dur: number } | null = null
   function computeTarget() {
     if (!geometry) return
-    const anchor = section.getBoundingClientRect()
-    const start = Math.max(96, (innerHeight - geometry.full.h) / 2)
-    const range = Math.min(440, Math.max(260, innerHeight * 0.48))
-    raw = clamp01((start - anchor.top) / range)
-    target = motion.matches ? (raw >= 1 ? 1 : 0) : raw * raw * (3 - 2 * raw)
+    const top = section.getBoundingClientRect().top
+    // Auslöser: Band-Mitte steigt über 60 % der Fensterhöhe (knapp unter der Mitte).
+    const start = Math.max(96, innerHeight * 0.6 - geometry.full.h / 2)
+    // Hysterese, damit es an der Grenze nicht hin und her springt.
+    if (target === 0 && top < start) target = 1
+    else if (target === 1 && top > start + 40) target = 0
   }
   function render(p: number) {
     const { full, compact } = geometry!
@@ -366,11 +371,19 @@ export function mountOfferBand(section: HTMLElement): Cleanup {
   function update() {
     frame = 0
     if (!geometry || signal.aborted) return
+    const before = target
     computeTarget()
-    const diff = target - shown
-    shown = Math.abs(diff) < 0.002 || motion.matches ? target : shown + diff * 0.2
+    if (target !== before) {
+      if (motion.matches) { anim = null; shown = target }
+      else anim = { from: shown, to: target, t0: performance.now(), dur: DURATION * Math.max(0.35, Math.abs(target - shown)) }
+    }
+    if (anim) {
+      const t = clamp01((performance.now() - anim.t0) / anim.dur)
+      shown = anim.from + (anim.to - anim.from) * ease(t)
+      if (t >= 1) { shown = anim.to; anim = null }
+    }
     render(shown)
-    if (shown !== target) frame = requestAnimationFrame(update)
+    if (anim) frame = requestAnimationFrame(update)
   }
   const schedule = () => { if (!frame) frame = requestAnimationFrame(update) }
   Object.values(parts).forEach(el => el.classList.add('rx-morph-part'))
