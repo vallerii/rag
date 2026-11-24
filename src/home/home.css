@@ -1992,3 +1992,13 @@
 .rx-nav .rx-menu-all:hover{color:var(--rx-accent)}
 @media(width<=880px){.rx-header .rx-nav,.rx-header .rx-menu{position:static}.rx-menu-bridge{top:calc(100% - 6px);padding-top:0}}
 @media(prefers-reduced-motion:reduce){.rx-menu-panel{transition:none}}
+
+/* ── 149-€-Band & Google-Search-Szene ohne Leerflächen (24.11.) ── */
+/* Kein Extra-Puffer mehr um das Band: sein Platz schrumpft beim Verwandeln (motion.ts), der nächste Abschnitt rückt nach. */
+.approved-offer-beat{min-height:0!important}
+#new-block{overflow-anchor:none}
+#new-block .rx-order-band.is-transforming{transition:opacity .22s ease,visibility 0s!important}
+#new-block .rx-order-band.is-transforming.is-scroll-hidden{transition:opacity .22s ease,visibility 0s .22s!important}
+/* Google Search: kürzere Szene, kein leerer Bildschirm nach «Google Optimierung jetzt bestellen». */
+#approved-search .search-timeline{height:500svh}
+#approved-search .scene-exit{height:0}

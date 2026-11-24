@@ -268,9 +268,9 @@ export function mountSearchTimeline(root: HTMLElement): Cleanup {
     const start = timeline.getBoundingClientRect().top + window.scrollY
     const travel = Math.max(1, timeline.offsetHeight - scene.offsetHeight)
     const progress = clamp01((window.scrollY - start) / travel)
-    // Die letzten 20 % bleibt der CTA stehen, bevor die Szene freigegeben wird.
-    const phase = progress < 0.12 ? 0 : progress >= 0.8 ? cards.length + 1
-      : 1 + Math.min(cards.length - 1, Math.floor((progress - 0.12) / (0.68 / cards.length)))
+    // Suchfeld 0–10 %, Karten 10–88 %, Bestell-CTA nur noch die letzten 12 % (vorher 20 % + leere Fläche danach).
+    const phase = progress < 0.1 ? 0 : progress >= 0.88 ? cards.length + 1
+      : 1 + Math.min(cards.length - 1, Math.floor((progress - 0.1) / (0.78 / cards.length)))
     show(phase)
   }
   const schedule = () => { if (!frame) frame = requestAnimationFrame(update) }
@@ -282,8 +282,11 @@ export function mountSearchTimeline(root: HTMLElement): Cleanup {
   return () => { abort.abort(); cancelAnimationFrame(frame) }
 }
 
-// ── 149-€-Band: bleibt im Fluss bis zur Bildschirmmitte, verwandelt sich dann in die
-// kompakte Leiste unten; beim Hochscrollen ausgeblendet. Maße kommen aus versteckten Kopien.
+// ── 149-€-Band: liegt im Fluss bis zur Bildschirmmitte und verwandelt sich dann – rein an die
+// Scrollposition gekoppelt – in die kompakte Leiste unten. Gleichzeitig schrumpft sein Platz im
+// Dokument, sodass der nächste Abschnitt ohne Lücke nachrückt. Beim Hochscrollen läuft dieselbe
+// Bewegung rückwärts: die Leiste wächst zurück an ihren Platz. Vor dem Seitenende (Abschluss-Karte,
+// Footer) blendet die Leiste aus. Maße kommen aus versteckten Kopien (voll / kompakt).
 export function mountOfferBand(section: HTMLElement): Cleanup {
   const abort = new AbortController()
   const { signal } = abort
@@ -296,12 +299,11 @@ export function mountOfferBand(section: HTMLElement): Cleanup {
   type Geo = { w: number; h: number; items: Record<Key, Item> }
   const parts = Object.fromEntries(Object.entries(selectors).map(([k, s]) => [k, band.querySelector<HTMLElement>(s)!])) as Record<Key, HTMLElement>
   const mix = (a: number, b: number, p: number) => a + (b - a) * p
+  // Ab hier wird die kompakte Leiste ausgeblendet (sonst liegt sie über Abschluss-Karte und Footer).
+  const stopAt = () => document.querySelector<HTMLElement>('.rx-closing') ?? document.querySelector<HTMLElement>('.rx-footer')
   let geometry: { full: Geo; compact: Geo } | null = null
   let frame = 0
-  let previousY = window.scrollY
-  let direction = 1
-  let travel = 0
-  let candidate = 1
+  let lastP = -1
 
   function snapshot(compact: boolean): Geo {
     const clone = band!.cloneNode(true) as HTMLElement
@@ -329,7 +331,7 @@ export function mountOfferBand(section: HTMLElement): Cleanup {
   function measure() {
     geometry = { full: snapshot(false), compact: snapshot(true) }
     geometry.compact.items.heading = { ...geometry.full.items.heading, w: 0 }
-    section.style.height = geometry.full.h + 'px'
+    lastP = -1
     update()
   }
   function show(visible: boolean) {
@@ -341,39 +343,22 @@ export function mountOfferBand(section: HTMLElement): Cleanup {
   function update() {
     frame = 0
     if (!geometry || signal.aborted) return
-    const y = Math.max(0, window.scrollY)
-    const delta = y - previousY
-    previousY = y
-    if (Math.abs(delta) > 0.1) {
-      const next = delta > 0 ? 1 : -1
-      if (next !== candidate) { candidate = next; travel = 0 }
-      travel += Math.abs(delta)
-      if (travel >= 7) direction = candidate
-    }
+    const { full, compact } = geometry
     const anchor = section.getBoundingClientRect()
-    const start = Math.max(96, (innerHeight - geometry.full.h) / 2)
-    if (candidate < 0 || direction < 0) {
-      if (anchor.top >= start) {
-        band!.classList.remove('is-transforming', 'is-condensed')
-        band!.classList.add('is-natural')
-        band!.dataset.scrollState = 'full'
-        parts.heading.inert = false
-      }
-      show(false)
-      return
-    }
-    const raw = clamp01((start - anchor.top) / Math.min(320, Math.max(180, innerHeight * 0.34)))
+    // Startpunkt: Band-Mitte erreicht die Bildschirmmitte.
+    const start = Math.max(96, (innerHeight - full.h) / 2)
+    const range = Math.min(240, Math.max(150, innerHeight * 0.26))
+    const raw = clamp01((start - anchor.top) / range)
     const p = motion.matches ? (raw >= 1 ? 1 : 0) : raw * raw * (3 - 2 * raw)
-    band!.classList.toggle('is-natural', raw === 0)
-    if (p === 0) {
-      band!.classList.remove('is-transforming', 'is-condensed')
-    } else {
-      band!.classList.add('is-transforming')
-      band!.classList.toggle('is-condensed', raw >= 0.55)
-      const { full, compact } = geometry
+    // Platz im Dokument schrumpft mit: der nächste Abschnitt rückt nach, ohne leere Fläche.
+    section.style.height = (full.h * (1 - p)).toFixed(2) + 'px'
+    band!.classList.toggle('is-natural', p === 0)
+    band!.classList.toggle('is-transforming', p > 0)
+    band!.classList.toggle('is-condensed', raw >= 0.55)
+    if (p > 0 && p !== lastP) {
       const safeBottom = parseFloat(getComputedStyle(band!).getPropertyValue('--rx-safe-bottom')) || 0
       const target = innerHeight - compact.h - 20 - safeBottom
-      band!.style.setProperty('--morph-top', mix(start, target, p) + 'px')
+      band!.style.setProperty('--morph-top', mix(anchor.top, target, p) + 'px')
       band!.style.setProperty('--morph-width', mix(full.w, compact.w, p) + 'px')
       band!.style.setProperty('--morph-height', mix(full.h, compact.h, p) + 'px')
       band!.style.setProperty('--heading-opacity', String(1 - clamp01(raw * 3)))
@@ -383,9 +368,12 @@ export function mountOfferBand(section: HTMLElement): Cleanup {
         for (const name of ['x', 'y', 'w', 'h', 'font', 'line'] as const) el.style.setProperty('--part-' + name, mix(a[name], b[name], p) + 'px')
       }
     }
+    lastP = p
     parts.heading.inert = raw >= 0.4
-    band!.dataset.scrollState = raw === 0 ? 'full' : raw < 1 ? 'morph' : 'compact'
-    show(true)
+    band!.dataset.scrollState = p === 0 ? 'full' : p < 1 ? 'morph' : 'compact'
+    // Kompakte Leiste weg, sobald das Seitenende (Abschluss-Karte) ins Bild kommt.
+    const end = stopAt()
+    show(!(p === 1 && end && end.getBoundingClientRect().top < innerHeight - 40))
   }
   const schedule = () => { if (!frame) frame = requestAnimationFrame(update) }
   Object.values(parts).forEach(el => el.classList.add('rx-morph-part'))
@@ -394,7 +382,7 @@ export function mountOfferBand(section: HTMLElement): Cleanup {
   motion.addEventListener('change', schedule, { signal })
   document.fonts?.ready.then(() => { if (!signal.aborted) measure() })
   measure()
-  return () => { abort.abort(); cancelAnimationFrame(frame) }
+  return () => { abort.abort(); cancelAnimationFrame(frame); section.style.removeProperty('height') }
 }
 
 // ── Social Media: Instagram-Feed scrollt mit, rechts wechseln die Texte ───────────
