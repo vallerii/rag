@@ -2031,3 +2031,5 @@
 @media (min-width:641px){.rag-wrap{width:calc(min(1280px,100%) - 2 * var(--rx-edge))}}
 @media (min-width:761px){.rx-scroll-host .pin{max-width:1280px!important;padding-inline:var(--rx-edge)!important}}
 @media (min-width:881px){.rx #unternehmen .rx-report-carousel{justify-self:start;margin-left:0!important;margin-right:auto!important}}
+/* Abstand oben wie bei «Alle Kanäle …» (Inhalt ~200px unter Fensteroberkante nach dem Übergang). */
+@media (min-width:881px){.rx #unternehmen.rx-check-report-section{padding-top:202px!important}}
