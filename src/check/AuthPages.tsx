@@ -6,7 +6,7 @@ import { authErrorText, currentUser, getSupabase, sendPasswordReset, setNewPassw
 // Anmeldung für Bestandskunden: /login · /passwort-vergessen · /passwort-neu
 // Konto entsteht im Check (Schritt 3) — hier nur Anmelden und Passwort zurücksetzen.
 
-const field: React.CSSProperties = { width: '100%', padding: '12px 14px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 15, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
+const field: React.CSSProperties = { width: '100%', padding: '12px 14px', border: '1px solid rgba(16,17,20,0.14)', borderRadius: 12, fontSize: 15, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
 const labelSt: React.CSSProperties = { display: 'block', fontSize: 12.5, fontWeight: 600, marginBottom: 6 }
 
 /** Nur interne Pfade als Weiterleitung zulassen. */
@@ -28,7 +28,7 @@ function AuthShell({ eyebrow, title, sub, children }: { eyebrow: string; title: 
         </div>
       </header>
       <main id="inhalt" style={{ flex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 'clamp(40px, 8vh, 96px) 20px 80px' }}>
-        <div style={{ width: '100%', maxWidth: 460, backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(26px, 4vw, 40px)', boxShadow: '0 30px 70px rgba(7,7,12,0.06)' }}>
+        <div style={{ width: '100%', maxWidth: 460, backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(26px, 4vw, 40px)', boxShadow: '0 30px 70px rgba(16,17,20,0.06)' }}>
           <p className="eyebrow" style={{ color: 'var(--electric)', marginBottom: 12 }}>{eyebrow}</p>
           <h1 className="display" style={{ fontSize: 'clamp(26px, 3vw, 34px)', lineHeight: 1.08, margin: '0 0 10px' }}>{title}</h1>
           {sub && <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 24px' }}>{sub}</p>}

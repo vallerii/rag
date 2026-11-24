@@ -6,7 +6,7 @@ import { LockedBooking } from './CabinetExtras'
 import { changePassword, deleteMyAccount, saveMyContact, type Appointment, type MyContact } from './data'
 
 const card: React.CSSProperties = { backgroundColor: '#fff', borderRadius: 22, border: '1px solid var(--line-soft)', padding: 'clamp(20px, 2.6vw, 28px)' }
-const field: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '10px 12px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
+const field: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '10px 12px', border: '1px solid rgba(16,17,20,0.14)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
 const label: React.CSSProperties = { display: 'grid', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--muted)' }
 const kick = (t: string, color = 'var(--electric)') => <p className="kick" style={{ fontSize: 12, color, marginBottom: 10 }}>{t}</p>
 const ok = (t: string) => <p role="status" style={{ color: '#0F7A3E', fontSize: 14, margin: 0 }}>{t}</p>
@@ -123,8 +123,8 @@ export function ConfirmDialog({ title, children, confirmLabel, busyLabel = 'Eine
   }
   return createPortal(
     <div onMouseDown={e => { if (e.target === e.currentTarget && !busy) onClose() }}
-      style={{ position: 'fixed', inset: 0, zIndex: 200, backgroundColor: 'rgba(7,7,12,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div role="alertdialog" aria-modal="true" aria-labelledby="cd-title" style={{ ...card, width: '100%', maxWidth: 460, boxShadow: '0 24px 60px rgba(7,7,12,0.25)' }}>
+      style={{ position: 'fixed', inset: 0, zIndex: 200, backgroundColor: 'rgba(16,17,20,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div role="alertdialog" aria-modal="true" aria-labelledby="cd-title" style={{ ...card, width: '100%', maxWidth: 460, boxShadow: '0 24px 60px rgba(16,17,20,0.25)' }}>
         <h2 id="cd-title" className="display" style={{ fontSize: 24, lineHeight: 1.2, margin: '0 0 10px' }}>{title}</h2>
         <div style={{ fontSize: 14.5, color: 'var(--muted)', lineHeight: 1.6 }}>{children}</div>
         {check && (

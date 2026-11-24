@@ -153,3 +153,8 @@ public/og-image.png -filter -diff -merge binary
 # Favicons, Icons und Bilder der Seite ohne LFS — Vercel liefert sonst LFS-Zeigerdateien statt Bildern aus
 public/*.png -filter -diff -merge binary
 public/*.ico -filter -diff -merge binary
+# Recto-Startseite (24.11.2026): Fotos, Marken-Logos, Schriften und Bilder ohne LFS ausliefern
+public/recto/* -filter -diff -merge binary
+public/rag-photos/* -filter -diff -merge binary
+public/brands/* -filter -diff -merge binary
+public/rx/* -filter -diff -merge binary

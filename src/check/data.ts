@@ -42,7 +42,8 @@ export type Place = {
   manual?: boolean
 }
 
-export type SourceKey = 'website' | 'instagram' | 'facebook' | 'linkedin' | 'tiktok'
+// 'other' = weiteres Profil, das der Kunde in Schritt 2 selbst ergänzt (nicht Teil der automatischen Suche).
+export type SourceKey = 'website' | 'instagram' | 'facebook' | 'linkedin' | 'tiktok' | 'other'
 export type Source = { key: SourceKey; value: string; found: boolean }
 
 export type Contact = { name: string; email: string; phone: string; role?: string; okEmail: boolean; okPhone: boolean }
@@ -55,7 +56,7 @@ const PROXY = (import.meta.env.VITE_PLACES_PROXY as string | undefined)?.replace
 export const DEMO = !PROXY
 
 export const SOURCE_LABELS: Record<SourceKey, string> = {
-  website: 'Website', instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn', tiktok: 'TikTok',
+  website: 'Website', instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn', tiktok: 'TikTok', other: 'Weiteres Profil',
 }
 export const SOURCE_ORDER: SourceKey[] = ['website', 'instagram', 'facebook', 'linkedin', 'tiktok']
 

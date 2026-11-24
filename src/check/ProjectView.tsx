@@ -72,7 +72,7 @@ export function ProjectPanel({ project, extra = [] }: { project: ClientProject; 
       <ol style={{ listStyle: 'none', margin: '0 0 4px', padding: 0, display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8 }}>
         {STEPS.map((s, i) => (
           <li key={s.label} style={{ display: 'grid', gap: 6, minWidth: 0 }}>
-            <span aria-hidden style={{ height: 6, borderRadius: 999, backgroundColor: i < cur ? 'var(--electric)' : i === cur ? '#B9B0FF' : '#ECEBF3' }} />
+            <span aria-hidden style={{ height: 6, borderRadius: 999, backgroundColor: i < cur ? 'var(--electric)' : i === cur ? '#D9D6D0' : '#ECEAE6' }} />
             <span style={{ fontSize: 'clamp(11.5px, 3.4vw, 13px)', fontWeight: i === cur ? 700 : 600, color: i <= cur ? 'var(--ink)' : 'var(--muted)' }}>{i < cur ? '✓ ' : ''}{s.label}</span>
           </li>
         ))}
@@ -80,7 +80,7 @@ export function ProjectPanel({ project, extra = [] }: { project: ClientProject; 
 
       {invoiceOpen(project) && <InvoiceBlock project={project} />}
       {extra.filter(invoiceOpen).map(p => <InvoiceBlock key={p.id} project={p} title="Rechnung zum Zusatzangebot" />)}
-      {project.note && <p style={{ fontSize: 14.5, lineHeight: 1.65, margin: '16px 0 0', padding: '12px 14px', borderRadius: 14, backgroundColor: '#F7F6FF' }}>{project.note}</p>}
+      {project.note && <p style={{ fontSize: 14.5, lineHeight: 1.65, margin: '16px 0 0', padding: '12px 14px', borderRadius: 14, backgroundColor: '#F7F6F4' }}>{project.note}</p>}
       {(project.plan || (project.updates ?? []).length > 0) && (
         <div style={{ marginTop: 22, paddingTop: 18, borderTop: '1px solid var(--line-soft)' }}>
           <p className="kick" style={{ fontSize: 12, marginBottom: 10 }}>Was wir tun</p>
@@ -106,11 +106,11 @@ const CHANNELS: [keyof NonNullable<Report['channels']>, string][] = [['ai', 'KI-
 
 function Bars({ before, after }: { before: number | null; after: number | null }) {
   const bar = (v: number | null, color: string) => (
-    <span style={{ display: 'block', height: 8, borderRadius: 999, backgroundColor: '#ECEBF3', overflow: 'hidden' }}>
+    <span style={{ display: 'block', height: 8, borderRadius: 999, backgroundColor: '#ECEAE6', overflow: 'hidden' }}>
       <span style={{ display: 'block', height: '100%', width: `${Math.max(0, Math.min(100, v ?? 0))}%`, backgroundColor: color, borderRadius: 999 }} />
     </span>
   )
-  return <span style={{ display: 'grid', gap: 4 }}>{bar(before, '#C9C5E8')}{bar(after, 'var(--electric)')}</span>
+  return <span style={{ display: 'grid', gap: 4 }}>{bar(before, '#D9D6D0')}{bar(after, 'var(--electric)')}</span>
 }
 
 export function ResultView({ versions }: { versions: ReportVersion[] }) {
@@ -162,7 +162,7 @@ export function ResultView({ versions }: { versions: ReportVersion[] }) {
           })}
         </div>
         <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '14px 0 0', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          <span><span aria-hidden style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, backgroundColor: '#C9C5E8', marginRight: 6 }} />Ausgangslage</span>
+          <span><span aria-hidden style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, backgroundColor: '#D9D6D0', marginRight: 6 }} />Ausgangslage</span>
           <span><span aria-hidden style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, backgroundColor: 'var(--electric)', marginRight: 6 }} />Heute</span>
         </p>
       </section>

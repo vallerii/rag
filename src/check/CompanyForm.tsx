@@ -10,10 +10,10 @@ import {
 
 type Hint = 'yes' | 'no' | 'unknown'
 const card: React.CSSProperties = { backgroundColor: '#fff', borderRadius: 22, border: '1px solid var(--line-soft)', padding: 'clamp(22px, 3vw, 32px)' }
-const field: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14.5, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
+const field: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '11px 13px', border: '1px solid rgba(16,17,20,0.14)', borderRadius: 12, fontSize: 14.5, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
 const labelSt: React.CSSProperties = { display: 'block', fontSize: 12.5, fontWeight: 600, marginBottom: 6 }
-const opt = (on: boolean): React.CSSProperties => ({ flex: 1, padding: '11px 10px', borderRadius: 12, fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', border: `1px solid ${on ? 'var(--electric)' : 'var(--line)'}`, backgroundColor: on ? '#EEEBFF' : '#fff', color: on ? 'var(--electric)' : 'var(--ink)' })
-const PLACEHOLDER: Record<SourceKey, string> = { website: 'z. B. meinbetrieb.de', instagram: 'instagram.com/…', facebook: 'facebook.com/…', linkedin: 'linkedin.com/company/…', tiktok: 'tiktok.com/@…' }
+const opt = (on: boolean): React.CSSProperties => ({ flex: 1, padding: '11px 10px', borderRadius: 12, fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', border: `1px solid ${on ? 'var(--electric)' : 'var(--line)'}`, backgroundColor: on ? '#F0EEEA' : '#fff', color: on ? 'var(--electric)' : 'var(--ink)' })
+const PLACEHOLDER: Record<SourceKey, string> = { website: 'z. B. meinbetrieb.de', instagram: 'instagram.com/…', facebook: 'facebook.com/…', linkedin: 'linkedin.com/company/…', tiktok: 'tiktok.com/@…', other: 'Link zu einem weiteren Profil' }
 
 /** Hinweis unter «Ihre Auswahl», wenn keine Analyse läuft (Start bei null). */
 export const SCRATCH_NOTE = 'Noch keine Bestellung: Im Erstgespräch besprechen wir Ihre Auswahl, danach bekommen Sie ein Angebot. Kosten entstehen erst, wenn Sie es annehmen.'
@@ -53,7 +53,7 @@ export default function CompanyForm({ order, quiz, checks, contact }: {
   const [category, setCategory] = useState(q.branche ?? '')
   const [city, setCity] = useState(q.ort ?? '')
   const [address, setAddress] = useState('')
-  const [links, setLinks] = useState<Record<SourceKey, string>>({ website: '', instagram: '', facebook: '', linkedin: '', tiktok: '' })
+  const [links, setLinks] = useState<Record<SourceKey, string>>({ website: '', instagram: '', facebook: '', linkedin: '', tiktok: '', other: '' })
   const [hint, setHint] = useState<Hint | null>(q.have ? (q.have.includes('profile') ? 'yes' : 'no') : null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(false)

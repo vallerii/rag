@@ -257,7 +257,7 @@ function socialItems({ sources, site }: AuditInput): Item[] {
   const found = sources.filter(s => s.key !== 'website' && s.value.trim())
   const items: Item[] = []
   const n = found.length
-  const LABEL: Record<string, string> = { instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn', tiktok: 'TikTok' }
+  const LABEL: Record<string, string> = { instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn', tiktok: 'TikTok', other: 'weiteres Profil' }
   const names = found.map(s => LABEL[s.key] ?? s.key).join(', ')
   items.push(n >= 2
     ? { id: 'profiles', pts: 55, max: 70, mark: 'ok', text: `Profile gefunden: ${names}` }
@@ -265,8 +265,10 @@ function socialItems({ sources, site }: AuditInput): Item[] {
       ? { id: 'profiles', pts: 35, max: 70, mark: 'warn', text: `Nur ein Profil gefunden: ${names}` }
       : { id: 'profiles', pts: 5, max: 70, mark: 'bad', text: 'Keine Social-Media-Profile gefunden' })
   if (n && site?.ok) {
-    const linked = found.filter(s => site.social[s.key as keyof SiteScan['social']]).length
-    items.push(linked === n
+    // Ein frei ergänztes Profil ('other') kann der Website-Scan nicht zuordnen → zählt hier nicht mit.
+    const scannable = found.filter(s => s.key !== 'other')
+    const linked = scannable.filter(s => site.social[s.key as keyof SiteScan['social']]).length
+    if (scannable.length) items.push(linked === scannable.length
       ? { id: 'linked', pts: 15, max: 15, mark: 'ok', text: 'Profile sind auf der Website verlinkt' }
       : { id: 'linked', pts: 5, max: 15, mark: 'warn', text: 'Nicht alle Profile sind auf der Website verlinkt' })
   }

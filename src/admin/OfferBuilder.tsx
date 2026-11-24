@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { CATALOG, totals, type OfferItem, type Unit } from './catalog'
 
 const ink = 'var(--ink)', muted = 'var(--muted)'
-const input: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '9px 11px', border: '1px solid rgba(7,7,12,0.16)', borderRadius: 10, fontSize: 14, fontFamily: 'inherit', color: ink, backgroundColor: '#fff', outline: 'none' }
+const input: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '9px 11px', border: '1px solid rgba(16,17,20,0.16)', borderRadius: 10, fontSize: 14, fontFamily: 'inherit', color: ink, backgroundColor: '#fff', outline: 'none' }
 const small: React.CSSProperties = { fontSize: 12.5, color: muted }
 
 export default function OfferBuilder({ items, onChange }: { items: OfferItem[]; onChange: (items: OfferItem[]) => void }) {
@@ -26,7 +26,7 @@ export default function OfferBuilder({ items, onChange }: { items: OfferItem[]; 
             <p style={{ ...small, fontWeight: 700, margin: '0 0 4px' }}>{g}</p>
             {CATALOG.filter(c => c.group === g).map(c => (
               <label key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, minHeight: 38 }}>
-                <input type="checkbox" checked={has(c.id)} onChange={() => toggle(c)} style={{ width: 18, height: 18, accentColor: '#2600FF' }} />
+                <input type="checkbox" checked={has(c.id)} onChange={() => toggle(c)} style={{ width: 18, height: 18, accentColor: '#101114' }} />
                 <span style={{ flex: 1 }}>{c.name}</span>
                 {has(c.id)
                   ? <input type="number" value={priceOf(c.id)} onChange={e => setPrice(c.id, e.target.value)} style={{ ...input, width: 90, padding: '5px 8px' }} aria-label={`Preis ${c.name}`} />

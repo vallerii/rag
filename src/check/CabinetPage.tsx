@@ -15,9 +15,12 @@ import { AiCard, CompetitorsCard, Delta, HistoryCard, deltas } from './ReportExt
 import { ProjectPanel, ResultView, projectHeadline } from './ProjectView'
 import { CompanySwitcher, RecommendedCard, NextStepCard, OfferPanel, bookingLink, type NextStep } from './CabinetExtras'
 
-/** Immer alle fünf Quellen in fester Reihenfolge — auch wenn die Suche nichts geliefert hat. */
+/** Immer alle fünf Quellen in fester Reihenfolge — auch wenn die Suche nichts geliefert hat.
+ *  Ein selbst ergänztes «Weiteres Profil» (key 'other') bleibt erhalten, damit es beim Bestätigen nicht verloren geht. */
 function allSources(list: Source[] | null | undefined): Source[] {
-  return SOURCE_ORDER.map(key => list?.find(s => s.key === key) ?? { key, value: '', found: false })
+  const fixed = SOURCE_ORDER.map(key => list?.find(s => s.key === key) ?? { key, value: '', found: false })
+  const extra = (list ?? []).filter(s => !SOURCE_ORDER.includes(s.key) && s.value.trim())
+  return [...fixed, ...extra]
 }
 
 // /kabinett — Kundenbereich nach dem Check (Prototyp «rag_client_cabinet_v1», 25.09.2026).
@@ -41,7 +44,7 @@ const CHANNELS: Channel[] = [
 ]
 
 const card: React.CSSProperties = { backgroundColor: '#fff', borderRadius: 22, border: '1px solid var(--line-soft)', padding: 'clamp(20px, 2.6vw, 28px)' }
-const field: React.CSSProperties = { width: '100%', padding: '10px 12px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
+const field: React.CSSProperties = { width: '100%', padding: '10px 12px', border: '1px solid rgba(16,17,20,0.14)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
 const cardHead: React.CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, minHeight: 28 }
 const rowGrid: React.CSSProperties = { display: 'grid', gridTemplateColumns: '150px minmax(0, 1fr)', gap: 12, padding: '12px 0', borderTop: '1px solid var(--line-soft)', fontSize: 14 }
 
@@ -330,7 +333,7 @@ export default function CabinetPage() {
           <div className="d-dots" style={{ position: 'absolute', right: -40, top: -40, width: 360, height: 360, opacity: 0.8 }} />
         </div>
         <div style={{ position: 'relative', maxWidth: 1240, margin: '0 auto', padding: '0 clamp(20px, 4vw, 48px)' }}>
-          <div style={{ height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, borderBottom: '1px solid #DAD8F5' }}>
+          <div style={{ height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, borderBottom: '1px solid #E4E1DB' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <Logo />
               <span className="ck-hide-sm" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--muted)' }}>Kundenbereich</span>
@@ -387,7 +390,7 @@ export default function CabinetPage() {
           </div>
         )}
         {notice === 'bereits' && (
-          <div style={{ marginBottom: 18, padding: '14px 18px', borderRadius: 16, backgroundColor: '#EEEBFF', color: 'var(--ink)', fontSize: 14.5, lineHeight: 1.55 }}>
+          <div style={{ marginBottom: 18, padding: '14px 18px', borderRadius: 16, backgroundColor: '#F0EEEA', color: 'var(--ink)', fontSize: 14.5, lineHeight: 1.55 }}>
             <strong>Diese Firma prüfen wir bereits.</strong> Hier sehen Sie den aktuellen Stand, ein zweiter Check ist nicht nötig.
           </div>
         )}
@@ -409,7 +412,7 @@ export default function CabinetPage() {
 
         {tab === 'overview' && (
           <>
-          <style>{`@keyframes cab-skel { 0%, 100% { opacity: 0.45 } 50% { opacity: 1 } } .cab-skel { animation: cab-skel 1.6s ease-in-out infinite; background-color: #E6E3FB; border-radius: 6px; } @media (prefers-reduced-motion: reduce) { .cab-skel { animation: none; } }`}</style>
+          <style>{`@keyframes cab-skel { 0%, 100% { opacity: 0.45 } 50% { opacity: 1 } } .cab-skel { animation: cab-skel 1.6s ease-in-out infinite; background-color: #E4E1DB; border-radius: 6px; } @media (prefers-reduced-motion: reduce) { .cab-skel { animation: none; } }`}</style>
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 18, minWidth: 0 }}>
             {check && !scratch && (
@@ -421,7 +424,7 @@ export default function CabinetPage() {
                     const lit = done || active
                     return (
                       <div key={label}>
-                        <div style={{ height: 6, borderRadius: 3, backgroundColor: lit ? 'var(--electric)' : '#EEEBFF', opacity: active ? 0.45 : 1 }} />
+                        <div style={{ height: 6, borderRadius: 3, backgroundColor: lit ? 'var(--electric)' : '#F0EEEA', opacity: active ? 0.45 : 1 }} />
                         <p style={{ margin: '10px 0 0', fontSize: 14, fontWeight: lit ? 600 : 500, color: lit ? 'var(--ink)' : 'var(--muted)' }}>{label}</p>
                       </div>
                     )
@@ -477,11 +480,11 @@ export default function CabinetPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
                     <span className="d-tile d-tile-sm" aria-hidden>{CHAN_ICON[i] ?? CHAN_ICON[0]}</span>
                     {scored ? <span className="display" style={{ fontSize: 28, lineHeight: 1 }}>{c.score !== null ? c.score : '—'}<Delta d={diff.ch(c.key)} /></span>
-                      : <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--electric)', backgroundColor: '#EEEBFF', borderRadius: 999, padding: '5px 10px' }}>Wird geprüft</span>}
+                      : <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--electric)', backgroundColor: '#F0EEEA', borderRadius: 999, padding: '5px 10px' }}>Wird geprüft</span>}
                   </div>
                   <p style={{ fontWeight: 700, fontSize: 16, margin: '0 0 6px', letterSpacing: '-0.01em' }}>{c.title}</p>
                   <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: 0, flex: 1 }}>{c.desc}</p>
-                  <div style={{ height: 5, borderRadius: 3, backgroundColor: '#EEEBFF', marginTop: 18 }}>
+                  <div style={{ height: 5, borderRadius: 3, backgroundColor: '#F0EEEA', marginTop: 18 }}>
                     {scored
                       ? <div style={{ width: c.score !== null ? `${c.score}%` : '0%', height: '100%', borderRadius: 3, backgroundColor: 'var(--electric)', transition: 'width 0.9s var(--ease)' }} />
                       : <div className="cab-skel" style={{ width: `${[38, 52, 30, 45][i] ?? 40}%`, height: '100%', borderRadius: 3, animationDelay: `${i * 0.2}s` }} />}
@@ -551,7 +554,7 @@ export default function CabinetPage() {
                 {chans.map((c, i) => (
                   <div key={c.key} style={card}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, marginBottom: 10 }}>
-                      <p style={{ fontWeight: 800, fontSize: 17, margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}><span className="d-tile d-tile-sm" aria-hidden>{CHAN_ICON[i] ?? CHAN_ICON[0]}</span>{c.title}</p>
+                      <p style={{ fontWeight: 600, fontSize: 17, margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}><span className="d-tile d-tile-sm" aria-hidden>{CHAN_ICON[i] ?? CHAN_ICON[0]}</span>{c.title}</p>
                       <span className="display" style={{ fontSize: 24 }}>{c.score ?? '—'}<span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 500, letterSpacing: 0 }}> / 100</span><Delta d={diff.ch(c.key)} /></span>
                     </div>
                     <p style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 14px' }}>{c.summary}</p>

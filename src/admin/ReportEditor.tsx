@@ -13,7 +13,7 @@ import {
 
 const ink = 'var(--ink)', muted = 'var(--muted)', line = 'var(--line)', accent = 'var(--electric)'
 const card: React.CSSProperties = { backgroundColor: '#fff', border: `1px solid ${line}`, borderRadius: 16, padding: 18 }
-const input: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '9px 11px', border: '1px solid rgba(7,7,12,0.16)', borderRadius: 10, fontSize: 14, fontFamily: 'inherit', color: ink, backgroundColor: '#fff', outline: 'none' }
+const input: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '9px 11px', border: '1px solid rgba(16,17,20,0.16)', borderRadius: 10, fontSize: 14, fontFamily: 'inherit', color: ink, backgroundColor: '#fff', outline: 'none' }
 const small: React.CSSProperties = { fontSize: 12.5, color: muted }
 const MARK: Record<Mark, [string, string, string]> = { ok: ['✓', '#17663A', '#E3F4EA'], warn: ['!', '#8A4B00', '#FFF1D6'], bad: ['✕', '#9C1F17', '#FBE3E0'] }
 const fmt = (d: string) => new Date(d).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
@@ -23,7 +23,7 @@ const PRIO = ['Hohe Priorität', 'Mittlere Priorität', 'Wachstumspotenzial']
 const GENERIC = /^(dienstleist|unternehmen|firma|geschäft|betrieb|service|gewerbe|einrichtung)/i
 
 function Badge({ m }: { m: Mark }) {
-  return <span style={{ width: 24, height: 24, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: MARK[m][1], backgroundColor: MARK[m][2], flexShrink: 0 }}>{MARK[m][0]}</span>
+  return <span style={{ width: 24, height: 24, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 600, color: MARK[m][1], backgroundColor: MARK[m][2], flexShrink: 0 }}>{MARK[m][0]}</span>
 }
 function Steps({ step, go, canGo }: { step: number; go: (n: number) => void; canGo: (n: number) => boolean }) {
   const names = ['Suchbegriffe', 'Automatische Prüfung', 'Manuelle Prüfungen (optional)', 'Ergebnis und Veröffentlichung']
@@ -34,9 +34,9 @@ function Steps({ step, go, canGo }: { step: number; go: (n: number) => void; can
         return (
           <li key={n}>
             <button type="button" disabled={!canGo(k)} onClick={() => go(k)}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 0, padding: 0, font: 'inherit', fontSize: 14, fontWeight: 700, cursor: canGo(k) ? 'pointer' : 'default', color: now ? accent : done ? '#17663A' : '#8A8AA0' }}>
-              <span style={{ width: 28, height: 28, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800,
-                border: `2px solid ${now ? accent : done ? '#17663A' : '#D6D5E3'}`, backgroundColor: now ? accent : done ? '#E3F4EA' : '#fff', color: now ? '#fff' : done ? '#17663A' : '#8A8AA0' }}>{done ? '✓' : k}</span>
+              style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 0, padding: 0, font: 'inherit', fontSize: 14, fontWeight: 700, cursor: canGo(k) ? 'pointer' : 'default', color: now ? accent : done ? '#17663A' : '#7A7C83' }}>
+              <span style={{ width: 28, height: 28, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 600,
+                border: `2px solid ${now ? accent : done ? '#17663A' : '#DEDCD7'}`, backgroundColor: now ? accent : done ? '#E3F4EA' : '#fff', color: now ? '#fff' : done ? '#17663A' : '#7A7C83' }}>{done ? '✓' : k}</span>
               {n}
             </button>
           </li>
@@ -290,7 +290,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
   // ── Neuer Bericht: Schritte ─────────────────────────────────────────────────
   const canGo = (n: number) => !busy && (n === 1 || (!needsCollect && !!draft?.items))
   const footer = (left: React.ReactNode, right: React.ReactNode) => (
-    <div style={{ position: 'sticky', bottom: 0, zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '12px 16px', backgroundColor: '#fff', border: `1px solid ${line}`, borderRadius: 14, boxShadow: '0 -6px 24px rgba(11,11,26,0.06)' }}>
+    <div style={{ position: 'sticky', bottom: 0, zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '12px 16px', backgroundColor: '#fff', border: `1px solid ${line}`, borderRadius: 14, boxShadow: '0 -6px 24px rgba(16,17,20,0.06)' }}>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>{left}{msg && <span style={small}>{msg}</span>}</div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{right}</div>
     </div>
@@ -367,7 +367,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
                 const m = shown?.mark ?? it.mark
                 const open = fixing === it.id
                 return (
-                  <div key={it.id} style={{ display: 'grid', gap: 8, padding: open ? 10 : '8px 0', borderTop: open ? 0 : '1px solid #F0EFF6', backgroundColor: open ? '#F7F6FF' : 'transparent', borderRadius: open ? 10 : 0, opacity: a?.mark === 'na' ? 0.5 : 1 }}>
+                  <div key={it.id} style={{ display: 'grid', gap: 8, padding: open ? 10 : '8px 0', borderTop: open ? 0 : '1px solid #EEEDEA', backgroundColor: open ? '#F7F6F4' : 'transparent', borderRadius: open ? 10 : 0, opacity: a?.mark === 'na' ? 0.5 : 1 }}>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 14 }}>
                       <Badge m={m} /><span style={{ flex: 1 }}>{shown?.text ?? it.text}{a?.mark === 'na' && <span style={small}> · für den Kunden ausgeblendet</span>}{a?.mark && a.mark !== 'na' && <span style={small}> · korrigiert</span>}</span>
                       <button type="button" onClick={() => setFixing(open ? null : it.id)} style={{ background: 'none', border: 0, font: 'inherit', fontSize: 13, fontWeight: 700, color: open ? accent : muted, cursor: 'pointer', minHeight: 36 }}>{open ? 'Fertig' : 'Korrigieren'}</button>
@@ -377,7 +377,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
                         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                           {([['', 'auto'], ['ok', '✓ ok'], ['warn', '! teilweise'], ['bad', '✕ schlecht'], ['na', 'dem Kunden nicht zeigen']] as [string, string][]).map(([k, l]) => (
                             <button key={k} type="button" onClick={() => answer(it.id, { mark: k || undefined })}
-                              style={{ minHeight: 36, padding: '0 12px', borderRadius: 10, border: `1px solid ${(a?.mark ?? '') === k ? accent : '#D6D5E3'}`, backgroundColor: (a?.mark ?? '') === k ? 'var(--brand-soft)' : '#fff', font: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>{l}</button>
+                              style={{ minHeight: 36, padding: '0 12px', borderRadius: 10, border: `1px solid ${(a?.mark ?? '') === k ? accent : '#DEDCD7'}`, backgroundColor: (a?.mark ?? '') === k ? 'var(--brand-soft)' : '#fff', font: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>{l}</button>
                           ))}
                         </div>
                         {a?.mark && a.mark !== 'na' && <input style={input} value={a.text ?? ''} placeholder={`Text für den Kunden (Deutsch). Vorher: ${it.text}`} onChange={e => answer(it.id, { text: e.target.value })} />}
@@ -394,8 +394,8 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
                   </div>
                   {problems.map(row)}
                   {ch === 'search' && !auto.some(i => i.id === 'pagespeed') && (
-                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 14, padding: '8px 0', borderTop: '1px solid #F0EFF6', flexWrap: 'wrap' }}>
-                      <span style={{ width: 24, height: 24, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#EFEEF8', color: muted, fontWeight: 800, fontSize: 13 }}>?</span>
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 14, padding: '8px 0', borderTop: '1px solid #EEEDEA', flexWrap: 'wrap' }}>
+                      <span style={{ width: 24, height: 24, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#EEEDEA', color: muted, fontWeight: 600, fontSize: 13 }}>?</span>
                       <span style={{ flex: 1, minWidth: 220 }}>PageSpeed nicht ermittelt. Wert von <a href={`https://pagespeed.web.dev/analysis?url=${encodeURIComponent(site?.url ? `https://${site.url}` : '')}`} target="_blank" rel="noreferrer">pagespeed.web.dev</a> eintragen</span>
                       <input type="number" min={0} max={100} aria-label="PageSpeed" style={{ ...input, width: 90 }} value={cl.pagespeed ?? ''} placeholder="0–100"
                         onChange={e => upd(x => ({ ...x, pagespeed: e.target.value === '' ? null : Math.max(0, Math.min(100, Number(e.target.value))) }))} />
@@ -414,7 +414,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
                         <thead><tr style={{ color: muted, textAlign: 'left' }}><th>#</th><th>Unternehmen</th><th>★</th><th>Bewertungen</th><th>Website</th></tr></thead>
                         <tbody>
                           {audit.competitors.list.slice(0, 8).map((x, i) => (
-                            <tr key={x.id} style={{ borderTop: `1px solid ${line}`, fontWeight: i + 1 === audit.competitors!.rank ? 700 : 400, backgroundColor: i + 1 === audit.competitors!.rank ? '#EEEBFF' : undefined }}>
+                            <tr key={x.id} style={{ borderTop: `1px solid ${line}`, fontWeight: i + 1 === audit.competitors!.rank ? 700 : 400, backgroundColor: i + 1 === audit.competitors!.rank ? '#F0EEEA' : undefined }}>
                               <td>{i + 1}</td><td data-no-translate>{x.name}</td><td>{x.rating ?? '—'}</td><td>{x.reviews}</td><td>{x.website ? 'ja' : 'nein'}</td>
                             </tr>
                           ))}
@@ -460,7 +460,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
                     const a = cl.answers?.[m.id]
                     const mk = a?.mark && a.mark !== 'na' ? a.mark : null
                     return (
-                      <div key={m.id} style={{ display: 'grid', gap: 6, fontSize: 14, paddingTop: 8, borderTop: '1px solid #F0EFF6' }}>
+                      <div key={m.id} style={{ display: 'grid', gap: 6, fontSize: 14, paddingTop: 8, borderTop: '1px solid #EEEDEA' }}>
                         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                           {mk ? <Badge m={mk} /> : <span style={{ width: 24, textAlign: 'center', color: muted }}>·</span>}
                           <span style={{ flex: 1 }}>{m.label}{m.hint ? <span style={small}>: {m.hint}</span> : null}</span>
@@ -479,7 +479,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
                   })}
                   {ch === 'ai' && (
                     <>
-                      <div style={{ display: 'grid', gap: 6, paddingTop: 8, borderTop: '1px solid #F0EFF6' }}>
+                      <div style={{ display: 'grid', gap: 6, paddingTop: 8, borderTop: '1px solid #EEEDEA' }}>
                         <strong style={{ fontSize: 14 }}>KI-Antworten: Stellen Sie die Fragen in ChatGPT, Perplexity und Gemini</strong>
                         <span style={small}>Fragen bleiben auf Deutsch, so fragen Kunden in Deutschland. Frage kopieren, in ChatGPT, Perplexity und Gemini einfügen und eintragen, ob der Kunde genannt wurde.</span>
                         {questions.map((q, qi) => (
@@ -504,7 +504,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
                         <button type="button" className="btn btn-sm btn-outline-light" style={{ justifySelf: 'start' }} onClick={() => upd(x => ({ ...x, aiQuestions: [...questions, ''] }))}>+ Frage</button>
                         <input style={input} value={cl.aiNamed ?? ''} placeholder="Wen die KI statt des Kunden nennt (kommagetrennt)" onChange={e => upd(x => ({ ...x, aiNamed: e.target.value }))} />
                       </div>
-                      <div style={{ display: 'grid', gap: 6, paddingTop: 8, borderTop: '1px solid #F0EFF6' }}>
+                      <div style={{ display: 'grid', gap: 6, paddingTop: 8, borderTop: '1px solid #EEEDEA' }}>
                         <strong style={{ fontSize: 14 }}>Verzeichnisse</strong>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(220px, 100%), 1fr))', gap: 6 }}>
                           {DIRECTORIES.map(([k, label]) => (
@@ -581,7 +581,7 @@ export default function ReportEditor({ c, onPublished }: { c: Check; onPublished
               </div>
             ) : (
               <>
-                {!!c.wish?.length && <p style={{ ...small, margin: 0, padding: '8px 12px', borderRadius: 10, backgroundColor: '#EEEBFF', color: 'var(--ink)' }}>Kunde wünscht (Auswahl auf /preise): <strong>{c.wish.map(i => i.name).join(' + ')}</strong>, vorausgefüllt, bei Bedarf anpassen.</p>}
+                {!!c.wish?.length && <p style={{ ...small, margin: 0, padding: '8px 12px', borderRadius: 10, backgroundColor: '#F0EEEA', color: 'var(--ink)' }}>Kunde wünscht (Auswahl auf /preise): <strong>{c.wish.map(i => i.name).join(' + ')}</strong>, vorausgefüllt, bei Bedarf anpassen.</p>}
                 <OfferBuilder items={items} onChange={x => { setItems(x); upd(y => ({ ...y, offerDraft: { items: x, why } })) }} />
                 <textarea value={why} onChange={e => { const w = e.target.value; setWhy(w); upd(y => ({ ...y, offerDraft: { items, why: w } })) }} style={{ ...input, minHeight: 56, resize: 'vertical' }} placeholder="Warum genau das: 1–2 Sätze für den Kunden, auf Deutsch (optional)" />
               </>

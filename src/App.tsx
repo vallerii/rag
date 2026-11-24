@@ -8,6 +8,8 @@ import { COMPANY, phoneHref } from './company'
 import { BRAND_ICONS } from './brandIcons'
 import { AgbBody, DatenschutzBody, ImpressumBody, LEGAL_UPDATED, PRICE_FACTS } from './legal/LegalPages'
 import CompanySearch from './check/CompanySearch'
+import HomePage, { HOME_FAQ } from './home/HomePage'
+import SiteHeader from './home/SiteHeader'
 import CheckPage from './check/CheckPage'
 import CabinetPage from './check/CabinetPage'
 import { ForgotPasswordPage, LoginPage, ResetPasswordPage } from './check/AuthPages'
@@ -31,7 +33,7 @@ function MeshLines({ w = 200, h = 150 }: { w?: number; h?: number }) {
 }
 
 // Floating avatar circle — person initial bubble
-function Avatar({ cx, cy, r = 18, bg = '#ede9fe', border = '#c4b5fd', label = 'MK', fontSize = 7 }: {
+function Avatar({ cx, cy, r = 18, bg = '#F0EEEA', border = '#D9D6D0', label = 'MK', fontSize = 7 }: {
   cx: number; cy: number; r?: number; bg?: string; border?: string; label?: string; fontSize?: number
 }) {
   return (
@@ -39,7 +41,7 @@ function Avatar({ cx, cy, r = 18, bg = '#ede9fe', border = '#c4b5fd', label = 'M
       <circle cx={cx} cy={cy} r={r + 2} fill="white" opacity="0.7" />
       <circle cx={cx} cy={cy} r={r} fill={bg} stroke={border} strokeWidth="1.2" />
       <text x={cx} y={cy + fontSize * 0.38} textAnchor="middle" fontSize={fontSize} fontWeight="700"
-        fill="#2600FF" fontFamily="Satoshi, 'RAG Cyrillic Sans', Inter, sans-serif">{label}</text>
+        fill="#101114" fontFamily="Satoshi, 'RAG Cyrillic Sans', Inter, sans-serif">{label}</text>
     </g>
   )
 }
@@ -62,7 +64,7 @@ function PinIcon({ cx, cy, scale = 1 }: { cx: number; cy: number; scale?: number
   const s = scale
   return (
     <g transform={`translate(${cx - 9 * s}, ${cy - 20 * s}) scale(${s})`}>
-      <path d="M9 0C4.03 0 0 4.03 0 9c0 6.75 9 19 9 19s9-12.25 9-19C18 4.03 13.97 0 9 0z" fill="#2600FF" />
+      <path d="M9 0C4.03 0 0 4.03 0 9c0 6.75 9 19 9 19s9-12.25 9-19C18 4.03 13.97 0 9 0z" fill="#101114" />
       <circle cx="9" cy="9" r="3.5" fill="white" />
     </g>
   )
@@ -78,7 +80,7 @@ function IllustConnected() {
     { cx: 88, cy: 28, bg: '#fef3c7', border: '#fcd34d', label: 'AI' },
     { cx: 136, cy: 28, bg: '#dbeafe', border: '#93c5fd', label: '★' },
     { cx: 184, cy: 50, bg: '#d1fae5', border: '#6ee7b7', label: '📢' },
-    { cx: 112, cy: 68, bg: '#f3e8ff', border: '#d8b4fe', label: '📷' },
+    { cx: 112, cy: 68, bg: '#F3F1EE', border: '#D9D6D0', label: '📷' },
   ]
   return (
     <svg viewBox="0 0 224 96" fill="none" width="100%" height="96" aria-hidden>
@@ -94,11 +96,11 @@ function IllustConnected() {
         [40, 50, 88, 28], [88, 28, 136, 28], [136, 28, 184, 50],
         [40, 50, 112, 68], [184, 50, 112, 68], [88, 28, 112, 68], [136, 28, 112, 68],
       ].map(([x1, y1, x2, y2], i) => (
-        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#c4b5fd" strokeWidth="1.5" strokeDasharray="3 2" strokeLinecap="round" />
+        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#D9D6D0" strokeWidth="1.5" strokeDasharray="3 2" strokeLinecap="round" />
       ))}
       {/* Central hub */}
-      <circle cx={112} cy={68} r={22} fill="#2600FF" opacity="0.12" />
-      <circle cx={112} cy={68} r={14} fill="#2600FF" />
+      <circle cx={112} cy={68} r={22} fill="#101114" opacity="0.12" />
+      <circle cx={112} cy={68} r={14} fill="#101114" />
       <text x={112} y={72.5} textAnchor="middle" fontSize="9" fontWeight="700" fill="white" fontFamily="Satoshi, 'RAG Cyrillic Sans', Inter, sans-serif">RAG</text>
     </svg>
   )
@@ -110,7 +112,7 @@ function IllustConnected() {
 
 function IllustMapsProfile() {
   return (
-    <div style={{ height: 120, backgroundColor: '#f7f7fb', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18 }}>
+    <div style={{ height: 120, backgroundColor: '#F7F6F4', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18 }}>
       {/* Google Maps pin */}
       <svg width="52" height="66" viewBox="0 0 52 66" fill="none">
         <path d="M26 0C11.64 0 0 11.64 0 26c0 18.2 26 40 26 40S52 44.2 52 26C52 11.64 40.36 0 26 0z" fill="#EA4335"/>
@@ -135,7 +137,7 @@ function IllustMapsProfile() {
 
 function IllustAIOptimization() {
   return (
-    <div style={{ height: 120, backgroundColor: '#f7f7fb', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+    <div style={{ height: 120, backgroundColor: '#F7F6F4', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
       {/* ChatGPT */}
       <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
         <circle cx="28" cy="28" r="28" fill="white" stroke="#e5e7eb" strokeWidth="1.5"/>
@@ -160,7 +162,7 @@ function IllustAIOptimization() {
 
 function IllustWebsiteSearch() {
   return (
-    <div style={{ height: 120, backgroundColor: '#f7f7fb', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18 }}>
+    <div style={{ height: 120, backgroundColor: '#F7F6F4', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18 }}>
       {/* browser window with a clear page structure */}
       <svg width="120" height="80" viewBox="0 0 120 80" fill="none">
         <rect x="0.75" y="0.75" width="118.5" height="78.5" rx="7" fill="#fff" stroke="#e5e7eb" strokeWidth="1.5" />
@@ -168,11 +170,11 @@ function IllustWebsiteSearch() {
         <circle cx="10" cy="7.5" r="2" fill="#EA4335" />
         <circle cx="18" cy="7.5" r="2" fill="#FBBC05" />
         <circle cx="26" cy="7.5" r="2" fill="#34A853" />
-        <rect x="10" y="22" width="46" height="7" rx="3.5" fill="#07070C" />
-        <rect x="10" y="34" width="72" height="4" rx="2" fill="#d7d7e0" />
-        <rect x="10" y="42" width="62" height="4" rx="2" fill="#d7d7e0" />
-        <rect x="10" y="54" width="30" height="14" rx="4" fill="#2600FF" />
-        <rect x="46" y="54" width="30" height="14" rx="4" fill="none" stroke="#d7d7e0" strokeWidth="1.5" />
+        <rect x="10" y="22" width="46" height="7" rx="3.5" fill="#101114" />
+        <rect x="10" y="34" width="72" height="4" rx="2" fill="#DEDCD7" />
+        <rect x="10" y="42" width="62" height="4" rx="2" fill="#DEDCD7" />
+        <rect x="10" y="54" width="30" height="14" rx="4" fill="#101114" />
+        <rect x="46" y="54" width="30" height="14" rx="4" fill="none" stroke="#DEDCD7" strokeWidth="1.5" />
         <rect x="88" y="22" width="22" height="46" rx="4" fill="#f2f2f7" />
       </svg>
       {/* Google search glyph */}
@@ -188,17 +190,17 @@ function IllustWebsiteSearch() {
 
 function IllustCitations() {
   return (
-    <div style={{ height: 120, backgroundColor: '#f7f7fb', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
+    <div style={{ height: 120, backgroundColor: '#F7F6F4', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
       {[0, 1, 2].map(i => (
         <svg key={i} width="64" height="76" viewBox="0 0 64 76" fill="none">
           <rect x="0.75" y="0.75" width="62.5" height="74.5" rx="7" fill="#fff" stroke="#e5e7eb" strokeWidth="1.5" />
-          <rect x="10" y="12" width="26" height="5" rx="2.5" fill="#07070C" />
-          <rect x="10" y="24" width="44" height="3.5" rx="1.75" fill="#d7d7e0" />
-          <rect x="10" y="33" width="36" height="3.5" rx="1.75" fill="#d7d7e0" />
-          <rect x="10" y="42" width="40" height="3.5" rx="1.75" fill="#d7d7e0" />
-          <circle cx="16" cy="60" r="6" fill={i === 2 ? '#2600FF' : '#34A853'} opacity={i === 2 ? 1 : 0.9} />
+          <rect x="10" y="12" width="26" height="5" rx="2.5" fill="#101114" />
+          <rect x="10" y="24" width="44" height="3.5" rx="1.75" fill="#DEDCD7" />
+          <rect x="10" y="33" width="36" height="3.5" rx="1.75" fill="#DEDCD7" />
+          <rect x="10" y="42" width="40" height="3.5" rx="1.75" fill="#DEDCD7" />
+          <circle cx="16" cy="60" r="6" fill={i === 2 ? '#101114' : '#34A853'} opacity={i === 2 ? 1 : 0.9} />
           <path d={i === 2 ? 'M13.4 60l1.9 1.9 3.4-3.6' : 'M13.4 60l1.9 1.9 3.4-3.6'} stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-          <rect x="27" y="57" width="24" height="3.5" rx="1.75" fill="#d7d7e0" />
+          <rect x="27" y="57" width="24" height="3.5" rx="1.75" fill="#DEDCD7" />
         </svg>
       ))}
     </div>
@@ -207,7 +209,7 @@ function IllustCitations() {
 
 function IllustReviews() {
   return (
-    <div style={{ height: 120, backgroundColor: '#f7f7fb', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 22 }}>
+    <div style={{ height: 120, backgroundColor: '#F7F6F4', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 22 }}>
       {/* Trustpilot green star */}
       <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
         <rect width="60" height="60" rx="10" fill="#00b67a"/>
@@ -231,7 +233,7 @@ function IllustReviews() {
 
 function IllustSocial() {
   return (
-    <div style={{ height: 120, backgroundColor: '#f7f7fb', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+    <div style={{ height: 120, backgroundColor: '#F7F6F4', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
       {/* Instagram */}
       <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
         <defs>
@@ -259,7 +261,7 @@ function IllustSocial() {
 
 function IllustAds() {
   return (
-    <div style={{ height: 120, backgroundColor: '#f7f7fb', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+    <div style={{ height: 120, backgroundColor: '#F7F6F4', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
       {/* Google G multicolor */}
       <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
         <circle cx="30" cy="30" r="30" fill="white" stroke="#e5e7eb" strokeWidth="1.5"/>
@@ -286,19 +288,19 @@ function IllustAds() {
 
 function IllustOffline() {
   return (
-    <div style={{ height: 120, backgroundColor: '#f7f7fb', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ height: 120, backgroundColor: '#F7F6F4', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       {/* Outdoor digital billboard glyph */}
       <svg width="72" height="90" viewBox="0 0 72 90" fill="none">
         {/* Screen frame */}
-        <rect x="4" y="4" width="64" height="46" rx="6" fill="#1e1e2e" stroke="#374151" strokeWidth="1.5"/>
+        <rect x="4" y="4" width="64" height="46" rx="6" fill="#1D1D20" stroke="#374151" strokeWidth="1.5"/>
         {/* Screen bezel inset */}
         <rect x="8" y="8" width="56" height="38" rx="4" fill="#111827"/>
         {/* Colourful ad content on screen */}
         <rect x="8" y="8" width="56" height="38" rx="4" fill="url(#bbGrad)"/>
         <defs>
           <linearGradient id="bbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#7c3aed"/>
-            <stop offset="50%" stopColor="#2600FF"/>
+            <stop offset="0%" stopColor="#101114"/>
+            <stop offset="50%" stopColor="#101114"/>
             <stop offset="100%" stopColor="#0ea5e9"/>
           </linearGradient>
         </defs>
@@ -328,7 +330,7 @@ function IllustOffline() {
 function IconCheck() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <circle cx="9" cy="9" r="9" fill="#2600FF" />
+      <circle cx="9" cy="9" r="9" fill="#101114" />
       <path d="M5 9.5l3 3 5-6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
@@ -349,7 +351,7 @@ function IconChevron({ open }: { open: boolean }) {
     </svg>
   )
 }
-function MapPin({ color = '#2600FF' }: { color?: string }) {
+function MapPin({ color = '#101114' }: { color?: string }) {
   return (
     <svg width="20" height="24" viewBox="0 0 24 28" fill="none">
       <path d="M12 0C7.03 0 3 4.03 3 9c0 6.75 9 19 9 19s9-12.25 9-19c0-4.97-4.03-9-9-9z" fill={color} />
@@ -498,56 +500,26 @@ function PinD({ size = 64, opacity = 1, filled = false }: { size?: number; opaci
   return (
     <svg aria-hidden width={size} height={size * 1.3} viewBox="0 0 40 52" fill="none" style={{ display: 'block', opacity }}>
       <path d="M20 2C10.1 2 2 9.9 2 19.6 2 32.5 20 50 20 50s18-17.5 18-30.4C38 9.9 29.9 2 20 2z"
-        fill={filled ? '#2600FF' : 'none'} stroke="#2600FF" strokeWidth="2" strokeLinejoin="round" />
-      <circle cx="20" cy="19" r="6" fill={filled ? '#fff' : 'none'} stroke={filled ? '#fff' : '#2600FF'} strokeWidth="2" />
+        fill={filled ? '#101114' : 'none'} stroke="#101114" strokeWidth="2" strokeLinejoin="round" />
+      <circle cx="20" cy="19" r="6" fill={filled ? '#fff' : 'none'} stroke={filled ? '#fff' : '#101114'} strokeWidth="2" />
     </svg>
   )
 }
 
 /**
- * Stil D · Stadtplan: heller Stadtplan (Kacheln + weiße Straßen), zur Mitte hin
- * aufgehellt, damit Text lesbar bleibt. Kontur-Pins nur an den Rändern.
- * `tone` bleibt aus Kompatibilitätsgründen, alle Varianten sind hell.
+ * Recto (24.11.2026): statt Stadtplan-Kacheln und Pins nur ein weiches, atmendes Orange-Licht
+ * wie hinter dem Porträt-Fächer der Startseite (.rx-halo). Props bleiben für bestehende Aufrufe.
  */
-function MapBackdrop({ shift = 0, pins = true, fade = 'center' }: { tone?: 'dark' | 'light' | 'electric'; shift?: number; pins?: boolean; fade?: 'center' | 'left' | 'none' }) {
-  const uid = useRef(`mb${Math.random().toString(36).slice(2, 8)}`).current
-  const fadeBg = fade === 'center'
-    ? 'radial-gradient(ellipse 62% 58% at 50% 46%, #F7F7FB 0%, rgba(247,247,251,0.93) 55%, rgba(247,247,251,0) 100%)'
-    : fade === 'left'
-      ? 'linear-gradient(90deg, #F7F7FB 0%, rgba(247,247,251,0.94) 42%, rgba(247,247,251,0.35) 75%, rgba(247,247,251,0) 100%)'
-      : 'none'
+function MapBackdrop({ fade = 'center' }: { tone?: 'dark' | 'light' | 'electric'; shift?: number; pins?: boolean; fade?: 'center' | 'left' | 'none' }) {
   return (
     <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
-        <defs>
-          <pattern id={uid} width="120" height="96" patternUnits="userSpaceOnUse" x={shift} y={0}>
-            <rect x="8" y="8" width="104" height="80" rx="10" fill="#EFEEF8" stroke="#E2E0F0" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill={`url(#${uid})`} />
-      </svg>
-      <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none"
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-        <path d="M-40 640 C 300 560, 520 760, 820 640 S 1300 520, 1500 600" stroke="#fff" strokeWidth="30" />
-        <path d="M-40 640 C 300 560, 520 760, 820 640 S 1300 520, 1500 600" stroke="#D9D7EA" strokeWidth="1.5" strokeDasharray="10 10" />
-        <path d="M1060 -20 C 1000 200, 1180 380, 1120 920" stroke="#fff" strokeWidth="26" />
-        <path d="M260 -20 C 330 260, 180 480, 300 920" stroke="#fff" strokeWidth="22" />
-      </svg>
-      <div style={{ position: 'absolute', inset: 0, background: fadeBg }} />
-      {pins && (
-        <div className="d-hide-md">
-          <div style={{ position: 'absolute', left: '4%', top: '16%' }}><PinD size={64} /></div>
-          <div style={{ position: 'absolute', right: '6%', top: '12%' }}><PinD size={52} opacity={0.5} /></div>
-          <div style={{ position: 'absolute', left: '13%', bottom: '14%' }}><PinD size={44} opacity={0.45} /></div>
-          <div style={{ position: 'absolute', right: '12%', bottom: '18%' }}><PinD size={64} /></div>
-        </div>
-      )}
+      <div className="rx-soft-halo" style={{ left: fade === 'left' ? '72%' : '50%' }} />
     </div>
   )
 }
 
 /** Konzentrische Ringe (Scan) — hinter UI-Mockups. */
-function RingsBackdrop({ size = 640, color = '#DAD8F5', style }: { size?: number; color?: string; style?: React.CSSProperties }) {
+function RingsBackdrop({ size = 640, color = '#E4E1DB', style }: { size?: number; color?: string; style?: React.CSSProperties }) {
   const radii = [0.14, 0.25, 0.36, 0.47]
   return (
     <div aria-hidden style={{ position: 'absolute', width: size, height: size, pointerEvents: 'none', ...style }}>
@@ -563,8 +535,9 @@ function RingsBackdrop({ size = 640, color = '#DAD8F5', style }: { size?: number
 }
 
 /** Punktraster in einer Ecke einer hellen Sektion. */
-function DotsCorner({ style }: { style?: React.CSSProperties }) {
-  return <div aria-hidden className="d-dots" style={{ position: 'absolute', width: 380, height: 380, pointerEvents: 'none', ...style }} />
+function DotsCorner(_: { style?: React.CSSProperties }) {
+  // Recto: keine Punktraster mehr (ruhige Flächen).
+  return null
 }
 
 type ChannelKind = 'ki' | 'maps' | 'search' | 'social' | 'profile' | 'website' | 'plus'
@@ -683,8 +656,8 @@ function ScanBackdrop() {
 
 /** Фон финального CTA — расходящиеся полосы, «развилка» на стыке половин. */
 function ForkBackdrop({ tone, dir }: { tone: 'light' | 'dark'; dir: 'up' | 'down' }) {
-  const c = tone === 'light' ? 'rgba(7,7,12,0.3)' : 'rgba(255,255,255,0.3)'
-  const cSoft = tone === 'light' ? 'rgba(7,7,12,0.16)' : 'rgba(255,255,255,0.16)'
+  const c = tone === 'light' ? 'rgba(16,17,20,0.3)' : 'rgba(255,255,255,0.3)'
+  const cSoft = tone === 'light' ? 'rgba(16,17,20,0.16)' : 'rgba(255,255,255,0.16)'
   const oy = dir === 'up' ? 106 : -6
   const targets: [number, number][] = dir === 'up'
     ? [[66, -8], [78, -10], [90, -12], [104, -4], [110, 30]]
@@ -790,7 +763,7 @@ function PlatformMarquee({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
         <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap' }}>
           <Logo />
           <span style={{ fontSize: 15, fontWeight: 700, color: col, letterSpacing: '0.01em' }}>{name}</span>
-          <span style={{ color: '#C9C5F7', fontSize: 16, marginLeft: 10 }}>·</span>
+          <span style={{ color: '#D9D6D0', fontSize: 16, marginLeft: 10 }}>·</span>
         </span>
       ))}
     </div>
@@ -827,7 +800,7 @@ function SlotPicker({ onConfirm }: { onConfirm: (day: { label: string; date: str
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginBottom: 16, paddingBottom: 4 }}>
         {days.map((d, i) => (
           <button key={i} onClick={() => { setSelDay(i); setSelSlot(null) }}
-            style={{ flexShrink: 0, padding: '8px 14px', borderRadius: 999, border: `1px solid ${selDay === i ? '#2600FF' : 'rgba(7,7,12,0.14)'}`, backgroundColor: selDay === i ? '#f2f2ff' : '#f9fafb', color: selDay === i ? '#2600FF' : '#4b5563', fontWeight: 600, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
+            style={{ flexShrink: 0, padding: '8px 14px', borderRadius: 999, border: `1px solid ${selDay === i ? '#101114' : 'rgba(16,17,20,0.14)'}`, backgroundColor: selDay === i ? '#F0EEEA' : '#f9fafb', color: selDay === i ? '#101114' : '#4b5563', fontWeight: 600, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
             {d.label}
           </button>
         ))}
@@ -837,7 +810,7 @@ function SlotPicker({ onConfirm }: { onConfirm: (day: { label: string; date: str
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 18 }}>
           {BOOKING_SLOTS.map(slot => (
             <button key={slot} onClick={() => setSelSlot(slot)}
-              style={{ padding: '12px', borderRadius: 14, border: `1px solid ${selSlot === slot ? '#2600FF' : 'rgba(7,7,12,0.14)'}`, backgroundColor: selSlot === slot ? '#2600FF' : '#fff', color: selSlot === slot ? '#fff' : '#030712', fontWeight: 600, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', boxShadow: selSlot === slot ? '0 1px 2px rgba(0,0,0,0.12)' : 'none' }}>
+              style={{ padding: '12px', borderRadius: 14, border: `1px solid ${selSlot === slot ? '#101114' : 'rgba(16,17,20,0.14)'}`, backgroundColor: selSlot === slot ? '#101114' : '#fff', color: selSlot === slot ? '#fff' : '#030712', fontWeight: 600, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', boxShadow: selSlot === slot ? '0 1px 2px rgba(0,0,0,0.12)' : 'none' }}>
               {slot}
             </button>
           ))}
@@ -846,7 +819,7 @@ function SlotPicker({ onConfirm }: { onConfirm: (day: { label: string; date: str
       <button
         disabled={selDay === null || selSlot === null}
         onClick={() => { if (selDay !== null && selSlot !== null) onConfirm(days[selDay], selSlot) }}
-        style={{ backgroundColor: selDay !== null && selSlot !== null ? '#2600FF' : '#e5e7eb', color: selDay !== null && selSlot !== null ? '#fff' : '#9ca3af', fontWeight: 600, fontSize: 14, padding: '13px 22px', borderRadius: 999, border: 'none', cursor: selDay !== null && selSlot !== null ? 'pointer' : 'not-allowed', width: '100%', fontFamily: 'inherit', transition: 'all 0.2s' }}>
+        style={{ backgroundColor: selDay !== null && selSlot !== null ? '#101114' : '#e5e7eb', color: selDay !== null && selSlot !== null ? '#fff' : '#9ca3af', fontWeight: 600, fontSize: 14, padding: '13px 22px', borderRadius: 999, border: 'none', cursor: selDay !== null && selSlot !== null ? 'pointer' : 'not-allowed', width: '100%', fontFamily: 'inherit', transition: 'all 0.2s' }}>
         Buchung bestätigen
       </button>
     </div>
@@ -878,10 +851,10 @@ function BookCallModal({ onClose }: { onClose: () => void }) {
   return (
     <div
       onClick={handleClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 200, backgroundColor: 'rgba(7,7,12,0.55)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      style={{ position: 'fixed', inset: 0, zIndex: 200, backgroundColor: 'rgba(16,17,20,0.55)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div
         onClick={e => e.stopPropagation()}
-        style={{ backgroundColor: '#fff', borderRadius: 26, boxShadow: '0 40px 90px rgba(7,7,12,0.35)', maxWidth: 460, width: '100%', padding: 36, position: 'relative' }}>
+        style={{ backgroundColor: '#fff', borderRadius: 26, boxShadow: '0 40px 90px rgba(16,17,20,0.35)', maxWidth: 460, width: '100%', padding: 36, position: 'relative' }}>
 
         {/* Close button */}
         <button onClick={handleClose} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', cursor: 'pointer', color: '#5c5c5c', lineHeight: 1, padding: 4 }}>
@@ -896,21 +869,21 @@ function BookCallModal({ onClose }: { onClose: () => void }) {
             <input
               value={bName} onChange={e => setBName(e.target.value)}
               placeholder="Ihr Name"
-              style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 14, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 10, boxSizing: 'border-box' }} />
+              style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(16,17,20,0.14)', borderRadius: 14, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 10, boxSizing: 'border-box' }} />
             <select
               value={bService} onChange={e => setBService(e.target.value)}
-              style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 14, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 10, boxSizing: 'border-box', backgroundColor: '#fff', color: bService ? '#030712' : '#9ca3af', appearance: 'auto' }}>
+              style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(16,17,20,0.14)', borderRadius: 14, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 10, boxSizing: 'border-box', backgroundColor: '#fff', color: bService ? '#030712' : '#9ca3af', appearance: 'auto' }}>
               <option value="" disabled>Service auswählen</option>
               {serviceOptions().map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <input
               value={bEmail} onChange={e => setBEmail(e.target.value)}
               type="email" placeholder="E-Mail-Adresse"
-              style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 14, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 20, boxSizing: 'border-box' }} />
+              style={{ width: '100%', padding: '11px 13px', border: '1px solid rgba(16,17,20,0.14)', borderRadius: 14, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 20, boxSizing: 'border-box' }} />
             <button
               disabled={!canContinue}
               onClick={() => canContinue && setModalStep(2)}
-              style={{ width: '100%', padding: '13px', borderRadius: 999, border: 'none', backgroundColor: canContinue ? '#2600FF' : '#d1d5db', color: '#fff', fontWeight: 500, fontSize: 15, cursor: canContinue ? 'pointer' : 'not-allowed', fontFamily: 'inherit', transition: 'background 0.15s' }}>
+              style={{ width: '100%', padding: '13px', borderRadius: 999, border: 'none', backgroundColor: canContinue ? '#101114' : '#d1d5db', color: '#fff', fontWeight: 500, fontSize: 15, cursor: canContinue ? 'pointer' : 'not-allowed', fontFamily: 'inherit', transition: 'background 0.15s' }}>
               Weiter
             </button>
           </>
@@ -930,12 +903,12 @@ function BookCallModal({ onClose }: { onClose: () => void }) {
         {/* ── Step 3: confirmation ── */}
         {modalStep === 3 && (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#2600FF" /><path d="M7 12.5l3.5 3.5 6.5-7" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: '#F0EEEA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#101114" /><path d="M7 12.5l3.5 3.5 6.5-7" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </div>
             <h2 style={{ fontWeight: 700, fontSize: 22, color: '#030712', marginBottom: 12, letterSpacing: '-0.4px' }}>Ihr Termin ist gebucht!</h2>
-            <div style={{ backgroundColor: '#f2f2ff', border: '1px solid #ddd6fe', borderRadius: 12, padding: '14px 16px', marginBottom: 16, textAlign: 'left' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: '#2600FF', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Ihr Termin</div>
+            <div style={{ backgroundColor: '#F0EEEA', border: '1px solid #E4E1DB', borderRadius: 12, padding: '14px 16px', marginBottom: 16, textAlign: 'left' }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#101114', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Ihr Termin</div>
               <p style={{ fontSize: 14, fontWeight: 700, color: '#030712', marginBottom: 4 }}>
                 {bookedDay?.date} um {bookedSlot} Uhr · {bService}
               </p>
@@ -1032,7 +1005,7 @@ function MoreIncludes({ items }: { items: string[] }) {
 // Was ein Paket ausmacht: hervorgehoben über dem Trenner, der Rest darunter.
 function PackageHighlights({ title, items, strong = false }: { title: string; items: string[]; strong?: boolean }) {
   return (
-    <div style={{ padding: '16px 18px', borderRadius: 16, backgroundColor: strong ? 'var(--brand-soft)' : 'var(--bone)', border: `1px solid ${strong ? '#C9C5F7' : 'var(--border)'}` }}>
+    <div style={{ padding: '16px 18px', borderRadius: 16, backgroundColor: strong ? 'var(--brand-soft)' : 'var(--bone)', border: `1px solid ${strong ? '#D9D6D0' : 'var(--border)'}` }}>
       <p className="kick" style={{ fontSize: 11.5, margin: '0 0 10px', color: strong ? 'var(--electric)' : 'var(--muted)' }}>{title}</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {items.map(x => (
@@ -1153,15 +1126,15 @@ function useEscape(onClose: () => void) {
   }, [onClose])
 }
 
-const orderInput: React.CSSProperties = { width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 8, boxSizing: 'border-box', color: 'var(--ink)', backgroundColor: '#fff' }
+const orderInput: React.CSSProperties = { width: '100%', padding: '11px 13px', border: '1px solid rgba(16,17,20,0.14)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 8, boxSizing: 'border-box', color: 'var(--ink)', backgroundColor: '#fff' }
 
 function OrderShell({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
   useEscape(onClose)
   return (
     <div onClick={onClose} className="order-overlay"
-      style={{ position: 'fixed', inset: 0, zIndex: 200, backgroundColor: 'rgba(7,7,12,0.55)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
+      style={{ position: 'fixed', inset: 0, zIndex: 200, backgroundColor: 'rgba(16,17,20,0.55)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
       <div role="dialog" aria-modal="true" aria-labelledby="order-title" onClick={e => e.stopPropagation()}
-        style={{ backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 24, boxShadow: '0 40px 90px rgba(7,7,12,0.35)', maxWidth: 540, width: '100%', padding: 'clamp(22px, 4vw, 34px)', position: 'relative', margin: 'auto' }}>
+        style={{ backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 24, boxShadow: '0 40px 90px rgba(16,17,20,0.35)', maxWidth: 540, width: '100%', padding: 'clamp(22px, 4vw, 34px)', position: 'relative', margin: 'auto' }}>
         <button onClick={onClose} aria-label="Schließen" style={{ position: 'absolute', top: 14, right: 14, background: 'none', border: 'none', cursor: 'pointer', color: '#5c5c5c', lineHeight: 1, padding: 4 }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg>
         </button>
@@ -1183,13 +1156,13 @@ function OrderRow({ label, value, unit }: { label: string; value: string; unit: 
 function OrderDone({ name, contact, summary, onClose }: { name: string; contact: string; summary: React.ReactNode; onClose: () => void }) {
   return (
     <div style={{ textAlign: 'center', padding: '8px 0' }}>
-      <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: '#EEEBFF', color: '#2600FF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 24, fontWeight: 700 }}>✓</div>
+      <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: '#F0EEEA', color: '#101114', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 24, fontWeight: 700 }}>✓</div>
       <h2 id="order-title" style={{ fontWeight: 700, fontSize: 21, margin: '0 0 10px' }}>Danke, {name.trim()}!</h2>
       <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.7, margin: '0 0 16px' }}>
         Wir melden uns unter <strong style={{ color: 'var(--ink)' }}>{contact}</strong> und besprechen alles Weitere mit Ihnen.
       </p>
       <div style={{ textAlign: 'left', marginBottom: 18 }}>{summary}</div>
-      <button type="button" onClick={onClose} style={{ padding: '10px 26px', borderRadius: 999, border: '1px solid rgba(7,7,12,0.15)', backgroundColor: '#fff', fontWeight: 500, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>Schließen</button>
+      <button type="button" onClick={onClose} style={{ padding: '10px 26px', borderRadius: 999, border: '1px solid rgba(16,17,20,0.15)', backgroundColor: '#fff', fontWeight: 500, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>Schließen</button>
     </div>
   )
 }
@@ -1198,7 +1171,7 @@ function SendButton({ enabled, onSend, label = 'Anfrage senden' }: { enabled: bo
   return (
     <>
       <button type="button" disabled={!enabled} onClick={() => enabled && onSend()}
-        style={{ width: '100%', marginTop: 16, padding: '13px 20px', borderRadius: 999, border: 'none', backgroundColor: enabled ? '#2600FF' : '#e5e7eb', color: enabled ? '#fff' : '#9ca3af', fontWeight: 600, fontSize: 14.5, cursor: enabled ? 'pointer' : 'default', fontFamily: 'inherit' }}>
+        style={{ width: '100%', marginTop: 16, padding: '13px 20px', borderRadius: 999, border: 'none', backgroundColor: enabled ? '#101114' : '#e5e7eb', color: enabled ? '#fff' : '#9ca3af', fontWeight: 600, fontSize: 14.5, cursor: enabled ? 'pointer' : 'default', fontFamily: 'inherit' }}>
         {label}
       </button>
       <p style={{ fontSize: 11.5, color: '#9ca3af', lineHeight: 1.6, margin: '10px 0 0' }}>
@@ -1236,7 +1209,7 @@ function ProfileOrderModal({ onClose, initialSocial = false, initialWeb = false 
   const [web, setWeb] = useState(initialWeb)
   const onePager = WEBSITE_PACKAGES.find(w => w.id === 'onepager')!
   const summary = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, backgroundColor: '#F7F6FF', border: '1px solid #E4DFFF', borderRadius: 14, padding: '12px 16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, backgroundColor: '#F7F6F4', border: '1px solid #E4E1DB', borderRadius: 14, padding: '12px 16px' }}>
       <OrderRow label="Google-Unternehmensprofil" value={PROFILE_PRICE} unit="einmalig" />
       {social && <OrderRow label={SOCIAL_ADDON.name} value={`${SOCIAL_ADDON.price} €`} unit="pro Monat" />}
       {web && <OrderRow label={onePager.name} value={`${onePager.price} €`} unit="pro Monat" />}
@@ -1250,9 +1223,9 @@ function ProfileOrderModal({ onClose, initialSocial = false, initialWeb = false 
           <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: '0 0 18px' }}>
             <strong style={{ color: 'var(--ink)' }}>{PROFILE_PRICE} einmalig</strong>. Wir erstellen oder optimieren Ihr Profil. Im nächsten Schritt legen Sie Ihren Kundenbereich an oder melden sich an.
           </p>
-          <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(7,7,12,0.45)', marginBottom: 8 }}>Optional dazu · monatlich</p>
-          <label style={{ display: 'flex', gap: 12, alignItems: 'flex-start', cursor: 'pointer', padding: '11px 14px', borderRadius: 14, marginBottom: 14, border: `1px solid ${social ? '#2600FF' : 'rgba(7,7,12,0.12)'}`, backgroundColor: social ? '#F4F2FF' : '#fff', transition: 'all 0.2s ease' }}>
-            <input type="checkbox" checked={social} onChange={() => setSocial(!social)} style={{ width: 18, height: 18, marginTop: 1, accentColor: '#2600FF', flexShrink: 0 }} />
+          <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(16,17,20,0.45)', marginBottom: 8 }}>Optional dazu · monatlich</p>
+          <label style={{ display: 'flex', gap: 12, alignItems: 'flex-start', cursor: 'pointer', padding: '11px 14px', borderRadius: 14, marginBottom: 14, border: `1px solid ${social ? '#101114' : 'rgba(16,17,20,0.12)'}`, backgroundColor: social ? '#F3F1EE' : '#fff', transition: 'all 0.2s ease' }}>
+            <input type="checkbox" checked={social} onChange={() => setSocial(!social)} style={{ width: 18, height: 18, marginTop: 1, accentColor: '#101114', flexShrink: 0 }} />
             <span style={{ flex: 1, minWidth: 0 }}>
               <span style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
                 <span style={{ fontWeight: 600, fontSize: 14.5 }}>{SOCIAL_ADDON.name}</span>
@@ -1261,8 +1234,8 @@ function ProfileOrderModal({ onClose, initialSocial = false, initialWeb = false 
               <span style={{ display: 'block', fontSize: 12.5, lineHeight: 1.55, color: 'var(--muted)', marginTop: 3 }}>{SOCIAL_ADDON.thesis}</span>
             </span>
           </label>
-          <label style={{ display: 'flex', gap: 12, alignItems: 'flex-start', cursor: 'pointer', padding: '11px 14px', borderRadius: 14, marginBottom: 14, border: `1px solid ${web ? '#2600FF' : 'rgba(7,7,12,0.12)'}`, backgroundColor: web ? '#F4F2FF' : '#fff', transition: 'all 0.2s ease' }}>
-            <input type="checkbox" checked={web} onChange={() => setWeb(!web)} style={{ width: 18, height: 18, marginTop: 1, accentColor: '#2600FF', flexShrink: 0 }} />
+          <label style={{ display: 'flex', gap: 12, alignItems: 'flex-start', cursor: 'pointer', padding: '11px 14px', borderRadius: 14, marginBottom: 14, border: `1px solid ${web ? '#101114' : 'rgba(16,17,20,0.12)'}`, backgroundColor: web ? '#F3F1EE' : '#fff', transition: 'all 0.2s ease' }}>
+            <input type="checkbox" checked={web} onChange={() => setWeb(!web)} style={{ width: 18, height: 18, marginTop: 1, accentColor: '#101114', flexShrink: 0 }} />
             <span style={{ flex: 1, minWidth: 0 }}>
               <span style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
                 <span style={{ fontWeight: 600, fontSize: 14.5 }}>{onePager.name}</span>
@@ -1291,9 +1264,9 @@ function PackageOrderModal({ initial, onClose }: { initial: PackageOrder; onClos
   const canSend = total > 0
 
   const option = (on: boolean, onToggle: () => void, title: string, price: number, note: string, type: 'radio' | 'checkbox') => (
-    <label key={title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', cursor: 'pointer', padding: '11px 14px', borderRadius: 14, border: `1px solid ${on ? '#2600FF' : 'rgba(7,7,12,0.12)'}`, backgroundColor: on ? '#F4F2FF' : '#fff', transition: 'all 0.2s ease' }}>
+    <label key={title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', cursor: 'pointer', padding: '11px 14px', borderRadius: 14, border: `1px solid ${on ? '#101114' : 'rgba(16,17,20,0.12)'}`, backgroundColor: on ? '#F3F1EE' : '#fff', transition: 'all 0.2s ease' }}>
       <input type={type} name={type === 'radio' ? 'rag-package' : undefined} checked={on} onChange={onToggle} onClick={type === 'radio' && on ? onToggle : undefined}
-        style={{ width: 18, height: 18, marginTop: 1, accentColor: '#2600FF', flexShrink: 0 }} />
+        style={{ width: 18, height: 18, marginTop: 1, accentColor: '#101114', flexShrink: 0 }} />
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
           <span style={{ fontWeight: 600, fontSize: 14.5 }}>{title}</span>
@@ -1305,12 +1278,12 @@ function PackageOrderModal({ initial, onClose }: { initial: PackageOrder; onClos
   )
 
   const summary = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, backgroundColor: '#F7F6FF', border: '1px solid #E4DFFF', borderRadius: 14, padding: '12px 16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, backgroundColor: '#F7F6F4', border: '1px solid #E4E1DB', borderRadius: 14, padding: '12px 16px' }}>
       {chosen && <OrderRow label={chosen.name} value={`${chosen.price} €`} unit="pro Monat" />}
       {social && <OrderRow label={SOCIAL_ADDON.name} value={`${SOCIAL_ADDON.price} €`} unit="pro Monat" />}
       {total === 0
         ? <span style={{ fontSize: 13, color: 'var(--muted)' }}>Wählen Sie ein Paket oder Social Media.</span>
-        : (chosen && social) && <div style={{ borderTop: '1px solid #E4DFFF', paddingTop: 6 }}><OrderRow label="Gesamt" value={`${total} €`} unit="pro Monat" /></div>}
+        : (chosen && social) && <div style={{ borderTop: '1px solid #E4E1DB', paddingTop: 6 }}><OrderRow label="Gesamt" value={`${total} €`} unit="pro Monat" /></div>}
     </div>
   )
 
@@ -1323,11 +1296,11 @@ function PackageOrderModal({ initial, onClose }: { initial: PackageOrder; onClos
             Wählen Sie eine Website, Social Media können Sie dazu nehmen oder allein buchen.
           </p>
 
-          <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(7,7,12,0.45)', marginBottom: 8 }}>Website</p>
+          <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(16,17,20,0.45)', marginBottom: 8 }}>Website</p>
           <div style={{ display: 'grid', gap: 8, marginBottom: 14 }}>
             {WEBSITE_PACKAGES.map(p => option(pkg === p.id, () => setPkg(pkg === p.id ? null : p.id), p.name, p.price, p.thesis, 'radio'))}
           </div>
-          <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(7,7,12,0.45)', marginBottom: 8 }}>{pkg ? 'Dazu' : 'Oder allein'}</p>
+          <p className="eyebrow" style={{ fontSize: 9.5, color: 'rgba(16,17,20,0.45)', marginBottom: 8 }}>{pkg ? 'Dazu' : 'Oder allein'}</p>
           <div style={{ display: 'grid', gap: 8, marginBottom: 16 }}>
             {option(social, () => setSocial(!social), SOCIAL_ADDON.name, SOCIAL_ADDON.price, SOCIAL_ADDON.thesis, 'checkbox')}
           </div>
@@ -1393,8 +1366,8 @@ function Pricing() {
                 </div>
                 <h2 className="display" style={{ fontSize: 'clamp(24px, 2.4vw, 34px)', lineHeight: 1.15, margin: '0 0 12px' }}>{PROFILE_PACKAGE.name}</h2>
                 <p style={{ fontSize: 15.5, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 18px', maxWidth: 440 }}>{PROFILE_PACKAGE.thesis}</p>
-                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '9px 14px', borderRadius: 999, marginBottom: 22, border: `1px solid ${profileSocial ? '#2600FF' : 'rgba(7,7,12,0.14)'}`, backgroundColor: profileSocial ? '#F4F2FF' : '#fff', fontSize: 14, transition: 'all 0.2s ease' }}>
-                  <input type="checkbox" checked={profileSocial} onChange={() => setProfileSocial(!profileSocial)} style={{ width: 17, height: 17, margin: 0, accentColor: '#2600FF' }} />
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '9px 14px', borderRadius: 999, marginBottom: 22, border: `1px solid ${profileSocial ? '#101114' : 'rgba(16,17,20,0.14)'}`, backgroundColor: profileSocial ? '#F3F1EE' : '#fff', fontSize: 14, transition: 'all 0.2s ease' }}>
+                  <input type="checkbox" checked={profileSocial} onChange={() => setProfileSocial(!profileSocial)} style={{ width: 17, height: 17, margin: 0, accentColor: '#101114' }} />
                   <span>+ {SOCIAL_ADDON.name}</span>
                   <strong style={{ whiteSpace: 'nowrap' }}>{SOCIAL_ADDON.price} €/Monat</strong>
                 </label>
@@ -1451,7 +1424,7 @@ function Pricing() {
 
           {/* + — Social Media, Add-on oder einzeln */}
           <Reveal delay={0.1}>
-            <div className="price-addon" style={{ marginTop: 'clamp(12px, 1.4vw, 18px)', display: 'grid', gridTemplateColumns: 'minmax(0, 0.9fr) minmax(0, 1.1fr) auto', gap: 'clamp(20px, 3vw, 48px)', alignItems: 'center', padding: 'clamp(24px, 2.4vw, 32px)', borderRadius: 24, backgroundColor: 'var(--brand-soft)', border: '1px dashed #C9C5F7' }}>
+            <div className="price-addon" style={{ marginTop: 'clamp(12px, 1.4vw, 18px)', display: 'grid', gridTemplateColumns: 'minmax(0, 0.9fr) minmax(0, 1.1fr) auto', gap: 'clamp(20px, 3vw, 48px)', alignItems: 'center', padding: 'clamp(24px, 2.4vw, 32px)', borderRadius: 24, backgroundColor: 'var(--brand-soft)', border: '1px dashed #D9D6D0' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(14px, 1.6vw, 20px)', marginBottom: 16 }}>
                   <span className="d-tile" style={{ backgroundColor: '#fff' }}><ChannelIcon kind="social" /></span>
@@ -1601,7 +1574,7 @@ function ServicesNavDropdown({ fg }: { fg: string }) {
         opacity: open ? 1 : 0,
         transition: `opacity 0.28s ease, transform 0.4s ${EASE}`,
         backgroundColor: '#fff', borderRadius: 20, padding: 16, minWidth: 380,
-        boxShadow: '0 30px 70px rgba(11,11,26,0.14)', border: '1px solid var(--border)',
+        boxShadow: '0 30px 70px rgba(16,17,20,0.14)', border: '1px solid var(--border)',
       }}>
         {modules.map(m => (
           <a key={m.slug} href={`/services/${m.slug}`}
@@ -1626,75 +1599,13 @@ function ServicesNavDropdown({ fg }: { fg: string }) {
 
 
 function Nav() {
-  const [open, setOpen] = useState(false)
-  const [solid, setSolid] = useState(false)
-  useEffect(() => {
-    const onScroll = () => setSolid(window.scrollY > 60)
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  // Open mobile menu is white, so the bar above it switches to the light look too.
-  const light = true
-  const fg = '#0B0B1A'
-
-  // Adaptive Regeln (Burger-Menü, einspaltiger Footer, Raster) auf JEDER Seite mit Navigation laden —
-  // früher nur auf der Startseite, dadurch waren Kopf und Fuß auf /start, /preise, /services … mobil nicht angepasst.
+  // Recto-Kopfzeile wie auf der Startseite (src/home/SiteHeader.tsx). Auf Unterseiten führen die
+  // Menüpunkte direkt zu den Leistungsseiten. responsiveCSS bleibt hier, weil es auf JEDER Seite mit
+  // Navigation gebraucht wird (Footer-Raster, Leistungsseiten, /start …).
   return (
     <>
-    <style>{responsiveCSS}</style>
-    <header style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 90,
-      backgroundColor: solid ? 'rgba(247,247,251,0.86)' : open ? '#ffffff' : 'transparent',
-      backdropFilter: solid ? 'saturate(180%) blur(18px)' : 'none',
-      WebkitBackdropFilter: solid ? 'saturate(180%) blur(18px)' : 'none',
-      borderBottom: `1px solid ${solid ? 'var(--line)' : 'transparent'}`,
-      transition: 'background-color 0.5s ease, border-color 0.5s ease, backdrop-filter 0.5s ease',
-    }}>
-      <nav aria-label="Hauptnavigation" style={{ ...SHELL, maxWidth: 'calc(1240px + 2 * clamp(20px, 4vw, 48px))', padding: '0 clamp(20px, 4vw, 48px)', height: solid ? 66 : 82, display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'height 0.5s ' + EASE }}>
-        <a href="/" style={{ fontWeight: 800, fontSize: 24, color: fg, letterSpacing: '-0.04em', textDecoration: 'none', transition: 'color 0.4s ease' }}>
-          RAG<span style={{ color: 'var(--electric)' }}>.</span>
-        </a>
-
-        <div className="hidden-mobile nav-links" style={{ display: 'flex', gap: 'clamp(16px, 1.7vw, 30px)', alignItems: 'center', marginLeft: 32, whiteSpace: 'nowrap' }}>
-          <ServicesNavDropdown fg={fg} />
-          {/* FAQ removed from the header; 'Ergebnisse' hidden while the results block is off: ['Ergebnisse', 'results'], ['FAQ', 'faq'] */}
-          {[['Preise', '/preise'], ['Ratgeber', '/ratgeber']].map(([l, target]) => (
-            <a key={l} href={linkHref(target)} className="ul" style={{ fontWeight: 600, fontSize: 15, color: fg, transition: 'color 0.4s ease' }}>{l}</a>
-          ))}
-          <LangSwitch fg={fg} border="var(--border)" />
-          <span className="nav-phone" style={{ width: 1, height: 18, backgroundColor: 'var(--border)' }} />
-          {COMPANY.phone && <a href={phoneHref()} className="ul nav-phone" style={{ fontWeight: 500, fontSize: 14, color: fg, opacity: 0.75, transition: 'color 0.4s ease' }}>{COMPANY.phone}</a>}
-          <a href={homeHref('audit-quiz')} className="btn btn-md btn-electric" style={{ whiteSpace: 'nowrap' }}>
-            Sichtbarkeits-Check starten
-            <span className="arw">→</span>
-          </a>
-          <a href="/kabinett" className="btn btn-md btn-outline-light" style={{ whiteSpace: 'nowrap', marginLeft: -20 }}>Login</a>
-        </div>
-
-        <div className="show-mobile" style={{ display: 'none', alignItems: 'center', gap: 12 }}>
-        <LangSwitch fg={fg} border={light ? 'var(--border)' : 'var(--border)'} />
-        <button aria-label="Menü" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }} onClick={() => setOpen(v => !v)}>
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={open ? '#07070C' : fg} strokeWidth="1.8" strokeLinecap="round">
-            {open ? <><path d="M18 6L6 18" /><path d="M6 6l12 12" /></> : <><path d="M3 7h18" /><path d="M3 12h18" /><path d="M3 17h18" /></>}
-          </svg>
-        </button>
-        </div>
-      </nav>
-
-      {open && (
-        <nav aria-label="Mobile Navigation" className="show-mobile" style={{ display: 'none', flexDirection: 'column', gap: 2, padding: '10px 24px 26px', backgroundColor: '#fff', borderTop: '1px solid var(--line)' }}>
-          {/* FAQ removed from the header; 'Ergebnisse' hidden while the results block is off: ['Ergebnisse', 'results'], ['FAQ', 'faq'] */}
-          {[['Wo man Sie sucht', '/services'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar']].map(([l, target]) => (
-            <a key={l} href={linkHref(target)} style={{ fontWeight: 600, fontSize: 22, letterSpacing: '-0.03em', color: '#07070C', textDecoration: 'none', padding: '10px 0', borderBottom: '1px solid var(--line-soft)' }} onClick={() => setOpen(false)}>{l}</a>
-          ))}
-          {COMPANY.phone && <a href={phoneHref()} style={{ fontWeight: 500, fontSize: 14, color: 'var(--muted)', padding: '14px 0 10px' }}>{COMPANY.phone}</a>}
-          <a href={homeHref('audit-quiz')} className="btn btn-lg btn-electric" style={{ width: '100%' }} onClick={() => setOpen(false)}>Sichtbarkeits-Check starten</a>
-          <a href="/kabinett" className="btn btn-lg btn-outline-light" style={{ width: '100%', marginTop: 10 }} onClick={() => setOpen(false)}>Login</a>
-        </nav>
-      )}
-    </header>
+      <style>{responsiveCSS}</style>
+      <SiteHeader />
     </>
   )
 }
@@ -1730,7 +1641,7 @@ function RankPanel() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 999, backgroundColor: '#F2F2F5', marginBottom: 14 }}>
           <GMapsLogo />
-          <span style={{ fontSize: 13, color: '#6B6B78', fontWeight: 500 }}>Dienstleister in meiner Nähe</span>
+          <span style={{ fontSize: 13, color: '#6A6C73', fontWeight: 500 }}>Dienstleister in meiner Nähe</span>
           <span className="blink" style={{ width: 1.5, height: 14, backgroundColor: 'var(--electric)', marginLeft: 'auto' }} />
         </div>
 
@@ -1742,8 +1653,8 @@ function RankPanel() {
               transition: `transform 0.95s ${EASE}, background-color 0.6s ease, box-shadow 0.6s ease`,
               display: 'flex', alignItems: 'center', gap: 12, padding: '0 14px',
               borderRadius: 16,
-              backgroundColor: r.you ? (won ? '#F0EDFF' : '#FBFBFC') : '#FBFBFC',
-              boxShadow: r.you && won ? 'inset 0 0 0 1.5px var(--electric)' : 'inset 0 0 0 1px rgba(7,7,12,0.06)',
+              backgroundColor: r.you ? (won ? '#F0EEEA' : '#FBFAF8') : '#FBFAF8',
+              boxShadow: r.you && won ? 'inset 0 0 0 1.5px var(--electric)' : 'inset 0 0 0 1px rgba(16,17,20,0.06)',
               opacity: r.you ? 1 : won ? 0.55 : 1,
             }}>
               <div style={{
@@ -1751,28 +1662,28 @@ function RankPanel() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 backgroundColor: r.you ? (won ? 'var(--electric)' : '#FEE2E2') : '#E9E9EE',
                 color: r.you ? (won ? '#fff' : '#DC2626') : '#8E8E9E',
-                fontSize: r.you && !won ? 11 : 13, fontWeight: 800,
+                fontSize: r.you && !won ? 11 : 13, fontWeight: 600,
                 transition: 'background-color 0.6s ease, color 0.6s ease',
               }}>{r.you ? (won ? '1' : '14') : r.pos + 1}</div>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 700, color: '#07070C', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</div>
-                <div style={{ fontSize: 11.5, color: '#6B6B78', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: '#101114', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</div>
+                <div style={{ fontSize: 11.5, color: '#6A6C73', display: 'flex', alignItems: 'center', gap: 5 }}>
                   <span style={{ color: '#F59E0B' }}>★</span>{r.rating} · {r.reviews} Bewertungen
                 </div>
               </div>
               {r.you && won && (
-                <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', color: '#fff', backgroundColor: 'var(--electric)', padding: '5px 9px', borderRadius: 999, whiteSpace: 'nowrap' }}>ANRUF</span>
+                <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', color: '#fff', backgroundColor: 'var(--electric)', padding: '5px 9px', borderRadius: 999, whiteSpace: 'nowrap' }}>ANRUF</span>
               )}
             </div>
           ))}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, padding: '10px 14px', borderRadius: 14, backgroundColor: won ? '#07070C' : '#F2F2F5', transition: 'background-color 0.6s ease' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, padding: '10px 14px', borderRadius: 14, backgroundColor: won ? '#101114' : '#F2F2F5', transition: 'background-color 0.6s ease' }}>
           <span style={{ position: 'relative', display: 'flex', width: 8, height: 8 }}>
             <span className="ring" style={{ position: 'absolute', inset: 0, borderRadius: '50%', backgroundColor: won ? '#4ADE80' : '#DC2626' }} />
             <span style={{ position: 'relative', width: 8, height: 8, borderRadius: '50%', backgroundColor: won ? '#4ADE80' : '#DC2626' }} />
           </span>
-          <span style={{ fontSize: 12, fontWeight: 600, color: won ? '#fff' : '#6B6B78', transition: 'color 0.6s ease' }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: won ? '#fff' : '#6A6C73', transition: 'color 0.6s ease' }}>
             {won ? 'Position 1 · 8 Anrufe diese Woche' : 'Position 14 · 0 Anrufe diese Woche'}
           </span>
         </div>
@@ -1795,16 +1706,16 @@ function Hero() {
         {/* schwebende Karten am Rand — nie über dem Text */}
         <div className="d-hide-md hero-float" aria-hidden style={{ position: 'absolute', left: 'max(24px, calc(50% - 680px))', top: '58%', width: 230, zIndex: 1 }}>
           <div className="d-float floaty" style={{ padding: '14px 16px', fontSize: 13.5, lineHeight: 1.5 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, fontWeight: 800, color: 'var(--electric)' }}><ChannelIcon kind="ki" size={16} />ChatGPT empfiehlt</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, fontWeight: 600, color: 'var(--electric)' }}><ChannelIcon kind="ki" size={16} />ChatGPT empfiehlt</span>
             „Muster Elektrotechnik in München: schnell, zuverlässig, mit Notdienst.“
           </div>
         </div>
         <div className="d-hide-md hero-float" aria-hidden style={{ position: 'absolute', right: 'max(24px, calc(50% - 680px))', top: '50%', width: 230, zIndex: 1 }}>
           <div className="d-float floaty" style={{ padding: '14px 16px', animationDelay: '1.5s' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'var(--electric)', color: '#fff', display: 'grid', placeItems: 'center', fontWeight: 800, flexShrink: 0 }}>M</span>
+              <span style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'var(--electric)', color: '#fff', display: 'grid', placeItems: 'center', fontWeight: 600, flexShrink: 0 }}>M</span>
               <span>
-                <span style={{ display: 'block', fontSize: 14, fontWeight: 800 }}>Muster Elektrotechnik</span>
+                <span style={{ display: 'block', fontSize: 14, fontWeight: 600 }}>Muster Elektrotechnik</span>
                 <span style={{ fontSize: 12.5, color: 'var(--muted)' }}><span style={{ color: '#E9A100' }}>★★★★★</span> 5,0 · München</span>
               </span>
             </span>
@@ -1816,7 +1727,7 @@ function Hero() {
             <div className="mask-line" style={{ marginBottom: 28 }}>
               <span style={{ ['--d' as any]: '0s' }}>
                 <span role="img" aria-label="Bewertung 5,0 von 5 Sternen bei Google" className="d-pill">
-                  <span aria-hidden style={{ height: 28, padding: '0 10px', borderRadius: 999, backgroundColor: 'var(--brand-soft)', color: 'var(--electric)', display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 800, fontSize: 13.5 }}>
+                  <span aria-hidden style={{ height: 28, padding: '0 10px', borderRadius: 999, backgroundColor: 'var(--brand-soft)', color: 'var(--electric)', display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 13.5 }}>
                     <GLogo /> 5,0
                   </span>
                   <span aria-hidden style={{ display: 'inline-flex', gap: 1 }}>
@@ -1962,12 +1873,12 @@ function ChannelBlock({ id, label, title, body, actions, aside, article, tone = 
 function PanelMapBackdrop() {
   return (
     <div aria-hidden style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '62%', pointerEvents: 'none', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(#ECEBFF 8px, transparent 8px), linear-gradient(90deg, #ECEBFF 8px, transparent 8px)', backgroundSize: '96px 80px', backgroundColor: '#E2E0FB' }} />
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(#F0EEEA 8px, transparent 8px), linear-gradient(90deg, #F0EEEA 8px, transparent 8px)', backgroundSize: '96px 80px', backgroundColor: '#E4E1DB' }} />
       <svg viewBox="0 0 720 620" preserveAspectRatio="xMidYMid slice" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-        <path d="M0 430 C 200 370, 380 490, 720 390" stroke="#F7F7FF" strokeWidth="24" fill="none" />
-        <path d="M470 -20 C 430 200, 560 360, 520 640" stroke="#F7F7FF" strokeWidth="18" fill="none" />
+        <path d="M0 430 C 200 370, 380 490, 720 390" stroke="#F7F6F4" strokeWidth="24" fill="none" />
+        <path d="M470 -20 C 430 200, 560 360, 520 640" stroke="#F7F6F4" strokeWidth="18" fill="none" />
       </svg>
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #ECEBFF 0%, rgba(236,235,255,0.6) 30%, rgba(236,235,255,0) 60%)' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #F0EEEA 0%, rgba(236,235,255,0.6) 30%, rgba(236,235,255,0) 60%)' }} />
     </div>
   )
 }
@@ -2098,12 +2009,12 @@ function ChannelSearch() {
               <div style={{ padding: 'clamp(18px, 2.4vw, 28px)' }}>
                 <div style={{ position: 'relative', padding: '18px 18px 16px', borderRadius: 16, border: '2px solid var(--electric)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '8px 0' }}>
-                    <span aria-hidden style={{ width: 26, height: 26, borderRadius: 8, backgroundColor: 'var(--electric)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 800 }}>M</span>
+                    <span aria-hidden style={{ width: 26, height: 26, borderRadius: 8, backgroundColor: 'var(--electric)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 600 }}>M</span>
                     <span style={{ fontSize: 12.5, lineHeight: 1.3, color: 'var(--muted)' }}>
                       <span style={{ display: 'block', color: 'var(--ink)', fontWeight: 700 }}>Muster Elektrotechnik</span>
                     </span>
                   </div>
-                  <p style={{ fontSize: 'clamp(17px, 1.5vw, 19px)', lineHeight: 1.3, color: 'var(--electric)', margin: '0 0 6px', fontWeight: 800 }}>Elektriker in Stuttgart: Installation, Smart Home & Notdienst</p>
+                  <p style={{ fontSize: 'clamp(17px, 1.5vw, 19px)', lineHeight: 1.3, color: 'var(--electric)', margin: '0 0 6px', fontWeight: 600 }}>Elektriker in Stuttgart: Installation, Smart Home & Notdienst</p>
                   <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--muted)', margin: '0 0 12px' }}>Was wir tun, wo wir arbeiten und welche Projekte wir in der Region umgesetzt haben, klar erklärt.</p>
                 </div>
                 {[0.62, 0.48].map((w, i) => (
@@ -2117,7 +2028,7 @@ function ChannelSearch() {
             <div className="d-card-flat" style={{ position: 'relative', marginTop: 16, padding: '16px 20px', borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px 16px', flexWrap: 'wrap', fontSize: 15 }}>
               <span>
                 Noch keine Website?{' '}
-                <button type="button" onClick={() => setOrder({ pkg: 'onepager', social: false })} style={{ background: 'none', border: 0, padding: 0, font: 'inherit', fontWeight: 800, color: 'var(--ink)', cursor: 'pointer' }}>One Pager ab 30 €/Monat</button>
+                <button type="button" onClick={() => setOrder({ pkg: 'onepager', social: false })} style={{ background: 'none', border: 0, padding: 0, font: 'inherit', fontWeight: 600, color: 'var(--ink)', cursor: 'pointer' }}>One Pager ab 30 €/Monat</button>
               </span>
               <a href={'/preise'} className="d-link" style={{ fontSize: 14.5 }}>Alle Website-Pakete <span className="arw">→</span></a>
             </div>
@@ -2133,7 +2044,7 @@ function ChannelSearch() {
 function ChannelSocial() {
   const [order, setOrder] = useState(false)
   const pillars = [
-    ['Menschen', 'Zeigen Sie sich und Ihr Team. So bekommt das Unternehmen ein Gesicht.', '#ECEBFF', '#6D6A9E'],
+    ['Menschen', 'Zeigen Sie sich und Ihr Team. So bekommt das Unternehmen ein Gesicht.', '#F0EEEA', '#6A6C73'],
     ['Arbeitsweise', 'Zeigen Sie, wie Sie arbeiten, ohne Inszenierung und Marketing-Floskeln.', '#E6F4EE', '#4D7A66'],
     ['Ergebnisse', 'Echte Arbeiten, Projekte und Kunden erklären Qualität besser als jedes Werbeversprechen.', '#FFF1DE', '#9A7440'],
   ]
@@ -2190,7 +2101,7 @@ function ChannelSummary() {
   const card = ([k, a, b]: [ChannelKind, string, string]) => (
     <div key={a} className="d-float hub-card" style={{ padding: '16px 18px', borderRadius: 18, display: 'flex', gap: 14, alignItems: 'center' }}>
       <IconTile kind={k} small />
-      <span><span style={{ display: 'block', fontWeight: 800, fontSize: 16 }}>{a}</span><span style={{ fontSize: 14, color: 'var(--muted)' }}>{b}</span></span>
+      <span><span style={{ display: 'block', fontWeight: 600, fontSize: 16 }}>{a}</span><span style={{ fontSize: 14, color: 'var(--muted)' }}>{b}</span></span>
     </div>
   )
   return (
@@ -2206,13 +2117,13 @@ function ChannelSummary() {
         <Reveal delay={0.1}>
           <div className="hub" style={{ position: 'relative', maxWidth: 1100, margin: 'clamp(36px, 4vw, 56px) auto 0', minHeight: 420 }}>
             <svg aria-hidden className="d-hide-md" viewBox="0 0 1100 420" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-              <g stroke="#C9C5F7" strokeWidth="2" strokeDasharray="6 8" fill="none">
+              <g stroke="#D9D6D0" strokeWidth="2" strokeDasharray="6 8" fill="none">
                 <path d="M550 210 L200 80" vectorEffect="non-scaling-stroke" /><path d="M550 210 L900 80" vectorEffect="non-scaling-stroke" />
                 <path d="M550 210 L200 340" vectorEffect="non-scaling-stroke" /><path d="M550 210 L900 340" vectorEffect="non-scaling-stroke" />
               </g>
             </svg>
-            <RingsBackdrop size={380} color="#E2E0F0" style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
-            <div className="hub-center" style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 176, height: 176, borderRadius: '50%', backgroundColor: 'var(--electric)', color: '#fff', display: 'grid', placeItems: 'center', textAlign: 'center', fontWeight: 800, fontSize: 18, lineHeight: 1.25, boxShadow: '0 20px 60px rgba(38,0,255,.35)' }}>Ihr<br />Unternehmen</div>
+            <RingsBackdrop size={380} color="#E4E1DB" style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
+            <div className="hub-center" style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 176, height: 176, borderRadius: '50%', backgroundColor: 'var(--electric)', color: '#fff', display: 'grid', placeItems: 'center', textAlign: 'center', fontWeight: 600, fontSize: 18, lineHeight: 1.25, boxShadow: '0 20px 60px rgba(16,17,20,.35)' }}>Ihr<br />Unternehmen</div>
             <div className="hub-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 320px) minmax(0, 1fr) minmax(0, 320px)', gridTemplateRows: 'auto auto', rowGap: 180, alignContent: 'space-between', minHeight: 420, paddingTop: 30 }}>
               <div style={{ gridColumn: 1, gridRow: 1 }}>{card(rows[0])}</div>
               <div style={{ gridColumn: 3, gridRow: 1 }}>{card(rows[1])}</div>
@@ -2251,7 +2162,7 @@ function BusinessCheck() {
                 lines={[<>Finden Sie Ihr Unternehmen:</>, <>wir zeigen, wie Google und KI Sie sehen</>]}
               />
               <Reveal delay={0.1}>
-                <p style={{ fontSize: 17, lineHeight: 1.65, color: '#DCD8FF', margin: '0 0 28px', maxWidth: 540 }}>
+                <p style={{ fontSize: 17, lineHeight: 1.65, color: '#E4E1DB', margin: '0 0 28px', maxWidth: 540 }}>
                   Starten Sie mit dem Namen oder der Adresse Ihres Unternehmens. Wir prüfen die wichtigsten Signale bei Google Maps, in der Google-Suche und in der KI-Suche und zeigen, wo schon alles stimmt und wo Potenzial liegt.
                 </p>
               </Reveal>
@@ -2260,20 +2171,20 @@ function BusinessCheck() {
               </Reveal>
               <Reveal delay={0.22}>
                 <div style={{ marginTop: 28, paddingTop: 22, borderTop: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', gap: '12px 20px', flexWrap: 'wrap' }}>
-                  <p style={{ fontSize: 15, lineHeight: 1.6, color: '#DCD8FF', margin: 0, maxWidth: 360 }}><span>Noch keine Website oder kein Google-Profil?</span>{' '}<a href="/start?from=home" style={{ color: '#fff', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3 }}>In 4 Fragen zu Ihrem Plan →</a></p>
+                  <p style={{ fontSize: 15, lineHeight: 1.6, color: '#E4E1DB', margin: 0, maxWidth: 360 }}><span>Noch keine Website oder kein Google-Profil?</span>{' '}<a href="/start?from=home" style={{ color: '#fff', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3 }}>In 4 Fragen zu Ihrem Plan →</a></p>
                   <button type="button" onClick={() => setOrder(true)} className="btn btn-md btn-on-brand">Google-Profil · 149 € einmalig <span className="arw">→</span></button>
                 </div>
               </Reveal>
             </div>
 
             <Reveal delay={0.1}>
-              <div className="d-card" style={{ color: 'var(--ink)', padding: 'clamp(24px, 3vw, 32px)', boxShadow: '0 40px 80px rgba(11,11,26,0.25)' }}>
+              <div className="d-card" style={{ color: 'var(--ink)', padding: 'clamp(24px, 3vw, 32px)', boxShadow: '0 40px 80px rgba(16,17,20,0.25)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-                  <p style={{ fontWeight: 800, margin: 0 }}>Beispielbericht</p>
+                  <p style={{ fontWeight: 600, margin: 0 }}>Beispielbericht</p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
-                  <div aria-hidden style={{ width: 104, height: 104, borderRadius: '50%', background: 'conic-gradient(#2600FF 0 62%, #ECEBFF 62% 100%)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-                    <div style={{ width: 80, height: 80, borderRadius: '50%', backgroundColor: '#fff', display: 'grid', placeItems: 'center', fontSize: 30, fontWeight: 800 }}>62</div>
+                  <div aria-hidden style={{ width: 104, height: 104, borderRadius: '50%', background: 'conic-gradient(#101114 0 62%, #F0EEEA 62% 100%)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                    <div style={{ width: 80, height: 80, borderRadius: '50%', backgroundColor: '#fff', display: 'grid', placeItems: 'center', fontSize: 30, fontWeight: 600 }}>62</div>
                   </div>
                   <p className="display" style={{ fontSize: 20, margin: 0 }}>Lokale Sichtbarkeit</p>
                 </div>
@@ -2281,7 +2192,7 @@ function BusinessCheck() {
                   {scores.map(([l, v]) => (
                     <div key={l} style={{ backgroundColor: 'var(--bone)', borderRadius: 14, padding: '12px 14px' }}>
                       <div style={{ fontSize: 13, color: 'var(--muted)' }}>{l}</div>
-                      <div style={{ fontSize: 24, fontWeight: 800, color: v < 50 ? 'var(--electric)' : 'var(--ink)' }}>{v}</div>
+                      <div style={{ fontSize: 24, fontWeight: 600, color: v < 50 ? 'var(--electric)' : 'var(--ink)' }}>{v}</div>
                     </div>
                   ))}
                 </div>
@@ -2325,8 +2236,8 @@ function MarketShift() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'clamp(16px, 2vw, 24px)', marginTop: 'clamp(44px, 5vw, 72px)' }}>
           <Reveal>
             <div style={{ height: '100%', border: '1px solid var(--line)', borderRadius: 22, padding: 'clamp(26px, 3vw, 40px)' }}>
-              <p className="eyebrow" style={{ color: 'rgba(7,7,12,0.4)', marginBottom: 18 }}>Früher</p>
-              <p className="h-sm display" style={{ margin: '0 0 14px', color: 'rgba(7,7,12,0.45)' }}>Suchen, Links vergleichen, anrufen.</p>
+              <p className="eyebrow" style={{ color: 'rgba(16,17,20,0.4)', marginBottom: 18 }}>Früher</p>
+              <p className="h-sm display" style={{ margin: '0 0 14px', color: 'rgba(16,17,20,0.45)' }}>Suchen, Links vergleichen, anrufen.</p>
               <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: 0 }}>
                 Wer einen Handwerker oder eine Praxis suchte, tippte ein paar Wörter bei Google ein, öffnete zwei, drei Websites aus den ersten Ergebnissen, und rief an. Wer weit oben stand, bekam den Anruf.
               </p>
@@ -2745,13 +2656,13 @@ function QuoteModal({ selected, onClose }: { selected: string[]; onClose: () => 
   const [sent, setSent] = useState(false)
 
   const toggle = (s: string) => setServices(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
-  const inputStyle: React.CSSProperties = { width: '100%', padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(7,7,12,0.14)', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', color: '#030712', backgroundColor: '#fff' }
+  const inputStyle: React.CSSProperties = { width: '100%', padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(16,17,20,0.14)', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', color: '#030712', backgroundColor: '#fff' }
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(7,7,12,0.55)', backdropFilter: 'blur(6px)' }} />
-      <div style={{ position: 'relative', backgroundColor: '#fff', borderRadius: 26, padding: '34px 30px', maxWidth: 480, width: '100%', boxShadow: '0 40px 90px rgba(7,7,12,0.35)', maxHeight: '90vh', overflowY: 'auto' }}>
+      <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(16,17,20,0.55)', backdropFilter: 'blur(6px)' }} />
+      <div style={{ position: 'relative', backgroundColor: '#fff', borderRadius: 26, padding: '34px 30px', maxWidth: 480, width: '100%', boxShadow: '0 40px 90px rgba(16,17,20,0.35)', maxHeight: '90vh', overflowY: 'auto' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#6b7280', lineHeight: 1 }}>×</button>
         {sent ? (
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
@@ -2764,11 +2675,11 @@ function QuoteModal({ selected, onClose }: { selected: string[]; onClose: () => 
             <h3 style={{ fontWeight: 700, fontSize: 20, color: '#030712', marginBottom: 6 }}>Sagen Sie uns, was Sie brauchen</h3>
             <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>Wir erstellen einen Plan rund um Ihre ausgewählten Leistungen.</p>
             <div style={{ marginBottom: 18 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#2600FF', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>Ausgewählte Leistungen</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: '#101114', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>Ausgewählte Leistungen</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {modules.map(m => (
-                  <label key={m.label} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '8px 12px', borderRadius: 10, border: `1.5px solid ${services.includes(m.label) ? '#c4b5fd' : '#e5e7eb'}`, backgroundColor: services.includes(m.label) ? '#f5f3ff' : '#fff', transition: 'all 0.15s' }}>
-                    <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${services.includes(m.label) ? '#2600FF' : '#d1d5db'}`, backgroundColor: services.includes(m.label) ? '#2600FF' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+                  <label key={m.label} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '8px 12px', borderRadius: 10, border: `1.5px solid ${services.includes(m.label) ? '#D9D6D0' : '#e5e7eb'}`, backgroundColor: services.includes(m.label) ? '#F3F1EE' : '#fff', transition: 'all 0.15s' }}>
+                    <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${services.includes(m.label) ? '#101114' : '#d1d5db'}`, backgroundColor: services.includes(m.label) ? '#101114' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
                       {services.includes(m.label) && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                     </div>
                     <input type="checkbox" checked={services.includes(m.label)} onChange={() => toggle(m.label)} style={{ display: 'none' }} />
@@ -2785,7 +2696,7 @@ function QuoteModal({ selected, onClose }: { selected: string[]; onClose: () => 
             <button
               disabled={!name || !contact || services.length === 0}
               onClick={() => setSent(true)}
-              style={{ width: '100%', padding: '13px', borderRadius: 999, border: 'none', backgroundColor: (!name || !contact || services.length === 0) ? '#e5e7eb' : '#2600FF', color: (!name || !contact || services.length === 0) ? '#9ca3af' : '#fff', fontWeight: 600, fontSize: 14, cursor: (!name || !contact || services.length === 0) ? 'default' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}>
+              style={{ width: '100%', padding: '13px', borderRadius: 999, border: 'none', backgroundColor: (!name || !contact || services.length === 0) ? '#e5e7eb' : '#101114', color: (!name || !contact || services.length === 0) ? '#9ca3af' : '#fff', fontWeight: 600, fontSize: 14, cursor: (!name || !contact || services.length === 0) ? 'default' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}>
               Anfrage senden
             </button>
           </>
@@ -2850,7 +2761,7 @@ function ServiceSelector() {
                       <div className="svc-actions" style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end' }}>
                         <button onClick={() => setExpanded(isOpen ? null : m.slug)} aria-label="Details"
                           style={{ width: 42, height: 42, borderRadius: 12, border: 'none', background: isOpen ? 'var(--electric)' : 'var(--brand-soft)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: `transform 0.5s ${EASE}, background-color .3s ease`, transform: isOpen ? 'rotate(45deg)' : 'none', flexShrink: 0 }}>
-                          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke={isOpen ? '#fff' : '#2600FF'} strokeWidth="1.8" strokeLinecap="round" /></svg>
+                          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke={isOpen ? '#fff' : '#101114'} strokeWidth="1.8" strokeLinecap="round" /></svg>
                         </button>
                         <button type="button" onClick={() => open(m.slug)} className="btn btn-md btn-electric" style={{ whiteSpace: 'nowrap' }}>
                           Paket wählen <span className="arw">→</span>
@@ -2892,7 +2803,7 @@ function ServiceSelector() {
               <RingsBackdrop size={700} color="rgba(255,255,255,0.14)" style={{ right: -160, top: -260 }} />
               <div style={{ position: 'relative', maxWidth: 560 }}>
                 <h3 className="display" style={{ fontSize: 'clamp(24px, 2.8vw, 36px)', marginBottom: 12 }}>Nicht sicher, wo Sie anfangen sollen?</h3>
-                <p style={{ fontSize: 16, lineHeight: 1.65, color: '#DCD8FF', margin: 0 }}>
+                <p style={{ fontSize: 16, lineHeight: 1.65, color: '#E4E1DB', margin: 0 }}>
                   Fordern Sie den kostenlosen Sichtbarkeits-Check an. Wir sagen Ihnen genau, welche Bereiche Ihr Unternehmen zuerst braucht.
                 </p>
               </div>
@@ -3043,9 +2954,9 @@ function Process() {
           {/* rail */}
           <div className="process-rail" style={{ position: 'relative' }}>
             <div style={{ position: 'sticky', top: 120, height: 'calc(100vh - 240px)', display: 'flex', justifyContent: 'center' }}>
-              <div style={{ width: 2, height: '100%', backgroundColor: 'rgba(7,7,12,0.1)', position: 'relative', borderRadius: 2 }}>
+              <div style={{ width: 2, height: '100%', backgroundColor: 'rgba(16,17,20,0.1)', position: 'relative', borderRadius: 2 }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: `${p * 100}%`, backgroundColor: 'var(--electric)', borderRadius: 2, transition: 'height 0.15s linear' }} />
-                <div style={{ position: 'absolute', top: `${p * 100}%`, left: '50%', transform: 'translate(-50%, -50%)', width: 12, height: 12, borderRadius: '50%', backgroundColor: 'var(--electric)', boxShadow: '0 0 0 6px rgba(38,0,255,0.15)', transition: 'top 0.15s linear' }} />
+                <div style={{ position: 'absolute', top: `${p * 100}%`, left: '50%', transform: 'translate(-50%, -50%)', width: 12, height: 12, borderRadius: '50%', backgroundColor: 'var(--electric)', boxShadow: '0 0 0 6px rgba(16,17,20,0.15)', transition: 'top 0.15s linear' }} />
               </div>
             </div>
           </div>
@@ -3062,7 +2973,7 @@ function Process() {
                   marginLeft: i % 2 === 1 ? 'clamp(0px, 4vw, 56px)' : 0,
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(16px, 2vw, 28px)' }}>
-                    <div className="display" style={{ flex: '0 0 auto', minWidth: '1.25em', fontSize: 'clamp(44px, 5vw, 72px)', lineHeight: 0.9, color: 'transparent', WebkitTextStroke: '1.4px #2600FF' }}>{s.num}</div>
+                    <div className="display" style={{ flex: '0 0 auto', minWidth: '1.25em', fontSize: 'clamp(44px, 5vw, 72px)', lineHeight: 0.9, color: 'transparent', WebkitTextStroke: '1.4px #101114' }}>{s.num}</div>
                     <h3 className="display" style={{ fontSize: 'clamp(18px, 1.7vw, 24px)', lineHeight: 1.2, margin: 0 }}>{s.title}</h3>
                   </div>
                   <div>
@@ -3119,7 +3030,7 @@ function IllustCaseMaps() {
       <text x="212" y="57" fontSize="7" fontWeight="700" fill="#111827" fontFamily="Arial, sans-serif">Ihre Autowerkstatt</text>
       <text x="212" y="65" fontSize="6" fill="#f59e0b" fontFamily="Arial, sans-serif">4,9 ★★★★★</text>
       <text x="212" y="72" fontSize="5.5" fill="#059669" fontWeight="600" fontFamily="Arial, sans-serif">8 Anrufe · erste Woche</text>
-      <rect x="213" y="75" width="38" height="10" rx="5" fill="#2600FF"/>
+      <rect x="213" y="75" width="38" height="10" rx="5" fill="#101114"/>
       <text x="232" y="83" textAnchor="middle" fontSize="5.5" fontWeight="700" fill="white" fontFamily="Arial, sans-serif">Jetzt anrufen</text>
       {[['Mitbewerber Nr. 2','4,8 ★'],['Mitbewerber Nr. 3','4,7 ★']].map(([n,r],i)=>(
         <g key={i}>
@@ -3171,24 +3082,24 @@ function IllustCaseAI() {
     <svg viewBox="0 0 340 170" fill="none" width="100%" height="170" aria-hidden>
       <rect width="340" height="170" rx="12" fill="#f9fafb"/>
       {/* BEFORE — dark ChatGPT-style panel */}
-      <rect x="6" y="6" width="158" height="158" rx="8" fill="#1e1e2e"/>
-      <rect x="6" y="6" width="26" height="158" rx="8" fill="#161621"/>
+      <rect x="6" y="6" width="158" height="158" rx="8" fill="#1D1D20"/>
+      <rect x="6" y="6" width="26" height="158" rx="8" fill="#161618"/>
       <text x="85" y="22" textAnchor="middle" fontSize="7" fontWeight="700" fill="#6b7280" fontFamily="Arial, sans-serif">VORHER</text>
-      <rect x="36" y="148" width="120" height="12" rx="5" fill="#2d2d3f"/>
+      <rect x="36" y="148" width="120" height="12" rx="5" fill="#2A2A2E"/>
       <text x="96" y="157" textAnchor="middle" fontSize="5.5" fill="#6b7280" fontFamily="Arial, sans-serif">Beste Heizungsreparatur in Berlin?</text>
       {['#1. ███████ Dienstleistungen','#2. ██████ GmbH','#3. ████ Reparatur','(Ihr Unternehmen nicht gelistet)'].map((t,i)=>(
         <g key={i}>
-          <rect x="36" y={30+i*26} width="120" height="22" rx="4" fill={i===3?'transparent':'#2d2d3f'} opacity={i===3?1:1}/>
+          <rect x="36" y={30+i*26} width="120" height="22" rx="4" fill={i===3?'transparent':'#2A2A2E'} opacity={i===3?1:1}/>
           {i<3 && <rect x="42" y={36+i*26} width={[68,60,52][i]} height="5" rx="2" fill="#374151"/>}
           {i<3 && <rect x="42" y={44+i*26} width="36" height="3" rx="1.5" fill="#1f2937"/>}
           {i===3 && <text x="96" y="138" textAnchor="middle" fontSize="6" fill="#ef4444" fontFamily="Arial, sans-serif">{t}</text>}
         </g>
       ))}
       {/* AFTER panel */}
-      <rect x="176" y="6" width="158" height="158" rx="8" fill="#1e1e2e"/>
-      <rect x="176" y="6" width="26" height="158" rx="8" fill="#161621"/>
+      <rect x="176" y="6" width="158" height="158" rx="8" fill="#1D1D20"/>
+      <rect x="176" y="6" width="26" height="158" rx="8" fill="#161618"/>
       <text x="255" y="22" textAnchor="middle" fontSize="7" fontWeight="700" fill="#4ade80" fontFamily="Arial, sans-serif">NACHHER</text>
-      <rect x="206" y="148" width="120" height="12" rx="5" fill="#2d2d3f"/>
+      <rect x="206" y="148" width="120" height="12" rx="5" fill="#2A2A2E"/>
       <text x="266" y="157" textAnchor="middle" fontSize="5.5" fill="#6b7280" fontFamily="Arial, sans-serif">Beste Heizungsreparatur in Berlin?</text>
       <rect x="206" y="30" width="120" height="44" rx="4" fill="#14532d" stroke="#22c55e" strokeWidth="0.8"/>
       <text x="211" y="43" fontSize="6.5" fontWeight="700" fill="#4ade80" fontFamily="Arial, sans-serif">#1. Ihre Heizungsfirma</text>
@@ -3395,17 +3306,17 @@ function AuditQuiz() {
   const h3: React.CSSProperties = { fontWeight: 700, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '0 0 6px', lineHeight: 1.3 }
   const hint: React.CSSProperties = { fontSize: 13, color: 'var(--muted)', margin: '0 0 16px', lineHeight: 1.6 }
   const label: React.CSSProperties = { display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--ink)', margin: '0 0 6px' }
-  const input: React.CSSProperties = { width: '100%', padding: '12px 14px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', marginBottom: 12, color: 'var(--ink)', backgroundColor: '#fff' }
-  const primary = (disabled: boolean): React.CSSProperties => ({ backgroundColor: disabled ? '#e5e7eb' : '#2600FF', color: disabled ? '#9ca3af' : '#fff', fontWeight: 600, fontSize: 14, padding: '13px 20px', borderRadius: 999, border: 'none', cursor: disabled ? 'default' : 'pointer', width: '100%', fontFamily: 'inherit', transition: 'background-color 0.2s' })
+  const input: React.CSSProperties = { width: '100%', padding: '12px 14px', border: '1px solid rgba(16,17,20,0.14)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', marginBottom: 12, color: 'var(--ink)', backgroundColor: '#fff' }
+  const primary = (disabled: boolean): React.CSSProperties => ({ backgroundColor: disabled ? '#e5e7eb' : '#101114', color: disabled ? '#9ca3af' : '#fff', fontWeight: 600, fontSize: 14, padding: '13px 20px', borderRadius: 999, border: 'none', cursor: disabled ? 'default' : 'pointer', width: '100%', fontFamily: 'inherit', transition: 'background-color 0.2s' })
 
   const Option = ({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) => (
     <button type="button" onClick={onClick} aria-pressed={selected}
-      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, width: '100%', padding: '12px 16px', textAlign: 'left', backgroundColor: selected ? '#F4F2FF' : '#fff', border: `1px solid ${selected ? '#2600FF' : 'rgba(7,7,12,0.12)'}`, borderRadius: 14, fontWeight: 500, fontSize: 14, color: 'var(--ink)', cursor: 'pointer', marginBottom: 8, transition: 'all 0.2s ease', fontFamily: 'inherit' }}>
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, width: '100%', padding: '12px 16px', textAlign: 'left', backgroundColor: selected ? '#F3F1EE' : '#fff', border: `1px solid ${selected ? '#101114' : 'rgba(16,17,20,0.12)'}`, borderRadius: 14, fontWeight: 500, fontSize: 14, color: 'var(--ink)', cursor: 'pointer', marginBottom: 8, transition: 'all 0.2s ease', fontFamily: 'inherit' }}>
       {label}
       <span aria-hidden style={{
         flexShrink: 0, width: 18, height: 18, borderRadius: 5,
-        border: `1.5px solid ${selected ? '#2600FF' : 'rgba(7,7,12,0.25)'}`,
-        backgroundColor: selected ? '#2600FF' : 'transparent', color: '#fff', fontSize: 11, lineHeight: '15px', textAlign: 'center',
+        border: `1.5px solid ${selected ? '#101114' : 'rgba(16,17,20,0.25)'}`,
+        backgroundColor: selected ? '#101114' : 'transparent', color: '#fff', fontSize: 11, lineHeight: '15px', textAlign: 'center',
       }}>{selected ? '✓' : ''}</span>
     </button>
   )
@@ -3456,7 +3367,7 @@ function AuditQuiz() {
           </Reveal>
         </div>
 
-        <div style={{ backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 26, padding: 'clamp(26px, 3vw, 38px)', boxShadow: '0 40px 80px rgba(7,7,12,0.28)' }}>
+        <div style={{ backgroundColor: '#fff', color: 'var(--ink)', borderRadius: 26, padding: 'clamp(26px, 3vw, 38px)', boxShadow: '0 40px 80px rgba(16,17,20,0.28)' }}>
           {step <= TOTAL && (
             <div style={{ marginBottom: 22 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
@@ -3464,7 +3375,7 @@ function AuditQuiz() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: `repeat(${TOTAL}, 1fr)`, gap: 4 }}>
                 {Array.from({ length: TOTAL }, (_, i) => (
-                  <div key={i} style={{ height: 4, borderRadius: 2, backgroundColor: i < step ? '#2600FF' : '#e5e7eb', transition: 'background-color 0.3s' }} />
+                  <div key={i} style={{ height: 4, borderRadius: 2, backgroundColor: i < step ? '#101114' : '#e5e7eb', transition: 'background-color 0.3s' }} />
                 ))}
               </div>
             </div>
@@ -3515,20 +3426,20 @@ function AuditQuiz() {
 
           {step === DONE && (
             <div style={{ textAlign: 'center', padding: '12px 0' }}>
-              <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: '#EEEBFF', color: '#2600FF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 24, fontWeight: 700 }}>✓</div>
+              <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: '#F0EEEA', color: '#101114', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 24, fontWeight: 700 }}>✓</div>
               <h3 style={{ ...h3, fontSize: 20, marginBottom: 10 }}>Danke, {name.trim()}!</h3>
               <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.7, margin: '0 0 18px' }}>
                 Wir sehen uns Ihre Angaben an und melden uns mit Ihrer Anleitung unter <strong style={{ color: 'var(--ink)' }}>{contact}</strong>.
               </p>
-              <div style={{ textAlign: 'left', backgroundColor: '#F7F6FF', border: '1px solid #E4DFFF', borderRadius: 14, padding: '14px 16px', marginBottom: 18 }}>
-                <p className="eyebrow" style={{ fontSize: 9.5, color: '#2600FF', marginBottom: 8 }}>Ihre Angaben</p>
+              <div style={{ textAlign: 'left', backgroundColor: '#F7F6F4', border: '1px solid #E4E1DB', borderRadius: 14, padding: '14px 16px', marginBottom: 18 }}>
+                <p className="eyebrow" style={{ fontSize: 9.5, color: '#101114', marginBottom: 8 }}>Ihre Angaben</p>
                 <p style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--ink)', margin: 0, overflowWrap: 'anywhere' }}>
                   <span>{industry}</span> · <span>{city}</span><br />
                   {presence.map((x, i) => <span key={x}>{i > 0 && ', '}{x}</span>)}
                   {link.trim() && <><br /><span>{link.trim()}</span></>}
                 </p>
               </div>
-              <button type="button" onClick={reset} style={{ backgroundColor: '#F4F2FF', color: '#2600FF', fontWeight: 500, fontSize: 13, padding: '9px 20px', borderRadius: 10, border: '1px solid #ddd6fe', cursor: 'pointer', fontFamily: 'inherit' }}>Neue Anfrage</button>
+              <button type="button" onClick={reset} style={{ backgroundColor: '#F3F1EE', color: '#101114', fontWeight: 500, fontSize: 13, padding: '9px 20px', borderRadius: 10, border: '1px solid #E4E1DB', cursor: 'pointer', fontFamily: 'inherit' }}>Neue Anfrage</button>
             </div>
           )}
         </div>
@@ -3584,7 +3495,7 @@ function FAQ() {
                     padding: 'clamp(20px, 2vw, 26px) clamp(20px, 2.4vw, 30px)', background: 'none', border: 'none', cursor: 'pointer',
                     textAlign: 'left', fontFamily: 'inherit',
                   }}>
-                  <span style={{ fontSize: 'clamp(16px, 1.4vw, 19px)', fontWeight: 800, lineHeight: 1.3, color: isOpen ? 'var(--electric)' : 'var(--ink)', transition: 'color 0.35s ease' }}>{f.q}</span>
+                  <span style={{ fontSize: 'clamp(16px, 1.4vw, 19px)', fontWeight: 600, lineHeight: 1.3, color: isOpen ? 'var(--electric)' : 'var(--ink)', transition: 'color 0.35s ease' }}>{f.q}</span>
                   <span style={{
                     flexShrink: 0, width: 36, height: 36, borderRadius: 12,
                     backgroundColor: isOpen ? 'var(--electric)' : 'var(--brand-soft)',
@@ -3592,7 +3503,7 @@ function FAQ() {
                     transform: isOpen ? 'rotate(45deg)' : 'none',
                     transition: `transform 0.5s ${EASE}, background-color 0.35s ease`,
                   }}>
-                    <svg width="13" height="13" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke={isOpen ? '#fff' : '#2600FF'} strokeWidth="1.8" strokeLinecap="round" /></svg>
+                    <svg width="13" height="13" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke={isOpen ? '#fff' : '#101114'} strokeWidth="1.8" strokeLinecap="round" /></svg>
                   </span>
                 </button>
                 <div style={{ overflow: 'hidden', maxHeight: isOpen ? 400 : 0, transition: `max-height 0.6s ${EASE}` }}>
@@ -3612,38 +3523,39 @@ function FAQ() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function Footer() {
-  const linkStyle: React.CSSProperties = { display: 'block', width: 'fit-content', fontSize: 15, color: 'var(--muted)', marginBottom: 10 }
+  // Recto-Fußzeile: ruhig, Haarlinien, Links in Ink/Grau. Inhalte wie bisher (interne Links, Kontakt).
+  const linkStyle: React.CSSProperties = { display: 'block', width: 'fit-content', fontSize: 13.5, color: 'var(--muted)', marginBottom: 10 }
+  const head: React.CSSProperties = { fontWeight: 500, fontSize: 12, color: 'var(--ink)', margin: '0 0 16px' }
   return (
-    <footer style={{ backgroundColor: 'var(--paper)', color: 'var(--ink)', padding: 'clamp(56px, 6vw, 80px) clamp(20px, 4vw, 48px) 32px', position: 'relative', overflow: 'hidden', borderTop: '1px solid var(--border)' }}>
-      <DotsCorner style={{ right: -120, bottom: -160, opacity: 0.7 }} />
-      <div style={{ ...SHELL, position: 'relative' }}>
+    <footer className="rx-site-footer" style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(56px, 6vw, 80px) clamp(20px, 4vw, 48px) 32px', position: 'relative', borderTop: '1px solid var(--border)' }}>
+      <div style={{ ...SHELL, maxWidth: 1120, position: 'relative' }}>
         <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) repeat(3, minmax(0,1fr))', gap: 'clamp(28px, 4vw, 56px)', marginBottom: 'clamp(40px, 5vw, 64px)' }}>
           <div>
-            <p style={{ fontWeight: 800, fontSize: 28, letterSpacing: '-0.04em', margin: '0 0 14px' }}>RAG<span style={{ color: 'var(--electric)' }}>.</span></p>
-            <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', maxWidth: 320, margin: '0 0 22px' }}>
-              Das einheitliche System für lokale Sichtbarkeit bei Google, KI und Offline-Kanälen.
+            <p style={{ fontWeight: 500, fontSize: 29, letterSpacing: '-1.4px', lineHeight: 1, margin: '0 0 16px' }}>RAG<em style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1.28em', color: 'var(--accent)', fontWeight: 400 }}>.</em></p>
+            <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--muted)', maxWidth: 320, margin: '0 0 22px' }}>
+              Gute Arbeit. Besser gefunden. Das einheitliche System für lokale Sichtbarkeit bei Google, KI und Offline-Kanälen.
             </p>
-            <a href={homeHref('audit-quiz')} className="btn btn-md btn-electric">Sichtbarkeits-Check starten <span className="arw">→</span></a>
+            <a href={homeHref('unternehmen')} className="btn btn-md btn-electric">Sichtbarkeitsindex prüfen <span className="arw">→</span></a>
           </div>
           {[
-            { title: 'Navigation', items: [['Sichtbarkeit', 'kanaele'], ['Wo man Sie sucht', '/services'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], ['FAQ', 'faq']] as [string, string][] },
+            { title: 'Navigation', items: [['Sichtbarkeit', 'leistungen'], ['Wo man Sie sucht', '/services'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], ['FAQ', 'faq']] as [string, string][] },
           ].map(col => (
             <div key={col.title}>
-              <p style={{ fontWeight: 800, fontSize: 15, margin: '0 0 16px' }}>{col.title}</p>
+              <p style={head}>{col.title}</p>
               {col.items.map(([l, target]) => (
                 <a key={l} href={linkHref(target)} className="ul" style={linkStyle}>{l}</a>
               ))}
             </div>
           ))}
           <div>
-            <p style={{ fontWeight: 800, fontSize: 15, margin: '0 0 16px' }}>Rechtliches</p>
+            <p style={head}>Rechtliches</p>
             {[['Impressum', '/impressum'], ['Datenschutz', '/datenschutz'], ['AGB', '/agb']].map(([l, href]) => (
               <a key={l} href={href} className="ul" style={linkStyle}>{l}</a>
             ))}
           </div>
           <div>
-            <p style={{ fontWeight: 800, fontSize: 15, margin: '0 0 16px' }}>Kontakt</p>
-            <p style={{ fontSize: 15, color: 'var(--muted)', lineHeight: 1.9, margin: 0 }}>
+            <p style={head}>Kontakt</p>
+            <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.9, margin: 0 }}>
               {COMPANY.street && <>{COMPANY.street}<br />{COMPANY.zip} {COMPANY.city}, {COMPANY.country}<br /></>}
               {COMPANY.phone && <><a href={phoneHref()} className="ul" style={{ color: 'inherit' }}>{COMPANY.phone}</a><br /></>}
               <a href={`mailto:${COMPANY.email}`} className="ul" style={{ color: 'inherit' }}>{COMPANY.email}</a>
@@ -3652,8 +3564,8 @@ function Footer() {
         </div>
 
         <div style={{ borderTop: '1px solid var(--divider)', paddingTop: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-          <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>© 2026 RAG Regionale Agentur. Alle Rechte vorbehalten.</p>
-          <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>Keine Tracking-Cookies · Schriften und Daten in der EU</p>
+          <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>© 2026 RAG Regionale Agentur. Alle Rechte vorbehalten.</p>
+          <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>Keine Tracking-Cookies · Schriften und Daten in der EU</p>
         </div>
       </div>
     </footer>
@@ -3937,7 +3849,7 @@ function ServiceLeadForm({ serviceLabel }: { serviceLabel: string }) {
   const [name, setName] = useState('')
   const [contact, setContact] = useState('')
   const [sent, setSent] = useState(false)
-  const inputStyle: React.CSSProperties = { width: '100%', padding: '11px 14px', borderRadius: 12, border: '1px solid rgba(7,7,12,0.14)', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', color: '#030712', backgroundColor: '#fff' }
+  const inputStyle: React.CSSProperties = { width: '100%', padding: '11px 14px', borderRadius: 12, border: '1px solid rgba(16,17,20,0.14)', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', color: '#030712', backgroundColor: '#fff' }
 
   if (sent) {
     return (
@@ -3955,7 +3867,7 @@ function ServiceLeadForm({ serviceLabel }: { serviceLabel: string }) {
       <button
         disabled={!name || !contact}
         onClick={() => setSent(true)}
-        style={{ padding: '13px', borderRadius: 999, border: 'none', backgroundColor: (!name || !contact) ? '#e5e7eb' : '#2600FF', color: (!name || !contact) ? '#9ca3af' : '#fff', fontWeight: 600, fontSize: 14, cursor: (!name || !contact) ? 'default' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}>
+        style={{ padding: '13px', borderRadius: 999, border: 'none', backgroundColor: (!name || !contact) ? '#e5e7eb' : '#101114', color: (!name || !contact) ? '#9ca3af' : '#fff', fontWeight: 600, fontSize: 14, cursor: (!name || !contact) ? 'default' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}>
         Anfrage senden
       </button>
     </div>
@@ -4591,11 +4503,11 @@ function ContentCTA() {
         <RingsBackdrop size={760} color="rgba(255,255,255,0.14)" style={{ right: -180, top: -260 }} />
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
           <div style={{ maxWidth: 620 }}>
-            <p className="kick" style={{ color: '#C9C2FF', marginBottom: 14 }}>Kostenloser Sichtbarkeits-Check</p>
+            <p className="kick" style={{ color: '#D9D6D0', marginBottom: 14 }}>Kostenloser Sichtbarkeits-Check</p>
             <h2 className="display" style={{ fontSize: 'clamp(26px, 3.2vw, 42px)', margin: '0 0 12px' }}>
               Wie steht Ihr Unternehmen heute da?
             </h2>
-            <p style={{ fontSize: 16.5, lineHeight: 1.65, color: '#DCD8FF', margin: 0 }}>
+            <p style={{ fontSize: 16.5, lineHeight: 1.65, color: '#E4E1DB', margin: 0 }}>
               Wir prüfen kostenlos Ihre Sichtbarkeit bei Google Maps, in der Google-Suche und in der KI-Suche, und sagen Ihnen, was zuerst zu tun ist.
             </p>
           </div>
@@ -4612,8 +4524,6 @@ function ContentHero({ kicker, title, sub, meta, crumbs }: { kicker: string; tit
   return (
     <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(64px, 7vw, 104px)', position: 'relative', overflow: 'hidden' }}>
       <MapBackdrop fade="left" shift={120} pins={false} />
-      <div className="d-hide-md" aria-hidden style={{ position: 'absolute', right: 'max(48px, calc(50% - 620px))', top: '38%' }}><PinD size={72} /></div>
-      <div className="d-hide-md" aria-hidden style={{ position: 'absolute', right: 'max(180px, calc(50% - 480px))', top: '64%' }}><PinD size={44} opacity={0.45} /></div>
       <div style={{ ...SHELL, position: 'relative' }}>
         {crumbs && <Breadcrumbs items={crumbs} tone="light" />}
         <p className="kick" style={{ marginBottom: 18 }}>{kicker}</p>
@@ -4808,7 +4718,7 @@ const glossarCSS = `
 .gl-faq .gl-plus{transition:transform .25s}
 .gl-faq details[open] .gl-plus{transform:rotate(45deg)}
 .gl-card{transition:border-color .2s,transform .25s}
-.gl-card:hover{border-color:#D6D2FF;transform:translateY(-3px);box-shadow:0 28px 70px rgba(38,0,255,.10)}
+.gl-card:hover{border-color:#E4E1DB;transform:translateY(-3px);box-shadow:0 28px 70px rgba(16,17,20,.10)}
 @media (min-width: 900px){.gl-aside{position:sticky;top:110px}}
 `
 
@@ -5102,7 +5012,6 @@ function ServicesIndex() {
       }} />
       <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
         <MapBackdrop fade="left" shift={120} pins={false} />
-        <div className="d-hide-md" aria-hidden style={{ position: 'absolute', right: 'max(48px, calc(50% - 620px))', top: '36%' }}><PinD size={72} /></div>
         <div style={{ ...SHELL, position: 'relative' }}>
           <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Wo man Sie sucht' }]} tone="light" />
           <p className="kick" style={{ marginBottom: 18 }}>Wo man Sie sucht</p>
@@ -5198,10 +5107,10 @@ function ServicePackages({ slug }: { slug: string }) {
                   </div>
                   {id === 'social' && (
                     <div style={{ padding: '16px 18px', borderRadius: 16, backgroundColor: 'var(--brand-soft)' }}>
-                      <p style={{ fontSize: 14, fontWeight: 800, margin: '0 0 10px' }}>Ihr Hauptkanal nach Wahl</p>
+                      <p style={{ fontSize: 14, fontWeight: 600, margin: '0 0 10px' }}>Ihr Hauptkanal nach Wahl</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                         {['Instagram', 'Facebook', 'TikTok', 'LinkedIn', 'Threads'].map(c => (
-                          <span key={c} style={{ padding: '6px 12px', borderRadius: 999, backgroundColor: '#fff', border: '1px solid #C9C5F7', fontSize: 14, fontWeight: 700 }}>{c}</span>
+                          <span key={c} style={{ padding: '6px 12px', borderRadius: 999, backgroundColor: '#fff', border: '1px solid #D9D6D0', fontSize: 14, fontWeight: 700 }}>{c}</span>
                         ))}
                       </div>
                       <p style={{ fontSize: 13.5, lineHeight: 1.5, color: 'var(--muted)', margin: '10px 0 0' }}>Weitere Kanäle auf Wunsch gegen Aufpreis.</p>
@@ -5227,7 +5136,7 @@ function ServicePackages({ slug }: { slug: string }) {
               const monthly = (addSocial ? SOCIAL_ADDON.price : 0) + (addWeb ? WEBSITE_PACKAGES.find(w => w.id === 'onepager')!.price : 0)
               const addonRow = (on: boolean, toggle: () => void, label: string, price: number) => (
                 <label key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 14, border: `1px solid ${on ? 'var(--electric)' : 'var(--border)'}`, backgroundColor: on ? 'var(--brand-soft)' : '#fff', fontSize: 14.5, transition: 'all 0.2s ease' }}>
-                  <input type="checkbox" checked={on} onChange={toggle} style={{ width: 17, height: 17, margin: 0, accentColor: '#2600FF', flexShrink: 0 }} />
+                  <input type="checkbox" checked={on} onChange={toggle} style={{ width: 17, height: 17, margin: 0, accentColor: '#101114', flexShrink: 0 }} />
                   <span style={{ flex: 1 }}>{label}</span>
                   <strong style={{ whiteSpace: 'nowrap' }}>+ {price} € <span style={{ fontWeight: 500, color: 'var(--muted)' }}>/ Monat</span></strong>
                 </label>
@@ -5247,9 +5156,9 @@ function ServicePackages({ slug }: { slug: string }) {
               )
               return (
                 <Reveal key={id} delay={0.06 * i} style={{ display: 'flex' }}>
-                  <article className={`d-card${single ? ' svc-pk-wide' : ''}`} style={{ position: 'relative', flex: 1, display: single ? 'grid' : 'flex', flexDirection: 'column', gridTemplateColumns: single ? 'minmax(0, 0.85fr) minmax(0, 1.15fr)' : undefined, gap: single ? 'clamp(28px, 4vw, 64px)' : 20, padding: 'clamp(26px, 2.8vw, 44px)', color: 'var(--ink)', border: hi ? '2px solid var(--electric)' : '1px solid var(--border)', boxShadow: hi ? '0 30px 70px rgba(38,0,255,0.16)' : undefined }}>
+                  <article className={`d-card${single ? ' svc-pk-wide' : ''}`} style={{ position: 'relative', flex: 1, display: single ? 'grid' : 'flex', flexDirection: 'column', gridTemplateColumns: single ? 'minmax(0, 0.85fr) minmax(0, 1.15fr)' : undefined, gap: single ? 'clamp(28px, 4vw, 64px)' : 20, padding: 'clamp(26px, 2.8vw, 44px)', color: 'var(--ink)', border: hi ? '2px solid var(--electric)' : '1px solid var(--border)', boxShadow: hi ? '0 30px 70px rgba(16,17,20,0.16)' : undefined }}>
                     {hi && !single && (
-                      <span style={{ position: 'absolute', top: -16, left: 'clamp(26px, 2.8vw, 40px)', height: 32, padding: '0 14px', borderRadius: 999, backgroundColor: 'var(--electric)', color: '#fff', fontSize: 13, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 6 }}><span aria-hidden>★</span><span>Passt hierzu</span></span>
+                      <span style={{ position: 'absolute', top: -16, left: 'clamp(26px, 2.8vw, 40px)', height: 32, padding: '0 14px', borderRadius: 999, backgroundColor: 'var(--electric)', color: '#fff', fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}><span aria-hidden>★</span><span>Passt hierzu</span></span>
                     )}
                     {single ? (
                       <>
@@ -5658,7 +5567,7 @@ function SerpLayerIcon({ kind }: { kind: 'ads' | 'ai' | 'map' | 'links' }) {
 /** Schema einer heutigen Google-Ergebnisseite: Anzeige · KI-Übersicht · Karte · Links. */
 function SerpLayersVisual() {
   const line = (w: string, h = 9) => <div aria-hidden style={{ width: w, height: h, borderRadius: 6, backgroundColor: 'var(--divider)' }} />
-  const tag = (kind: 'ads' | 'ai' | 'map' | 'links') => <span aria-hidden style={{ position: 'absolute', right: 12, top: 12, width: 30, height: 30, borderRadius: 10, backgroundColor: '#fff', color: 'var(--electric)', display: 'grid', placeItems: 'center', boxShadow: '0 4px 12px rgba(11,11,26,0.08)' }}><span style={{ transform: 'scale(0.75)', display: 'grid' }}><SerpLayerIcon kind={kind} /></span></span>
+  const tag = (kind: 'ads' | 'ai' | 'map' | 'links') => <span aria-hidden style={{ position: 'absolute', right: 12, top: 12, width: 30, height: 30, borderRadius: 10, backgroundColor: '#fff', color: 'var(--electric)', display: 'grid', placeItems: 'center', boxShadow: '0 4px 12px rgba(16,17,20,0.08)' }}><span style={{ transform: 'scale(0.75)', display: 'grid' }}><SerpLayerIcon kind={kind} /></span></span>
   return (
     <div className="d-card" style={{ overflow: 'hidden' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 18px', borderBottom: '1px solid var(--divider)' }}>
@@ -5670,17 +5579,17 @@ function SerpLayersVisual() {
       <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ position: 'relative', padding: '12px 14px', borderRadius: 14, border: '1px solid var(--border)' }}>
           {tag('ads')}
-          <div style={{ fontSize: 12, fontWeight: 800, marginBottom: 6 }}>Gesponsert</div>
+          <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Gesponsert</div>
           {line('55%')}
         </div>
         <div style={{ position: 'relative', padding: '12px 14px', borderRadius: 14, backgroundColor: 'var(--brand-soft)' }}>
           {tag('ai')}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 800, color: 'var(--electric)', marginBottom: 8 }}><ChannelIcon kind="ki" size={14} />KI-Übersicht</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 600, color: 'var(--electric)', marginBottom: 8 }}><ChannelIcon kind="ki" size={14} />KI-Übersicht</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{line('92%')}{line('80%')}{line('64%')}</div>
         </div>
         <div style={{ position: 'relative', borderRadius: 14, border: '1px solid var(--border)', overflow: 'hidden' }}>
           {tag('map')}
-          <div aria-hidden style={{ position: 'relative', height: 64, backgroundColor: '#EFEEF8', backgroundImage: 'linear-gradient(#F7F7FB 6px, transparent 6px), linear-gradient(90deg, #F7F7FB 6px, transparent 6px)', backgroundSize: '64px 48px' }}>
+          <div aria-hidden style={{ position: 'relative', height: 64, backgroundColor: '#EEEDEA', backgroundImage: 'linear-gradient(#F7F6F4 6px, transparent 6px), linear-gradient(90deg, #F7F6F4 6px, transparent 6px)', backgroundSize: '64px 48px' }}>
             <div style={{ position: 'absolute', left: '22%', top: 12 }}><PinD size={18} filled /></div>
             <div style={{ position: 'absolute', left: '50%', top: 22 }}><PinD size={18} filled /></div>
             <div style={{ position: 'absolute', left: '72%', top: 8 }}><PinD size={18} filled /></div>
@@ -5691,7 +5600,7 @@ function SerpLayersVisual() {
             ))}
           </div>
         </div>
-        <div style={{ position: 'relative', padding: '12px 14px', borderRadius: 14, border: '1px dashed #C9C5F7', display: 'flex', flexDirection: 'column', gap: 7 }}>
+        <div style={{ position: 'relative', padding: '12px 14px', borderRadius: 14, border: '1px dashed #D9D6D0', display: 'flex', flexDirection: 'column', gap: 7 }}>
           {tag('links')}
           {line('35%', 8)}{line('70%', 11)}{line('50%', 8)}{line('62%', 11)}
         </div>
@@ -5720,7 +5629,7 @@ function ProblemVisual({ kind }: { kind: ServiceContent['problem']['visual'] }) 
             ))}
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, border: '1px dashed #C9C5F7', fontSize: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, border: '1px dashed #D9D6D0', fontSize: 14 }}>
           <span aria-hidden style={{ width: 9, height: 9, borderRadius: '50%', backgroundColor: '#E5484D' }} />
           <span><strong>Ihr Betrieb</strong> <span style={muted}>· nicht genannt</span></span>
         </div>
@@ -5734,20 +5643,20 @@ function ProblemVisual({ kind }: { kind: ServiceContent['problem']['visual'] }) 
     ]
     return (
       <div className="d-card" style={{ overflow: 'hidden' }}>
-        <div aria-hidden style={{ position: 'relative', height: 150, backgroundColor: '#EFEEF8', backgroundImage: 'linear-gradient(#F7F7FB 8px, transparent 8px), linear-gradient(90deg, #F7F7FB 8px, transparent 8px)', backgroundSize: '96px 80px' }}>
+        <div aria-hidden style={{ position: 'relative', height: 150, backgroundColor: '#EEEDEA', backgroundImage: 'linear-gradient(#F7F6F4 8px, transparent 8px), linear-gradient(90deg, #F7F6F4 8px, transparent 8px)', backgroundSize: '96px 80px' }}>
           <div style={{ position: 'absolute', left: '22%', top: 30 }}><PinD size={30} filled /></div>
           <div style={{ position: 'absolute', left: '58%', top: 58 }}><PinD size={30} filled /></div>
           <div style={{ position: 'absolute', left: '80%', top: 26 }}><PinD size={30} opacity={0.5} /></div>
         </div>
         <div style={{ padding: 'clamp(16px, 2vw, 22px)', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {rows.map(x => (
-            <div key={x.n} style={{ padding: '12px 14px', borderRadius: 14, border: `1px solid ${x.strong ? '#C9C5F7' : 'var(--border)'}`, backgroundColor: x.strong ? 'var(--brand-soft)' : '#fff' }}>
-              <div style={{ fontWeight: 800, fontSize: 15 }}>{x.n}</div>
+            <div key={x.n} style={{ padding: '12px 14px', borderRadius: 14, border: `1px solid ${x.strong ? '#D9D6D0' : 'var(--border)'}`, backgroundColor: x.strong ? 'var(--brand-soft)' : '#fff' }}>
+              <div style={{ fontWeight: 600, fontSize: 15 }}>{x.n}</div>
               <div style={muted}><span style={{ color: '#E9A100' }}>★</span> {x.r} ({x.c}) · {x.extra}</div>
             </div>
           ))}
-          <div style={{ padding: '12px 14px', borderRadius: 14, border: '1px dashed #C9C5F7' }}>
-            <div style={{ fontWeight: 800, fontSize: 15 }}>Ihr Betrieb</div>
+          <div style={{ padding: '12px 14px', borderRadius: 14, border: '1px dashed #D9D6D0' }}>
+            <div style={{ fontWeight: 600, fontSize: 15 }}>Ihr Betrieb</div>
             <div style={muted}>Nur Adresse · keine Fotos · keine Bewertungen</div>
           </div>
         </div>
@@ -5766,16 +5675,16 @@ function ProblemVisual({ kind }: { kind: ServiceContent['problem']['visual'] }) 
         <div style={{ padding: 'clamp(16px, 2vw, 22px)', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ padding: '14px 16px', borderRadius: 14, backgroundColor: 'var(--bone)' }}>
             <div style={muted}>voltwerk-bern.ch › wallbox</div>
-            <div style={{ fontWeight: 800, fontSize: 16.5, color: 'var(--electric)', margin: '2px 0 4px' }}>Wallbox-Installation in Bremen: Kosten, Ablauf, Förderung</div>
+            <div style={{ fontWeight: 600, fontSize: 16.5, color: 'var(--electric)', margin: '2px 0 4px' }}>Wallbox-Installation in Bremen: Kosten, Ablauf, Förderung</div>
             <div style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.5 }}>Mitbewerber mit einer eigenen Seite genau zu dieser Leistung.</div>
           </div>
           <div aria-hidden style={{ padding: '4px 16px' }}>
             <div style={{ width: '40%', height: 9, borderRadius: 5, backgroundColor: 'var(--divider)', marginBottom: 8 }} />
             <div style={{ width: '70%', height: 12, borderRadius: 6, backgroundColor: 'var(--divider)' }} />
           </div>
-          <div style={{ padding: '14px 16px', borderRadius: 14, border: '1px dashed #C9C5F7' }}>
+          <div style={{ padding: '14px 16px', borderRadius: 14, border: '1px dashed #D9D6D0' }}>
             <div style={muted}>ihr-betrieb.de</div>
-            <div style={{ fontWeight: 800, fontSize: 16, margin: '2px 0 4px' }}>Alle Elektroarbeiten</div>
+            <div style={{ fontWeight: 600, fontSize: 16, margin: '2px 0 4px' }}>Alle Elektroarbeiten</div>
             <div style={{ fontSize: 13.5, color: 'var(--muted)' }}>Ihre Website: weit unten, weil es keine Seite zur Wallbox gibt.</div>
           </div>
         </div>
@@ -5788,10 +5697,10 @@ function ProblemVisual({ kind }: { kind: ServiceContent['problem']['visual'] }) 
     <div className="d-card" style={{ padding: 16, opacity: fresh ? 1 : 0.7 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
         <span aria-hidden style={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: fresh ? 'var(--electric)' : '#C9C9D6' }} />
-        <span><span style={{ display: 'block', fontWeight: 800, fontSize: 14 }}>{name}</span><span style={muted}>{note}</span></span>
+        <span><span style={{ display: 'block', fontWeight: 600, fontSize: 14 }}>{name}</span><span style={muted}>{note}</span></span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 4 }}>
-        {(fresh ? ['#ECEBFF', '#E6F4EE', '#FFF1DE', '#E6F4EE', '#ECEBFF', '#FFF1DE'] : ['#EDEDF2', '#EDEDF2', '#EDEDF2']).map((c, i) => <Tile key={i} bg={c} />)}
+        {(fresh ? ['#F0EEEA', '#E6F4EE', '#FFF1DE', '#E6F4EE', '#F0EEEA', '#FFF1DE'] : ['#ECEAE6', '#ECEAE6', '#ECEAE6']).map((c, i) => <Tile key={i} bg={c} />)}
       </div>
     </div>
   )
@@ -5861,7 +5770,6 @@ function ServicePage({ slug }: { slug: string }) {
       {/* 1 — Hero + Check-Formular */}
       <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) clamp(20px,4vw,48px) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
         <MapBackdrop fade="left" shift={120} pins={false} />
-        <div className="d-hide-md" aria-hidden style={{ position: 'absolute', left: 'max(24px, calc(50% - 700px))', bottom: '10%' }}><PinD size={44} opacity={0.45} /></div>
         <div style={{ ...SHELL, position: 'relative' }}>
           <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Wo man Sie sucht', href: '/services' }, { label: moduleLabel ?? content.title }]} tone="light" />
           <div className="svc-hero" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.45fr) minmax(0, 0.8fr)', gap: 'clamp(28px, 4vw, 56px)', alignItems: 'center' }}>
@@ -5913,7 +5821,7 @@ function ServicePage({ slug }: { slug: string }) {
               </div>
             </Reveal>
             <Reveal delay={0.15} style={{ position: 'relative' }}>
-              <div aria-hidden style={{ position: 'absolute', left: '50%', top: '50%', width: 250, height: 250, transform: 'translate(-50%,-50%)', borderRadius: '50%', backgroundColor: '#F4F3FF' }} />
+              <div aria-hidden style={{ position: 'absolute', left: '50%', top: '50%', width: 250, height: 250, transform: 'translate(-50%,-50%)', borderRadius: '50%', backgroundColor: '#F3F1EE' }} />
               <RingsBackdrop size={580} style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
               <div style={{ position: 'relative' }}><ProblemVisual kind={content.problem.visual} /></div>
             </Reveal>
@@ -5960,13 +5868,7 @@ function ServicePage({ slug }: { slug: string }) {
       {/* 3 — Was Sie brauchen — und wobei wir helfen: großes Brand-Soft-Panel mit Stadtplan */}
       <section style={{ backgroundColor: 'var(--bone)', padding: 'var(--sec-y, 110px) clamp(20px, 4vw, 48px)' }}>
         <div className="d-panel" style={{ ...SHELL, backgroundColor: 'var(--brand-soft)', padding: 'clamp(48px, 7vw, 104px) clamp(20px, 6vw, 100px) clamp(44px, 6vw, 96px)' }}>
-          <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-            <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
-              <defs><pattern id="svc-needs-map" width="120" height="96" patternUnits="userSpaceOnUse"><rect x="8" y="8" width="104" height="80" rx="10" fill="#E3E1FB" /></pattern></defs>
-              <rect width="100%" height="100%" fill="url(#svc-needs-map)" />
-            </svg>
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(236,235,255,0) 0%, rgba(236,235,255,0.93) 22%, rgba(236,235,255,0.93) 78%, rgba(236,235,255,0) 100%)' }} />
-          </div>
+          {/* Recto: ruhige Fläche statt Stadtplan-Kacheln. */}
           <div style={{ position: 'relative' }}>
             <div style={{ textAlign: 'center', maxWidth: 920, margin: '0 auto' }}>
               <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 0' }}>{content.needsTitle}</h2></Reveal>
@@ -6013,7 +5915,7 @@ function ServicePage({ slug }: { slug: string }) {
             </div>}
             <Reveal delay={0.1}>
               <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'clamp(24px, 3vw, 40px)' }}>
-                <div className="d-card-flat" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 22px 12px 12px', borderRadius: 28, maxWidth: 900, boxShadow: '0 10px 30px rgba(11,11,26,0.06)' }}>
+                <div className="d-card-flat" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 22px 12px 12px', borderRadius: 28, maxWidth: 900, boxShadow: '0 10px 30px rgba(16,17,20,0.06)' }}>
                   <span className="d-tile d-tile-sm" aria-hidden style={{ borderRadius: 999 }}><ChannelIcon kind={content.fromYou ? 'social' : 'ki'} size={18} /></span>
                   <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.55, fontWeight: 600 }}>{content.fromYou ?? content.factorsNote}</p>
                 </div>
@@ -6039,9 +5941,9 @@ function ServicePage({ slug }: { slug: string }) {
                 <div key={item.q} className={open ? 'd-card' : 'd-card-flat'} style={{ borderRadius: 20, overflow: 'hidden' }}>
                   <button onClick={() => setFaqOpen(open ? null : i)} aria-expanded={open}
                     style={{ width: '100%', padding: 'clamp(18px, 2vw, 24px) clamp(20px, 2.4vw, 28px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', gap: 16, fontFamily: 'inherit' }}>
-                    <span style={{ fontWeight: 800, fontSize: 'clamp(16px, 1.4vw, 18px)', color: open ? 'var(--electric)' : 'var(--ink)' }}>{item.q}</span>
+                    <span style={{ fontWeight: 600, fontSize: 'clamp(16px, 1.4vw, 18px)', color: open ? 'var(--electric)' : 'var(--ink)' }}>{item.q}</span>
                     <span style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 999, backgroundColor: open ? 'var(--electric)' : 'var(--brand-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: open ? 'rotate(45deg)' : 'none', transition: `transform 0.5s ${EASE}, background-color .3s ease` }}>
-                      <svg width="12" height="12" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke={open ? '#fff' : '#2600FF'} strokeWidth="1.8" strokeLinecap="round" /></svg>
+                      <svg width="12" height="12" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke={open ? '#fff' : '#101114'} strokeWidth="1.8" strokeLinecap="round" /></svg>
                     </span>
                   </button>
                   <div style={{ overflow: 'hidden', maxHeight: open ? 320 : 0, transition: `max-height 0.5s ${EASE}` }}>
@@ -6060,22 +5962,22 @@ function ServicePage({ slug }: { slug: string }) {
           <RingsBackdrop size={900} color="rgba(255,255,255,0.14)" style={{ right: -240, top: -220 }} />
           <div className="audit-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 420px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
             <div>
-              <Reveal><p className="kick" style={{ color: '#C9C2FF' }}>Kostenlos · unverbindlich</p></Reveal>
+              <Reveal><p className="kick" style={{ color: '#D9D6D0' }}>Kostenlos · unverbindlich</p></Reveal>
               <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 18px', color: '#fff' }}>{content.final.text}</h2></Reveal>
-              <Reveal delay={0.1}><p style={{ fontSize: 17, lineHeight: 1.65, color: '#DCD8FF', margin: '0 0 28px', maxWidth: 540 }}>{data.ctaBody}</p></Reveal>
+              <Reveal delay={0.1}><p style={{ fontSize: 17, lineHeight: 1.65, color: '#E4E1DB', margin: '0 0 28px', maxWidth: 540 }}>{data.ctaBody}</p></Reveal>
               <Reveal delay={0.16} style={{ position: 'relative', zIndex: 5 }}>
                 <CompanySearch buttonLabel={content.final.button} placeholder="Name Ihres Unternehmens und Ort" />
               </Reveal>
             </div>
             <Reveal delay={0.1}>
-              <div className="d-card" style={{ color: 'var(--ink)', padding: 'clamp(24px, 3vw, 32px)', boxShadow: '0 40px 80px rgba(11,11,26,0.25)' }}>
+              <div className="d-card" style={{ color: 'var(--ink)', padding: 'clamp(24px, 3vw, 32px)', boxShadow: '0 40px 80px rgba(16,17,20,0.25)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-                  <p style={{ fontWeight: 800, margin: 0 }}>Beispielbericht</p>
+                  <p style={{ fontWeight: 600, margin: 0 }}>Beispielbericht</p>
                   <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 999, backgroundColor: 'var(--bone)', color: 'var(--muted)' }}>nur Beispiel</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
-                  <div aria-hidden style={{ width: 96, height: 96, borderRadius: '50%', background: 'conic-gradient(#2600FF 0 62%, #ECEBFF 62% 100%)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-                    <div style={{ width: 74, height: 74, borderRadius: '50%', backgroundColor: '#fff', display: 'grid', placeItems: 'center', fontSize: 28, fontWeight: 800 }}>62</div>
+                  <div aria-hidden style={{ width: 96, height: 96, borderRadius: '50%', background: 'conic-gradient(#101114 0 62%, #F0EEEA 62% 100%)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                    <div style={{ width: 74, height: 74, borderRadius: '50%', backgroundColor: '#fff', display: 'grid', placeItems: 'center', fontSize: 28, fontWeight: 600 }}>62</div>
                   </div>
                   <p className="display" style={{ fontSize: 20, margin: 0 }}>Lokale Sichtbarkeit</p>
                 </div>
@@ -6083,9 +5985,9 @@ function ServicePage({ slug }: { slug: string }) {
                   {([['Google Maps', 72, 'maps'], ['Google Search', 64, 'search'], ['KI-Suche', 44, 'ki'], ['Social Media', 67, 'social']] as const).map(([l, v, k]) => {
                     const mine = k === channelKindOf(slug)
                     return (
-                      <div key={l} style={{ backgroundColor: mine ? 'var(--brand-soft)' : 'var(--bone)', border: `1px solid ${mine ? '#C9C5F7' : 'transparent'}`, borderRadius: 14, padding: '12px 14px' }}>
+                      <div key={l} style={{ backgroundColor: mine ? 'var(--brand-soft)' : 'var(--bone)', border: `1px solid ${mine ? '#D9D6D0' : 'transparent'}`, borderRadius: 14, padding: '12px 14px' }}>
                         <div style={{ fontSize: 13, color: mine ? 'var(--electric)' : 'var(--muted)', fontWeight: mine ? 700 : 500 }}>{l}</div>
-                        <div style={{ fontSize: 24, fontWeight: 800, color: mine ? 'var(--electric)' : 'var(--ink)' }}>{v}</div>
+                        <div style={{ fontSize: 24, fontWeight: 600, color: mine ? 'var(--electric)' : 'var(--ink)' }}>{v}</div>
                       </div>
                     )
                   })}
@@ -6295,7 +6197,7 @@ function BookCallWidget({ sentinelRef }: { sentinelRef: React.RefObject<HTMLDivE
         <div style={{
           backgroundColor: 'rgba(255,255,255,0.94)',
           backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-          border: '1px solid rgba(7,7,12,0.08)',
+          border: '1px solid rgba(16,17,20,0.08)',
           borderRadius: 20,
           boxShadow: '0 20px 50px rgba(0,0,0,0.18)',
           padding: hovered ? '20px' : '14px 12px',
@@ -6307,10 +6209,10 @@ function BookCallWidget({ sentinelRef }: { sentinelRef: React.RefObject<HTMLDivE
           {!hovered ? (
             <button onClick={() => setModal(true)} aria-label="Anruf buchen"
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#2600FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#101114" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" />
               </svg>
-              <span className="eyebrow" style={{ fontSize: 9, color: '#2600FF', writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Buchen</span>
+              <span className="eyebrow" style={{ fontSize: 9, color: '#101114', writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Buchen</span>
             </button>
           ) : (
             <>
@@ -6331,7 +6233,7 @@ function LandingPage() {
   useEffect(() => {
     const id = decodeURIComponent(window.location.hash.slice(1))
     if (!id) return
-    // Schriften und Reveal-Animationen verschieben das Layout noch nach dem Mount,
+    // Schriften und Scroll-Szenen verschieben das Layout noch nach dem Mount,
     // deshalb mehrfach nachfassen statt einmal zu springen.
     const timers = [60, 300, 800, 1500].map(delay => setTimeout(() => {
       document.getElementById(id)?.scrollIntoView({ block: 'start' })
@@ -6339,37 +6241,18 @@ function LandingPage() {
     return () => timers.forEach(clearTimeout)
   }, [])
   usePageMeta(
-    'RAG: System für lokale Sichtbarkeit bei Google Maps, Google & KI-Suche',
-    'Wir machen lokale Unternehmen in Deutschland dort sichtbar, wo Kunden heute suchen: Google Maps, Google, ChatGPT, Perplexity, Bewertungen und soziale Netzwerke. Kostenloser Sichtbarkeits-Check.',
+    'RAG – Werden Sie zur ersten Wahl in Ihrer Region',
+    'Google Maps, Website, Bewertungen und KI-Suche: Wir machen Ihren lokalen Betrieb sichtbar. Starten Sie Ihren kostenlosen Sichtbarkeits-Check.',
   )
-  const widgetSentinel = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const obs = new IntersectionObserver(
-      entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target) } }),
-      { threshold: 0.15 }
-    )
-    document.querySelectorAll('.reveal').forEach(el => obs.observe(el))
-    return () => obs.disconnect()
-  }, [])
+  // Startseite im Recto-Stil: src/home/HomePage.tsx (Stilbeschreibung: DESIGN.md).
   return (
-    <>
-      <BookCallWidget sentinelRef={widgetSentinel} />
-      <Nav />
-      <main id="inhalt">
-      <Hero />
-      <div ref={widgetSentinel} style={{ height: 1, pointerEvents: 'none' }} />
-      <ChannelOverview />
-      <ChannelAI />
-      <ChannelMaps />
-      <ChannelSearch />
-      <ChannelSocial />
-      <ChannelSummary />
-      <BusinessCheck />
-      {/* Ergebnisse vorerst ausgeblendet (16.09) — zum Einblenden wieder aktivieren: <RealResults /> */}
-      <FAQ />
-      </main>
-      <Footer />
-    </>
+    <HomePage>
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: HOME_FAQ.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+      }} />
+    </HomePage>
   )
 }
 
@@ -6517,8 +6400,8 @@ function quizRecommendations(a: QuizAnswers): QuizRec[] {
 function QuizOptionTile({ label, hint, selected, multi, onClick }: { label: string; hint?: string; selected: boolean; multi: boolean; onClick: () => void }) {
   return (
     <button type="button" onClick={onClick} aria-pressed={selected}
-      style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', padding: '16px 18px', borderRadius: 16, cursor: 'pointer', fontFamily: 'inherit', color: 'var(--ink)', backgroundColor: selected ? 'var(--brand-soft)' : '#fff', border: `${selected ? 2 : 1}px solid ${selected ? 'var(--electric)' : 'var(--border)'}`, boxShadow: selected ? 'none' : '0 4px 14px rgba(11,11,26,0.04)', transition: 'background-color .2s, border-color .2s' }}>
-      <span aria-hidden style={{ flexShrink: 0, width: 24, height: 24, borderRadius: multi ? 7 : 999, border: `2px solid ${selected ? 'var(--electric)' : '#C9C5F7'}`, backgroundColor: selected ? 'var(--electric)' : '#fff', display: 'grid', placeItems: 'center' }}>
+      style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', padding: '16px 18px', borderRadius: 16, cursor: 'pointer', fontFamily: 'inherit', color: 'var(--ink)', backgroundColor: selected ? 'var(--brand-soft)' : '#fff', border: `${selected ? 2 : 1}px solid ${selected ? 'var(--electric)' : 'var(--border)'}`, boxShadow: selected ? 'none' : '0 4px 14px rgba(16,17,20,0.04)', transition: 'background-color .2s, border-color .2s' }}>
+      <span aria-hidden style={{ flexShrink: 0, width: 24, height: 24, borderRadius: multi ? 7 : 999, border: `2px solid ${selected ? 'var(--electric)' : '#D9D6D0'}`, backgroundColor: selected ? 'var(--electric)' : '#fff', display: 'grid', placeItems: 'center' }}>
         {selected && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>}
       </span>
       <span>
@@ -6604,7 +6487,7 @@ function StartQuizPage() {
                   <Kicker>In 4 Fragen zu Ihrem Plan</Kicker>
                   <div aria-hidden style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 18 }}>
                     {Array.from({ length: TOTAL }).map((_, i) => (
-                      <span key={i} style={{ width: i === step ? 36 : 18, height: 6, borderRadius: 999, backgroundColor: i <= step ? 'var(--electric)' : '#DAD8F5', transition: 'width .3s, background-color .3s' }} />
+                      <span key={i} style={{ width: i === step ? 36 : 18, height: 6, borderRadius: 999, backgroundColor: i <= step ? 'var(--electric)' : '#E4E1DB', transition: 'width .3s, background-color .3s' }} />
                     ))}
                   </div>
                 </div>

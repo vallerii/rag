@@ -10,7 +10,7 @@ import { authErrorText, currentUser, signIn, signInWithGoogle, signOut, signUp, 
 
 type Mode = 'register' | 'login'
 
-const field: React.CSSProperties = { width: '100%', padding: '12px 14px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14.5, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
+const field: React.CSSProperties = { width: '100%', padding: '12px 14px', border: '1px solid rgba(16,17,20,0.14)', borderRadius: 12, fontSize: 14.5, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
 const labelSt: React.CSSProperties = { display: 'block', fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: 'var(--ink)' }
 const emailRe = /^\S+@\S+\.\S+$/
 
@@ -119,7 +119,7 @@ export default function AccountStep({ submitLabel, loggedInLabel, onAuthed, onBa
   return (
     <form onSubmit={submit}>
       {user ? (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '14px 16px', borderRadius: 14, backgroundColor: '#F7F6FF', border: '1px solid #E4DFFF', fontSize: 14.5 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '14px 16px', borderRadius: 14, backgroundColor: '#F7F6F4', border: '1px solid #E4E1DB', fontSize: 14.5 }}>
           <span>Angemeldet als <strong>{user.email}</strong></span>
           <button type="button" onClick={logoutHere} className="ul" style={{ background: 'none', border: 'none', padding: 0, color: 'var(--muted)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>Anderes Konto</button>
         </div>
@@ -128,7 +128,7 @@ export default function AccountStep({ submitLabel, loggedInLabel, onAuthed, onBa
           {googleNext && (
             <>
               <button type="button" onClick={google} disabled={busy}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '13px 16px', borderRadius: 14, border: '1px solid rgba(7,7,12,0.14)', backgroundColor: '#fff', color: 'var(--ink)', fontFamily: 'inherit', fontSize: 15, fontWeight: 600, cursor: busy ? 'default' : 'pointer' }}>
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '13px 16px', borderRadius: 14, border: '1px solid rgba(16,17,20,0.14)', backgroundColor: '#fff', color: 'var(--ink)', fontFamily: 'inherit', fontSize: 15, fontWeight: 600, cursor: busy ? 'default' : 'pointer' }}>
                 <GoogleG />Mit Google fortfahren
               </button>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '14px 0', color: 'var(--muted)', fontSize: 13 }}>
@@ -137,7 +137,7 @@ export default function AccountStep({ submitLabel, loggedInLabel, onAuthed, onBa
             </>
           )}
 
-          {notice && <div role="status" style={{ marginBottom: 16, padding: '11px 14px', borderRadius: 12, backgroundColor: '#F7F6FF', border: '1px solid #E4DFFF', fontSize: 14, lineHeight: 1.55 }}>{notice}</div>}
+          {notice && <div role="status" style={{ marginBottom: 16, padding: '11px 14px', borderRadius: 12, backgroundColor: '#F7F6F4', border: '1px solid #E4E1DB', fontSize: 14, lineHeight: 1.55 }}>{notice}</div>}
 
           {/* Reihenfolge: E-Mail, Telefon (nur Registrierung, optional), Passwort. Der Platz bleibt beim Anmelden erhalten, damit nichts springt. */}
           <div className="ck-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -175,11 +175,11 @@ export default function AccountStep({ submitLabel, loggedInLabel, onAuthed, onBa
           {mode === 'register' && (
             <div style={{ display: 'grid', gap: 8, marginTop: 12 }}>
               <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 13.5, lineHeight: 1.5, cursor: 'pointer', fontWeight: 600 }}>
-                <input type="checkbox" checked={privacyOk} onChange={() => setPrivacyOk(v => !v)} style={{ width: 18, height: 18, marginTop: 1, accentColor: '#2600FF', flexShrink: 0 }} />
+                <input type="checkbox" checked={privacyOk} onChange={() => setPrivacyOk(v => !v)} style={{ width: 18, height: 18, marginTop: 1, accentColor: '#101114', flexShrink: 0 }} />
                 <span>Ich habe die Datenschutzerklärung gelesen und stimme ihr zu.</span>
               </label>
               <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 13.5, lineHeight: 1.5, cursor: 'pointer' }}>
-                <input type="checkbox" checked={okTips} onChange={() => setOkTips(v => !v)} style={{ width: 18, height: 18, marginTop: 1, accentColor: '#2600FF', flexShrink: 0 }} />
+                <input type="checkbox" checked={okTips} onChange={() => setOkTips(v => !v)} style={{ width: 18, height: 18, marginTop: 1, accentColor: '#101114', flexShrink: 0 }} />
                 <span>Ich möchte gelegentlich Tipps zur lokalen Sichtbarkeit per E-Mail und Telefon erhalten. Abmeldung jederzeit möglich.</span>
               </label>
             </div>

@@ -6,7 +6,7 @@ import { orderTotal, saveOrderDetails, type OrderDetails, type OrderRow } from '
 // Danach: Status der Anfrage («wir melden uns») und die gewählten Leistungen.
 
 const card: React.CSSProperties = { backgroundColor: '#fff', borderRadius: 22, border: '1px solid var(--line-soft)', padding: 'clamp(20px, 2.6vw, 28px)' }
-const field: React.CSSProperties = { width: '100%', padding: '11px 13px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14.5, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
+const field: React.CSSProperties = { width: '100%', padding: '11px 13px', border: '1px solid rgba(16,17,20,0.14)', borderRadius: 12, fontSize: 14.5, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
 const labelSt: React.CSSProperties = { display: 'block', fontSize: 12.5, fontWeight: 600, marginBottom: 6 }
 
 export const GOALS = [
@@ -98,7 +98,7 @@ export default function OrderPanel({ order, onChange, defaults }: {
               const on = d.goals.includes(g)
               return (
                 <button key={g} type="button" aria-pressed={on} onClick={() => toggleGoal(g)}
-                  style={{ padding: '9px 14px', borderRadius: 999, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', border: `1px solid ${on ? 'var(--electric)' : 'var(--line)'}`, backgroundColor: on ? '#EEEBFF' : '#fff', color: on ? 'var(--electric)' : 'var(--ink)', transition: 'all 0.15s ease' }}>
+                  style={{ padding: '9px 14px', borderRadius: 999, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', border: `1px solid ${on ? 'var(--electric)' : 'var(--line)'}`, backgroundColor: on ? '#F0EEEA' : '#fff', color: on ? 'var(--electric)' : 'var(--ink)', transition: 'all 0.15s ease' }}>
                   {on ? '✓ ' : ''}{g}
                 </button>
               )
@@ -116,7 +116,7 @@ export default function OrderPanel({ order, onChange, defaults }: {
               <div style={{ display: 'flex', gap: 6 }}>
                 {REACH.map(r => (
                   <button key={r} type="button" aria-pressed={d.reach === r} onClick={() => set('reach', r)}
-                    style={{ flex: 1, padding: '11px 8px', borderRadius: 12, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', border: `1px solid ${d.reach === r ? 'var(--electric)' : 'var(--line)'}`, backgroundColor: d.reach === r ? '#EEEBFF' : '#fff', color: d.reach === r ? 'var(--electric)' : 'var(--ink)' }}>
+                    style={{ flex: 1, padding: '11px 8px', borderRadius: 12, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', border: `1px solid ${d.reach === r ? 'var(--electric)' : 'var(--line)'}`, backgroundColor: d.reach === r ? '#F0EEEA' : '#fff', color: d.reach === r ? 'var(--electric)' : 'var(--ink)' }}>
                     {r}
                   </button>
                 ))}
@@ -143,7 +143,7 @@ export default function OrderPanel({ order, onChange, defaults }: {
           </p>
           {steps.map(([done, t, sub], i) => (
             <div key={t} style={{ display: 'flex', gap: 14, padding: '12px 0', borderTop: '1px solid var(--line-soft)' }}>
-              <span style={{ width: 26, height: 26, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: done ? '#fff' : 'var(--electric)', backgroundColor: done ? 'var(--electric)' : '#EEEBFF' }}>
+              <span style={{ width: 26, height: 26, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: done ? '#fff' : 'var(--electric)', backgroundColor: done ? 'var(--electric)' : '#F0EEEA' }}>
                 {done ? '✓' : <span className="blink">•</span>}
               </span>
               <span>

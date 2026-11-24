@@ -42,8 +42,9 @@ export function useNoindex(title: string) {
 
 export function Logo({ dark = false }: { dark?: boolean }) {
   return (
-    <a href="/" style={{ fontWeight: 800, fontSize: 21, color: dark ? '#fff' : 'var(--ink)', letterSpacing: '-0.05em', textDecoration: 'none' }}>
-      RAG<span style={{ color: 'var(--electric)' }}>.</span>
+    // Recto-Wortmarke: Geist 500, Punkt in Instrument Serif kursiv orange.
+    <a href="/" style={{ fontWeight: 500, fontSize: 25, color: dark ? '#fff' : 'var(--ink)', letterSpacing: '-1.2px', lineHeight: 1, textDecoration: 'none' }}>
+      RAG<em style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400, fontSize: '1.28em', color: 'var(--accent)', marginLeft: 1 }}>.</em>
     </a>
   )
 }
@@ -83,12 +84,12 @@ function Spinner({ label }: { label: string }) {
 
 function StatusDot({ ok }: { ok: boolean | null }) {
   return (
-    <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800,
-      backgroundColor: ok === null ? '#EFEEF8' : ok ? '#E3F4EA' : '#FFF1D6', color: ok === null ? 'var(--muted)' : ok ? '#17663A' : '#8A4B00' }}>{ok === null ? '…' : ok ? '✓' : '!'}</span>
+    <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600,
+      backgroundColor: ok === null ? '#EEEDEA' : ok ? '#E3F4EA' : '#FFF1D6', color: ok === null ? 'var(--muted)' : ok ? '#17663A' : '#8A4B00' }}>{ok === null ? '…' : ok ? '✓' : '!'}</span>
   )
 }
 
-const fieldStyle: React.CSSProperties = { width: '100%', padding: '11px 14px', border: '1px solid rgba(7,7,12,0.14)', borderRadius: 12, fontSize: 14.5, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
+const fieldStyle: React.CSSProperties = { width: '100%', padding: '11px 14px', border: '1px solid rgba(16,17,20,0.14)', borderRadius: 12, fontSize: 14.5, fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', backgroundColor: '#fff' }
 
 /** Eine Zeile je Feld: Name, Eingabefeld, Status — alles in einer Reihe, damit die Liste kurz bleibt. Umbruch nur auf schmalen Bildschirmen. */
 function FieldRow({ id, label, value, original, placeholder, type, inputMode, autoComplete, onChange }: {
@@ -98,7 +99,7 @@ function FieldRow({ id, label, value, original, placeholder, type, inputMode, au
   const status = !filled ? 'Nicht gefunden' : value.trim() === (original ?? '').trim() ? 'Gefunden ✓' : 'Ergänzt'
   const chip = status === 'Gefunden ✓'
     ? { color: '#0F7A3E', bg: '#E6F6EC' }
-    : status === 'Ergänzt' ? { color: 'var(--electric)', bg: '#EEEBFF' } : { color: 'var(--muted)', bg: 'var(--bone)' }
+    : status === 'Ergänzt' ? { color: 'var(--electric)', bg: '#F0EEEA' } : { color: 'var(--muted)', bg: 'var(--bone)' }
   return (
     <li style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
       <StatusDot ok={filled} />
@@ -136,9 +137,16 @@ function Findings({ place, found, draft, onDraft }: { place: Place; found: Sourc
         {draft === null ? (
           <li style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, color: 'var(--muted)' }}><span className="ck-spin" aria-hidden="true" />Wir suchen Ihre Website und Social-Media-Profile…</li>
         ) : draft.map(s => (
-          <FieldRow key={s.key} id={`src-${s.key}`} label={SOURCE_LABELS[s.key]} value={s.value} original={originalOf(s.key)} placeholder="Nicht gefunden, hier eintragen" onChange={setValue(s.key)} />
+          <FieldRow key={s.key} id={`src-${s.key}`} label={SOURCE_LABELS[s.key]} value={s.value} original={originalOf(s.key)} placeholder={s.key === 'other' ? 'Link zu einem weiteren Profil' : 'Nicht gefunden, hier eintragen'} onChange={setValue(s.key)} />
         ))}
       </ul>
+      {/* Aus codex/rag-style-exploration: ein zusätzliches Profil (z. B. Xing, YouTube) selbst ergänzen. */}
+      {draft !== null && !draft.some(s => s.key === 'other') && (
+        <button type="button" className="ul" onClick={() => onDraft([...draft, { key: 'other', value: '', found: false }])}
+          style={{ marginTop: 18, padding: '6px 0', background: 'none', border: 0, color: 'var(--ink)', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 500, cursor: 'pointer' }}>
+          + Weiteres Social-Media-Profil hinzufügen
+        </button>
+      )}
     </div>
   )
 }
@@ -146,7 +154,7 @@ function Findings({ place, found, draft, onDraft }: { place: Place; found: Sourc
 /** Gewählte Firma oben — kompakt, mit «Ändern». */
 function SelectedCompany({ place, loading, onChange }: { place: Place | null; loading: boolean; onChange: () => void }) {
   return (
-    <div style={{ display: 'flex', gap: 18, alignItems: 'center', border: '1px solid var(--line)', borderRadius: 18, padding: '28px 20px', backgroundColor: '#FAFAFD', marginBottom: 22 }}>
+    <div style={{ display: 'flex', gap: 18, alignItems: 'center', border: '1px solid var(--line)', borderRadius: 18, padding: '28px 20px', backgroundColor: '#F7F6F4', marginBottom: 22 }}>
       <span style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: 'var(--electric)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
       </span>
@@ -356,7 +364,7 @@ export default function CheckPage() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)' }}>
-      <header style={{ borderBottom: '1px solid var(--line)', backgroundColor: 'rgba(241,240,235,0.9)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', position: 'sticky', top: 0, zIndex: 20 }}>
+      <header style={{ borderBottom: '1px solid var(--line)', backgroundColor: 'rgba(247,246,244,0.9)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', position: 'sticky', top: 0, zIndex: 20 }}>
         <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 clamp(20px, 4vw, 48px)', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <Logo />
           <p className="eyebrow ck-hide-sm" style={{ color: 'var(--muted)' }}>Kostenloser Sichtbarkeits-Check</p>
@@ -374,7 +382,7 @@ export default function CheckPage() {
 
       <div ref={topRef} style={{ scrollMarginTop: 80 }} />
       <main id="inhalt" style={{ maxWidth: 1240, margin: '0 auto', padding: '20px clamp(20px, 4vw, 48px) 40px' }}>
-        <section className="ck-card" style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(20px, 2.6vw, 30px)', boxShadow: '0 30px 70px rgba(7,7,12,0.06)', minWidth: 0, maxWidth: step !== 'find' ? 680 : undefined, margin: '0 auto' }}>
+        <section className="ck-card" style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(20px, 2.6vw, 30px)', boxShadow: '0 30px 70px rgba(16,17,20,0.06)', minWidth: 0, maxWidth: step !== 'find' ? 680 : undefined, margin: '0 auto' }}>
 
           {step === 'find' && (
             <>
@@ -390,7 +398,7 @@ export default function CheckPage() {
                       {results.map((r, i) => (
                         <button key={r.id} type="button" onClick={() => loadPlace(r.id)} className="ck-result"
                           style={{ display: 'flex', gap: 18, alignItems: 'center', width: '100%', padding: '24px 20px', border: 'none', borderTop: i ? '1px solid var(--line-soft)' : 'none', backgroundColor: '#fff', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', color: 'var(--ink)' }}>
-                          <span style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: '#EEEBFF', color: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <span style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: '#F0EEEA', color: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
                           </span>
                           <span style={{ flex: 1, minWidth: 0 }}>

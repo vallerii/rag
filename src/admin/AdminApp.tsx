@@ -19,12 +19,12 @@ import { CATALOG, totals, type OfferItem, type Unit } from './catalog'
 
 const ink = 'var(--ink)', muted = 'var(--muted)', line = 'var(--line)', accent = 'var(--electric)'
 const card: React.CSSProperties = { backgroundColor: '#fff', border: `1px solid ${line}`, borderRadius: 16, padding: 18 }
-const input: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '9px 11px', border: '1px solid rgba(7,7,12,0.16)', borderRadius: 10, fontSize: 14, fontFamily: 'inherit', color: ink, backgroundColor: '#fff', outline: 'none' }
+const input: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '9px 11px', border: '1px solid rgba(16,17,20,0.16)', borderRadius: 10, fontSize: 14, fontFamily: 'inherit', color: ink, backgroundColor: '#fff', outline: 'none' }
 const h3: React.CSSProperties = { fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: muted, margin: '0 0 12px' }
 const small: React.CSSProperties = { fontSize: 12.5, color: muted }
 const linkBtn: React.CSSProperties = { background: 'none', border: 0, cursor: 'pointer', font: 'inherit', fontSize: 14, color: accent, padding: 0 }
 const fmt = (d: string) => new Date(d).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
-const KIND: Record<Request['kind'], [string, string]> = { lead: ['Quiz', '#E8F3EC'], order: ['Paket', '#EEEBFF'], check: ['Check', '#FFF3DC'] }
+const KIND: Record<Request['kind'], [string, string]> = { lead: ['Quiz', '#E8F3EC'], order: ['Paket', '#F0EEEA'], check: ['Check', '#FFF3DC'] }
 const STAGE_COLOR: Partial<Record<Stage, string>> = { new: '#D93A3A', report_sent: '#5B4BDB', won: '#1F7A4A', lost: '#8A8A8A' }
 
 type Queue = 'mine' | 'free' | 'new' | 'quiz' | 'order' | 'check' | 'today' | 'report' | 'clients' | 'all'
@@ -140,7 +140,7 @@ function Login({ onDone }: { onDone: () => void }) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bone)', padding: 20 }}>
       <form onSubmit={submit} style={{ ...card, width: '100%', maxWidth: 380, padding: 28, display: 'grid', gap: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 800, fontSize: 20, margin: 0 }}>RAG<span style={{ color: accent }}>.</span> · Team-Login</p><LangSwitch /></div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 600, fontSize: 20, margin: 0 }}>RAG<span style={{ color: accent }}>.</span> · Team-Login</p><LangSwitch /></div>
         {mode === 'sent' ? <>
           <p style={{ fontSize: 14, margin: 0, lineHeight: 1.55 }}>Wenn es für diese Adresse ein Team-Konto gibt, haben wir einen Link zum Zurücksetzen geschickt. Schauen Sie auch im Spam-Ordner nach.</p>
           <button type="button" onClick={() => switchTo('login')} style={linkBtn}>← Zurück zur Anmeldung</button>
@@ -225,16 +225,16 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     return (
       <button type="button" onClick={() => setQueue(k)}
         style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', minHeight: 40, padding: '8px 12px', borderRadius: 10, border: 0, cursor: 'pointer', font: 'inherit', fontSize: 14, textAlign: 'left',
-          backgroundColor: on ? accent : 'transparent', color: on ? '#fff' : n === 0 ? '#8A8AA0' : ink }}>
+          backgroundColor: on ? accent : 'transparent', color: on ? '#fff' : n === 0 ? '#7A7C83' : ink }}>
         {label}
         <span style={{ fontSize: 12.5, fontWeight: 700, minWidth: 22, textAlign: 'center', padding: '2px 7px', borderRadius: 999,
-          backgroundColor: on ? 'rgba(255,255,255,0.22)' : tone && n ? tone : n ? '#EFEEF8' : 'transparent', color: on || (tone && n) ? '#fff' : n ? muted : '#8A8AA0' }}>{n}</span>
+          backgroundColor: on ? 'rgba(255,255,255,0.22)' : tone && n ? tone : n ? '#EEEDEA' : 'transparent', color: on || (tone && n) ? '#fff' : n ? muted : '#7A7C83' }}>{n}</span>
       </button>
     )
   }
   const group = (title: string, items: [Queue, string][], opts: { tone?: (k: Queue) => string; danger?: boolean } = {}) => (
     <section style={{ ...card, padding: 10, borderColor: opts.danger ? '#F2C9C3' : line }}>
-      <p style={{ margin: '2px 4px 6px', fontSize: 11.5, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: opts.danger ? '#B3261E' : muted }}>{title}</p>
+      <p style={{ margin: '2px 4px 6px', fontSize: 11.5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: opts.danger ? '#B3261E' : muted }}>{title}</p>
       {items.map(([k, l]) => <QueueBtn key={k} k={k} label={l} tone={opts.tone?.(k)} />)}
     </section>
   )
@@ -244,7 +244,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)', color: ink }}>
       <header style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 24px', borderBottom: `1px solid ${line}`, backgroundColor: '#fff', position: 'sticky', top: 0, zIndex: 5 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 22, flexWrap: 'wrap' }}>
-          <NavLink to="requests" onGo={v => { go(v, false) }} style={{ fontWeight: 800, fontSize: 19, color: ink }}>RAG<span style={{ color: accent }}>.</span></NavLink>
+          <NavLink to="requests" onGo={v => { go(v, false) }} style={{ fontWeight: 600, fontSize: 19, color: ink }}>RAG<span style={{ color: accent }}>.</span></NavLink>
           <nav style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             <NavLink to="requests" onGo={v => go(v, false)} style={navLink(view === 'requests')}>Anfragen</NavLink>
             <NavLink to="leads" onGo={go} style={navLink(view === 'leads')}>Leads</NavLink>
@@ -271,7 +271,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             {group('Wartet auf Aktion', ACTION)}
           </aside>
           <main style={{ flex: '999 1 640px', minWidth: 0, display: 'grid', gap: 12 }}>
-            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800 }}>{label} <span style={{ color: muted, fontWeight: 600 }}>· {list.length}</span></h1>
+            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>{label} <span style={{ color: muted, fontWeight: 600 }}>· {list.length}</span></h1>
             <div style={{ ...card, padding: 0, overflowX: 'auto' }}>
               <div style={{ minWidth: 860 }}>
                 <div className="adm-row" style={{ fontSize: 11.5, fontWeight: 700, color: muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -285,14 +285,14 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                   const n = r.unanswered ?? 0
                   return (
                     <button key={key} type="button" className="adm-row" onClick={() => open(key)}
-                      style={{ width: '100%', textAlign: 'left', border: 0, borderTop: `1px solid ${line}`, backgroundColor: n ? '#FBFAFF' : '#fff', cursor: 'pointer', font: 'inherit', fontSize: 14, color: ink }}>
+                      style={{ width: '100%', textAlign: 'left', border: 0, borderTop: `1px solid ${line}`, backgroundColor: n ? '#FBFAF8' : '#fff', cursor: 'pointer', font: 'inherit', fontSize: 14, color: ink }}>
                       <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 9px', borderRadius: 999, backgroundColor: KIND[r.kind][1], justifySelf: 'start' }}>{KIND[r.kind][0]}</span>
                       <span style={{ minWidth: 0 }}><strong style={{ display: 'block' }}>{r.title}</strong><span style={small}>{r.sub}</span>{r.reportDue && <span style={{ ...small, display: 'block', color: '#B3261E', fontWeight: 700 }}>Monatsbericht fällig</span>}</span>
                       <span style={{ fontWeight: 600, color: STAGE_COLOR[r.stage] ?? ink }}>{stageLabel(r.stage)}</span>
                       <span style={{ fontWeight: due ? 700 : 400, color: due ? '#B3261E' : r.next ? ink : muted }}>{r.next ? (due ? 'heute' : fmtDay(r.next)) : '—'}</span>
                       <span style={{ color: r.assignee ? ink : '#B25A00' }}>{r.assignee ? (r.assignee === me ? 'Sie selbst' : staffName(data?.profiles ?? [], r.assignee)) : 'frei'}</span>
                       <span>{n > 0
-                        ? <span style={{ display: 'inline-flex', gap: 5, alignItems: 'center', color: accent, fontWeight: 800, fontSize: 13 }} title="Ungelesene Nachrichten des Kunden"><ChatIcon />{n}</span>
+                        ? <span style={{ display: 'inline-flex', gap: 5, alignItems: 'center', color: accent, fontWeight: 600, fontSize: 13 }} title="Ungelesene Nachrichten des Kunden"><ChatIcon />{n}</span>
                         : <span style={small}>—</span>}</span>
                     </button>
                   )
@@ -379,9 +379,9 @@ function Detail({ r, all, profiles, me, onSelect, onBack, onPatch }: { r: Reques
   }, [panel, waiting]) // eslint-disable-line react-hooks/exhaustive-deps
   const sideBtn = (key: typeof panel, text: string, icon: React.ReactNode, badge?: number, hot?: boolean) => (
     <button type="button" onClick={() => setPanel(key)}
-      style={{ display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, padding: '0 14px', borderRadius: 12, border: `1px solid ${hot ? accent : '#D6D5E3'}`, backgroundColor: hot ? 'var(--brand-soft)' : '#fff', font: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: ink }}>
+      style={{ display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, padding: '0 14px', borderRadius: 12, border: `1px solid ${hot ? accent : '#DEDCD7'}`, backgroundColor: hot ? 'var(--brand-soft)' : '#fff', font: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: ink }}>
       {icon}{text}
-      {!!badge && <span style={{ minWidth: 20, height: 20, padding: '0 6px', boxSizing: 'border-box', borderRadius: 999, backgroundColor: hot ? accent : '#EFEEF8', color: hot ? '#fff' : muted, fontSize: 12, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{badge}</span>}
+      {!!badge && <span style={{ minWidth: 20, height: 20, padding: '0 6px', boxSizing: 'border-box', borderRadius: 999, backgroundColor: hot ? accent : '#EEEDEA', color: hot ? '#fff' : muted, fontSize: 12, fontWeight: 600, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{badge}</span>}
     </button>
   )
   const ic = (d: string) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
@@ -491,8 +491,8 @@ function SidePanel({ title, onClose, children }: { title: string; onClose: () =>
   }, [onClose])
   return (
     <div role="dialog" aria-modal="true" aria-label={title} onMouseDown={e => { if (e.target === e.currentTarget) onClose() }}
-      style={{ position: 'fixed', inset: 0, zIndex: 40, backgroundColor: 'rgba(11,11,26,0.28)' }}>
-      <div className="adm-panel" style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 480, maxWidth: '100%', backgroundColor: 'var(--bone)', boxShadow: '-12px 0 40px rgba(11,11,26,0.18)', display: 'flex', flexDirection: 'column' }}>
+      style={{ position: 'fixed', inset: 0, zIndex: 40, backgroundColor: 'rgba(16,17,20,0.28)' }}>
+      <div className="adm-panel" style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 480, maxWidth: '100%', backgroundColor: 'var(--bone)', boxShadow: '-12px 0 40px rgba(16,17,20,0.18)', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', backgroundColor: '#fff', borderBottom: `1px solid ${line}` }}>
           <strong style={{ fontSize: 17 }}>{title}</strong>
           <button type="button" onClick={onClose} aria-label="Schließen" style={{ ...linkBtn, color: muted, fontSize: 24, width: 44, height: 44 }}>×</button>
@@ -635,7 +635,7 @@ function OfferCard({ clientKey, userId, kind, requestId, title, initial, preset,
 const stepDot = (state: 'done' | 'now' | 'todo') => ({
   width: 24, height: 24, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700,
   color: state === 'done' ? '#fff' : state === 'now' ? accent : muted,
-  backgroundColor: state === 'done' ? '#1F7A4A' : state === 'now' ? '#EEEBFF' : '#F1F1F4',
+  backgroundColor: state === 'done' ? '#1F7A4A' : state === 'now' ? '#F0EEEA' : '#F1F1F4',
 } as React.CSSProperties)
 
 function InvoiceCard({ project, offer, onSaved, title = 'Rechnung' }: { project: Project; offer: Offer | null; onSaved: () => void; title?: string }) {
@@ -754,7 +754,7 @@ function PlanCard({ project, monthlyItems, onSaved }: { project: Project; monthl
           : (
             <>
               <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 14 }}>
-                <input type="checkbox" checked={!!project.monthly} disabled={busy} style={{ width: 18, height: 18, accentColor: '#2600FF' }}
+                <input type="checkbox" checked={!!project.monthly} disabled={busy} style={{ width: 18, height: 18, accentColor: '#101114' }}
                   onChange={e => set(e.target.checked ? { monthly: true, next_report_at: project.next_report_at ?? in30() } : { monthly: false, next_report_at: null }, e.target.checked ? 'Erinnerung eingeschaltet.' : 'Erinnerung ausgeschaltet.')} />
                 Alle 30 Tage an einen neuen Bericht erinnern
               </label>
@@ -856,7 +856,7 @@ function Chat({ userId, messages, onSent }: { userId: string | null; messages: M
       <div style={{ display: 'grid', gap: 8, maxHeight: 360, overflowY: 'auto', marginBottom: 10 }}>
         {messages.length === 0 && <p style={small}>Keine Nachrichten.</p>}
         {messages.map(m => (
-          <div key={m.id} style={{ justifySelf: m.author === 'rag' ? 'end' : 'start', maxWidth: '85%', padding: '8px 11px', borderRadius: 12, backgroundColor: m.author === 'rag' ? '#EEEBFF' : '#F2F1EC', fontSize: 14, whiteSpace: 'pre-wrap' }}>
+          <div key={m.id} style={{ justifySelf: m.author === 'rag' ? 'end' : 'start', maxWidth: '85%', padding: '8px 11px', borderRadius: 12, backgroundColor: m.author === 'rag' ? '#F0EEEA' : '#F2F1EC', fontSize: 14, whiteSpace: 'pre-wrap' }}>
             {/* Nachrichtentext nicht übersetzen — er ist Inhalt, keine Oberfläche */}
             <span data-no-translate>{m.body}</span><div style={{ ...small, fontSize: 11.5, marginTop: 3 }}>{m.author === 'rag' ? 'Team' : 'Kunde'} · {fmt(m.created_at)}</div>
           </div>
@@ -1024,7 +1024,7 @@ function MyProfile() {
       <section style={{ ...card, display: 'flex', gap: 14, alignItems: 'center' }}>
         {f.photo && urlOk(f.photo)
           ? <img src={f.photo} alt="" style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }} />
-          : <span style={{ width: 56, height: 56, borderRadius: '50%', backgroundColor: 'var(--brand-soft)', color: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>{(f.name || 'R').slice(0, 1).toUpperCase()}</span>}
+          : <span style={{ width: 56, height: 56, borderRadius: '50%', backgroundColor: 'var(--brand-soft)', color: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>{(f.name || 'R').slice(0, 1).toUpperCase()}</span>}
         <span><span style={small}>{f.title || 'Ihr Ansprechpartner'}</span><br /><strong>{f.name || '—'}</strong></span>
         <span style={{ ...small, marginLeft: 'auto' }}>Vorschau für den Kunden</span>
       </section>
@@ -1043,8 +1043,8 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
   }, [onClose])
   return (
     <div role="dialog" aria-modal="true" aria-label={title} onMouseDown={e => { if (e.target === e.currentTarget) onClose() }}
-      style={{ position: 'fixed', inset: 0, zIndex: 50, backgroundColor: 'rgba(7,7,12,0.45)', display: 'grid', placeItems: 'center', padding: 16 }}>
-      <div style={{ ...card, width: '100%', maxWidth: 420, padding: 24, boxShadow: '0 20px 60px rgba(7,7,12,0.25)' }}>
+      style={{ position: 'fixed', inset: 0, zIndex: 50, backgroundColor: 'rgba(16,17,20,0.45)', display: 'grid', placeItems: 'center', padding: 16 }}>
+      <div style={{ ...card, width: '100%', maxWidth: 420, padding: 24, boxShadow: '0 20px 60px rgba(16,17,20,0.25)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 14 }}>
           <h2 style={{ fontSize: 19, margin: 0 }}>{title}</h2>
           <button type="button" onClick={onClose} aria-label="Schließen" style={{ ...linkBtn, color: muted, fontSize: 22, lineHeight: 1 }}>×</button>
@@ -1164,7 +1164,7 @@ function StaffResetPassword() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bone)', padding: 20, color: ink }}>
       <form onSubmit={submit} style={{ ...card, width: '100%', maxWidth: 380, padding: 28, display: 'grid', gap: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 800, fontSize: 20, margin: 0 }}>RAG<span style={{ color: accent }}>.</span> · Neues Passwort</p><LangSwitch /></div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 600, fontSize: 20, margin: 0 }}>RAG<span style={{ color: accent }}>.</span> · Neues Passwort</p><LangSwitch /></div>
         {ready === 'wait' && <p style={{ ...small, margin: 0 }}>Wird geladen…</p>}
         {ready === 'invalid' && <>
           <p style={{ fontSize: 14, margin: 0 }}>Der Link ist abgelaufen oder wurde schon benutzt.</p>
@@ -1214,7 +1214,7 @@ function Team() {
         <p style={{ ...small, margin: '8px 0 0' }}>Der Link ist einmalig, 72 Stunden gültig und nur für diese E-Mail. Senden Sie ihn selbst an den Mitarbeiter (Messenger, E-Mail).</p>
         {err && <p role="alert" style={{ color: '#B3261E', fontSize: 14, margin: '10px 0 0' }}>{err}</p>}
         {link && (
-          <div style={{ marginTop: 12, padding: 12, borderRadius: 12, backgroundColor: '#F4F2FF', display: 'grid', gap: 8 }}>
+          <div style={{ marginTop: 12, padding: 12, borderRadius: 12, backgroundColor: '#F3F1EE', display: 'grid', gap: 8 }}>
             <code style={{ fontSize: 13, overflowWrap: 'anywhere' }}>{link}</code>
             <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <button type="button" className="btn btn-sm btn-electric" onClick={copy}>{copied ? 'Kopiert ✓' : 'Link kopieren'}</button>
@@ -1281,7 +1281,7 @@ function AcceptInvite() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bone)', padding: 20, color: ink }}>
       <div style={{ ...card, width: '100%', maxWidth: 420, padding: 28, display: 'grid', gap: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 800, fontSize: 20, margin: 0 }}>RAG<span style={{ color: accent }}>.</span> · Einladung ins Team</p><LangSwitch /></div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 600, fontSize: 20, margin: 0 }}>RAG<span style={{ color: accent }}>.</span> · Einladung ins Team</p><LangSwitch /></div>
         {!token && <p style={{ margin: 0 }}>Der Link enthält keinen Einladungscode. Bitten Sie um einen neuen Link.</p>}
         {token && email === undefined && <p style={small}>Wird geladen…</p>}
         {token && email && (
@@ -1296,7 +1296,7 @@ function AcceptInvite() {
             <div style={{ display: 'flex', gap: 6 }}>
               {(['new', 'login'] as const).map(m => (
                 <button key={m} type="button" onClick={() => { setMode(m); setErr('') }}
-                  style={{ flex: 1, padding: '8px', borderRadius: 10, border: `1px solid ${mode === m ? accent : line}`, backgroundColor: mode === m ? '#F4F2FF' : '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600 }}>
+                  style={{ flex: 1, padding: '8px', borderRadius: 10, border: `1px solid ${mode === m ? accent : line}`, backgroundColor: mode === m ? '#F3F1EE' : '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600 }}>
                   {m === 'new' ? 'Konto anlegen' : 'Ich habe ein Konto'}
                 </button>
               ))}

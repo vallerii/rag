@@ -20,7 +20,7 @@ export default function OrderPage({ items }: { items: OrderItem[] }) {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)' }}>
-      <header style={{ borderBottom: '1px solid var(--line)', backgroundColor: 'rgba(241,240,235,0.9)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', position: 'sticky', top: 0, zIndex: 20 }}>
+      <header style={{ borderBottom: '1px solid var(--line)', backgroundColor: 'rgba(247,246,244,0.9)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', position: 'sticky', top: 0, zIndex: 20 }}>
         <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 clamp(20px, 4vw, 48px)', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <Logo />
           <p className="eyebrow ck-hide-sm" style={{ color: 'var(--muted)' }}>Paket anfragen</p>
@@ -43,13 +43,13 @@ export default function OrderPage({ items }: { items: OrderItem[] }) {
               <a href="/preise" className="ul" style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--electric)' }}>Ändern</a>
             </div>
             {items.map(i => (
-              <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '13px 0', borderTop: '1px solid #DAD8F5' }}>
+              <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '13px 0', borderTop: '1px solid #E4E1DB' }}>
                 <span style={{ fontWeight: 600, fontSize: 15 }}>{i.name}</span>
                 <span style={{ whiteSpace: 'nowrap', fontSize: 15 }}><strong>{i.price} €</strong> <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>{i.unit}</span></span>
               </div>
             ))}
             {items.length > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '14px 0 0', borderTop: '1px solid #C9C5F7', fontSize: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '14px 0 0', borderTop: '1px solid #D9D6D0', fontSize: 14 }}>
                 <span style={{ color: 'var(--muted)' }}>Gesamt</span><strong style={{ textAlign: 'right' }}>{orderTotal(items)}</strong>
               </div>
             )}
@@ -59,7 +59,7 @@ export default function OrderPage({ items }: { items: OrderItem[] }) {
           </div>
         </aside>
 
-        <section style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(24px, 4vw, 48px)', boxShadow: '0 30px 70px rgba(7,7,12,0.06)', minWidth: 0 }}>
+        <section style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(24px, 4vw, 48px)', boxShadow: '0 30px 70px rgba(16,17,20,0.06)', minWidth: 0 }}>
           {items.length === 0 ? (
             <>
               <h1 className="display" style={{ fontSize: 'clamp(26px, 3vw, 36px)', margin: '0 0 12px' }}>Kein Paket gewählt</h1>

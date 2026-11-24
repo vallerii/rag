@@ -40,7 +40,7 @@ export function CompetitorsCard({ report }: { report: Report }) {
           <thead><tr><th style={th}>Unternehmen</th><th style={th}>Bewertung</th><th style={th}>Bewertungen</th><th style={th}>Website</th></tr></thead>
           <tbody>
             {rows.map((r, i) => (
-              <tr key={i} style={{ backgroundColor: r.me ? '#EEEBFF' : undefined }}>
+              <tr key={i} style={{ backgroundColor: r.me ? '#F0EEEA' : undefined }}>
                 <td style={{ ...td, fontWeight: r.me ? 700 : 500, paddingLeft: r.me ? 8 : 0 }}>{r.name}{r.me && <span style={{ fontSize: 12, color: 'var(--electric)', marginLeft: 6 }}>Sie</span>}</td>
                 <td style={td}>{r.rating !== null ? `${r.rating.toLocaleString(dateLocale(), { minimumFractionDigits: 1 })} ★` : '—'}</td>
                 <td style={td}>{r.reviews}</td>

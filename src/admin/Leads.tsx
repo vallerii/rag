@@ -7,7 +7,7 @@ import { useLive } from './live'
 
 const ink = 'var(--ink)', muted = 'var(--muted)', line = 'var(--line)', accent = 'var(--electric)'
 const card: React.CSSProperties = { backgroundColor: '#fff', border: `1px solid ${line}`, borderRadius: 16, padding: 18 }
-const input: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '9px 11px', border: '1px solid rgba(7,7,12,0.16)', borderRadius: 10, fontSize: 14, fontFamily: 'inherit', color: ink, backgroundColor: '#fff', outline: 'none' }
+const input: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '9px 11px', border: '1px solid rgba(16,17,20,0.16)', borderRadius: 10, fontSize: 14, fontFamily: 'inherit', color: ink, backgroundColor: '#fff', outline: 'none' }
 const small: React.CSSProperties = { fontSize: 12.5, color: muted }
 const CSV_KEY = 'leads_csv_url'
 
@@ -19,8 +19,8 @@ const inFilter = (p: Prospect, f: Filter) =>
   : f === 'checked' ? p.status === 'checked'
   : p.status === f
 const STATUS: Record<ProspectStatus, [string, string, string]> = {
-  new: ['Neu', '#EFEEF8', '#4A4A63'], checking: ['Wird geprüft', '#ECEBFF', '#2600FF'], checked: ['Geprüft', '#E3F4EA', '#17663A'],
-  error: ['Fehler', '#FBE3E0', '#9C1F17'], printed: ['Gedruckt', '#F0EFF6', '#4A4A63'], responded: ['Reagiert', '#DDF3E6', '#0F6B35'], hidden: ['Ausgeblendet', '#F0EFF6', '#8A8AA0'],
+  new: ['Neu', '#EEEDEA', '#5D6068'], checking: ['Wird geprüft', '#F0EEEA', '#101114'], checked: ['Geprüft', '#E3F4EA', '#17663A'],
+  error: ['Fehler', '#FBE3E0', '#9C1F17'], printed: ['Gedruckt', '#EEEDEA', '#5D6068'], responded: ['Reagiert', '#DDF3E6', '#0F6B35'], hidden: ['Ausgeblendet', '#EEEDEA', '#7A7C83'],
 }
 const scoreColor = (s: number | null) => (s === null ? muted : s < 50 ? '#9C1F17' : s < 75 ? '#8A4B00' : '#17663A')
 const fmtDay = (d: string) => new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
@@ -143,7 +143,7 @@ export default function Leads({ onOpenRequest }: { onOpenRequest: (key: string) 
     <div style={{ maxWidth: 1360, margin: '0 auto', padding: '20px 24px 40px', display: 'grid', gap: 14 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' }}>
         <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: 26, fontWeight: 800 }}>Leads</h1>
+          <h1 style={{ margin: '0 0 4px', fontSize: 26, fontWeight: 600 }}>Leads</h1>
           <p style={{ margin: 0, fontSize: 14, color: muted }}>Potenzielle Kunden aus der Google-Tabelle. Sie haben uns noch nicht geschrieben.</p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -181,7 +181,7 @@ export default function Leads({ onOpenRequest }: { onOpenRequest: (key: string) 
           const on = f === filter
           return (
             <button key={f} type="button" onClick={() => { setFilter(f); setSel(new Set()) }}
-              style={{ minHeight: 38, padding: '0 14px', borderRadius: 999, border: `1px solid ${on ? ink : '#D6D5E3'}`, backgroundColor: on ? ink : '#fff', color: on ? '#fff' : f === 'responded' && count(f) ? '#0F6B35' : ink, font: 'inherit', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+              style={{ minHeight: 38, padding: '0 14px', borderRadius: 999, border: `1px solid ${on ? ink : '#DEDCD7'}`, backgroundColor: on ? ink : '#fff', color: on ? '#fff' : f === 'responded' && count(f) ? '#0F6B35' : ink, font: 'inherit', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', gap: 6, alignItems: 'center' }}>
               {l} <span style={{ opacity: 0.7 }}>{count(f)}</span>
             </button>
           )
@@ -211,7 +211,7 @@ export default function Leads({ onOpenRequest }: { onOpenRequest: (key: string) 
       {progress && (
         <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', padding: '12px 16px' }}>
           <strong style={{ fontSize: 14 }}>Prüfung: {progress.done} von {progress.total}</strong>
-          <div role="progressbar" aria-valuenow={progress.done} aria-valuemin={0} aria-valuemax={progress.total} aria-label="Fortschritt" style={{ flex: 1, minWidth: 200, height: 8, backgroundColor: '#EFEEF8', borderRadius: 999, overflow: 'hidden' }}>
+          <div role="progressbar" aria-valuenow={progress.done} aria-valuemin={0} aria-valuemax={progress.total} aria-label="Fortschritt" style={{ flex: 1, minWidth: 200, height: 8, backgroundColor: '#EEEDEA', borderRadius: 999, overflow: 'hidden' }}>
             <div style={{ width: `${(progress.done / progress.total) * 100}%`, height: '100%', backgroundColor: accent, transition: 'width .3s' }} />
           </div>
           <span style={small}>ca. 20–40 Sekunden pro Unternehmen, drei gleichzeitig</span>
@@ -223,7 +223,7 @@ export default function Leads({ onOpenRequest }: { onOpenRequest: (key: string) 
       <div style={{ ...card, padding: 0, overflowX: 'auto' }}>
         <div style={{ minWidth: 1000 }}>
           <div className="lead-row" style={{ fontSize: 11.5, fontWeight: 700, color: muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            <input type="checkbox" checked={allOn} onChange={toggleAll} aria-label="Alle auswählen" style={{ width: 18, height: 18, accentColor: '#2600FF' }} />
+            <input type="checkbox" checked={allOn} onChange={toggleAll} aria-label="Alle auswählen" style={{ width: 18, height: 18, accentColor: '#101114' }} />
             <span>Unternehmen</span><span>Branche · Ort</span><span>Punktzahl</span><span>Wichtigste Probleme</span><span>Status</span><span />
           </div>
           {!list && <p style={{ padding: 16, color: muted, margin: 0 }}>Wird geladen…</p>}
@@ -231,8 +231,8 @@ export default function Leads({ onOpenRequest }: { onOpenRequest: (key: string) 
           {shown.map(p => {
             const [sl, sbg, sfg] = STATUS[p.status]
             return (
-              <label key={p.id} className="lead-row" style={{ borderTop: `1px solid ${line}`, cursor: 'pointer', backgroundColor: sel.has(p.id) ? '#FBFAFF' : '#fff', fontSize: 14 }}>
-                <input type="checkbox" checked={sel.has(p.id)} onChange={() => toggle(p.id)} style={{ width: 18, height: 18, accentColor: '#2600FF' }} />
+              <label key={p.id} className="lead-row" style={{ borderTop: `1px solid ${line}`, cursor: 'pointer', backgroundColor: sel.has(p.id) ? '#FBFAF8' : '#fff', fontSize: 14 }}>
+                <input type="checkbox" checked={sel.has(p.id)} onChange={() => toggle(p.id)} style={{ width: 18, height: 18, accentColor: '#101114' }} />
                 <span style={{ minWidth: 0 }}>
                   <strong data-no-translate style={{ display: 'block' }}>{p.name}</strong>
                   <span style={small}>{p.query ? <>Suchbegriff: <span data-no-translate>{p.query}</span></> : p.website ?? ''}</span>

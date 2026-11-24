@@ -33,7 +33,7 @@ export function ManagerCard({ manager, assigned = !!manager, onWrite, canBook, l
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', margin: '4px 0 14px' }}>
         {manager?.photo_url
           ? <img src={manager.photo_url} alt="" width={44} height={44} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-          : <span aria-hidden style={{ width: 44, height: 44, borderRadius: '50%', backgroundColor: 'var(--brand-soft)', color: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, flexShrink: 0 }}>{manager?.name ? initials(manager.name) : 'R'}</span>}
+          : <span aria-hidden style={{ width: 44, height: 44, borderRadius: '50%', backgroundColor: 'var(--brand-soft)', color: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 15, flexShrink: 0 }}>{manager?.name ? initials(manager.name) : 'R'}</span>}
         <div style={{ minWidth: 0 }}>
           <p style={{ fontWeight: 700, fontSize: 15.5, margin: 0 }}>{name}</p>
           <p style={{ fontSize: 13, color: 'var(--muted)', margin: '2px 0 0', lineHeight: 1.45 }}>{assigned ? 'Betreut Ihr Projekt persönlich' : 'Wird in der Regel innerhalb von 1 Werktag zugeteilt'}</p>
@@ -50,7 +50,7 @@ export function ManagerCard({ manager, assigned = !!manager, onWrite, canBook, l
     <section style={{ ...card, display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap' }}>
       {manager?.photo_url
         ? <img src={manager.photo_url} alt="" width={64} height={64} style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-        : <span aria-hidden style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--brand-soft)', color: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 20, flexShrink: 0 }}>{manager?.name ? initials(manager.name) : 'R'}</span>}
+        : <span aria-hidden style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--brand-soft)', color: 'var(--electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 20, flexShrink: 0 }}>{manager?.name ? initials(manager.name) : 'R'}</span>}
       <div style={{ flex: 1, minWidth: 200 }}>
         {kick(manager ? (manager.title || 'Ihr Ansprechpartner') : 'Ihr Ansprechpartner')}
         <p className="display" style={{ fontSize: 20, margin: '0 0 4px' }}>{name}</p>
@@ -148,9 +148,9 @@ export function RecommendedCard({ rec, booking, onWrite }: { rec: NonNullable<Re
   return (
     <section className="on-brand" style={{ ...card, backgroundColor: 'var(--electric)', color: '#fff', border: 'none', display: 'flex', gap: 24, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
       <div style={{ maxWidth: 640 }}>
-        {kick('Unsere Empfehlung für den Start', '#C9C2FF')}
+        {kick('Unsere Empfehlung für den Start', '#D9D6D0')}
         <p className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 30px)', lineHeight: 1.15, margin: '0 0 10px' }}>{rec.name}</p>
-        {(rec.why || rec.description) && <p style={{ fontSize: 14.5, lineHeight: 1.7, color: '#DCD8FF', margin: 0, whiteSpace: 'pre-wrap' }}>{rec.why || rec.description}</p>}
+        {(rec.why || rec.description) && <p style={{ fontSize: 14.5, lineHeight: 1.7, color: '#E4E1DB', margin: 0, whiteSpace: 'pre-wrap' }}>{rec.why || rec.description}</p>}
       </div>
       <div>
         <p className="display" style={{ fontSize: 30, margin: '0 0 12px' }}>{rec.price} €<span style={{ fontSize: 15, fontWeight: 500, opacity: 0.6, letterSpacing: 0 }}> {rec.unit === 'einmalig' ? 'einmalig' : '/ Monat'}</span></p>
@@ -193,7 +193,7 @@ export function CompanySwitcher({ checks, current, onSelect, title }: { checks: 
       </button>
       <div style={{ height: 10 }} />
       {open && (
-        <div role="listbox" aria-label="Ihre Firmen" style={{ position: 'absolute', zIndex: 30, top: '100%', left: 0, marginTop: 6, minWidth: 'min(360px, 86vw)', backgroundColor: '#fff', borderRadius: 18, border: '1px solid var(--line-soft)', boxShadow: '0 18px 40px rgba(7,7,12,0.12)', padding: 8 }}>
+        <div role="listbox" aria-label="Ihre Firmen" style={{ position: 'absolute', zIndex: 30, top: '100%', left: 0, marginTop: 6, minWidth: 'min(360px, 86vw)', backgroundColor: '#fff', borderRadius: 18, border: '1px solid var(--line-soft)', boxShadow: '0 18px 40px rgba(16,17,20,0.12)', padding: 8 }}>
           {checks.map(c => {
             const active = c.id === current?.id
             return (
