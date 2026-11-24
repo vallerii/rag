@@ -2002,3 +2002,15 @@
 /* Google Search: kürzere Szene, kein leerer Bildschirm nach «Google Optimierung jetzt bestellen». */
 #approved-search .search-timeline{height:500svh}
 #approved-search .scene-exit{height:0}
+
+/* ── Hero kompakter (24.11.): Fächer näher an die Kopfzeile, Buttons im ersten Bildschirm ── */
+@media (min-width:881px){
+  .rx .rx-hero{padding-top:4px}
+  .rx .rx-fan{margin-bottom:22px}
+  .rx .rx-hero h1{margin-bottom:18px}
+  .rx .rx-actions{margin-top:24px}
+}
+@media (min-width:881px) and (max-height:980px){
+  .rx .rx-fan{height:330px}
+  .rx .rx-hero h1{font-size:clamp(42px,5.4vw,72px)}
+}
