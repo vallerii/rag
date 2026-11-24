@@ -7,6 +7,7 @@ import {
   type Contact, type Place, type Source, type SourceKey, type Suggestion,
 } from './data'
 import AccountStep from './AccountStep'
+import { accent } from '../home/accent'
 
 // /check — Onboarding nach der Unternehmenssuche. Drei Schritte:
 // 1 Unternehmen suchen (Trefferliste) → 2 Gefundenes prüfen und direkt korrigieren («Vollständige Analyse erhalten»)
@@ -68,7 +69,7 @@ export function DemoNote({ children }: { children: React.ReactNode }) {
 function StepHead({ title, sub }: { n?: string; title: string; sub?: string }) {
   return (
     <>
-      <h1 className="display" style={{ fontSize: 'clamp(24px, 2.6vw, 32px)', lineHeight: 1.08, margin: sub ? '0 0 10px' : '0 0 18px' }}>{title}</h1>
+      <h1 className="display" style={{ fontSize: 'clamp(24px, 2.6vw, 32px)', lineHeight: 1.08, margin: sub ? '0 0 10px' : '0 0 18px' }}>{accent(title)}</h1>
       {sub && <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)', margin: '0 0 18px', maxWidth: 900 }}>{sub}</p>}
     </>
   )

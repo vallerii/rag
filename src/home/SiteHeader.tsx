@@ -14,7 +14,7 @@ const NAV: [string, string, string][] = [
   ['Social Media', '#social', '/services/social-media'],
 ]
 
-export default function SiteHeader({ home = false }: { home?: boolean }) {
+export default function SiteHeader({ home = false, menu }: { home?: boolean; menu?: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const page = ref.current?.closest<HTMLElement>('.rx')
@@ -26,7 +26,8 @@ export default function SiteHeader({ home = false }: { home?: boolean }) {
       <header className="rx-header">
         <a className="rx-logo rx-wordmark" href={home ? '#sichtbarkeit' : '/'} aria-label="RAG Startseite">RAG<em>.</em></a>
         <nav className="rx-nav" aria-label="Hauptnavigation">
-          {NAV.map(([label, anchor, page]) => <a key={label} href={home ? anchor : page}>{label}</a>)}
+          {/* Navigation aus App.tsx (Aufklappmenü «Wo man Sie sucht», Preise, Ratgeber); ohne Angabe die vier Kanäle. */}
+          {menu ?? NAV.map(([label, anchor, page]) => <a key={label} href={home ? anchor : page}>{label}</a>)}
         </nav>
         <div className="rx-header-actions">
           <span className="rx-lang"><LangSwitch fg="var(--rx-ink)" border="transparent" /></span>

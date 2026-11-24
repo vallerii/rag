@@ -1969,3 +1969,26 @@
 .rx-header .rx-lang button{font-size:11px!important;font-weight:500!important;padding:7px 8px!important}
 .rx-header .rx-lang button[aria-pressed=true]{background:var(--rx-ink)!important;color:var(--rx-bg)!important}
 @media(width<=640px){.rx-header .rx-lang button{padding:6px 6px!important;font-size:10px!important}}
+
+/* ── Aufklappmenü «Wo man Sie sucht» (24.11.) ── */
+.rx-menu{position:relative;display:inline-flex}
+.rx-menu-trigger{display:inline-flex;align-items:center;gap:6px}
+.rx-menu-trigger svg{transition:transform .25s ease}
+.rx-menu.is-open .rx-menu-trigger{color:var(--rx-ink)}
+.rx-menu.is-open .rx-menu-trigger svg{transform:rotate(180deg)}
+.rx-menu-bridge{position:absolute;top:100%;left:50%;z-index:120;padding-top:22px;transform:translateX(-50%);pointer-events:none}
+.rx-menu.is-open .rx-menu-bridge{pointer-events:auto}
+.rx-menu-panel{width:min(430px,calc(100vw - 32px));padding:10px;border:1px solid var(--rx-border);border-radius:22px;background:var(--rx-surface);
+  box-shadow:0 30px 60px -28px #10111440,0 8px 20px -14px #1011141f;white-space:normal;text-align:left;
+  opacity:0;transform:translateY(-8px) scale(.985);transform-origin:top center;transition:opacity .22s ease,transform .32s cubic-bezier(.2,.7,.2,1)}
+.rx-menu.is-open .rx-menu-panel{opacity:1;transform:none}
+.rx-nav .rx-menu-item{display:flex;gap:16px;align-items:flex-start;padding:14px 14px;border-radius:14px;color:var(--rx-ink);transition:background-color .18s ease}
+.rx-nav .rx-menu-item:hover,.rx-nav .rx-menu-item:focus-visible{background:var(--rx-bg);color:var(--rx-ink)}
+.rx-menu-icon{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:12px;background:var(--rx-inset);color:var(--rx-ink);transition:background-color .18s ease,color .18s ease}
+.rx-menu-item:hover .rx-menu-icon{background:#ff5b2e1a;color:var(--rx-accent)}
+.rx-menu-item strong{display:block;font-size:14px;font-weight:500;letter-spacing:-.01em;margin:2px 0 3px}
+.rx-menu-item small{display:block;font-size:12px;line-height:1.5;color:var(--rx-muted)}
+.rx-nav .rx-menu-all{display:flex;justify-content:space-between;margin:6px 4px 2px;padding:14px 10px 8px;border-top:1px solid var(--rx-border);font-size:12.5px;font-weight:500;color:var(--rx-ink)}
+.rx-nav .rx-menu-all:hover{color:var(--rx-accent)}
+@media(width<=880px){.rx-header .rx-nav,.rx-header .rx-menu{position:static}.rx-menu-bridge{top:calc(100% - 6px);padding-top:0}}
+@media(prefers-reduced-motion:reduce){.rx-menu-panel{transition:none}}

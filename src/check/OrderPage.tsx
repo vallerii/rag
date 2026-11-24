@@ -2,6 +2,7 @@ import LangSwitch from '../LangSwitch'
 import AccountStep from './AccountStep'
 import { Logo, useNoindex } from './CheckPage'
 import { createOrder, orderTotal, type OrderItem } from './data'
+import { accent } from '../home/accent'
 
 // /anfrage?pkg=onepager|local|aiplus|profile&social=1 — Paket-Anfrage, Schritt 2 von 2.
 // Schritt 1 ist das Auswahlfenster (Preise / Startseite / Leistungsseiten).
@@ -62,14 +63,14 @@ export default function OrderPage({ items }: { items: OrderItem[] }) {
         <section style={{ backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(24px, 4vw, 48px)', boxShadow: '0 30px 70px rgba(16,17,20,0.06)', minWidth: 0 }}>
           {items.length === 0 ? (
             <>
-              <h1 className="display" style={{ fontSize: 'clamp(26px, 3vw, 36px)', margin: '0 0 12px' }}>Kein Paket gewählt</h1>
+              <h1 className="display" style={{ fontSize: 'clamp(26px, 3vw, 36px)', margin: '0 0 12px' }}>{accent('Kein Paket gewählt')}</h1>
               <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 24px' }}>Wählen Sie zuerst ein Paket auf der Preisseite.</p>
               <a href="/preise" className="btn btn-lg btn-electric">Zu den Paketen <span className="arw">→</span></a>
             </>
           ) : (
             <>
               <p className="kick" style={{ marginBottom: 12 }}>Schritt 2 von 2</p>
-              <h1 className="display" style={{ fontSize: 'clamp(26px, 3vw, 36px)', lineHeight: 1.08, margin: '0 0 12px' }}>Ihr Kundenbereich</h1>
+              <h1 className="display" style={{ fontSize: 'clamp(26px, 3vw, 36px)', lineHeight: 1.08, margin: '0 0 12px' }}>{accent('Ihr Kundenbereich')}</h1>
               <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 26px', maxWidth: 540 }}>
                 Legen Sie ein Konto an oder melden Sie sich an. Im Kundenbereich tragen Sie kurz Ihr Unternehmen ein, danach startet die Analyse.
               </p>

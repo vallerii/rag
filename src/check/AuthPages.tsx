@@ -2,6 +2,7 @@ import LangSwitch from '../LangSwitch'
 import { useEffect, useState } from 'react'
 import { Logo, useNoindex } from './CheckPage'
 import { authErrorText, currentUser, getSupabase, sendPasswordReset, setNewPassword, signIn, type AuthError } from './data'
+import { accent } from '../home/accent'
 
 // Anmeldung für Bestandskunden: /login · /passwort-vergessen · /passwort-neu
 // Konto entsteht im Check (Schritt 3) — hier nur Anmelden und Passwort zurücksetzen.
@@ -30,7 +31,7 @@ function AuthShell({ eyebrow, title, sub, children }: { eyebrow: string; title: 
       <main id="inhalt" style={{ flex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 'clamp(40px, 8vh, 96px) 20px 80px' }}>
         <div style={{ width: '100%', maxWidth: 460, backgroundColor: '#fff', borderRadius: 26, padding: 'clamp(26px, 4vw, 40px)', boxShadow: '0 30px 70px rgba(16,17,20,0.06)' }}>
           <p className="eyebrow" style={{ color: 'var(--electric)', marginBottom: 12 }}>{eyebrow}</p>
-          <h1 className="display" style={{ fontSize: 'clamp(26px, 3vw, 34px)', lineHeight: 1.08, margin: '0 0 10px' }}>{title}</h1>
+          <h1 className="display" style={{ fontSize: 'clamp(26px, 3vw, 34px)', lineHeight: 1.08, margin: '0 0 10px' }}>{accent(title)}</h1>
           {sub && <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--muted)', margin: '0 0 24px' }}>{sub}</p>}
           {children}
         </div>

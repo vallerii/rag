@@ -28,7 +28,7 @@ export const HOME_FAQ: { q: string; a: string }[] = [
 
 const THEME_KEY = 'rag-recto-theme'
 
-export default function HomePage({ children }: { children?: React.ReactNode }) {
+export default function HomePage({ children, headerMenu }: { children?: React.ReactNode; headerMenu?: React.ReactNode }) {
   // Hell/Dunkel nur auf der Startseite; die Wahl wird gespeichert.
   const [dark, setDark] = useState(false)
   useEffect(() => {
@@ -42,7 +42,7 @@ export default function HomePage({ children }: { children?: React.ReactNode }) {
   return (
     <div className="rx" data-theme={dark ? 'dark' : 'light'}>
       {children}
-      <SiteHeader home />
+      <SiteHeader home menu={headerMenu} />
       <main id="inhalt">
         <Hero />
         <Overview />

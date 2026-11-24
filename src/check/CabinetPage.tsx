@@ -14,6 +14,7 @@ import { AccountPanel, AppointmentsPanel, ConfirmDialog, ContactForm, fmtWhen, u
 import { AiCard, CompetitorsCard, Delta, HistoryCard, deltas } from './ReportExtras'
 import { ProjectPanel, ResultView, projectHeadline } from './ProjectView'
 import { CompanySwitcher, RecommendedCard, NextStepCard, OfferPanel, bookingLink, type NextStep } from './CabinetExtras'
+import { accent } from '../home/accent'
 
 /** Immer alle fünf Quellen in fester Reihenfolge — auch wenn die Suche nichts geliefert hat.
  *  Ein selbst ergänztes «Weiteres Profil» (key 'other') bleibt erhalten, damit es beim Bestätigen nicht verloren geht. */
@@ -81,7 +82,7 @@ function EmptyState({ onLogout, onKonto }: { onLogout: () => void; onKonto: () =
       <main id="inhalt" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 20px' }}>
         <div style={{ ...card, maxWidth: 520, textAlign: 'center', padding: 'clamp(28px, 4vw, 44px)' }}>
           <Eyebrow>Kundenbereich</Eyebrow>
-          <h1 className="display" style={{ fontSize: 30, lineHeight: 1.1, margin: '0 0 12px' }}>Noch kein Check gestartet</h1>
+          <h1 className="display" style={{ fontSize: 30, lineHeight: 1.1, margin: '0 0 12px' }}>{accent('Noch kein Check gestartet')}</h1>
           <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 24px' }}>Finden Sie Ihr Unternehmen, danach sehen Sie hier den Stand der Prüfung und Ihren Bericht.</p>
           <a href="/#audit-quiz" className="btn btn-lg btn-electric">Sichtbarkeits-Check starten <span className="arw">→</span></a>
         </div>
@@ -355,7 +356,7 @@ export default function CabinetPage() {
             <div style={{ padding: 'clamp(28px, 4vw, 48px) 0 24px' }}>
               <button type="button" onClick={() => setTab('overview')} className="ul" style={{ background: 'none', border: 'none', padding: 0, color: 'var(--electric)', fontWeight: 600, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 18 }}>← Zurück zum Kundenbereich</button>
               <Eyebrow>Ihr Konto</Eyebrow>
-              <h1 className="display" style={{ fontSize: 'clamp(28px, 4vw, 50px)', margin: 0 }}>Konto & Einstellungen</h1>
+              <h1 className="display" style={{ fontSize: 'clamp(28px, 4vw, 50px)', margin: 0 }}>{accent('Konto & Einstellungen')}</h1>
             </div>
           ) : (<>
           <div style={{ padding: 'clamp(28px, 4vw, 48px) 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 20, flexWrap: 'wrap' }}>

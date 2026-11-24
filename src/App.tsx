@@ -10,6 +10,7 @@ import { AgbBody, DatenschutzBody, ImpressumBody, LEGAL_UPDATED, PRICE_FACTS } f
 import CompanySearch from './check/CompanySearch'
 import HomePage, { HOME_FAQ } from './home/HomePage'
 import SiteHeader from './home/SiteHeader'
+import { accent } from './home/accent'
 import CheckPage from './check/CheckPage'
 import CabinetPage from './check/CabinetPage'
 import { ForgotPasswordPage, LoginPage, ResetPasswordPage } from './check/AuthPages'
@@ -1066,7 +1067,7 @@ function PackageCompare() {
   .cmp-head { padding: 10px 8px !important; }
 }`}</style>
       <div className="d-card-flat" style={{ marginTop: 'clamp(12px, 1.4vw, 18px)', padding: 'clamp(22px, 2.4vw, 32px)', border: '1px solid var(--border)' }}>
-        <h2 className="display" style={{ fontSize: 'clamp(21px, 1.9vw, 27px)', lineHeight: 1.2, margin: '0 0 8px' }}>Pakete im Vergleich</h2>
+        <h2 className="display" style={{ fontSize: 'clamp(21px, 1.9vw, 27px)', lineHeight: 1.2, margin: '0 0 8px' }}>{accent('Pakete im Vergleich')}</h2>
         <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)', margin: '0 0 20px', maxWidth: 640 }}>Local Website arbeitet an Ihrer Website. AI Plus arbeitet zusätzlich überall dort, wo man Sie sonst noch sucht: im Google-Profil, in Verzeichnissen, auf anderen Seiten und in der KI-Suche.</p>
         <div style={{ overflowX: 'auto', margin: '0 -4px' }}>
           <div role="table" aria-label="Pakete im Vergleich" className="cmp-table" style={{ minWidth: 620, padding: '0 4px' }}>
@@ -1546,54 +1547,54 @@ function linkHref(target: string) {
   return target.startsWith('/') ? target : homeHref(target)
 }
 
-function ServicesNavDropdown({ fg }: { fg: string }) {
+/** Aufklappmenü «Wo man Sie sucht» in der Recto-Kopfzeile (Hover, Fokus oder Klick; Esc schließt). */
+function ServicesNavDropdown() {
   const [open, setOpen] = useState(false)
-  // Small close delay: the pointer can cross the gap between the link and the panel
-  // (or leave it for a moment) without the menu disappearing.
+  // Kleine Schließverzögerung: der Zeiger darf die Lücke zwischen Link und Panel überqueren.
   const closeTimer = useRef<number | null>(null)
   const show = () => { if (closeTimer.current) window.clearTimeout(closeTimer.current); setOpen(true) }
   const hide = () => { if (closeTimer.current) window.clearTimeout(closeTimer.current); closeTimer.current = window.setTimeout(() => setOpen(false), 180) }
   useEffect(() => () => { if (closeTimer.current) window.clearTimeout(closeTimer.current) }, [])
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
   return (
-    <div style={{ position: 'relative' }} onMouseEnter={show} onMouseLeave={hide}
+    <div className={`rx-menu${open ? ' is-open' : ''}`} onMouseEnter={show} onMouseLeave={hide}
       onFocus={show} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) hide() }}>
-      <a href="/services" className="ul" style={{ fontWeight: 600, fontSize: 15, color: fg, display: 'flex', alignItems: 'center', gap: 6 }}>
+      <a href="/services" className="rx-menu-trigger" aria-expanded={open} aria-haspopup="true"
+        onClick={e => { if (window.matchMedia('(hover: none)').matches && !open) { e.preventDefault(); setOpen(true) } }}>
         Wo man Sie sucht
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }}>
-          <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </a>
-      {/* outer layer is a transparent hover bridge from the link down to the panel */}
-      <div style={{
-        position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
-        paddingTop: 18, zIndex: 60,
-        pointerEvents: open ? 'auto' : 'none',
-      }}>
-      <div style={{
-        transform: `translateY(${open ? '0px' : '-8px'})`,
-        opacity: open ? 1 : 0,
-        transition: `opacity 0.28s ease, transform 0.4s ${EASE}`,
-        backgroundColor: '#fff', borderRadius: 20, padding: 16, minWidth: 380,
-        boxShadow: '0 30px 70px rgba(16,17,20,0.14)', border: '1px solid var(--border)',
-      }}>
-        {modules.map(m => (
-          <a key={m.slug} href={`/services/${m.slug}`}
-            style={{ display: 'flex', gap: 22, alignItems: 'flex-start', padding: '24px 20px', borderRadius: 12, textDecoration: 'none', transition: 'background 0.25s' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bone)')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
-            <IconTile kind={channelKindOf(m.slug)} small />
-            <span>
-              <span style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--ink)', marginBottom: 2 }}>{m.label}</span>
-              <span style={{ display: 'block', fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.45 }}>{m.sentence}</span>
-            </span>
-          </a>
-        ))}
-        <a href="/services" style={{ display: 'block', padding: '12px 13px', borderTop: '1px solid var(--divider)', marginTop: 6, fontSize: 13.5, fontWeight: 700, color: 'var(--electric)', textDecoration: 'none' }}>
-          Überblick →
-        </a>
-      </div>
+      <div className="rx-menu-bridge">
+        <div className="rx-menu-panel">
+          {modules.map(m => (
+            <a key={m.slug} href={`/services/${m.slug}`} className="rx-menu-item">
+              <span className="rx-menu-icon"><ChannelIcon kind={channelKindOf(m.slug)} size={19} /></span>
+              <span>
+                <strong>{m.label}</strong>
+                <small>{m.sentence}</small>
+              </span>
+            </a>
+          ))}
+          <a href="/services" className="rx-menu-all">Überblick <span aria-hidden="true">→</span></a>
+        </div>
       </div>
     </div>
+  )
+}
+
+/** Navigation der Kopfzeile: Leistungen (Aufklappmenü), Preise, Ratgeber. */
+function HeaderMenu() {
+  return (
+    <>
+      <ServicesNavDropdown />
+      <a href="/preise">Preise</a>
+      <a href="/ratgeber">Ratgeber</a>
+    </>
   )
 }
 
@@ -1605,7 +1606,7 @@ function Nav() {
   return (
     <>
       <style>{responsiveCSS}</style>
-      <SiteHeader />
+      <SiteHeader menu={<HeaderMenu />} />
     </>
   )
 }
@@ -2802,7 +2803,7 @@ function ServiceSelector() {
             <div className="notsure d-panel on-brand" style={{ marginTop: 'clamp(40px, 5vw, 64px)', backgroundColor: 'var(--electric)', color: '#fff', padding: 'clamp(32px, 4vw, 56px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
               <RingsBackdrop size={700} color="rgba(255,255,255,0.14)" style={{ right: -160, top: -260 }} />
               <div style={{ position: 'relative', maxWidth: 560 }}>
-                <h3 className="display" style={{ fontSize: 'clamp(24px, 2.8vw, 36px)', marginBottom: 12 }}>Nicht sicher, wo Sie anfangen sollen?</h3>
+                <h3 className="display" style={{ fontSize: 'clamp(24px, 2.8vw, 36px)', marginBottom: 12 }}>{accent('Nicht sicher, wo Sie anfangen sollen?')}</h3>
                 <p style={{ fontSize: 16, lineHeight: 1.65, color: '#E4E1DB', margin: 0 }}>
                   Fordern Sie den kostenlosen Sichtbarkeits-Check an. Wir sagen Ihnen genau, welche Bereiche Ihr Unternehmen zuerst braucht.
                 </p>
@@ -4505,7 +4506,7 @@ function ContentCTA() {
           <div style={{ maxWidth: 620 }}>
             <p className="kick" style={{ color: '#D9D6D0', marginBottom: 14 }}>Kostenloser Sichtbarkeits-Check</p>
             <h2 className="display" style={{ fontSize: 'clamp(26px, 3.2vw, 42px)', margin: '0 0 12px' }}>
-              Wie steht Ihr Unternehmen heute da?
+              Wie steht Ihr Unternehmen <em>heute da?</em>
             </h2>
             <p style={{ fontSize: 16.5, lineHeight: 1.65, color: '#E4E1DB', margin: 0 }}>
               Wir prüfen kostenlos Ihre Sichtbarkeit bei Google Maps, in der Google-Suche und in der KI-Suche, und sagen Ihnen, was zuerst zu tun ist.
@@ -4527,7 +4528,7 @@ function ContentHero({ kicker, title, sub, meta, crumbs }: { kicker: string; tit
       <div style={{ ...SHELL, position: 'relative' }}>
         {crumbs && <Breadcrumbs items={crumbs} tone="light" />}
         <p className="kick" style={{ marginBottom: 18 }}>{kicker}</p>
-        <h1 className="display h-lg" style={{ marginBottom: 22, maxWidth: 900 }}>{title}</h1>
+        <h1 className="display h-lg" style={{ marginBottom: 22, maxWidth: 900 }}>{accent(title)}</h1>
         <p className="lead" style={{ color: 'var(--muted)', maxWidth: 660, margin: 0 }}>{sub}</p>
         {meta && <p style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--muted)', margin: '20px 0 0', letterSpacing: '0.02em' }}>{meta}</p>}
       </div>
@@ -4597,7 +4598,7 @@ function RatgeberArticlePage({ slug }: { slug: string }) {
         <Nav />
         <main id="inhalt" style={{ padding: '180px clamp(20px,4vw,48px) 120px' }}>
           <div style={{ ...SHELL }}>
-            <h1 className="display" style={{ fontSize: 30, marginBottom: 14 }}>Artikel nicht gefunden</h1>
+            <h1 className="display" style={{ fontSize: 30, marginBottom: 14 }}>{accent('Artikel nicht gefunden')}</h1>
             <a href="/ratgeber" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>← Zurück zum Ratgeber</a>
           </div>
         </main>
@@ -4850,7 +4851,7 @@ function GlossarTermPage({ slug }: { slug: string }) {
         <Nav />
         <main id="inhalt" style={{ padding: '180px clamp(20px,4vw,48px) 120px' }}>
           <div style={{ ...SHELL }}>
-            <h1 className="display" style={{ fontSize: 30, marginBottom: 14 }}>Begriff nicht gefunden</h1>
+            <h1 className="display" style={{ fontSize: 30, marginBottom: 14 }}>{accent('Begriff nicht gefunden')}</h1>
             <a href="/glossar" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>← Zurück zum Glossar</a>
           </div>
         </main>
@@ -4930,7 +4931,7 @@ function GlossarTermPage({ slug }: { slug: string }) {
 
             {g.faq.length > 0 && (
               <section id="fragen" className="gl-faq" style={{ marginBottom: 'clamp(34px, 4vw, 52px)', scrollMarginTop: 100 }}>
-                <h2 className="display" style={{ fontSize: 'clamp(21px, 2.1vw, 29px)', lineHeight: 1.22, margin: '0 0 18px' }}>Häufige Fragen</h2>
+                <h2 className="display" style={{ fontSize: 'clamp(21px, 2.1vw, 29px)', lineHeight: 1.22, margin: '0 0 18px' }}>{accent('Häufige Fragen')}</h2>
                 <div style={{ borderTop: '1px solid var(--line)' }}>
                   {g.faq.map(f => (
                     <details key={f.q} style={{ borderBottom: '1px solid var(--line)' }}>
@@ -5088,7 +5089,7 @@ function ServicePackages({ slug }: { slug: string }) {
       <section id="pakete" style={{ backgroundColor: 'var(--bone)', padding: '0 clamp(20px,4vw,48px) var(--sec-y, 110px)', scrollMarginTop: 80 }}>
         <div style={{ ...SHELL }}>
           <div style={{ textAlign: 'center', maxWidth: 1120, margin: '0 auto' }}>
-            <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 16px' }}>{cfg.title ?? 'Was es kostet'}</h2></Reveal>
+            <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 16px' }}>{accent(cfg.title ?? 'Was es kostet')}</h2></Reveal>
             <Reveal delay={0.1}><p style={{ fontSize: 'clamp(16px, 1.3vw, 18px)', lineHeight: 1.65, color: 'var(--muted)', margin: '0 auto', maxWidth: 760 }}>{cfg.intro}</p></Reveal>
           </div>
           <div className="svc-pk" style={{ display: 'grid', gridTemplateColumns: `repeat(${cfg.items.length}, minmax(0, 1fr))`, gap: 'clamp(16px, 2vw, 28px)', margin: 'clamp(40px, 5vw, 64px) auto 0', alignItems: 'stretch' }}>
@@ -5728,7 +5729,7 @@ function ServicePage({ slug }: { slug: string }) {
         <Nav />
         <main id="inhalt" style={{ padding: '180px clamp(20px,4vw,48px) 120px' }}>
           <div style={{ ...SHELL }}>
-          <h1 className="display" style={{ fontSize: 30, marginBottom: 14 }}>Leistung nicht gefunden</h1>
+          <h1 className="display" style={{ fontSize: 30, marginBottom: 14 }}>{accent('Leistung nicht gefunden')}</h1>
           <a href="/services" className="d-link">← Zurück zu den Leistungen</a>
           </div>
         </main>
@@ -5774,7 +5775,7 @@ function ServicePage({ slug }: { slug: string }) {
           <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Wo man Sie sucht', href: '/services' }, { label: moduleLabel ?? content.title }]} tone="light" />
           <div className="svc-hero" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.45fr) minmax(0, 0.8fr)', gap: 'clamp(28px, 4vw, 56px)', alignItems: 'center' }}>
             <div>
-              <h1 className="display" style={{ fontSize: 'clamp(36px, 4.6vw, 64px)', lineHeight: 1.03, letterSpacing: '-0.04em', marginBottom: 24 }}>{content.title}</h1>
+              <h1 className="display" style={{ fontSize: 'clamp(36px, 4.6vw, 64px)', lineHeight: 1.03, letterSpacing: '-0.04em', marginBottom: 24 }}>{accent(content.title)}</h1>
               <p className="lead" style={{ color: 'var(--muted)', maxWidth: 600, margin: '0 0 26px' }}>{content.sub}</p>
               {SERVICE_PACKAGES[slug] && <a href="#pakete" className="d-link" style={{ fontSize: 15.5 }}>{content.priceLink} <span className="arw">↓</span></a>}
             </div>
@@ -5782,7 +5783,7 @@ function ServicePage({ slug }: { slug: string }) {
               <RingsBackdrop size={560} style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
               <div className="d-card" style={{ position: 'relative', zIndex: 5, padding: 'clamp(24px, 3vw, 36px)' }}>
                 <BrandChips ids={SERVICE_CHECK_BRANDS[slug] ?? []} />
-                <h2 className="display" style={{ fontSize: 'clamp(22px, 2.2vw, 28px)', lineHeight: 1.15, margin: '0 0 20px' }}>{data.ctaTitle}</h2>
+                <h2 className="display" style={{ fontSize: 'clamp(22px, 2.2vw, 28px)', lineHeight: 1.15, margin: '0 0 20px' }}>{accent(data.ctaTitle)}</h2>
                 <CompanySearch variant="plain" buttonLabel={SERVICE_CHECK_BUTTON[slug]} placeholder="Name Ihres Unternehmens und Ort" />
                 {SERVICE_CONSULT[slug] && (
                   <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--muted)', margin: '16px 0 0' }}>
@@ -5802,7 +5803,7 @@ function ServicePage({ slug }: { slug: string }) {
         <DotsCorner style={{ right: -80, top: -60 }} />
         <div style={{ ...SHELL, position: 'relative' }}>
           <div style={{ textAlign: 'center', maxWidth: 900, margin: '0 auto' }}>
-            <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 0' }}>{content.problem.title}</h2></Reveal>
+            <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 0' }}>{accent(content.problem.title)}</h2></Reveal>
           </div>
           <div className="svc-two" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'clamp(36px, 6vw, 88px)', alignItems: 'center', marginTop: 'clamp(40px, 5vw, 72px)' }}>
             <Reveal delay={0.1}>
@@ -5841,7 +5842,7 @@ function ServicePage({ slug }: { slug: string }) {
         <section style={{ ...sec, backgroundColor: 'var(--bone)', paddingBottom: 0 }}>
           <div style={{ ...SHELL, position: 'relative' }}>
             <div style={{ textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
-              <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 16px' }}>{content.layers.title}</h2></Reveal>
+              <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 16px' }}>{accent(content.layers.title)}</h2></Reveal>
               <Reveal delay={0.1}><p style={{ fontSize: 'clamp(16px, 1.3vw, 18px)', lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>{content.layers.intro}</p></Reveal>
             </div>
             <div className="svc-two" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.9fr) minmax(0, 1.1fr)', gap: 'clamp(32px, 5vw, 72px)', alignItems: 'center', marginTop: 'clamp(40px, 5vw, 64px)' }}>
@@ -5871,7 +5872,7 @@ function ServicePage({ slug }: { slug: string }) {
           {/* Recto: ruhige Fläche statt Stadtplan-Kacheln. */}
           <div style={{ position: 'relative' }}>
             <div style={{ textAlign: 'center', maxWidth: 920, margin: '0 auto' }}>
-              <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 0' }}>{content.needsTitle}</h2></Reveal>
+              <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 0' }}>{accent(content.needsTitle)}</h2></Reveal>
               {content.needsIntro && <Reveal delay={0.08}><p style={{ fontSize: 'clamp(16px, 1.3vw, 18px)', lineHeight: 1.65, color: 'var(--muted)', margin: '16px auto 0', maxWidth: 720 }}>{content.needsIntro}</p></Reveal>}
             </div>
             {content.factors && (
@@ -5932,7 +5933,7 @@ function ServicePage({ slug }: { slug: string }) {
       <section style={{ ...sec, backgroundColor: 'var(--paper)' }}>
         <div style={{ ...SHELL, maxWidth: 900 }}>
           <div style={{ textAlign: 'center', marginBottom: 'clamp(32px, 4vw, 56px)' }}>
-            <Reveal delay={0.05}><h2 className="display h-md" style={{ marginTop: 16 }}>Häufige Fragen</h2></Reveal>
+            <Reveal delay={0.05}><h2 className="display h-md" style={{ marginTop: 16 }}>{accent('Häufige Fragen')}</h2></Reveal>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {content.faq.map((item, i) => {
@@ -5963,7 +5964,7 @@ function ServicePage({ slug }: { slug: string }) {
           <div className="audit-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 420px)', gap: 'clamp(36px, 5vw, 80px)', alignItems: 'center' }}>
             <div>
               <Reveal><p className="kick" style={{ color: '#D9D6D0' }}>Kostenlos · unverbindlich</p></Reveal>
-              <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 18px', color: '#fff' }}>{content.final.text}</h2></Reveal>
+              <Reveal delay={0.05}><h2 className="display h-md" style={{ margin: '18px 0 18px', color: '#fff' }}>{accent(content.final.text)}</h2></Reveal>
               <Reveal delay={0.1}><p style={{ fontSize: 17, lineHeight: 1.65, color: '#E4E1DB', margin: '0 0 28px', maxWidth: 540 }}>{data.ctaBody}</p></Reveal>
               <Reveal delay={0.16} style={{ position: 'relative', zIndex: 5 }}>
                 <CompanySearch buttonLabel={content.final.button} placeholder="Name Ihres Unternehmens und Ort" />
@@ -6246,7 +6247,7 @@ function LandingPage() {
   )
   // Startseite im Recto-Stil: src/home/HomePage.tsx (Stilbeschreibung: DESIGN.md).
   return (
-    <HomePage>
+    <HomePage headerMenu={<HeaderMenu />}>
       <JsonLd data={{
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
@@ -6283,7 +6284,10 @@ export function prerenderRoutes(): string[] {
 }
 
 export default function App() {
-  const path = currentPath()
+  // Doppelte Schrägstriche (z. B. //services/…) wie einfache behandeln, statt 404 zu zeigen.
+  const rawPath = currentPath()
+  const path = rawPath.replace(/\/{2,}/g, '/')
+  if (!isServer && path !== rawPath) window.history.replaceState(null, '', path + window.location.search + window.location.hash)
   if (/^\/rag-intern(\/(einladung|profil|team|leads|passwort-neu))?\/?$/.test(path)) {
     return <Suspense fallback={null}><AdminApp /></Suspense>
   }
@@ -6492,7 +6496,7 @@ function StartQuizPage() {
                   </div>
                 </div>
                 <div className="d-card" style={{ padding: 'clamp(24px, 3.4vw, 44px)' }}>
-                  <h1 className="display" style={{ fontSize: 'clamp(24px, 2.6vw, 34px)', lineHeight: 1.2, margin: 0 }}>{questions[step].title}</h1>
+                  <h1 className="display" style={{ fontSize: 'clamp(24px, 2.6vw, 34px)', lineHeight: 1.2, margin: 0 }}>{accent(questions[step].title)}</h1>
                   {questions[step].hint && <p style={{ fontSize: 14.5, color: 'var(--muted)', margin: '8px 0 0' }}>{questions[step].hint}</p>}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 24 }}>{questions[step].body}</div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 28 }}>
@@ -6508,7 +6512,7 @@ function StartQuizPage() {
               <>
                 <div style={{ textAlign: 'center', maxWidth: 760, margin: '0 auto' }}>
                   <Kicker>Ihre Ausgangslage</Kicker>
-                  <h1 className="display h-md" style={{ margin: '18px 0 14px' }}>Das ist Ihr Startpunkt</h1>
+                  <h1 className="display h-md" style={{ margin: '18px 0 14px' }}>{accent('Das ist Ihr Startpunkt')}</h1>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
                     {[`${a.branche.trim()} · ${a.ort.trim()}`, ...a.have.map(h => label(QUIZ_HAVE, h)), label(QUIZ_GOALS, a.goal)].filter(Boolean).map(t => (
                       <span key={t} style={{ padding: '7px 14px', borderRadius: 999, backgroundColor: '#fff', border: '1px solid var(--border)', fontSize: 14, fontWeight: 700 }}>{t}</span>
@@ -6528,7 +6532,7 @@ function StartQuizPage() {
                 <div className="d-card" style={{ marginTop: 24, padding: 'clamp(24px, 3.4vw, 44px)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'clamp(20px, 3vw, 40px)', alignItems: 'start' }}>
                   <div>
                     <Kicker>Kostenlos · Ihr Kundenbereich</Kicker>
-                    <h2 className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 30px)', lineHeight: 1.2, margin: '14px 0 10px' }}>{fromScratch ? 'Besprechen wir Ihren Start' : 'Wir prüfen, wie man Sie heute findet'}</h2>
+                    <h2 className="display" style={{ fontSize: 'clamp(22px, 2.4vw, 30px)', lineHeight: 1.2, margin: '14px 0 10px' }}>{accent(fromScratch ? 'Besprechen wir *Ihren Start*' : 'Wir prüfen, wie man Sie *heute findet*')}</h2>
                     <p style={{ fontSize: 15.5, lineHeight: 1.6, color: 'var(--muted)', margin: 0 }}>
                       {fromScratch
                         ? 'Legen Sie Ihren Kundenbereich an und tragen Sie kurz Ihr Unternehmen ein. Danach wählen Sie direkt einen Termin für ein kostenloses Gespräch von 20 Minuten.'
@@ -6564,21 +6568,57 @@ function NotFoundPage() {
     }
     robots.content = 'noindex'
   }, [])
+  // Die angefragte Adresse zeigen wir wie eine Suchanfrage (nur im Browser bekannt).
+  const [asked, setAsked] = useState('')
+  useEffect(() => { setAsked(decodeURIComponent(window.location.pathname)) }, [])
+  const ways: [string, string, string][] = [
+    ['Startseite', 'Alles über lokale Sichtbarkeit auf einen Blick.', '/'],
+    ['Wo man Sie sucht', 'KI-Suche, Google Maps, Google Search und Social Media.', '/services'],
+    ['Preise', 'Google-Profil ab 149 €, Websites als Monatspaket.', '/preise'],
+    ['Ratgeber', 'Ehrliche Antworten auf die häufigsten Fragen.', '/ratgeber'],
+  ]
   return (
     <>
       <Nav />
-      <main id="inhalt" style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'var(--bone)', color: 'var(--ink)', minHeight: '70vh', padding: '180px clamp(20px,4vw,48px) 120px' }}>
-        <MapBackdrop fade="left" pins={false} />
-        <div style={{ ...SHELL, position: 'relative' }}>
-          <p className="kick" style={{ marginBottom: 18 }}>404</p>
-          <h1 className="display h-lg" style={{ margin: '0 0 18px' }}>Seite nicht gefunden</h1>
-          <p className="lead" style={{ color: 'var(--muted)', maxWidth: 520, margin: '0 0 32px' }}>Diese Adresse gibt es nicht oder nicht mehr. Hier geht es weiter:</p>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <a href="/" className="btn btn-md btn-electric">Zur Startseite <span className="arw">→</span></a>
-            <a href="/services" className="btn btn-md btn-paper">Wo man Sie sucht</a>
-            <a href="/ratgeber" className="btn btn-md btn-paper">Ratgeber</a>
+      <main id="inhalt" className="rx-404">
+        <div className="rx-404-halo" aria-hidden="true" />
+        <section className="rx-404-hero" aria-labelledby="rx-404-title">
+          <p className="rx-404-badge"><span />Fehler 404</p>
+          <div className="rx-404-code" aria-hidden="true">
+            <span>4</span>
+            <span className="rx-404-pin">
+              <svg viewBox="77.3 0 357.4 512" width="100%" height="100%">
+                <path d="M310.1 8.5c-17-5.4-35.6-8.5-54.5-8.5C201.1 0 152 24.7 119.1 63.8l84.3 70.8z" fill="#1a73e8" />
+                <path d="M119.1 63.8C93.2 94.7 77.3 135 77.3 178.3c0 33.6 6.6 60.7 17.8 85.1l108.3-128.8z" fill="#ea4335" />
+                <path d="M256 110.2c37.9 0 68.4 30.5 68.4 68.4 0 16.6-6.2 32.1-16.2 44.1 0 0 53.8-64.2 106.3-126.5-21.7-41.8-59.2-73.5-104.4-87.8L203.4 134.6c12.8-14.7 31.3-24.4 52.6-24.4" fill="#4285f4" />
+                <path d="M256 246.7c-37.9 0-68.4-30.5-68.4-68.4 0-16.6 5.8-32.1 15.9-43.7L95.1 263.3c18.6 41 49.5 74.2 81.2 115.6l131.9-156.6c-12.8 15.1-31.3 24.4-52.2 24.4" fill="#fbbc04" />
+                <path d="M305.9 422.3c59.6-93.2 128.8-135.3 128.8-243.6 0-29.8-7.3-57.6-20.1-82.4L176.3 379c10.1 13.1 20.5 28.2 30.5 43.7 36.4 56.1 26.3 89.3 49.5 89.3s13.2-33.6 49.6-89.7" fill="#34a853" />
+              </svg>
+              <i className="rx-404-shadow" />
+            </span>
+            <span>4</span>
           </div>
-        </div>
+          <h1 id="rx-404-title" className="display">Diese Adresse<br /><em>finden wir nicht.</em></h1>
+          <p className="rx-404-lead">Vielleicht hat sich ein Tippfehler eingeschlichen oder die Seite ist umgezogen. Ihrem Betrieb soll das nicht passieren: Den finden Kunden bei uns sicher.</p>
+          {asked && (
+            <p className="rx-404-query"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg>
+              <span>{asked}</span><small>0 Ergebnisse</small></p>
+          )}
+        </section>
+        <nav className="rx-404-ways" aria-label="Hier geht es weiter">
+          {ways.map(([title, text, href]) => (
+            <a key={href} href={href} className="rx-404-way">
+              <strong>{title}</strong>
+              <span>{text}</span>
+              <i aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 18 18 6M6 6h12v12" /></svg></i>
+            </a>
+          ))}
+        </nav>
+        <section className="rx-404-check" aria-labelledby="rx-404-check-title">
+          <h2 id="rx-404-check-title" className="display">Wenn Sie schon hier sind: <em>Wie sichtbar ist Ihr Unternehmen?</em></h2>
+          <CompanySearch variant="plain" buttonLabel="Mein Unternehmen prüfen" placeholder="Ihr Firmenname und Ort" inputLabel="Ihr Firmenname und Ort" />
+          <small>Kostenlos &amp; unverbindlich</small>
+        </section>
       </main>
       <Footer />
     </>

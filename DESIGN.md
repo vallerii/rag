@@ -78,7 +78,7 @@ Headline-Muster: zwei Zeilen, zweite Zeile kursiv-orange.
 ## 6. Bausteine
 
 - **Wortmarke** `RAG<em>.</em>` — Geist 29px/500, Punkt in Recto Serif orange.
-- **Kopfzeile**: Wortmarke links · Menü-Insel (KI-Suche, Google Maps, Google Search, Social Media) · Aktions-Insel
+- **Kopfzeile**: Wortmarke links · Menü-Insel («Wo man Sie sucht» als Aufklappmenü mit den vier Leistungen + Überblick, Preise, Ratgeber) · Aktions-Insel
   (DE/RU, schwarzer Pill-Button «Sichtbarkeitsindex prüfen», Login-Icon).
 - **Buttons**: `rx-primary` = Ink-Pill (schwarz, Text Papier), hover orange; `rx-secondary` = weiß mit Haarlinie;
   Bestellen = orange Pill `#ff5b2e`. Mindesthöhe 52px (mobil 46px), Padding 14×30.
@@ -87,6 +87,8 @@ Headline-Muster: zwei Zeilen, zweite Zeile kursiv-orange.
 - **Suchfeld** (Check): Fläche Papier, 1px Linie, Eingabe + schwarzer Pill-Button, darunter «Kostenlos & unverbindlich» 10px.
 - **FAQ**: `<details name>` (immer nur eine offen), Trennlinien, «+» rechts.
 - **Abschluss-Karte**: weiß, zentriert, orangefarbenes Glühen dahinter.
+- **Aufklappmenü**: weißes Panel 22px, Haarlinie, Zeilen mit 40px-Icon-Kachel (`--rx-inset`, hover orange getönt); öffnet per Hover/Fokus/Tippen, Esc schließt, .22s Fade + leichtes Absenken.
+- **404**: «4 📍 4» — Ziffern in Instrument Serif kursiv, in der Mitte schwebt der Google-Maps-Pin (3.6s), darunter die gesuchte Adresse als Suchfeld-Pille mit «0 Ergebnisse», vier Wegweiser-Karten und der Sichtbarkeits-Check.
 - **Footer**: eine Zeile — Wortmarke · Links · Hell/Dunkel-Schalter.
 
 ## 7. Bewegung
@@ -128,7 +130,10 @@ Radius 16px. Beispiele sind immer als «Fiktives Beispiel» gekennzeichnet. Mark
 ## 10. Regeln für neue Seiten
 
 1. Kopfzeile `SiteHeader`, Fußzeile im Recto-Stil (`Footer` in App.tsx).
-2. Headline 500, zweite Zeile `<em>` → wird automatisch kursiv-orange (`.display em`, `.rx h2 em`).
+2. Headline 500, betonter Schluss in `<em>` → wird automatisch kursiv-orange (`.display em`, `.rx h2 em`).
+   Für Texte aus Daten: `accent()` aus `src/home/accent.tsx` — `accent('Pflicht für *lokale Unternehmen*')`
+   markiert explizit, ohne Sternchen wird der Teil nach «,»/«:»/«–» bzw. die letzten zwei Wörter betont.
+   Gilt für H1 und Sektions-H2; nicht für Karten-, Produkt- und Artikel-Zwischenüberschriften.
 3. Farben nur über Variablen (`var(--ink)`, `var(--muted)`, `var(--accent)` …), keine Hex-Werte im JSX.
 4. Primäre Aktion = schwarze Pill; Kauf/Bestellung = orange Pill; sonst Textlink.
 5. Pro Bildschirm höchstens ein oranger Akzent außer der Headline.
