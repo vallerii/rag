@@ -2018,3 +2018,7 @@
   .rx .rx-fan{height:330px}
   .rx .rx-hero h1{font-size:clamp(42px,5.4vw,72px)}
 }
+
+/* 149-€-Band: horizontale Position kommt aus motion.ts (--morph-left), Abstand darunter steuert die Sektionshöhe. */
+#new-block .rx-order-band.is-transforming{left:var(--morph-left,calc(50% - var(--morph-width)/2))!important}
+#new-block{box-sizing:content-box}

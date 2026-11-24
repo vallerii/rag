@@ -101,12 +101,12 @@ Grundsatz: Bewegung erklärt (Scroll-Geschichte), sie dekoriert nicht. Alles res
 | Halo im Hero | atmet | `rx-breathe` 9s ease-in-out ∞ |
 | Porträt-Fächer | Klick/←→ dreht den Fächer | transform .7s `cubic-bezier(.2,.8,.2,1)`, ±7°/Schritt |
 | Primär-Buttons (Hero, Kopfzeile) | leiser oranger Lichtstreif | `soft-sweep` + `soft-breathe` 12s, Hero +1.5s versetzt |
-| Kopfzeile | scrollt weg; ab 7px Hochscrollen kommen Inseln fixiert zurück (`menu-return` .22s); beim Runterscrollen fahren sie um die echte Scrollstrecke raus | Wortmarke bleibt fix, Farbe Schwarz/Weiß nach Hintergrund-Helligkeit (< 0.48 → weiß) |
+| Kopfzeile | bleibt immer oben fixiert; ab 16px Scroll werden Menü- und Aktions-Insel zu Glas | Wortmarke Schwarz/Weiß nach Hintergrund-Helligkeit (< 0.48 → weiß) |
 | Plattform-Leiste | springt beim Einblenden einzeln auf | `rx-platform-pop`, Index-versetzt, Schwelle 35 % |
 | Kanal-Karten | Licht folgt Maus (`--mx/--my`), hover −4px + oranger Rand | .25s |
 | KI-Check | Licht folgt Maus (`--rx-glow-x`), Orbits der KI-Marken | — |
 | Google Maps | Profil-Fächer spreizt sich mit Scroll (`--spread` 0→1); Artikelkarte läuft linear mit, blendet weich ein/aus | Desktop > 760px, Zoom auf 1228.8px-Raster |
-| 149-€-Band | bleibt im Fluss bis Bildschirmmitte, morpht dann (Größe, Schrift, Positionen gemessen aus versteckten Kopien) zur kompakten Leiste unten; beim Hochscrollen weg | smoothstep über 180–320px |
+| 149-€-Band | ab Bildschirmmitte rein scrollgekoppelt (geglättet) zur kompakten Leiste unten, rückwärts zurück an seinen Platz; der Abstand darunter schrumpft mit, der nächste Abschnitt rückt nach; vor dem Seitenende ausgeblendet | Strecke 260–440px, Glättung 0.2/Frame |
 | Google Search | gepinnte Szene: Suchfeld → G-Logo wächst ×20 → 5 Karten blättern (±3px/9px/1.2° je Tiefe) → CTA | Phasen 0–12 % / 12–80 % / ≥ 80 % |
 | Social Media | Instagram-Feed scrollt mit, rechts Text-Wechsel (Menschen → Arbeit → Ergebnis → Artikel) | Feed bis 70 %, Artikel ab 80.5 % |
 | Kanal-Geschichte | gepinnt, 13 Prüfpunkte in 4 Kanälen, Häkchen werden gesetzt, Fortschritt + «Weiter: …» unten | statisch bei ≤ 640px Höhe |

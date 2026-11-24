@@ -23,9 +23,6 @@ export function mountHeader(page: HTMLElement): Cleanup {
   const actions = header.querySelector<HTMLElement>('.rx-header-actions')!
 
   let frame = 0
-  let previousY = window.scrollY
-  let travel = 0
-  let direction = 1
   let mode: 'flow' | 'pinned' | 'leaving' = 'flow'
   let exit = 0
 
@@ -38,32 +35,16 @@ export function mountHeader(page: HTMLElement): Cleanup {
     nav.inert = false
     actions.inert = false
   }
+  // Kopfzeile bleibt immer sichtbar (Wunsch 24.11.): fest oben; ab 16px Scroll erscheinen die Glas-Inseln.
   function update() {
     frame = 0
     const y = Math.max(0, window.scrollY)
-    const delta = y - previousY
-    previousY = y
-    if (y <= 1) {
-      travel = 0
-      setMode('flow')
-    } else if (Math.abs(delta) >= 0.1) {
-      const dir = delta > 0 ? 1 : -1
-      if (dir !== direction) { direction = dir; travel = 0 }
-      travel += Math.abs(delta)
-      if (travel >= 7 && dir < 0) setMode('pinned')
-      else if (dir > 0 && mode !== 'flow' && travel >= 7) {
-        if (mode !== 'leaving') setMode('leaving')
-        exit += Math.max(0, delta)
-        header!.style.setProperty('--header-scroll-offset', -exit + 'px')
-        if (exit >= header!.offsetHeight + 12) setMode('flow')
-      }
-    }
-    header!.classList.toggle('is-scrolled', y > 16 && mode !== 'flow')
+    if (mode !== 'pinned') setMode('pinned')
+    header!.classList.toggle('is-scrolled', y > 16)
     header!.dataset.scrollMode = mode
     updateBrandTone()
   }
   window.addEventListener('scroll', () => { if (!frame) frame = requestAnimationFrame(update) }, { passive: true, signal })
-  header.addEventListener('focusin', () => { if (window.scrollY > 1) setMode('pinned') }, { signal })
 
   const original = header.querySelector<HTMLElement>('.rx-wordmark')
   const fixed = original?.cloneNode(true) as HTMLElement | undefined
@@ -74,7 +55,6 @@ export function mountHeader(page: HTMLElement): Cleanup {
     original.classList.add('rx-brand-placeholder')
     original.setAttribute('aria-hidden', 'true')
     original.setAttribute('tabindex', '-1')
-    fixed.addEventListener('focusin', () => { if (window.scrollY > 1) setMode('pinned') }, { signal })
     cleanups.push(() => {
       fixed.remove()
       original.classList.remove('rx-brand-placeholder')
@@ -303,7 +283,6 @@ export function mountOfferBand(section: HTMLElement): Cleanup {
   const stopAt = () => document.querySelector<HTMLElement>('.rx-closing') ?? document.querySelector<HTMLElement>('.rx-footer')
   let geometry: { full: Geo; compact: Geo } | null = null
   let frame = 0
-  let lastP = -1
 
   function snapshot(compact: boolean): Geo {
     const clone = band!.cloneNode(true) as HTMLElement
@@ -331,8 +310,9 @@ export function mountOfferBand(section: HTMLElement): Cleanup {
   function measure() {
     geometry = { full: snapshot(false), compact: snapshot(true) }
     geometry.compact.items.heading = { ...geometry.full.items.heading, w: 0 }
-    lastP = -1
-    update()
+    computeTarget()
+    shown = target
+    render(shown)
   }
   function show(visible: boolean) {
     band!.classList.toggle('is-scroll-hidden', !visible)
@@ -340,40 +320,57 @@ export function mountOfferBand(section: HTMLElement): Cleanup {
     if (visible) band!.removeAttribute('aria-hidden')
     else band!.setAttribute('aria-hidden', 'true')
   }
+  // Abstand unter dem Band im Ruhezustand – schrumpft beim Verwandeln mit, damit der nächste Abschnitt nachrückt.
+  const gap = () => Math.round(Math.min(300, Math.max(160, innerHeight * 0.28)))
+  // Geglätteter Fortschritt: folgt dem Scroll-Ziel weich (auch bei groben Mausrad-Schritten kein Springen).
+  let shown = 0
+  let target = 0
+  let raw = 0
+  function computeTarget() {
+    if (!geometry) return
+    const anchor = section.getBoundingClientRect()
+    const start = Math.max(96, (innerHeight - geometry.full.h) / 2)
+    const range = Math.min(440, Math.max(260, innerHeight * 0.48))
+    raw = clamp01((start - anchor.top) / range)
+    target = motion.matches ? (raw >= 1 ? 1 : 0) : raw * raw * (3 - 2 * raw)
+  }
+  function render(p: number) {
+    const { full, compact } = geometry!
+    const anchor = section.getBoundingClientRect()
+    section.style.height = ((full.h + gap()) * (1 - p)).toFixed(2) + 'px'
+    band!.classList.toggle('is-natural', p === 0)
+    band!.classList.toggle('is-transforming', p > 0)
+    band!.classList.toggle('is-condensed', p >= 0.6)
+    if (p > 0) {
+      const safeBottom = parseFloat(getComputedStyle(band!).getPropertyValue('--rx-safe-bottom')) || 0
+      const bottomTop = innerHeight - compact.h - 20 - safeBottom
+      const w = mix(full.w, compact.w, p)
+      // Mitte: von der Mitte des Inhaltsbereichs zur Mitte des Fensters (ohne Scrollbalken).
+      const cx = mix(anchor.left + anchor.width / 2, document.documentElement.clientWidth / 2, p)
+      band!.style.setProperty('--morph-top', mix(anchor.top, bottomTop, p).toFixed(2) + 'px')
+      band!.style.setProperty('--morph-left', (cx - w / 2).toFixed(2) + 'px')
+      band!.style.setProperty('--morph-width', w.toFixed(2) + 'px')
+      band!.style.setProperty('--morph-height', mix(full.h, compact.h, p).toFixed(2) + 'px')
+      band!.style.setProperty('--heading-opacity', String(1 - clamp01(p * 2.4)))
+      band!.style.setProperty('--tax-opacity', String(1 - clamp01(p * 2.4)))
+      for (const [key, el] of Object.entries(parts) as [Key, HTMLElement][]) {
+        const a = full.items[key], b = compact.items[key]
+        for (const name of ['x', 'y', 'w', 'h', 'font', 'line'] as const) el.style.setProperty('--part-' + name, mix(a[name], b[name], p).toFixed(2) + 'px')
+      }
+    }
+    parts.heading.inert = p >= 0.4
+    band!.dataset.scrollState = p === 0 ? 'full' : p < 1 ? 'morph' : 'compact'
+    const end = stopAt()
+    show(!(p === 1 && end && end.getBoundingClientRect().top < innerHeight - 40))
+  }
   function update() {
     frame = 0
     if (!geometry || signal.aborted) return
-    const { full, compact } = geometry
-    const anchor = section.getBoundingClientRect()
-    // Startpunkt: Band-Mitte erreicht die Bildschirmmitte.
-    const start = Math.max(96, (innerHeight - full.h) / 2)
-    const range = Math.min(240, Math.max(150, innerHeight * 0.26))
-    const raw = clamp01((start - anchor.top) / range)
-    const p = motion.matches ? (raw >= 1 ? 1 : 0) : raw * raw * (3 - 2 * raw)
-    // Platz im Dokument schrumpft mit: der nächste Abschnitt rückt nach, ohne leere Fläche.
-    section.style.height = (full.h * (1 - p)).toFixed(2) + 'px'
-    band!.classList.toggle('is-natural', p === 0)
-    band!.classList.toggle('is-transforming', p > 0)
-    band!.classList.toggle('is-condensed', raw >= 0.55)
-    if (p > 0 && p !== lastP) {
-      const safeBottom = parseFloat(getComputedStyle(band!).getPropertyValue('--rx-safe-bottom')) || 0
-      const target = innerHeight - compact.h - 20 - safeBottom
-      band!.style.setProperty('--morph-top', mix(anchor.top, target, p) + 'px')
-      band!.style.setProperty('--morph-width', mix(full.w, compact.w, p) + 'px')
-      band!.style.setProperty('--morph-height', mix(full.h, compact.h, p) + 'px')
-      band!.style.setProperty('--heading-opacity', String(1 - clamp01(raw * 3)))
-      band!.style.setProperty('--tax-opacity', String(1 - clamp01(raw * 3)))
-      for (const [key, el] of Object.entries(parts) as [Key, HTMLElement][]) {
-        const a = full.items[key], b = compact.items[key]
-        for (const name of ['x', 'y', 'w', 'h', 'font', 'line'] as const) el.style.setProperty('--part-' + name, mix(a[name], b[name], p) + 'px')
-      }
-    }
-    lastP = p
-    parts.heading.inert = raw >= 0.4
-    band!.dataset.scrollState = p === 0 ? 'full' : p < 1 ? 'morph' : 'compact'
-    // Kompakte Leiste weg, sobald das Seitenende (Abschluss-Karte) ins Bild kommt.
-    const end = stopAt()
-    show(!(p === 1 && end && end.getBoundingClientRect().top < innerHeight - 40))
+    computeTarget()
+    const diff = target - shown
+    shown = Math.abs(diff) < 0.002 || motion.matches ? target : shown + diff * 0.2
+    render(shown)
+    if (shown !== target) frame = requestAnimationFrame(update)
   }
   const schedule = () => { if (!frame) frame = requestAnimationFrame(update) }
   Object.values(parts).forEach(el => el.classList.add('rx-morph-part'))
