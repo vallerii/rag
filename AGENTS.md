@@ -39,3 +39,7 @@ This project uses **Tailwind CSS v4** through the `@tailwindcss/vite` plugin con
 - Use double quotes for strings containing apostrophes (`"We're here to help"`), or escape them in single-quoted strings. An unescaped apostrophe in a single-quoted string breaks the build.
 - Ensure JSX tags are closed and braces are balanced.
 - Export components as default exports.
+
+## Product docs
+
+- `docs/lead-flow.md` - how leads, Lead CRM, Grok and the RAG database work together (registration, analysis import from Google Sheets, Grok MCP, statuses). Read it before changing check/report, prospects, registration or admin leads code; it describes the target behaviour as of 25.11.2026.
