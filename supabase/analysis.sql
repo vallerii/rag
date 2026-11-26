@@ -24,6 +24,8 @@
 --      Клиенту в checks.analysis попадают только колонки анализа: без Belege, заметок, контактов лида.
 --   5) publish_system_report — система публикует отчёт из готового анализа (без менеджера), версия в check_reports,
 --      без письма «Ihr Bericht ist fertig» (клиент видит отчёт сразу; см. notify.sql → rag.silent).
+--   6) publish_partial_report — готового анализа нет: клиент сразу видит отчёт автопроверки (Places, сайт, PageSpeed)
+--      с пометкой partial; полный анализ (Grok / вручную) потом заменяет его новой версией.
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- 1) Старая копия лидов больше не нужна
@@ -165,8 +167,10 @@ declare ok boolean;
 begin
   if p_report is null or jsonb_typeof(p_report -> 'channels') is distinct from 'object' then raise exception 'bad_report'; end if;
   perform set_config('rag.silent', 'on', true);
+  -- Заменяет и частичный отчёт автопроверки (partial), но не опубликованный командой полный отчёт.
   update checks set report = p_report, status = 'ready'
-   where id = p_check and status <> 'ready' and analysis_status = 'done';
+   where id = p_check and analysis_status = 'done'
+     and (status <> 'ready' or coalesce((report ->> 'partial')::boolean, false));
   ok := found;
   if ok then
     insert into check_reports (check_id, user_id, report, created_by)
@@ -177,5 +181,25 @@ begin
 end $$;
 revoke all on function public.publish_system_report(uuid, jsonb) from public, anon, authenticated;
 grant execute on function public.publish_system_report(uuid, jsonb) to service_role;
+
+-- 6) Частичный отчёт автопроверки, пока полный анализ ждёт Grok / ручную проверку
+create or replace function public.publish_partial_report(p_check uuid, p_report jsonb) returns boolean
+language plpgsql security definer set search_path = public as $$
+declare ok boolean;
+begin
+  if p_report is null or jsonb_typeof(p_report -> 'channels') is distinct from 'object' then raise exception 'bad_report'; end if;
+  perform set_config('rag.silent', 'on', true);
+  update checks set report = p_report || '{"partial": true}'::jsonb, status = 'ready'
+   where id = p_check and status <> 'ready' and analysis_status in ('lookup', 'pending', 'in_progress');
+  ok := found;
+  if ok then
+    insert into check_reports (check_id, user_id, report, created_by)
+    select id, user_id, report, null from checks where id = p_check;
+  end if;
+  perform set_config('rag.silent', 'off', true);
+  return ok;
+end $$;
+revoke all on function public.publish_partial_report(uuid, jsonb) from public, anon, authenticated;
+grant execute on function public.publish_partial_report(uuid, jsonb) to service_role;
 
 notify pgrst, 'reload schema';

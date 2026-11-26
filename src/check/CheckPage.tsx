@@ -446,7 +446,7 @@ export default function CheckPage() {
                 Ihr Unternehmen ist noch nicht bei Google?{' '}
                 <a href="/start?from=check" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>Beantworten Sie 4 kurze Fragen →</a>
               </p>
-              <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: '18px 0 0' }}>Kostenlos und unverbindlich. Den Bericht prüft ein Mensch aus unserem Team, nicht nur ein Tool.</p>
+              <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: '18px 0 0' }}>Kostenlos und unverbindlich. Erste Ergebnisse sehen Sie sofort, den vollständigen Bericht erhalten Sie innerhalb von 24 Stunden.</p>
             </>
           )}
 
@@ -493,7 +493,7 @@ export default function CheckPage() {
             )
           ) : step === 'account' ? (
             <>
-              <StepHead n="Schritt 3 von 3" title="Ihr Kundenbereich" sub="In Ihrem Kundenbereich sehen Sie den Stand der Analyse und Ihren Bericht: wo Sie bei Google Maps stehen, wie Sie im Vergleich zu Wettbewerbern dastehen und was Sie an Ihrer Website verbessern können. Der Bericht ist in der Regel innerhalb von 1 Werktag fertig." />
+              <StepHead n="Schritt 3 von 3" title="Ihr Kundenbereich" sub="In Ihrem Kundenbereich sehen Sie den Stand der Analyse und Ihren Bericht: wo Sie bei Google Maps stehen, wie Sie im Vergleich zu Wettbewerbern dastehen und was Sie an Ihrer Website verbessern können. Erste Ergebnisse sehen Sie sofort, den vollständigen Bericht innerhalb von 24 Stunden." />
               <AccountStep submitLabel="Analyse starten" loggedInLabel="Analyse starten" onAuthed={createAndGo} onBack={() => setStep('review')}
                 googleNext={googleNext} onBeforeGoogle={keepDraftForGoogle} />
             </>

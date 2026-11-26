@@ -155,5 +155,13 @@ Deno.serve(handler(10, async (req, body) => {
   if (check.status !== 'ready') patch.status = 'in_review'
   const { error } = await db.from('checks').update(patch).eq('id', check.id)
   if (error) { console.error('checks update', error); return json(req, { error: 'db', detail: error.message }, 500) }
+  // Keine fertige Analyse (docs/lead-flow.md, Ablauf 2): der Kunde sieht diese Ergebnisse sofort (Teilbericht, «partial»).
+  // Die vollständige Analyse (Grok / manuell) ersetzt ihn später als neue Version.
+  if (check.status !== 'ready' && ['pending', 'lookup', 'in_progress'].includes(check.analysis_status)) {
+    const now = new Date().toISOString()
+    const { data: shown, error: pubErr } = await db.rpc('publish_partial_report', { p_check: check.id, p_report: { ...report, collected_at: now, published_at: now } })
+    if (pubErr) console.error('publish_partial_report', pubErr)
+    if (shown) return json(req, { status: 'partial', pagespeed: speed?.score ?? null })
+  }
   return json(req, { status: check.status === 'ready' ? 'refreshed' : 'in_review', pagespeed: speed?.score ?? null })
 }))

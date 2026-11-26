@@ -253,6 +253,10 @@ export type Report = {
   ranks?: { query: string; rank: number | null; total: number }[]
   ai?: { asked: number; mentioned: number; named: string }
   collected_at?: string
+  /** Teilbericht der Autoprüfung: die vollständige Analyse folgt (docs/lead-flow.md, Ablauf 2). */
+  partial?: boolean
+  /** 'analysis' = aus fertiger Analyse (Lead-Tabelle / Grok); collected_at ist dann das Datum der Analyse. */
+  source?: string
   published_at?: string
 }
 export type Competitor = { name: string; rating: number | null; reviews: number; website: boolean }

@@ -335,6 +335,31 @@ await test('System veröffentlicht den Bericht aus fertiger Analyse: Version ohn
   await fails(`select publish_system_report($1, $2::jsonb)`, /permission denied/, c, rep)
   await as(null)
 })
+await test('Ohne fertige Analyse: Teilbericht sofort, die fertige Analyse ersetzt ihn später; Team-Bericht bleibt', async () => {
+  await as(null)
+  const c = (await one(`insert into checks (user_id, place) values ($1, '{"name":"A-Sieben"}') returning id`, A)).id
+  const places = JSON.stringify({ version: 2, channels: { maps: { score: 40, summary: 'x', points: [] } } })
+  await db.query(`update checks set analysis_status = 'pending' where id = $1`, [c])
+  assert.equal((await one(`select publish_partial_report($1, $2::jsonb) ok`, c, places)).ok, true)
+  let r = await one(`select status, (report->>'partial')::boolean p from checks where id = $1`, c)
+  assert.deepEqual([r.status, r.p], ['ready', true])
+  assert.equal((await one(`select publish_partial_report($1, $2::jsonb) ok`, c, places)).ok, false) // nur einmal
+  // Analyse fertig (Grok / manuell / spät gefundene Tabelle) → ersetzt den Teilbericht, neue Version
+  await db.query(`update checks set analysis_status = 'done', analysis = '{"columns":{}}', analysis_source = 'sheet' where id = $1`, [c])
+  const full = JSON.stringify({ version: 2, source: 'analysis', channels: { maps: { score: 70, summary: 'y', points: [] } } })
+  assert.equal((await one(`select publish_system_report($1, $2::jsonb) ok`, c, full)).ok, true)
+  r = await one(`select report->>'source' s, report->>'partial' p from checks where id = $1`, c)
+  assert.deepEqual([r.s, r.p], ['analysis', null])
+  assert.equal((await rows(`select id from check_reports where check_id = $1`, c)).length, 2)
+  // vom Team veröffentlichter Bericht (nicht partial) wird nicht überschrieben
+  const t = (await one(`insert into checks (user_id, place) values ($1, '{"name":"A-Acht"}') returning id`, A)).id
+  await db.query(`update checks set status = 'ready', report = '{"channels":{}}', analysis_status = 'done', analysis = '{}', analysis_source = 'manual' where id = $1`, [t])
+  assert.equal((await one(`select publish_system_report($1, $2::jsonb) ok`, t, full)).ok, false)
+  assert.equal((await one(`select publish_partial_report($1, $2::jsonb) ok`, t, places)).ok, false)
+  await as(A)
+  await fails(`select publish_partial_report($1, $2::jsonb)`, /permission denied/, c, places)
+  await as(null)
+})
 await test('Volle Tabellenzeile (Belege, Notizen) sieht nur das Team; fällt mit der Prüfung weg', async () => {
   await as(null)
   const c = (await one(`insert into checks (user_id, place) values ($1, '{"name":"A-Fünf"}') returning id`, A)).id

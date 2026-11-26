@@ -17,8 +17,10 @@ type Db = SupabaseClient
 
 /** Отчёт из готового анализа (таблица / другая проверка) публикует система: без менеджера, без письма. */
 export async function publishAnalysis(db: Db, checkId: string): Promise<boolean> {
-  const { data: c } = await db.from('checks').select('analysis, analysis_at, analysis_status, analysis_source, status').eq('id', checkId).maybeSingle()
-  if (!c || c.analysis_status !== 'done' || c.status === 'ready' || !['sheet', 'check'].includes(c.analysis_source)) return false
+  const { data: c } = await db.from('checks').select('analysis, analysis_at, analysis_status, analysis_source, status, report').eq('id', checkId).maybeSingle()
+  // Schon veröffentlicht — außer es ist nur der Teilbericht der Autoprüfung (partial), den die fertige Analyse ersetzt.
+  const partial = !!(c?.report as { partial?: boolean } | null)?.partial
+  if (!c || c.analysis_status !== 'done' || (c.status === 'ready' && !partial) || !['sheet', 'check'].includes(c.analysis_source)) return false
   const columns = (c.analysis as { columns?: Record<string, string> } | null)?.columns ?? {}
   const report = analysisReport(columns, c.analysis_at ? String(c.analysis_at).slice(0, 10) : null)
   if (!Object.keys(report.channels).length) return false

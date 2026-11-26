@@ -96,7 +96,7 @@ function PendingCard({ assigned }: { assigned: boolean }) {
     <div style={{ ...card, textAlign: 'center', padding: 'clamp(32px, 5vw, 60px) 24px' }}>
       <p className="display" style={{ fontSize: 22, margin: '0 0 8px' }}>Ihr Bericht wird gerade erstellt.</p>
       <p style={{ fontSize: 14.5, color: 'var(--muted)', margin: '0 auto', maxWidth: 460, lineHeight: 1.65 }}>
-        Er ist in der Regel innerhalb von 1 Werktag fertig. Danach finden Sie hier die Ergebnisse, konkrete Probleme und unsere Empfehlung.
+        Erste Ergebnisse sehen Sie hier in etwa einer Minute. Den vollständigen Bericht mit konkreten Problemen und unserer Empfehlung erhalten Sie innerhalb von 24 Stunden per E-Mail.
       </p>
     </div>
   )
@@ -243,6 +243,8 @@ export default function CabinetPage() {
   if (!check && !order && !offer && !quiz && tab !== 'konto') return <EmptyState onLogout={logout} onKonto={() => setTab('konto')} />
 
   const ready = check?.status === 'ready'
+  // Teilbericht der Autoprüfung: die vollständige Analyse kommt noch (per E-Mail, innerhalb von 24 Stunden).
+  const partial = ready && !!check?.report?.partial
   // Paket oder Quiz ohne Firma → zuerst Angaben zum Unternehmen (CompanyForm).
   const intake = (!!order && !order.details) || !!quiz
   // Start bei null: keine Analyse, Termin sofort. Abgeschlossen: nur der Manager setzt «lost».
@@ -252,7 +254,7 @@ export default function CabinetPage() {
   // Sobald es ein Angebot oder Projekt gibt, zeigt der Status dessen Stand — nicht mehr den der Analyse.
   const PROJECT_LABEL: Record<ClientProject['status'], string> = { awaiting_payment: 'Rechnung offen', paid: 'Zahlung eingegangen', in_progress: 'In Umsetzung', result: 'Ergebnis da', support: 'Laufende Betreuung', done: 'Abgeschlossen' }
   const dealLabel = project ? PROJECT_LABEL[project.status] ?? 'In Umsetzung' : offer?.status === 'accepted' ? 'Angebot angenommen' : offer?.status === 'sent' ? 'Angebot liegt vor' : null
-  const checkLabel = lost ? 'Anfrage abgeschlossen' : dealLabel ? dealLabel : scratch ? (ready ? 'Bericht fertig' : 'Erstgespräch') : ready ? 'Bericht fertig' : !confirmed ? 'Bitte Quellen bestätigen' : !check?.assignee_id ? 'Anfrage eingegangen' : 'Analyse läuft'
+  const checkLabel = lost ? 'Anfrage abgeschlossen' : dealLabel ? dealLabel : scratch ? (ready ? 'Bericht fertig' : 'Erstgespräch') : ready ? (partial ? 'Erste Ergebnisse' : 'Bericht fertig') : !confirmed ? 'Bitte Quellen bestätigen' : !check?.assignee_id ? 'Anfrage eingegangen' : 'Analyse läuft'
   // Kopfzeile: die offene Aufgabe zuerst (Angaben zur Anfrage / Quellen bestätigen), sonst der neueste Vorgang.
   const orderFirst = !!order && !intake && (!check || (confirmed && order.created_at > check.created_at))
   const statusLabel = intake && !check ? 'Angaben zum Unternehmen' : orderFirst && order ? orderStatusLabel(order) : checkLabel
@@ -269,6 +271,8 @@ export default function CabinetPage() {
   const diff = deltas(check?.report, versions[1]?.report)
   const total = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null
   const recs: [string, string, string][] = check?.report?.recommendations ?? []
+  // «Stand»: bei fertiger Analyse (Lead-Tabelle / Grok) das Datum der Analyse, sonst das der Veröffentlichung.
+  const standAt = check?.report?.source === 'analysis' && check.report.collected_at ? check.report.collected_at : versions[0]?.created_at
   const place = check?.place
   const displayName = check?.contact.name || contact.name || userEmail
   const email = check?.email || userEmail
@@ -317,9 +321,11 @@ export default function CabinetPage() {
     : nextAppt ? { title: 'Ihr nächster Termin', text: <><strong style={{ color: 'var(--ink)' }}>{fmtWhen(nextAppt.starts_at)}</strong> · {nextAppt.title}</>, links: [nextAppt.location && /^https?:\/\//.test(nextAppt.location) ? { label: 'Zum Videogespräch', href: nextAppt.location } : { label: 'Termine ansehen', onClick: () => setTab('termine') }] }
     : offer?.status === 'accepted' ? { title: 'Wir bereiten den Start vor', text: 'Danke für Ihre Zusage. Ihr Ansprechpartner meldet sich mit den nächsten Schritten und den Unterlagen, die wir von Ihnen brauchen.', links: [chat] }
     : scratch && !offer ? { title: 'Erstgespräch vereinbaren', text: 'Sie starten bei null, dafür brauchen wir keine Analyse. Wählen Sie einen Termin: Wir besprechen, womit Sie anfangen und was es kostet.', links: [...(book ? [{ label: 'Termin wählen', href: book }] : []), chat] }
-    : !assigned && check ? { title: 'Ihre Prüfung läuft', text: 'Ihr vollständiger Bericht ist in der Regel innerhalb von 1 Werktag fertig. Den Stand sehen Sie oben.', links: [] }
+    : check && partial ? { title: 'Erste Ergebnisse sind da', text: 'Ihre vollständige Analyse ist in Arbeit. Sie erhalten sie innerhalb von 24 Stunden per E-Mail.', links: [{ label: 'Ergebnisse ansehen', onClick: () => setTab('report') }, chat] }
+    : check && ready && !assigned ? { title: 'Ihr Bericht ist fertig', text: 'Ihre Ergebnisse und Empfehlungen finden Sie im Bericht. Fragen beantworten wir gern im Chat.', links: [{ label: 'Bericht ansehen', onClick: () => setTab('report') }, chat] }
+    : !assigned && check ? { title: 'Ihre Prüfung läuft', text: 'Erste Ergebnisse sehen Sie hier in etwa einer Minute. Den vollständigen Bericht erhalten Sie innerhalb von 24 Stunden per E-Mail.', links: [] }
     : !assigned ? { title: 'Ihre Anfrage ist eingegangen', text: 'Ihr persönlicher Ansprechpartner übernimmt sie in der Regel innerhalb von 1 Werktag. Fragen können Sie uns schon jetzt im Chat stellen.', links: [chat] }
-    : check && !ready ? { title: 'Ihr Bericht entsteht', text: 'Wir prüfen Google Maps, Website, KI-Suche und Social Media. Der Bericht ist in der Regel innerhalb von 1 Werktag fertig.', links: [] }
+    : check && !ready ? { title: 'Ihr Bericht entsteht', text: 'Wir prüfen Google Maps, Website, KI-Suche und Social Media. Den vollständigen Bericht erhalten Sie innerhalb von 24 Stunden per E-Mail.', links: [] }
     : check ? { title: 'Ihr Bericht ist fertig', text: rec ? <>Unsere Empfehlung: <strong style={{ color: 'var(--ink)' }}>{rec.name}</strong>. <span>Vereinbaren Sie einen Termin mit Ihrem Ansprechpartner, wir besprechen den Bericht in einem kurzen Gespräch.</span></> : 'Vereinbaren Sie einen Termin mit Ihrem Ansprechpartner, in 20 Minuten gehen wir die Ergebnisse durch.', links: [{ label: 'Bericht ansehen', onClick: () => setTab('report') }, ...(book ? [{ label: 'Termin wählen', href: book }] : [chat])] }
     : { title: 'Erstgespräch vereinbaren', text: 'Ihr Ansprechpartner hat Ihre Anfrage übernommen. Vereinbaren Sie einen Termin, wir besprechen Ihre Ziele und den Ablauf.', links: [chat] }
 
@@ -539,7 +545,7 @@ export default function CabinetPage() {
                 <Eyebrow>Bericht</Eyebrow>
                 <p className="display" style={{ fontSize: 26, margin: '0 0 6px' }}>Sichtbarkeits-Check</p>
                 <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0 }}>Detaillierte Auswertung in vier Bereichen.</p>
-                {ready && versions[0] && <p style={{ fontSize: 13, color: 'var(--muted)', margin: '6px 0 0' }}><span>Stand:</span> <span>{new Date(versions[0].created_at).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' })}</span>{versions.length > 1 && <> · <span>Version</span> <span>{versions.length}</span></>}</p>}
+                {ready && standAt && <p style={{ fontSize: 13, color: 'var(--muted)', margin: '6px 0 0' }}><span>Stand:</span> <span>{new Date(standAt).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' })}</span>{versions.length > 1 && <> · <span>Version</span> <span>{versions.length}</span></>}</p>}
               </div>
               {scored && total !== null && (
                 <div style={{ backgroundColor: 'var(--electric)', color: '#fff', borderRadius: 20, padding: '16px 24px', minWidth: 190 }}>
@@ -550,6 +556,15 @@ export default function CabinetPage() {
                 </div>
               )}
             </div>
+            {partial && (
+              <div role="status" style={{ ...card, display: 'flex', gap: 14, alignItems: 'flex-start', backgroundColor: '#FFF8EC', border: '1px solid #F1DDB8' }}>
+                <span className="ck-spin" aria-hidden="true" style={{ marginTop: 3, flexShrink: 0 }} />
+                <div>
+                  <p style={{ fontWeight: 700, fontSize: 15, margin: '0 0 4px' }}>Erste Ergebnisse</p>
+                  <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--muted)', margin: 0 }}>Hier sehen Sie bereits Ihr Google-Profil, Ihren Platz bei Google Maps und die Prüfung Ihrer Website. Ihre vollständige Analyse mit KI-Suche, Verzeichnissen, Social Media und Empfehlungen ist in Arbeit. Sie erhalten sie innerhalb von 24 Stunden per E-Mail.</p>
+                </div>
+              </div>
+            )}
             {!scored ? <PendingCard assigned={assigned} /> : (
               <div className="cab-grid-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 18 }}>
                 {chans.map((c, i) => (
