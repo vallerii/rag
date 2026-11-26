@@ -1,4 +1,4 @@
-// Datenbank-Tests: schema.sql + admin.sql + project.sql (+ mfa.sql) in einem echten Postgres (PGlite, im Prozess).
+// Datenbank-Tests: schema.sql + admin.sql + project.sql + flow.sql + addendum.sql + analysis.sql (+ mfa.sql) in einem echten Postgres (PGlite, im Prozess).
 // Prüft Rechte (RLS), Trennung mehrerer Unternehmen eines Kunden, automatische Statuswechsel, Projektablauf.
 // Start: npm run test:db
 import { PGlite } from '@electric-sql/pglite'
@@ -48,7 +48,7 @@ await db.exec(sql('schema.sql'))
 await db.exec(sql('admin.sql'))
 await db.exec(sql('project.sql'))
 await db.exec(sql('project.sql')) // zweimal: muss wiederholbar sein
-await db.exec('create publication supabase_realtime'); await db.exec(sql('prospects.sql'))
+await db.exec('create publication supabase_realtime')
 await db.exec(sql('flow.sql'))
 await db.exec(sql('addendum.sql'))
 await db.exec(sql('addendum.sql')) // wiederholbar
@@ -240,6 +240,78 @@ await test('Angebot zum Quiz wandert beim Registrieren ins Konto', async () => {
   await as(null)
   const o = await one(`select client_key, user_id from offers where request_id = $1`, lead)
   assert.equal(o.client_key, `user:${B}`); assert.equal(o.user_id, B)
+})
+
+console.log('\nAnalyse ohne Manager (analysis.sql)')
+// Alte Datenbank: Kopie der Leads aus prospects.sql (vereinfacht) — analysis.sql muss sie entfernen.
+await as(null)
+await db.exec(`
+create table public.prospects (id uuid primary key default gen_random_uuid(), place_id text, code text);
+create table public.staff_settings (key text primary key, value text);
+create function public.prospect_place(p_code text) returns text language sql as $$ select place_id from prospects where code = p_code $$;
+alter publication supabase_realtime add table public.prospects;`)
+await db.exec(sql('analysis.sql'))
+await db.exec(sql('analysis.sql')) // wiederholbar
+await test('Alte Lead-Kopie ist entfernt (prospects, staff_settings, prospect_place)', async () => {
+  await as(null)
+  const r = await one(`select to_regclass('public.prospects') p, to_regclass('public.staff_settings') s,
+    (select count(*)::int from pg_proc where proname in ('prospect_place', 'prospect_prefill', 'prospect_responded')) f,
+    (select count(*)::int from pg_publication_tables where tablename = 'prospects') pub`)
+  assert.deepEqual(r, { p: null, s: null, f: 0, pub: 0 })
+})
+await test('Bestehende Prüfungen: Analyse «none», neue: «lookup», Start bei null: «none»', async () => {
+  await as(null)
+  assert.equal((await one(`select analysis_status s from checks where id = $1`, a1)).s, 'none')
+  await as(A)
+  const n = (await one(`insert into checks (place) values ('{"name":"A-Drei"}') returning id, analysis_status`))
+  assert.equal(n.analysis_status, 'lookup')
+  const z = (await one(`insert into checks (place, scratch) values ('{"name":"A-Null"}', true) returning analysis_status`))
+  assert.equal(z.analysis_status, 'none')
+})
+await test('Kunde kann keine Prüfung mit fertiger Analyse anlegen', async () => {
+  await as(A)
+  await fails(`insert into checks (place, analysis_status) values ('{"name":"x"}', 'done')`)
+  await fails(`insert into checks (place, analysis_status) values ('{"name":"x"}', 'pending')`, /row-level security/)
+  await fails(`insert into checks (place, analysis, analysis_source) values ('{"name":"x"}', '{}'::jsonb, 'sheet')`, /row-level security/)
+  await fails(`insert into checks (place, reviewed_at) values ('{"name":"x"}', now())`, /row-level security/)
+})
+await test('Kunde kann Analysefelder nicht ändern', async () => {
+  await as(A)
+  await fails(`update checks set analysis_status = 'done' where id = $1`, /permission denied/, a1)
+  await fails(`update checks set analysis = '{}'::jsonb where id = $1`, /permission denied/, a1)
+})
+await test('«done» nur mit Analyse und Quelle', async () => {
+  await as(null)
+  const c = (await one(`insert into checks (user_id, place) values ($1, '{"name":"A-Vier"}') returning id`, A)).id
+  await fails(`update checks set analysis_status = 'done' where id = $1`, /checks_analysis_done_chk/, c)
+  await fails(`update checks set analysis_status = 'fertig' where id = $1`, /checks_analysis_status_chk/, c)
+  await fails(`update checks set analysis_source = 'irgendwo' where id = $1`, /checks_analysis_source_chk/, c)
+  await db.query(`update checks set analysis_status = 'done', analysis = '{"row":{}}'::jsonb, analysis_source = 'sheet' where id = $1`, [c])
+  assert.equal((await one(`select analysis_status s from checks where id = $1`, c)).s, 'done')
+})
+await test('Bei Grok hängengebliebene Analysen (> 2 h) gehen zurück in die Warteschlange', async () => {
+  await as(null)
+  await db.query(`update checks set analysis_status = 'in_progress', analysis_taken_at = now() - interval '3 hours' where id = $1`, [a1])
+  await db.query(`update checks set analysis_status = 'in_progress', analysis_taken_at = now() - interval '1 hour' where id = $1`, [b1])
+  assert.equal((await one(`select release_stale_analyses() n`)).n, 1)
+  const s = Object.fromEntries((await rows(`select id, analysis_status from checks where id in ($1, $2)`, a1, b1)).map(r => [r.id, r.analysis_status]))
+  assert.deepEqual(s, { [a1]: 'pending', [b1]: 'in_progress' })
+  await as(A)
+  await fails(`select release_stale_analyses()`, /permission denied/)
+})
+await test('Tabellen der Leads: nur das Team', async () => {
+  const url = 'https://docs.google.com/spreadsheets/d/1BVxvlKTFsoMdHy1zwg4MEunWyY5IyUbWq6YL8GCuJFI/edit?gid=928133157'
+  await as(A)
+  await fails(`insert into lead_sheets (spreadsheet_id, gid, url) values ('1BVxvlKTFsoMdHy1zwg4MEunWyY5IyUbWq6YL8GCuJFI', 928133157, $1)`, /row-level security/, url)
+  await as(MGR)
+  await db.query(`insert into lead_sheets (spreadsheet_id, gid, url) values ('1BVxvlKTFsoMdHy1zwg4MEunWyY5IyUbWq6YL8GCuJFI', 928133157, $1)`, [url])
+  await fails(`insert into lead_sheets (spreadsheet_id, gid, url) values ('1BVxvlKTFsoMdHy1zwg4MEunWyY5IyUbWq6YL8GCuJFI', 928133157, $1)`, /duplicate key/, url)
+  await fails(`insert into lead_sheets (spreadsheet_id, gid, url) values ('abc', 1, 'https://example.com/x')`, /check constraint/)
+  await as(B)
+  assert.equal((await rows(`select id from lead_sheets`)).length, 0)
+  await as(ADM)
+  assert.equal((await rows(`select id from lead_sheets`)).length, 1)
+  await as(null)
 })
 
 console.log('\n2FA (mfa.sql)')

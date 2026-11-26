@@ -3,13 +3,12 @@ import { tr } from '../i18n'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNoindex } from '../check/CheckPage'
 import {
-  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, addAppointment, deleteAppointment, loadAll, loadClient, loadMyProfile, setAppointmentStatus, loadTeam, myId, saveMyProfile, myAccount, changeMyEmail, changeMyPassword, prospectByPlace, markMessagesRead, type Prospect, sendStaffPasswordReset, hasRecoverySession, setStaffNewPassword,
+  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, addAppointment, deleteAppointment, loadAll, loadClient, loadMyProfile, setAppointmentStatus, loadTeam, myId, saveMyProfile, myAccount, changeMyEmail, changeMyPassword, markMessagesRead, sendStaffPasswordReset, hasRecoverySession, setStaffNewPassword,
   revokeInvite, saveOffer, saveProject, projectLabel, versionTotal, sendStaffMessage, setAssignee, setNextContact, setRole, setStage, signInPlain, signInStaff, mfaEnroll, mfaState, mfaVerify, signOutStaff, signUpStaff, stageLabel,
   type Invite, type Kind, type Project, type ProjectStatus, type ReportVersionRow,
   type Activity, type Appointment, type Check, type Lead, type Message, type Note, type Offer, type Order, type Profile, type Request, type Stage,
 } from './api'
 import ReportEditor from './ReportEditor'
-import Leads from './Leads'
 import OfferBuilder from './OfferBuilder'
 import { stopLive, useLive, useLiveStatus } from './live'
 import { CATALOG, totals, type OfferItem, type Unit } from './catalog'
@@ -160,9 +159,9 @@ function Login({ onDone }: { onDone: () => void }) {
 }
 
 // Разделы админки — отдельные адреса: работают «назад/вперёд», обновление страницы и ссылки.
-type View = 'requests' | 'leads' | 'team' | 'profile'
-const VIEW_PATH: Record<View, string> = { requests: '/rag-intern', leads: '/rag-intern/leads', team: '/rag-intern/team', profile: '/rag-intern/profil' }
-const viewFromPath = (): View => { const p = window.location.pathname; return /\/profil\/?$/.test(p) ? 'profile' : /\/team\/?$/.test(p) ? 'team' : /\/leads\/?$/.test(p) ? 'leads' : 'requests' }
+type View = 'requests' | 'team' | 'profile'
+const VIEW_PATH: Record<View, string> = { requests: '/rag-intern', team: '/rag-intern/team', profile: '/rag-intern/profil' }
+const viewFromPath = (): View => { const p = window.location.pathname; return /\/profil\/?$/.test(p) ? 'profile' : /\/team\/?$/.test(p) ? 'team' : 'requests' }
 
 function NavLink({ to, onGo, style, children }: { to: View; onGo: (v: View) => void; style?: React.CSSProperties; children: React.ReactNode }) {
   return (
@@ -247,7 +246,6 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           <NavLink to="requests" onGo={v => { go(v, false) }} style={{ fontWeight: 600, fontSize: 19, color: ink }}>RAG<span style={{ color: accent }}>.</span></NavLink>
           <nav style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             <NavLink to="requests" onGo={v => go(v, false)} style={navLink(view === 'requests')}>Anfragen</NavLink>
-            <NavLink to="leads" onGo={go} style={navLink(view === 'leads')}>Leads</NavLink>
             {admin && <NavLink to="team" onGo={go} style={navLink(view === 'team')}>Team</NavLink>}
           </nav>
         </span>
@@ -258,7 +256,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           <button type="button" onClick={onLogout} style={{ ...linkBtn, color: ink }}>Abmelden</button>
         </span>
       </header>
-      {view === 'leads' ? <Leads onOpenRequest={key => { history.pushState(null, '', `${VIEW_PATH.requests}?r=${encodeURIComponent(key)}`); setView('requests'); setSel(key) }} /> : view === 'profile' ? <MyProfile /> : view === 'team' ? (admin ? <Team /> : <p style={{ padding: 20, color: muted }}>{admin === null ? 'Wird geladen…' : 'Nur für Admins.'}</p>)
+      {view === 'profile' ? <MyProfile /> : view === 'team' ? (admin ? <Team /> : <p style={{ padding: 20, color: muted }}>{admin === null ? 'Wird geladen…' : 'Nur für Admins.'}</p>)
         : sel ? (current && data
           ? <Detail key={sel} r={current} all={data.requests} profiles={data.profiles} me={me} onSelect={open} onBack={back} onPatch={p => patch(current, p)} />
           : <p style={{ padding: 24, color: muted }}>{data ? 'Anfrage nicht gefunden.' : 'Wird geladen…'} <button type="button" onClick={back} style={linkBtn}>← Alle Anfragen</button></p>)
@@ -349,12 +347,9 @@ function Detail({ r, all, profiles, me, onSelect, onBack, onPatch }: { r: Reques
   const changeAssignee = async (uid: string | null) => { if (await setAssignee(r.kind, r.id, uid)) { onPatch({ assignee: uid }); reloadClient() } }
   const changeNext = async (d: string) => { if (await setNextContact(r.kind, r.id, d)) onPatch({ next: d || null }) }
 
-  // Та же компания в других местах: лид (письмо) и проверки других клиентов.
+  // Та же компания у других клиентов.
   const placeId = r.kind === 'check' ? (r.row as Check).place_id : null
   const samePlace = placeId ? all.filter(x => x.kind === 'check' && x.id !== r.id && (x.row as Check).place_id === placeId) : []
-  const [lead, setLead] = useState<Prospect | null>(null)
-  useEffect(() => { setLead(null); if (placeId && !placeId.startsWith('manual:')) prospectByPlace(placeId).then(setLead).catch(() => {}) }, [placeId])
-  const fromLead = r.kind === 'check' && !!(r.row as Check).from_prospect
   type Tab = 'reports' | 'offer' | 'appointments' | 'project'
   const [tab, setTab] = useState<Tab | null>(null)
   const [panel, setPanel] = useState<'' | 'chat' | 'notes' | 'history' | 'client'>('')
@@ -421,16 +416,8 @@ function Detail({ r, all, profiles, me, onSelect, onBack, onPatch }: { r: Reques
           {me && r.assignee !== me && <button type="button" className="btn btn-sm btn-outline-light" onClick={() => changeAssignee(me)}>Übernehmen</button>}
         </div>
         {r.assignee && r.assignee !== me && <p style={{ ...small, margin: 0, color: '#B26B00' }}>Die Anfrage betreut {staffName(profiles, r.assignee)}.</p>}
-        {(lead || samePlace.length > 0) && (
+        {samePlace.length > 0 && (
           <div style={{ display: 'grid', gap: 4, padding: '10px 14px', borderRadius: 12, backgroundColor: '#F2FAF5', border: '1px solid #CDEBD8', fontSize: 13.5 }}>
-            {lead && (
-              <span>
-                <strong>War ein Lead</strong>{lead.printed_at ? <> · Brief gedruckt {new Date(lead.printed_at).toLocaleDateString('ru-RU')}</> : null}
-                {' · Code '}<span data-no-translate>{lead.code}</span>{lead.score !== null ? <> · Kurzanalyse {lead.score}/100</> : null}
-                {fromLead && <> · Analyse aus dem Lead übernommen, keine neuen Google-Abfragen</>}
-              </span>
-            )}
-            {!lead && r.kind === 'check' && (r.row as Check).from_check && <span>Analyse aus einer anderen Prüfung dieses Unternehmens übernommen, keine neuen Google-Abfragen</span>}
             {samePlace.length > 0 && (
               <span>Dieses Unternehmen hat noch {samePlace.length === 1 ? 'eine weitere Prüfung' : `${samePlace.length} weitere Prüfungen`}:{' '}
                 {samePlace.map(x => <button key={x.id} type="button" onClick={() => onSelect(`check:${x.id}`)} style={{ ...linkBtn, fontSize: 13.5, marginRight: 10 }}>{(x.row as Check).email ?? x.title} · {fmt(x.created_at)}</button>)}

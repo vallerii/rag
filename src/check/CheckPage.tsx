@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import CompanySearch from './CompanySearch'
 import {
-  SOURCE_LABELS, SOURCE_ORDER, createCheck, placeFromCode, discoverSources, findMyCheck, getCompany, loadMyChecks, manualPlace, newSessionToken, searchCompanies,
+  SOURCE_LABELS, SOURCE_ORDER, createCheck, discoverSources, findMyCheck, getCompany, loadMyChecks, manualPlace, newSessionToken, searchCompanies,
   type Contact, type Place, type Source, type SourceKey, type Suggestion,
 } from './data'
 import AccountStep from './AccountStep'
@@ -214,8 +214,6 @@ export default function CheckPage() {
   useNoindex('Kostenloser Sichtbarkeits-Check | RAG')
   const params = new URLSearchParams(window.location.search)
   const initialPlace = params.get('place')
-  // Code aus dem Brief (QR-Code / Link): /check?c=ABC123 → Unternehmen ist schon ausgewählt.
-  const briefCode = (params.get('c') ?? '').trim().toUpperCase()
   // Brief aus der Lead-CRM: /check?place=<place_id>&ref=<Code> → Herkunft «crm-<Code>» in der Anfrage.
   const crmRef = (params.get('ref') ?? '').trim().replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64)
   const initialQ = params.get('q') ?? ''
@@ -223,9 +221,9 @@ export default function CheckPage() {
   // Von der Startseite über «Mein Unternehmen ist nicht in der Liste»: Formular sofort offen, keine neue Google-Suche.
   const [manualMode, setManualMode] = useState(params.get('manual') === '1')
 
-  const [step, setStep] = useState<Step>(initialPlace || briefCode ? (returning ? 'account' : 'review') : 'find')
+  const [step, setStep] = useState<Step>(initialPlace ? (returning ? 'account' : 'review') : 'find')
   const [place, setPlace] = useState<Place | null>(null)
-  const [loadingPlace, setLoadingPlace] = useState(!!initialPlace || !!briefCode)
+  const [loadingPlace, setLoadingPlace] = useState(!!initialPlace)
   const [notFound, setNotFound] = useState(false)
   // Website + Social-Profile werden im Hintergrund gesucht. Bestätigt werden sie in Schritt 2.
   const discovery = useRef<Promise<Source[]> | null>(null)
@@ -312,8 +310,6 @@ export default function CheckPage() {
       } else {
         loadPlace(initialPlace, returning ? 'account' : 'review')
       }
-    } else if (briefCode) {
-      placeFromCode(briefCode).then(id => { if (id) loadPlace(id); else { setLoadingPlace(false); setStep('find') } })
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { topRef.current?.scrollIntoView({ block: 'start' }) }, [step])
@@ -341,7 +337,7 @@ export default function CheckPage() {
     // Anmeldung = Bestätigung der Quellen: die Analyse startet sofort (Kundenbereich ruft audit-collect auf).
     const id = await createCheck({
       place: withPhone(place), region: `${place.city} + 30 km`, sources: found.length ? found : empty, contact, confirmed: true,
-      sourcePage: params.get('from') ?? (crmRef ? `crm-${crmRef}` : briefCode ? `brief-${briefCode}` : null),
+      sourcePage: params.get('from') ?? (crmRef ? `crm-${crmRef}` : null),
     })
     if (!id) return 'Das Speichern hat nicht geklappt. Bitte versuchen Sie es noch einmal.'
     // Neues Konto (gerade angelegt) → Begrüßung; bestehendes Konto → Hinweis «weitere Firma hinzugefügt».

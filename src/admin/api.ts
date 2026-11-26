@@ -43,7 +43,7 @@ export type Kind = 'lead' | 'order' | 'check'
 export type Profile = { id: string; email: string | null; name: string | null; phone: string | null; role: string; created_at: string; title?: string | null; photo_url?: string | null; booking_url?: string | null }
 export type Lead = { id: string; created_at: string; from_page: string | null; answers: Record<string, unknown>; recommendations: string[]; booking_clicked_at: string | null; user_id: string | null; stage: Stage; next_contact_at: string | null; assignee_id: string | null }
 export type Order = { id: string; user_id: string; email: string | null; items: OfferItem[]; details: Record<string, unknown> | null; status: string; stage: Stage; next_contact_at: string | null; assignee_id: string | null; source_page: string | null; created_at: string }
-export type Check = { wish?: OfferItem[] | null; quiz?: Record<string, unknown> | null; scratch?: boolean; profile_hint?: string | null; from_prospect?: string | null; from_check?: string | null; id: string; user_id: string; email: string | null; place_id: string | null; place: Record<string, unknown>; sources: { key: string; value: string }[]; sources_confirmed: boolean; contact: Record<string, unknown>; status: string; report: unknown; report_draft: unknown; audit: unknown; audited_at: string | null; stage: Stage; next_contact_at: string | null; assignee_id: string | null; source_page: string | null; created_at: string }
+export type Check = { wish?: OfferItem[] | null; quiz?: Record<string, unknown> | null; scratch?: boolean; profile_hint?: string | null; id: string; user_id: string; email: string | null; place_id: string | null; place: Record<string, unknown>; sources: { key: string; value: string }[]; sources_confirmed: boolean; contact: Record<string, unknown>; status: string; report: unknown; report_draft: unknown; audit: unknown; audited_at: string | null; stage: Stage; next_contact_at: string | null; assignee_id: string | null; source_page: string | null; created_at: string }
 export type Request = { kind: Kind; id: string; clientKey: string; userId: string | null; created_at: string; stage: Stage; next: string | null; assignee: string | null; title: string; sub: string; row: Lead | Order | Check; unanswered?: number; reportDue?: boolean }
 export type Message = { id: string; author: 'client' | 'rag'; body: string; created_at: string; read_at?: string | null }
 export type Note = { id: string; body: string; author_id: string | null; created_at: string }
@@ -80,7 +80,7 @@ const quiz = (l: Lead) => l.answers as { branche?: string; ort?: string; firma?:
 
 export async function loadAll(): Promise<{ requests: Request[]; profiles: Profile[] }> {
   const s = await db()
-  const checkCols = 'id, user_id, email, place_id, place, sources, sources_confirmed, contact, status, report, report_draft, audited_at, stage, next_contact_at, assignee_id, source_page, created_at, from_prospect:audit->>from_prospect, from_check:audit->>from_check'
+  const checkCols = 'id, user_id, email, place_id, place, sources, sources_confirmed, contact, status, report, report_draft, audited_at, stage, next_contact_at, assignee_id, source_page, created_at'
   const loadChecks = async () => {
     // Spalten aus supabase/flow.sql (Wunschpaket, Quiz, Start bei null) — ohne sie weiter funktionsfähig.
     const r = await s.from('checks').select(checkCols + ', wish, quiz, scratch, profile_hint').order('created_at', { ascending: false }).limit(500)
@@ -450,60 +450,6 @@ export async function setStaffNewPassword(password: string, totp?: string): Prom
   return 'Link abgelaufen oder ungültig. Fordern Sie einen neuen an.'
 }
 
-// ── Leads (potenzielle Kunden aus der Google-Tabelle) ───────────────────────
-export type ProspectStatus = 'new' | 'checking' | 'checked' | 'error' | 'printed' | 'responded' | 'hidden'
-export type Prospect = {
-  id: string; created_at: string; name: string; category: string | null; city: string | null; address: string | null; phone: string | null
-  website: string | null; maps_url: string | null; query: string | null; place_id: string | null; status: ProspectStatus; error: string | null
-  score: number | null; issues: { mark: 'ok' | 'warn' | 'bad'; text: string }[]; audited_at: string | null; printed_at: string | null
-  responded_at: string | null; check_id: string | null; code: string
-}
-const PROSPECT_COLS = 'id, created_at, name, category, city, address, phone, website, maps_url, query, place_id, status, error, score, issues, audited_at, printed_at, responded_at, check_id, code'
-
-export async function loadProspects(): Promise<Prospect[] | null> {
-  const { data, error } = await (await db()).from('prospects').select(PROSPECT_COLS).order('created_at', { ascending: false }).limit(2000)
-  return error ? null : (data as Prospect[])
-}
-export async function updateProspects(ids: string[], patch: Partial<Prospect>): Promise<boolean> {
-  return !(await (await db()).from('prospects').update(patch).in('id', ids)).error
-}
-async function prospectsCall(body: Record<string, unknown>): Promise<Record<string, unknown>> {
-  const proxy = (import.meta.env.VITE_PLACES_PROXY as string | undefined)?.replace(/\/$/, '')
-  if (!proxy) return { error: 'VITE_PLACES_PROXY ist nicht gesetzt' }
-  const { data } = await (await db()).auth.getSession()
-  const token = data.session?.access_token
-  if (!token) return { error: 'Keine Sitzung' }
-  try {
-    const res = await fetch(`${proxy}/prospects`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) })
-    const j = await res.json().catch(() => ({})) as Record<string, unknown>
-    return res.ok ? j : { ...j, error: j.error ?? `HTTP ${res.status}` }
-  } catch (e) { return { error: e instanceof Error ? e.message : 'Netzwerkfehler' } }
-}
-export async function importProspects(src: { csvUrl?: string; csv?: string }): Promise<{ added?: number; total?: number; error?: string }> {
-  const r = await prospectsCall({ action: 'import', ...src })
-  if (r.error) {
-    const e = String(r.error)
-    return { error: e === 'bad_url' ? 'Das ist kein Link auf eine veröffentlichte Google-Tabelle.' : e === 'not_csv' ? 'Unter dem Link liegt keine CSV-Datei: in Google Sheets «Im Web veröffentlichen» → Format «CSV» wählen.'
-      : e === 'no_name_column' ? 'In der Tabelle fehlt die Spalte «Firma» (oder «Компания»).' : /Failed to fetch|404|function/i.test(e) ? 'Funktion «prospects» ist nicht deployt.' : e }
-  }
-  return { added: Number(r.added ?? 0), total: Number(r.total ?? 0) }
-}
-export async function auditProspect(id: string): Promise<string> {
-  const r = await prospectsCall({ action: 'audit', id })
-  return String(r.status ?? r.error ?? 'error')
-}
-export async function getSetting(key: string): Promise<string> {
-  const { data } = await (await db()).from('staff_settings').select('value').eq('key', key).maybeSingle()
-  return (data?.value as string | undefined) ?? ''
-}
-export async function setSetting(key: string, value: string): Promise<boolean> {
-  return !(await (await db()).from('staff_settings').upsert({ key, value, updated_at: new Date().toISOString() })).error
-}
-/** Лид с тем же Google-профилем (для отметки в карточке заявки). Нет таблицы или нет лида → null. */
-export async function prospectByPlace(placeId: string): Promise<Prospect | null> {
-  const { data } = await (await db()).from('prospects').select(PROSPECT_COLS).eq('place_id', placeId).order('created_at').limit(1)
-  return ((data ?? [])[0] as Prospect | undefined) ?? null
-}
 /** Angebot einer Anfrage (oder null). */
 export async function loadOfferFor(kind: Kind, id: string): Promise<Offer | null> {
   const { data } = await (await db()).from('offers').select('*').eq('request_kind', kind).eq('request_id', id)
