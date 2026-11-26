@@ -133,6 +133,16 @@ export async function getCompany(id: string, _sessionToken?: string): Promise<Pl
 }
 
 /** Website + Social-Profile (Edge Function liest die Website und sucht Links). */
+/** QR-Code aus dem Brief der Lead-CRM (/check?cid=…): Firma in den Lead-Tabellen. Nur Name, Ort, Datum der Analyse, Place ID. */
+export type LeadPreview = { found: boolean; name?: string; city?: string; date?: string | null; placeId?: string | null }
+export async function leadPreview(cid: string): Promise<LeadPreview | null> {
+  if (!PROXY) return null
+  try {
+    const res = await humanFetch(`${PROXY}/lead-preview`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cid }) })
+    return res.ok ? ((await res.json()) as LeadPreview) : null
+  } catch { return null }
+}
+
 export async function discoverSources(place: Place): Promise<Source[]> {
   if (PROXY) {
     const res = await humanFetch(`${PROXY}/discover-sources`, {
@@ -344,6 +354,25 @@ export async function runAudit(checkId: string): Promise<void> {
     method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ checkId }), keepalive: true,
   }).catch(() => undefined)
+}
+
+/**
+ * Wie runAudit, wartet aber auf das Ergebnis (höchstens 45 s). Mit fertiger Analyse aus der Lead-Tabelle
+ * veröffentlicht der Server dabei den Bericht («analysis»), ohne Google-Abfragen. Fehler/Zeitüberschreitung → null.
+ */
+export async function runAuditNow(checkId: string): Promise<string | null> {
+  if (!PROXY) return null
+  const { data } = await (await getSupabase()).auth.getSession()
+  const token = data.session?.access_token
+  if (!token) return null
+  const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 45_000)
+  try {
+    const res = await fetch(`${PROXY}/audit-collect`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ checkId }), signal: ctrl.signal,
+    })
+    const j = await res.json().catch(() => ({})) as { status?: string }
+    return j.status ?? null
+  } catch { return null } finally { clearTimeout(t) }
 }
 
 /** Analyse gerade gestartet (Seitenwechsel danach) — der Kundenbereich startet sie dann nicht ein zweites Mal. */

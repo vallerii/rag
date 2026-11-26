@@ -46,14 +46,15 @@ async function fromOtherCheck(db: Db, check: LookupCheck, keys: string[]): Promi
   return { status: 'done', source: 'check' }
 }
 
-async function fromSheets(db: Db, check: LookupCheck, keys: string[], serviceAccount: string | undefined): Promise<LookupResult> {
-  const { data: sheets } = await db.from('lead_sheets').select('id, spreadsheet_id, gid, title, tab_title').eq('active', true)
-  if (!sheets?.length) return pending(db, check, null)
-  let sa
-  try { sa = parseServiceAccount(serviceAccount) } catch (e) { return retry(db, check, (e as Error).message) }
-
-  const read = await Promise.allSettled((sheets as Sheet[]).map(s => readTab(sa, s.spreadsheet_id, Number(s.gid))))
+export type SheetRows = { list: Candidate[]; where: Map<string, { sheet: Sheet; tab: Tab; n: number }>; errors: string[]; configError?: string; none?: boolean }
+/** Все строки активных вкладок (читаются сейчас, параллельно). Ошибки чтения — в lead_sheets.last_error. */
+export async function sheetRows(db: Db, serviceAccount: string | undefined): Promise<SheetRows> {
   const list: Candidate[] = [], where = new Map<string, { sheet: Sheet; tab: Tab; n: number }>(), errors: string[] = []
+  const { data: sheets } = await db.from('lead_sheets').select('id, spreadsheet_id, gid, title, tab_title').eq('active', true)
+  if (!sheets?.length) return { list, where, errors, none: true }
+  let sa
+  try { sa = parseServiceAccount(serviceAccount) } catch (e) { return { list, where, errors, configError: (e as Error).message } }
+  const read = await Promise.allSettled((sheets as Sheet[]).map(s => readTab(sa, s.spreadsheet_id, Number(s.gid))))
   await Promise.all(read.map(async (r, i) => {
     const sheet = (sheets as Sheet[])[i]
     if (r.status === 'rejected') {
@@ -70,6 +71,13 @@ async function fromSheets(db: Db, check: LookupCheck, keys: string[], serviceAcc
       list.push({ ref, row: row.data, keys: keysOfRow(row.data, tab.headers), date: rowDate(row.data, tab.headers), analysed: hasAnalysis(row.data) })
     }
   }))
+  return { list, where, errors }
+}
+
+async function fromSheets(db: Db, check: LookupCheck, keys: string[], serviceAccount: string | undefined): Promise<LookupResult> {
+  const { list, where, errors, configError, none } = await sheetRows(db, serviceAccount)
+  if (none) return pending(db, check, null)
+  if (configError) return retry(db, check, configError)
 
   const { best, others } = bestMatch(keys, list)
   if (best?.analysed) {

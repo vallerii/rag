@@ -27,3 +27,7 @@ verify_jwt = false
 # Tabellen der Leads verbinden und auf Dubletten prüfen (nur Team). Prüft die Sitzung selbst.
 [functions.lead-sheets]
 verify_jwt = false
+
+# QR-Code aus dem Brief (/check?cid=…): Firma in den Lead-Tabellen — nur Name, Ort, Datum, Place ID. Bot-Schutz wie die Firmensuche.
+[functions.lead-preview]
+verify_jwt = false
