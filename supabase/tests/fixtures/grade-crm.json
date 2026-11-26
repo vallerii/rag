@@ -1,0 +1,812 @@
+[
+ {
+  "name": "alle Bereiche, gemischt",
+  "input": {
+   "Befund Google-Profil": "+ Platz 1 bei «Sanitär Frechen» in Google Maps.\n+ Durchschnittliche Bewertung 4,9 von 5.\n– Adresse bei Das Örtliche abweichend.",
+   "Befund Website": "+ Website erreichbar, PageSpeed mobil 100 von 100.\n– Keine Seitenbeschreibung (Meta-Description) für Google.",
+   "Befund Social Media": "+ Facebook-Auftritt vorhanden.",
+   "Befund KI-Suche": "+ In 3 von 3 Antworten von ChatGPT genannt."
+  },
+  "expected": {
+   "total": 72,
+   "totalGrade": "befriedigend",
+   "ranks": {
+    "maps": {
+     "rank": 1
+    },
+    "search": null,
+    "ai": {
+     "answers": [],
+     "named": 3,
+     "total": 3
+    }
+   },
+   "sections": [
+    {
+     "key": "maps",
+     "score": 67,
+     "grade": "befriedigend",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "Platz 1 bei «Sanitär Frechen» in Google Maps."
+      },
+      {
+       "mark": "ok",
+       "text": "Durchschnittliche Bewertung 4,9 von 5."
+      },
+      {
+       "mark": "bad",
+       "text": "Adresse bei Das Örtliche abweichend."
+      }
+     ]
+    },
+    {
+     "key": "website",
+     "score": 50,
+     "grade": "ausreichend",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "Website erreichbar, PageSpeed mobil 100 von 100."
+      },
+      {
+       "mark": "bad",
+       "text": "Keine Seitenbeschreibung (Meta-Description) für Google."
+      }
+     ]
+    },
+    {
+     "key": "social",
+     "score": null,
+     "grade": "nicht bewertet",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "Facebook-Auftritt vorhanden."
+      }
+     ]
+    },
+    {
+     "key": "ai",
+     "score": 100,
+     "grade": "sehr gut",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "In 3 von 3 Antworten von ChatGPT genannt."
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "name": "teilweise (~) und Gedankenstrich-Varianten",
+  "input": {
+   "Befund Google-Profil": "~ Platz 4 bei «Elektriker Hürth» in Google Maps.\n— Nur 4 Google-Bewertungen.\n− Keine Antworten des Inhabers auf Bewertungen.",
+   "Befund Website": "~ Keine eigenen Seiten für einzelne Leistungen.\n- Kein Impressum auffindbar."
+  },
+  "expected": {
+   "total": 21,
+   "totalGrade": "ungenügend",
+   "ranks": {
+    "maps": {
+     "rank": 4
+    },
+    "search": null,
+    "ai": null
+   },
+   "sections": [
+    {
+     "key": "maps",
+     "score": 17,
+     "grade": "ungenügend",
+     "findings": [
+      {
+       "mark": "partial",
+       "text": "Platz 4 bei «Elektriker Hürth» in Google Maps."
+      },
+      {
+       "mark": "bad",
+       "text": "Nur 4 Google-Bewertungen."
+      },
+      {
+       "mark": "bad",
+       "text": "Keine Antworten des Inhabers auf Bewertungen."
+      }
+     ]
+    },
+    {
+     "key": "website",
+     "score": 25,
+     "grade": "mangelhaft",
+     "findings": [
+      {
+       "mark": "partial",
+       "text": "Keine eigenen Seiten für einzelne Leistungen."
+      },
+      {
+       "mark": "bad",
+       "text": "Kein Impressum auffindbar."
+      }
+     ]
+    },
+    {
+     "key": "social",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "ai",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "eine einzige erfüllte Zeile → nicht bewertet",
+  "input": {
+   "Befund Social Media": "+ Instagram-Auftritt vorhanden.",
+   "Befund Google-Profil": "+ 112 Google-Bewertungen."
+  },
+  "expected": {
+   "total": null,
+   "totalGrade": "nicht geprüft",
+   "ranks": {
+    "maps": null,
+    "search": null,
+    "ai": null
+   },
+   "sections": [
+    {
+     "key": "maps",
+     "score": null,
+     "grade": "nicht bewertet",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "112 Google-Bewertungen."
+      }
+     ]
+    },
+    {
+     "key": "website",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "social",
+     "score": null,
+     "grade": "nicht bewertet",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "Instagram-Auftritt vorhanden."
+      }
+     ]
+    },
+    {
+     "key": "ai",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "ein einziger Mangel wird bewertet",
+  "input": {
+   "Befund Website": "– Keine eigene Website gefunden.",
+   "Befund Google-Profil": "– Kein Google-Unternehmensprofil gefunden."
+  },
+  "expected": {
+   "total": 0,
+   "totalGrade": "ungenügend",
+   "ranks": {
+    "maps": null,
+    "search": null,
+    "ai": null
+   },
+   "sections": [
+    {
+     "key": "maps",
+     "score": 0,
+     "grade": "ungenügend",
+     "findings": [
+      {
+       "mark": "bad",
+       "text": "Kein Google-Unternehmensprofil gefunden."
+      }
+     ]
+    },
+    {
+     "key": "website",
+     "score": 0,
+     "grade": "ungenügend",
+     "findings": [
+      {
+       "mark": "bad",
+       "text": "Keine eigene Website gefunden."
+      }
+     ]
+    },
+    {
+     "key": "social",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "ai",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "Platz-Spalten und KI-Antworten",
+  "input": {
+   "Befund Google-Profil": "+ 30 Google-Bewertungen.\n– Letzte Google-Bewertung vor 14 Monaten.",
+   "Befund Website": "+ Website mit HTTPS.\n+ Impressum vorhanden.",
+   "Platz Google Maps": "6",
+   "Platz Google-Suche": "7",
+   "Suchbegriff": "Heizung Frechen",
+   "KI-Antworten": "Wen kann ich für Heizungsbau in Frechen beauftragen? — nicht genannt\nBester Heizungsbetrieb in Frechen? — Platz 2\nHeizung Frechen Empfehlung — Platz 5",
+   "Befund KI-Suche": "~ In 2 von 3 Antworten von ChatGPT genannt.\n– ChatGPT nennt eine veraltete Adresse."
+  },
+  "expected": {
+   "total": 57,
+   "totalGrade": "ausreichend",
+   "ranks": {
+    "maps": {
+     "rank": 6
+    },
+    "search": {
+     "rank": 7
+    },
+    "ai": {
+     "answers": [
+      {
+       "question": "Wen kann ich für Heizungsbau in Frechen beauftragen?",
+       "rank": null,
+       "named": false
+      },
+      {
+       "question": "Bester Heizungsbetrieb in Frechen?",
+       "rank": 2,
+       "named": true
+      },
+      {
+       "question": "Heizung Frechen Empfehlung",
+       "rank": 5,
+       "named": true
+      }
+     ],
+     "named": 2,
+     "total": 3
+    }
+   },
+   "sections": [
+    {
+     "key": "maps",
+     "score": 50,
+     "grade": "ausreichend",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "30 Google-Bewertungen."
+      },
+      {
+       "mark": "bad",
+       "text": "Letzte Google-Bewertung vor 14 Monaten."
+      }
+     ]
+    },
+    {
+     "key": "website",
+     "score": 85,
+     "grade": "gut",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "Website mit HTTPS."
+      },
+      {
+       "mark": "ok",
+       "text": "Impressum vorhanden."
+      },
+      {
+       "mark": "partial",
+       "text": "Platz 7 in der Google-Suche bei «Heizung Frechen»."
+      }
+     ]
+    },
+    {
+     "key": "social",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "ai",
+     "score": 35,
+     "grade": "mangelhaft",
+     "findings": [
+      {
+       "mark": "partial",
+       "text": "In 2 von 3 Antworten von ChatGPT genannt."
+      },
+      {
+       "mark": "bad",
+       "text": "ChatGPT nennt eine veraltete Adresse."
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "name": "Google-Suche nicht unter den ersten 10 (Spalte)",
+  "input": {
+   "Befund Website": "+ Website mit HTTPS.\n– Keine Sitemap.",
+   "Platz Google-Suche": "nicht unter den ersten 10"
+  },
+  "expected": {
+   "total": 35,
+   "totalGrade": "mangelhaft",
+   "ranks": {
+    "maps": null,
+    "search": {
+     "rank": null,
+     "beyond": 10
+    },
+    "ai": null
+   },
+   "sections": [
+    {
+     "key": "maps",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "website",
+     "score": 35,
+     "grade": "mangelhaft",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "Website mit HTTPS."
+      },
+      {
+       "mark": "bad",
+       "text": "Keine Sitemap."
+      },
+      {
+       "mark": "bad",
+       "text": "In der Google-Suche nicht unter den ersten 10."
+      }
+     ]
+    },
+    {
+     "key": "social",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "ai",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "Google-Suche schon als Zeile vorhanden",
+  "input": {
+   "Befund Website": "+ Website mit HTTPS.\n~ Platz 7 in der Google-Suche bei «Maler Köln».",
+   "Platz Google-Suche": "7"
+  },
+  "expected": {
+   "total": 85,
+   "totalGrade": "gut",
+   "ranks": {
+    "maps": null,
+    "search": {
+     "rank": 7
+    },
+    "ai": null
+   },
+   "sections": [
+    {
+     "key": "maps",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "website",
+     "score": 85,
+     "grade": "gut",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "Website mit HTTPS."
+      },
+      {
+       "mark": "partial",
+       "text": "Platz 7 in der Google-Suche bei «Maler Köln»."
+      }
+     ]
+    },
+    {
+     "key": "social",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "ai",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "Platz aus Zeilen (ohne Spalten)",
+  "input": {
+   "Befund Google-Profil": "– Bei «Dachdecker Pulheim» nicht unter den ersten 10 in Google Maps.\n+ 4,5 von 5.",
+   "Befund Website": "+ Erreichbar.\n– In der Google-Suche nicht unter den ersten 10.",
+   "Befund KI-Suche": "– In keiner von 3 Antworten von ChatGPT genannt."
+  },
+  "expected": {
+   "total": 40,
+   "totalGrade": "mangelhaft",
+   "ranks": {
+    "maps": {
+     "rank": null,
+     "beyond": 10
+    },
+    "search": {
+     "rank": null,
+     "beyond": 10
+    },
+    "ai": {
+     "answers": [],
+     "named": 0,
+     "total": 3
+    }
+   },
+   "sections": [
+    {
+     "key": "maps",
+     "score": 50,
+     "grade": "ausreichend",
+     "findings": [
+      {
+       "mark": "bad",
+       "text": "Bei «Dachdecker Pulheim» nicht unter den ersten 10 in Google Maps."
+      },
+      {
+       "mark": "ok",
+       "text": "4,5 von 5."
+      }
+     ]
+    },
+    {
+     "key": "website",
+     "score": 70,
+     "grade": "befriedigend",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "Erreichbar."
+      },
+      {
+       "mark": "bad",
+       "text": "In der Google-Suche nicht unter den ersten 10."
+      }
+     ]
+    },
+    {
+     "key": "social",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "ai",
+     "score": 0,
+     "grade": "ungenügend",
+     "findings": [
+      {
+       "mark": "bad",
+       "text": "In keiner von 3 Antworten von ChatGPT genannt."
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "name": "Platz «–» = nicht geprüft",
+  "input": {
+   "Befund Website": "+ Website mit HTTPS.\n+ Impressum vorhanden.",
+   "Platz Google-Suche": "–",
+   "Platz Google Maps": "–"
+  },
+  "expected": {
+   "total": 70,
+   "totalGrade": "befriedigend",
+   "ranks": {
+    "maps": {
+     "rank": null,
+     "missing": true
+    },
+    "search": {
+     "rank": null,
+     "missing": true
+    },
+    "ai": null
+   },
+   "sections": [
+    {
+     "key": "maps",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "website",
+     "score": 70,
+     "grade": "befriedigend",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "Website mit HTTPS."
+      },
+      {
+       "mark": "ok",
+       "text": "Impressum vorhanden."
+      }
+     ]
+    },
+    {
+     "key": "social",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "ai",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "Zeilen ohne Zeichen werden ignoriert",
+  "input": {
+   "Befund Google-Profil": "Notiz für das Team\n+ 40 Google-Bewertungen.\n+ Öffnungszeiten vorhanden.\n+ ab",
+   "Befund Website": "nur Text"
+  },
+  "expected": {
+   "total": 100,
+   "totalGrade": "sehr gut",
+   "ranks": {
+    "maps": null,
+    "search": null,
+    "ai": null
+   },
+   "sections": [
+    {
+     "key": "maps",
+     "score": 100,
+     "grade": "sehr gut",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "40 Google-Bewertungen."
+      },
+      {
+       "mark": "ok",
+       "text": "Öffnungszeiten vorhanden."
+      }
+     ]
+    },
+    {
+     "key": "website",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "social",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "ai",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    }
+   ]
+  }
+ },
+ {
+  "name": "sehr gut",
+  "input": {
+   "Befund Google-Profil": "+ Platz 1 bei «Zahnarzt Köln» in Google Maps.\n+ 300 Google-Bewertungen.\n+ Bewertung 4,8 von 5.",
+   "Befund Website": "+ HTTPS.\n+ PageSpeed 95 von 100.",
+   "Platz Google-Suche": "1",
+   "Befund Social Media": "+ Instagram vorhanden.\n+ Letzter Beitrag vor 1 Woche.",
+   "Befund KI-Suche": "+ In 3 von 3 Antworten von ChatGPT genannt."
+  },
+  "expected": {
+   "total": 100,
+   "totalGrade": "sehr gut",
+   "ranks": {
+    "maps": {
+     "rank": 1
+    },
+    "search": {
+     "rank": 1
+    },
+    "ai": {
+     "answers": [],
+     "named": 3,
+     "total": 3
+    }
+   },
+   "sections": [
+    {
+     "key": "maps",
+     "score": 100,
+     "grade": "sehr gut",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "Platz 1 bei «Zahnarzt Köln» in Google Maps."
+      },
+      {
+       "mark": "ok",
+       "text": "300 Google-Bewertungen."
+      },
+      {
+       "mark": "ok",
+       "text": "Bewertung 4,8 von 5."
+      }
+     ]
+    },
+    {
+     "key": "website",
+     "score": 100,
+     "grade": "sehr gut",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "HTTPS."
+      },
+      {
+       "mark": "ok",
+       "text": "PageSpeed 95 von 100."
+      },
+      {
+       "mark": "ok",
+       "text": "Platz 1 in der Google-Suche."
+      }
+     ]
+    },
+    {
+     "key": "social",
+     "score": 100,
+     "grade": "sehr gut",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "Instagram vorhanden."
+      },
+      {
+       "mark": "ok",
+       "text": "Letzter Beitrag vor 1 Woche."
+      }
+     ]
+    },
+    {
+     "key": "ai",
+     "score": 100,
+     "grade": "sehr gut",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "In 3 von 3 Antworten von ChatGPT genannt."
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "name": "KI nur aus Antworten-Spalte",
+  "input": {
+   "KI-Antworten": "Frage A? — Platz 1\nFrage B? — Platz 12\nFrage C? — nicht genannt",
+   "Befund KI-Suche": "+ Daten in den Antworten korrekt."
+  },
+  "expected": {
+   "total": 33,
+   "totalGrade": "mangelhaft",
+   "ranks": {
+    "maps": null,
+    "search": null,
+    "ai": {
+     "answers": [
+      {
+       "question": "Frage A?",
+       "rank": 1,
+       "named": true
+      },
+      {
+       "question": "Frage B?",
+       "rank": 12,
+       "named": true
+      },
+      {
+       "question": "Frage C?",
+       "rank": null,
+       "named": false
+      }
+     ],
+     "named": 2,
+     "total": 3
+    }
+   },
+   "sections": [
+    {
+     "key": "maps",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "website",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "social",
+     "score": null,
+     "grade": "nicht geprüft",
+     "findings": []
+    },
+    {
+     "key": "ai",
+     "score": 33,
+     "grade": "mangelhaft",
+     "findings": [
+      {
+       "mark": "ok",
+       "text": "Daten in den Antworten korrekt."
+      }
+     ]
+    }
+   ]
+  }
+ }
+]

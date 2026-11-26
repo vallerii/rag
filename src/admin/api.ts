@@ -43,7 +43,7 @@ export type Kind = 'lead' | 'order' | 'check'
 export type Profile = { id: string; email: string | null; name: string | null; phone: string | null; role: string; created_at: string; title?: string | null; photo_url?: string | null; booking_url?: string | null }
 export type Lead = { id: string; created_at: string; from_page: string | null; answers: Record<string, unknown>; recommendations: string[]; booking_clicked_at: string | null; user_id: string | null; stage: Stage; next_contact_at: string | null; assignee_id: string | null }
 export type Order = { id: string; user_id: string; email: string | null; items: OfferItem[]; details: Record<string, unknown> | null; status: string; stage: Stage; next_contact_at: string | null; assignee_id: string | null; source_page: string | null; created_at: string }
-export type Check = { wish?: OfferItem[] | null; quiz?: Record<string, unknown> | null; scratch?: boolean; profile_hint?: string | null; id: string; user_id: string; email: string | null; place_id: string | null; place: Record<string, unknown>; sources: { key: string; value: string }[]; sources_confirmed: boolean; contact: Record<string, unknown>; status: string; report: unknown; report_draft: unknown; audit: unknown; audited_at: string | null; stage: Stage; next_contact_at: string | null; assignee_id: string | null; source_page: string | null; created_at: string }
+export type Check = { analysis_status?: 'lookup' | 'pending' | 'in_progress' | 'done' | 'none'; analysis_source?: 'check' | 'sheet' | 'grok' | 'manual' | null; analysis_at?: string | null; analysis_error?: string | null; wish?: OfferItem[] | null; quiz?: Record<string, unknown> | null; scratch?: boolean; profile_hint?: string | null; id: string; user_id: string; email: string | null; place_id: string | null; place: Record<string, unknown>; sources: { key: string; value: string }[]; sources_confirmed: boolean; contact: Record<string, unknown>; status: string; report: unknown; report_draft: unknown; audit: unknown; audited_at: string | null; stage: Stage; next_contact_at: string | null; assignee_id: string | null; source_page: string | null; created_at: string }
 export type Request = { kind: Kind; id: string; clientKey: string; userId: string | null; created_at: string; stage: Stage; next: string | null; assignee: string | null; title: string; sub: string; row: Lead | Order | Check; unanswered?: number; reportDue?: boolean }
 export type Message = { id: string; author: 'client' | 'rag'; body: string; created_at: string; read_at?: string | null }
 export type Note = { id: string; body: string; author_id: string | null; created_at: string }
@@ -80,7 +80,7 @@ const quiz = (l: Lead) => l.answers as { branche?: string; ort?: string; firma?:
 
 export async function loadAll(): Promise<{ requests: Request[]; profiles: Profile[] }> {
   const s = await db()
-  const checkCols = 'id, user_id, email, place_id, place, sources, sources_confirmed, contact, status, report, report_draft, audited_at, stage, next_contact_at, assignee_id, source_page, created_at'
+  const checkCols = 'id, user_id, email, place_id, place, sources, sources_confirmed, contact, status, report, report_draft, audited_at, stage, next_contact_at, assignee_id, source_page, created_at, analysis_status, analysis_source, analysis_at, analysis_error'
   const loadChecks = async () => {
     // Spalten aus supabase/flow.sql (Wunschpaket, Quiz, Start bei null) — ohne sie weiter funktionsfähig.
     const r = await s.from('checks').select(checkCols + ', wish, quiz, scratch, profile_hint').order('created_at', { ascending: false }).limit(500)
@@ -504,6 +504,12 @@ export async function refreshLeadSheet(id: string): Promise<SheetResult> {
 export async function scanLeadSheets(): Promise<SheetScan | { error: string }> {
   const r = await leadSheetsCall({ action: 'scan' })
   return r.error ? { error: String(r.error) } : (r as unknown as SheetScan)
+}
+export type AnalysisInfo = { source: string; sheet: { title?: string; tab_title?: string } | null; row_number: number | null; matched_by: string | null; row: Record<string, string> | null; duplicates: DuplicateCheck['duplicates']; from_check: string | null }
+/** Woher die Analyse einer Prüfung stammt (Tabelle, Zeile, Belege) — nur für das Team. */
+export async function loadAnalysisInfo(checkId: string): Promise<AnalysisInfo | null> {
+  const { data } = await (await db()).from('check_analysis_private').select('source, sheet, row_number, matched_by, row, duplicates, from_check').eq('check_id', checkId).maybeSingle()
+  return (data as AnalysisInfo | null) ?? null
 }
 /** Angebot einer Anfrage (oder null). */
 export async function loadOfferFor(kind: Kind, id: string): Promise<Offer | null> {

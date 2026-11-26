@@ -314,6 +314,27 @@ await test('Tabellen der Leads: nur das Team', async () => {
   assert.equal((await rows(`select id from lead_sheets`)).length, 1)
   await as(null)
 })
+await test('System veröffentlicht den Bericht aus fertiger Analyse: Version ohne Autor, ohne E-Mail', async () => {
+  await as(null)
+  const c = (await one(`insert into checks (user_id, place) values ($1, '{"name":"A-Sechs"}') returning id`, A)).id
+  const rep = JSON.stringify({ version: 2, source: 'analysis', channels: { maps: { score: 50, summary: 'x', points: [] } } })
+  // ohne fertige Analyse: nichts
+  assert.equal((await one(`select publish_system_report($1, $2::jsonb) ok`, c, rep)).ok, false)
+  await db.query(`update checks set analysis_status = 'done', analysis = '{"columns":{}}', analysis_source = 'sheet' where id = $1`, [c])
+  await fails(`select publish_system_report($1, '{}'::jsonb)`, /bad_report/, c)
+  assert.equal((await one(`select publish_system_report($1, $2::jsonb) ok`, c, rep)).ok, true)
+  const r = await one(`select status, stage, report->>'source' src, current_setting('rag.silent', true) silent from checks where id = $1`, c)
+  assert.deepEqual([r.status, r.stage, r.src], ['ready', 'report_sent', 'analysis'])
+  assert.notEqual(r.silent, 'on') // nach der Funktion wieder aus
+  const v = await rows(`select created_by from check_reports where check_id = $1`, c)
+  assert.equal(v.length, 1); assert.equal(v[0].created_by, null)
+  assert.equal((await rows(`select id from activity where client_key = $1 and kind = 'report_published' and detail->>'req' = $2`, `user:${A}`, `check:${c}`)).length, 1)
+  // zweites Mal: schon veröffentlicht
+  assert.equal((await one(`select publish_system_report($1, $2::jsonb) ok`, c, rep)).ok, false)
+  await as(A)
+  await fails(`select publish_system_report($1, $2::jsonb)`, /permission denied/, c, rep)
+  await as(null)
+})
 await test('Volle Tabellenzeile (Belege, Notizen) sieht nur das Team; fällt mit der Prüfung weg', async () => {
   await as(null)
   const c = (await one(`insert into checks (user_id, place) values ($1, '{"name":"A-Fünf"}') returning id`, A)).id

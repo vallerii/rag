@@ -22,6 +22,8 @@
 --   4) company_keys — ключи компании (cid карточки Google, домен, телефон, название + индекс) для поиска
 --      готового анализа; check_analysis_private — полная строка таблицы, откуда она и дубли (только команда).
 --      Клиенту в checks.analysis попадают только колонки анализа: без Belege, заметок, контактов лида.
+--   5) publish_system_report — система публикует отчёт из готового анализа (без менеджера), версия в check_reports,
+--      без письма «Ihr Bericht ist fertig» (клиент видит отчёт сразу; см. notify.sql → rag.silent).
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- 1) Старая копия лидов больше не нужна
@@ -155,5 +157,25 @@ create policy "check_analysis_private: Team" on public.check_analysis_private
 drop trigger if exists check_analysis_private_touch on public.check_analysis_private;
 create trigger check_analysis_private_touch before update on public.check_analysis_private
 for each row execute function public.touch_updated_at();
+
+-- 5) Отчёт из готового анализа публикует система
+create or replace function public.publish_system_report(p_check uuid, p_report jsonb) returns boolean
+language plpgsql security definer set search_path = public as $$
+declare ok boolean;
+begin
+  if p_report is null or jsonb_typeof(p_report -> 'channels') is distinct from 'object' then raise exception 'bad_report'; end if;
+  perform set_config('rag.silent', 'on', true);
+  update checks set report = p_report, status = 'ready'
+   where id = p_check and status <> 'ready' and analysis_status = 'done';
+  ok := found;
+  if ok then
+    insert into check_reports (check_id, user_id, report, created_by)
+    select id, user_id, p_report, null from checks where id = p_check;
+  end if;
+  perform set_config('rag.silent', 'off', true);
+  return ok;
+end $$;
+revoke all on function public.publish_system_report(uuid, jsonb) from public, anon, authenticated;
+grant execute on function public.publish_system_report(uuid, jsonb) to service_role;
 
 notify pgrst, 'reload schema';

@@ -3,6 +3,7 @@
 //   Google-Profil (vollständig), Wettbewerber + Positionen für bis zu 3 Suchbegriffe,
 //   Website-Prüfung (inkl. Impressum, Datenschutz, Sitemap, Abgleich mit Google), Google PageSpeed (mobil)
 // → checks.audit (Rohdaten) und checks.report_draft (Entwurf mit Einzelkriterien, v2).
+// Zuerst: fertige Analyse suchen (_shared/lookup.ts) — gefunden → Bericht sofort, keine Google-Abfragen.
 // Kunde: einmal nach der Bestätigung. Team: «Daten neu sammeln» (force) — auch nach der Veröffentlichung,
 // um Fortschritt zu zeigen; der veröffentlichte Bericht bleibt, bis das Team eine neue Version freigibt.
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -10,6 +11,7 @@ import { handler, json, placesKey } from '../_shared/http.ts'
 import { competitors, defaultQuery, onlyDE, placeRaw, sameCompany, searchPlaces, toPlace, type GPlace } from '../_shared/google.ts'
 import { scanSite, type Source } from '../_shared/site.ts'
 import { buildReport } from '../_shared/audit.ts'
+import { findAnalysis, publishAnalysis } from '../_shared/lookup.ts'
 
 // Server-Schlüssel: neuer Secret Key (Secret SB_SECRET_KEY, falls die alten JWT-Schlüssel abgeschaltet sind), sonst service_role.
 const SERVER_KEY = Deno.env.get('SB_SECRET_KEY') || Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -54,6 +56,17 @@ Deno.serve(handler(10, async (req, body) => {
     staff = prof?.role === 'admin' || prof?.role === 'manager'
   }
   const force = staff && body.force === true
+  // Fertige Analyse (Lead-Tabelle oder andere Prüfung derselben Firma, docs/lead-flow.md): zuerst suchen.
+  // Gefunden → Bericht sofort veröffentlicht, Google wird NICHT abgefragt (der Bericht entspricht dem Brief).
+  // Google Sheets hat nicht geantwortet (retry) → wie bisher weiter, die Suche wird später wiederholt.
+  if (check.analysis_status === 'lookup') {
+    const found = await findAnalysis(db, check, Deno.env.get('GOOGLE_SERVICE_ACCOUNT_JSON')).catch(e => { console.error('lookup', e); return null })
+    if (found?.status === 'done') return json(req, { status: 'analysis', source: found.source })
+    if (found?.status === 'pending') check.analysis_status = 'pending'
+  } else if (check.analysis_status === 'done' && ['sheet', 'check'].includes(check.analysis_source) && !force) {
+    if (check.status !== 'ready') await publishAnalysis(db, check.id)
+    return json(req, { status: 'analysis', source: check.analysis_source })
+  }
   // Team («Daten sammeln») darf ohne Bestätigung des Kunden starten — die Quellen gelten dann als übernommen.
   if (!check.sources_confirmed && !force) return json(req, { error: 'not_confirmed' }, 409)
   if (!check.sources_confirmed) await db.from('checks').update({ sources_confirmed: true }).eq('id', check.id)

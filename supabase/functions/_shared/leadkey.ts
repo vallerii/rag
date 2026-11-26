@@ -8,6 +8,8 @@
 //   tel:<цифры>       — телефон без +49 / 0 в начале
 //   name:<имя>|<PLZ>  — название без формы (GmbH …) + индекс из адреса, только точное совпадение
 
+import { hasFindings } from './grade.ts'
+
 export type Row = Record<string, string>
 export type KeyKind = 'place' | 'cid' | 'web' | 'tel' | 'name'
 export const KEY_ORDER: KeyKind[] = ['place', 'cid', 'web', 'tel', 'name']
@@ -91,9 +93,9 @@ export function keysOfRow(row: Row, headers: string[]): string[] {
   return unique([/^[\w-]{10,}$/.test(pid) ? `place:${pid}` : null, cid && `cid:${cid}`, web && `web:${web}`, tel && `tel:${tel}`, nameKey(v('name'), v('address'))])
 }
 
-/** Есть ли в строке анализ Grok (хотя бы одна колонка «Befund …»). */
+/** Есть ли в строке анализ Grok: хотя бы одна находка «+ / ~ / –» в колонках «Befund …» (как в CRM: без них нет письма). */
 export function hasAnalysis(row: Row): boolean {
-  return Object.entries(row).some(([h, val]) => /^befund\s/i.test(h.trim()) && String(val ?? '').trim().length > 2)
+  return hasFindings(row)
 }
 
 /** Дата проверки строки: «Datum der Prüfung», иначе «Checked On». 19.11.2026 · 2026-11-19 · 11/19/2026 (формат Google Sheets en-US). */

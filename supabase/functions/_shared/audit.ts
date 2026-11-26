@@ -276,7 +276,7 @@ function socialItems({ sources, site }: AuditInput): Item[] {
 }
 
 // ── Empfehlungen ─────────────────────────────────────────────────────────────
-const RECS: Record<string, [string, string]> = {
+export const RECS: Record<string, [string, string]> = {
   noprofile: ['Google-Unternehmensprofil anlegen', 'Ohne Profil erscheinen Sie weder bei Google Maps noch in lokalen Suchen. Wir richten es schlüsselfertig ein.'],
   reviews: ['Mehr Bewertungen sammeln', 'Ein fester Ablauf, um nach jedem Auftrag um eine Bewertung zu bitten, per Link oder QR-Code.'],
   fresh: ['Bewertungen regelmäßig halten', 'Neue Bewertungen jeden Monat zeigen Google und Kunden, dass Sie aktiv sind.'],
@@ -300,9 +300,9 @@ const RECS: Record<string, [string, string]> = {
   pagespeed: ['Website schneller machen', 'Auf dem Smartphone zählt jede Sekunde: langsame Seiten verlieren Anfragen.'],
   ai_faq: ['Antworten auf Kundenfragen', 'Kurze Antworten auf typische Fragen helfen Kunden, Google und KI-Assistenten.'],
 }
-const PRIO = ['Hohe Priorität', 'Mittlere Priorität', 'Wachstumspotenzial']
+export const PRIO = ['Hohe Priorität', 'Mittlere Priorität', 'Wachstumspotenzial']
 // Reihenfolge der Empfehlungen: zuerst, was am meisten Anfragen kostet.
-const REC_ORDER = ['noprofile', 'nosite', 'down', 'noindex', 'impressum', 'datenschutz', 'website', 'reviews', 'rating', 'rank', 'nap', 'hours', 'pages', 'fresh', 'photos', 'https', 'mobile', 'pagespeed', 'title', 'schema', 'ai_faq', 'profiles']
+export const REC_ORDER = ['noprofile', 'nosite', 'down', 'noindex', 'impressum', 'datenschutz', 'website', 'reviews', 'rating', 'rank', 'nap', 'hours', 'pages', 'fresh', 'photos', 'https', 'mobile', 'pagespeed', 'title', 'schema', 'ai_faq', 'profiles']
 
 export function buildReport(input: AuditInput): Report {
   const blocked = siteBlocked(input.site)

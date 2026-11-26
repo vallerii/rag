@@ -890,5 +890,20 @@
   "Diese Registerkarte (gid) gibt es in der Tabelle nicht": "Такой вкладки (gid) в таблице нет",
   "Google Sheets antwortet nicht": "Google Sheets не отвечает",
   "Kein Zugriff: Tabelle für": "Нет доступа: расшарьте таблицу на",
-  "freigeben (Betrachter)": "(читатель)"
+  "freigeben (Betrachter)": "(читатель)",
+  "Fertige Analyse wird gesucht": "Ищем готовый анализ",
+  "Wartet auf Analyse (Grok / manuell)": "Ждёт анализа (Grok / вручную)",
+  "Analyse läuft (Grok)": "Анализ идёт (Grok)",
+  "Analyse ohne Manager veröffentlicht": "Анализ опубликован без менеджера",
+  "aus der Tabelle": "из таблицы",
+  "aus einer anderen Prüfung dieser Firma": "из другой проверки этой компании",
+  "gefunden über": "найдено по",
+  "geprüft am": "проверено",
+  "Dublette: auch in": "Дубль: также в",
+  "Belege (nur Team)": "Belege (только команда)",
+  "Google-Maps-Karte": "карточке Google Maps",
+  "Name + PLZ": "названию + индексу",
+  "Google Place ID": "Google Place ID",
+  "Keine Merkmale zum Suchen (Name + PLZ, Website, Telefon, Google-Karte)": "Нет признаков для поиска (название + индекс, сайт, телефон, карточка Google)",
+  "Zeile ohne Analyse:": "Строка без анализа:"
 }
