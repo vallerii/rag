@@ -274,6 +274,7 @@ await test('Kunde kann keine Prüfung mit fertiger Analyse anlegen', async () =>
   await fails(`insert into checks (place, analysis_status) values ('{"name":"x"}', 'pending')`, /row-level security/)
   await fails(`insert into checks (place, analysis, analysis_source) values ('{"name":"x"}', '{}'::jsonb, 'sheet')`, /row-level security/)
   await fails(`insert into checks (place, reviewed_at) values ('{"name":"x"}', now())`, /row-level security/)
+  await fails(`insert into checks (place, company_keys) values ('{"name":"x"}', '{cid:1}')`, /row-level security/)
 })
 await test('Kunde kann Analysefelder nicht ändern', async () => {
   await as(A)
@@ -312,6 +313,19 @@ await test('Tabellen der Leads: nur das Team', async () => {
   await as(ADM)
   assert.equal((await rows(`select id from lead_sheets`)).length, 1)
   await as(null)
+})
+await test('Volle Tabellenzeile (Belege, Notizen) sieht nur das Team; fällt mit der Prüfung weg', async () => {
+  await as(null)
+  const c = (await one(`insert into checks (user_id, place) values ($1, '{"name":"A-Fünf"}') returning id`, A)).id
+  await db.query(`insert into check_analysis_private (check_id, source, row, matched_by) values ($1, 'sheet', '{"Belege":"G1) intern"}', 'cid')`, [c])
+  await as(A)
+  assert.equal((await rows(`select check_id from check_analysis_private`)).length, 0)
+  await fails(`insert into check_analysis_private (check_id, source) values ($1, 'sheet')`, /permission denied/, c)
+  await as(MGR)
+  assert.equal((await one(`select row->>'Belege' b from check_analysis_private where check_id = $1`, c)).b, 'G1) intern')
+  await as(A); await db.query(`select delete_my_check($1)`, [c])
+  await as(null)
+  assert.equal((await rows(`select check_id from check_analysis_private where check_id = $1`, c)).length, 0)
 })
 
 console.log('\n2FA (mfa.sql)')

@@ -450,6 +450,61 @@ export async function setStaffNewPassword(password: string, totp?: string): Prom
   return 'Link abgelaufen oder ungültig. Fordern Sie einen neuen an.'
 }
 
+// ── Tabellen der Leads (docs/lead-flow.md): Registerkarten, in denen RAG bei der Registrierung die Analyse sucht ──
+export type LeadSheet = { id: string; spreadsheet_id: string; gid: number; url: string; title: string | null; tab_title: string | null; active: boolean; row_count: number | null; last_read_at: string | null; last_error: string | null; created_at: string }
+export type SheetStats = { rows: number; analysed: number; analysed_without_key: number }
+export type SheetScan = { sheets: ((SheetStats & { id: string }) | { id: string; error: string })[]; duplicates: { sheet: string; tab: string; n: number; name: string; analysed: boolean }[][] }
+export type DuplicateCheck = { check_id: string; name: string; sheet: string; row_number: number | null; duplicates: { sheet: string; tab: string; row_number: number }[] }
+
+export async function loadLeadSheets(): Promise<LeadSheet[] | null> {
+  const { data, error } = await (await db()).from('lead_sheets').select('*').order('created_at')
+  return error ? null : (data as LeadSheet[])
+}
+export async function setLeadSheetActive(id: string, active: boolean): Promise<boolean> {
+  return !(await (await db()).from('lead_sheets').update({ active }).eq('id', id)).error
+}
+export async function deleteLeadSheet(id: string): Promise<boolean> {
+  return !(await (await db()).from('lead_sheets').delete().eq('id', id)).error
+}
+/** Registrierte Firmen, die bei der Übernahme in mehreren Zeilen der Tabellen standen. */
+export async function loadDuplicateChecks(): Promise<DuplicateCheck[]> {
+  const { data } = await (await db()).from('check_analysis_private').select('check_id, sheet, row_number, duplicates, checks(place)')
+    .neq('duplicates', '[]').order('created_at', { ascending: false }).limit(100)
+  return ((data ?? []) as unknown as { check_id: string; sheet: { title?: string; tab_title?: string } | null; row_number: number | null; duplicates: DuplicateCheck['duplicates']; checks: { place?: { name?: string } } | null }[])
+    .map(r => ({ check_id: r.check_id, name: r.checks?.place?.name ?? '—', sheet: [r.sheet?.title, r.sheet?.tab_title].filter(Boolean).join(' / '), row_number: r.row_number, duplicates: r.duplicates ?? [] }))
+}
+async function leadSheetsCall(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const proxy = (import.meta.env.VITE_PLACES_PROXY as string | undefined)?.replace(/\/$/, '')
+  if (!proxy) return { error: 'VITE_PLACES_PROXY ist nicht gesetzt' }
+  const { data } = await (await db()).auth.getSession()
+  const token = data.session?.access_token
+  if (!token) return { error: 'Keine Sitzung' }
+  try {
+    const res = await fetch(`${proxy}/lead-sheets`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) })
+    const j = await res.json().catch(() => ({})) as Record<string, unknown>
+    if (res.ok) return j
+    if (res.status === 404 || res.status === 503 && !j.detail) return { error: 'Funktion «lead-sheets» ist nicht deployt.' }
+    return { error: String(j.detail ?? j.error ?? `HTTP ${res.status}`) }
+  } catch { return { error: 'Funktion «lead-sheets» ist nicht erreichbar.' } }
+}
+/** E-Mail des Dienstkontos, für das die Tabellen freigegeben werden; null = Secret fehlt. */
+export async function leadSheetsInfo(): Promise<string | null> {
+  const r = await leadSheetsCall({ action: 'info' })
+  return typeof r.email === 'string' ? r.email : null
+}
+type SheetResult = (SheetStats & { id: string; title: string; tab: string }) | { error: string }
+export async function addLeadSheet(url: string): Promise<SheetResult> {
+  const r = await leadSheetsCall({ action: 'add', url })
+  return r.error ? { error: String(r.error) } : (r as unknown as SheetResult)
+}
+export async function refreshLeadSheet(id: string): Promise<SheetResult> {
+  const r = await leadSheetsCall({ action: 'refresh', id })
+  return r.error ? { error: String(r.error) } : (r as unknown as SheetResult)
+}
+export async function scanLeadSheets(): Promise<SheetScan | { error: string }> {
+  const r = await leadSheetsCall({ action: 'scan' })
+  return r.error ? { error: String(r.error) } : (r as unknown as SheetScan)
+}
 /** Angebot einer Anfrage (oder null). */
 export async function loadOfferFor(kind: Kind, id: string): Promise<Offer | null> {
   const { data } = await (await db()).from('offers').select('*').eq('request_kind', kind).eq('request_id', id)

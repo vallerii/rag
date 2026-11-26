@@ -19,3 +19,11 @@ verify_jwt = false
 # Wird nur aus der Datenbank aufgerufen (Trigger auf activity) — Schutz über x-notify-secret.
 [functions.notify]
 verify_jwt = false
+
+# Fertige Analyse für eine neue Prüfung suchen (andere Prüfung, Tabellen der Leads). Prüft die Sitzung selbst.
+[functions.analysis-lookup]
+verify_jwt = false
+
+# Tabellen der Leads verbinden und auf Dubletten prüfen (nur Team). Prüft die Sitzung selbst.
+[functions.lead-sheets]
+verify_jwt = false

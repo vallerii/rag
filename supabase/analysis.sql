@@ -19,6 +19,9 @@
 --        analysis_at, analysis_taken_at, analysis_tried_at, analysis_error, reviewed_at, reviewed_by
 --      Клиент эти поля не может ни задать при создании, ни изменить (на них нет прав на изменение).
 --   3) lead_sheets — подключённые вкладки Google-таблиц лидов (только команда).
+--   4) company_keys — ключи компании (cid карточки Google, домен, телефон, название + индекс) для поиска
+--      готового анализа; check_analysis_private — полная строка таблицы, откуда она и дубли (только команда).
+--      Клиенту в checks.analysis попадают только колонки анализа: без Belege, заметок, контактов лида.
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- 1) Старая копия лидов больше не нужна
@@ -45,6 +48,7 @@ alter table public.checks add column if not exists analysis_tried_at timestamptz
 alter table public.checks add column if not exists analysis_error    text;         -- почему поиск не удался (например, Google не ответил)
 alter table public.checks add column if not exists reviewed_at       timestamptz;  -- выборочная проверка менеджером (ничего не блокирует)
 alter table public.checks add column if not exists reviewed_by       uuid references auth.users (id) on delete set null;
+alter table public.checks add column if not exists company_keys      text[] not null default '{}'; -- заполняет сервер (analysis-lookup)
 
 -- Проверки, созданные до этого файла, живут по-старому (отчёт публикует команда).
 update public.checks set analysis_status = 'none' where analysis_status is null;
@@ -84,7 +88,8 @@ create policy "checks: eigene anlegen" on public.checks
   with check (user_id = auth.uid() and status = 'submitted' and report is null
               and report_draft is null and audit is null
               and analysis is null and analysis_source is null and analysis_status in ('lookup', 'none')
-              and analysis_at is null and analysis_taken_at is null and reviewed_at is null and reviewed_by is null);
+              and analysis_at is null and analysis_taken_at is null and reviewed_at is null and reviewed_by is null
+              and company_keys = '{}'::text[]);
 
 -- Зависшие «у Grok» дольше 2 часов → снова ждут. Вызывает сервер (позже — по расписанию).
 create or replace function public.release_stale_analyses() returns integer
@@ -121,5 +126,34 @@ grant all on public.lead_sheets to service_role;
 drop policy if exists "lead_sheets: Team" on public.lead_sheets;
 create policy "lead_sheets: Team" on public.lead_sheets
   for all to authenticated using (public.is_staff()) with check (public.is_staff());
+
+-- 4) Ключи компании и закрытая часть анализа
+create index if not exists checks_company_keys_idx on public.checks using gin (company_keys);
+
+create table if not exists public.check_analysis_private (
+  check_id      uuid primary key references public.checks (id) on delete cascade,
+  source        text not null check (source in ('check', 'sheet', 'grok', 'manual')),
+  lead_sheet_id uuid references public.lead_sheets (id) on delete set null,
+  sheet         jsonb,                              -- { spreadsheet_id, gid, title, tab_title } на момент копирования
+  row_number    integer,                            -- номер строки в таблице
+  matched_by    text check (matched_by in ('place', 'cid', 'web', 'tel', 'name')),
+  row           jsonb,                              -- строка целиком, вместе с Belege
+  duplicates    jsonb not null default '[]'::jsonb, -- та же компания в других строках: [{ sheet, tab, row_number, by }]
+  from_check    uuid references public.checks (id) on delete set null, -- анализ взят у другой проверки
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+create index if not exists check_analysis_private_dups_idx on public.check_analysis_private (created_at desc)
+  where duplicates <> '[]'::jsonb;
+alter table public.check_analysis_private enable row level security;
+revoke all on public.check_analysis_private from anon, authenticated;
+grant select on public.check_analysis_private to authenticated;
+grant all on public.check_analysis_private to service_role;
+drop policy if exists "check_analysis_private: Team" on public.check_analysis_private;
+create policy "check_analysis_private: Team" on public.check_analysis_private
+  for select to authenticated using (public.is_staff());
+drop trigger if exists check_analysis_private_touch on public.check_analysis_private;
+create trigger check_analysis_private_touch before update on public.check_analysis_private
+for each row execute function public.touch_updated_at();
 
 notify pgrst, 'reload schema';
