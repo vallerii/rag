@@ -27,6 +27,7 @@
 --   6) publish_partial_report — готового анализа нет: клиент сразу видит отчёт автопроверки (Places, сайт, PageSpeed)
 --      с пометкой partial; полный анализ (Grok / вручную) потом заменяет его новой версией.
 --   7) mark_analysis_reviewed — выборочная проверка менеджером (отметка «проверено»).
+--   8) grok_mcp_log — журнал всех вызовов MCP-сервера для Grok (Edge Function grok-mcp), только команда.
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- 1) Старая копия лидов больше не нужна
@@ -221,5 +222,22 @@ begin
 end $$;
 revoke all on function public.mark_analysis_reviewed(uuid, boolean) from public, anon;
 grant execute on function public.mark_analysis_reviewed(uuid, boolean) to authenticated;
+
+-- 8) Журнал вызовов MCP-сервера для Grok
+create table if not exists public.grok_mcp_log (
+  id         uuid primary key default gen_random_uuid(),
+  tool       text not null,
+  ok         boolean not null,
+  detail     text,
+  check_id   uuid references public.checks (id) on delete set null,
+  created_at timestamptz not null default now()
+);
+create index if not exists grok_mcp_log_recent_idx on public.grok_mcp_log (created_at desc);
+alter table public.grok_mcp_log enable row level security;
+revoke all on public.grok_mcp_log from anon, authenticated;
+grant select on public.grok_mcp_log to authenticated;
+grant all on public.grok_mcp_log to service_role;
+drop policy if exists "grok_mcp_log: Team" on public.grok_mcp_log;
+create policy "grok_mcp_log: Team" on public.grok_mcp_log for select to authenticated using (public.is_staff());
 
 notify pgrst, 'reload schema';

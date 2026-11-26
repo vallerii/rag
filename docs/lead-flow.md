@@ -2,7 +2,7 @@
 
 > **Для ИИ, который читает проект:** это главный документ о том, как компании попадают в RAG и откуда берётся их анализ. Версия 2 заменяет версию от 25.11 (утро): решения ниже приняты после разбора кода и реальной таблицы лидов «Köln 134». Если код или другие документы противоречат этому файлу (копия всех лидов в `prospects`, импорт CSV, кнопка «Kurzanalyse», коды писем `?c=`, параметр `t` в QR, передача строк из CRM в RAG, перепроверка строк Grok) — правильно то, что написано здесь.
 >
-> Где лежит: `rag/docs/lead-flow.md` (главная версия, рядом с кодом) и копия в проекте «rag» на claude.ai (`claude/lead-flow-2026-11.md`). Код CRM: `D:\my-project\agenturro\leadcrm` (рабочая ветка `lead-flow` от `crm-letters`), код RAG: `D:\my-project\agenturro\rag` (рабочая ветка `lead-flow`). Состояние на 26.11: этапы 1–7 сделаны (RAG и CRM, ветки `lead-flow`, не задеплоено); осталось этап 8 — Grok MCP, когда будет доступ к Grok. Порядок деплоя — раздел «Деплой».
+> Где лежит: `rag/docs/lead-flow.md` (главная версия, рядом с кодом) и копия в проекте «rag» на claude.ai (`claude/lead-flow-2026-11.md`). Код CRM: `D:\my-project\agenturro\leadcrm` (рабочая ветка `lead-flow` от `crm-letters`), код RAG: `D:\my-project\agenturro\rag` (рабочая ветка `lead-flow`). Состояние на 26.11: этапы 1–8 сделаны в коде (RAG и CRM, ветки `lead-flow`, не задеплоено). Этап 8 (Grok MCP) готов, но не проверен с Grok — нет доступа; тест по `docs/grok-mcp.md`. Порядок деплоя — раздел «Деплой».
 
 ## Логика в 6 пунктах
 1. **Лиды живут только в Google-таблицах.** Сторонний ИИ находит компании и записывает их в таблицу. Grok один раз проверяет каждую строку по промпту и дописывает анализ в ту же строку.
@@ -121,7 +121,7 @@ Grok получает: что уже известно (для контекста
 ## Grok через MCP — последний этап
 Доступа к Grok пока нет, поэтому делаем в самом конце. До этого анализ «ждущих» делается по плану B.
 - **План B (раньше MCP):** в админке кнопка «Задание для ИИ» — промпт + список ждущих компаний без личных данных и без пунктов Places → скопировать в Grok (или любой ИИ) → ответ JSON вставить в «Результат» → RAG проверяет формат и сохраняет → письмо «анализ готов».
-- **MCP:** Supabase Edge Function `grok-mcp`, два инструмента: `list_pending_analyses` (только `pending`, переводит в `in_progress`; без e-mail, имени и телефона клиента; с тем, что уже знает Places) и `save_analysis` (только поля Grok, только для `in_progress`). Не использовать официальный Supabase MCP. Защита — ключ (сначала проверить тестом с одним инструментом `ping`, какой вход Grok принимает). Автоматизация Grok 2 раза в день.
+- **MCP** (готово, инструкция и тест — `docs/grok-mcp.md`): Supabase Edge Function `grok-mcp`, кроме `ping` два инструмента: `list_pending_analyses` (только `pending`, переводит в `in_progress`; без e-mail, имени и телефона клиента; с тем, что уже знает Places) и `save_analysis` (только поля Grok, только для `in_progress`). Не использовать официальный Supabase MCP. Защита — ключ (сначала проверить тестом с одним инструментом `ping`, какой вход Grok принимает). Автоматизация Grok 2 раза в день.
 
 ## Порядок работ
 1. **База:** новые поля анализа в `checks`, таблица «таблицы лидов», удаление `prospects`; тесты в `supabase/tests/db.test.mjs`.
@@ -136,14 +136,15 @@ Grok получает: что уже известно (для контекста
 Правила работы: отдельная ветка, без коммита и деплоя без «ок»; `.env` и секреты не трогать; SQL идемпотентный, как существующие `supabase/*.sql`; тексты на сайте — на немецком.
 
 ## Деплой (по порядку)
-1. **Supabase → секреты** (`npx supabase secrets set --project-ref bmajnndqvpemerecvjfz …`): `GOOGLE_SERVICE_ACCOUNT_JSON` (тот же JSON, что у CRM), `ANALYSIS_CRON_SECRET` (длинный случайный).
+1. **Supabase → секреты** (`npx supabase secrets set --project-ref bmajnndqvpemerecvjfz …`): `GOOGLE_SERVICE_ACCOUNT_JSON` (тот же JSON, что у CRM), `ANALYSIS_CRON_SECRET` и `GROK_MCP_KEY` (длинные случайные).
 2. **SQL Editor:** `analysis.sql` (после schema/admin/project/flow/addendum), затем `notify.sql` (письма: без «Bericht fertig» для системных отчётов, новое «Analyse fertig»). После любого повторного запуска `schema.sql` — снова `analysis.sql`.
-3. **Edge Functions:** `npx supabase functions deploy audit-collect analysis-lookup lead-sheets lead-preview analysis-queue analysis-cron notify --project-ref bmajnndqvpemerecvjfz`; старую удалить: `npx supabase functions delete prospects --project-ref bmajnndqvpemerecvjfz`.
+3. **Edge Functions:** `npx supabase functions deploy audit-collect analysis-lookup lead-sheets lead-preview analysis-queue analysis-cron notify grok-mcp --project-ref bmajnndqvpemerecvjfz`; старую удалить: `npx supabase functions delete prospects --project-ref bmajnndqvpemerecvjfz`.
 4. **Расписание:** включить pg_cron (Supabase → Integrations → Cron), положить в Vault `analysis_cron_url` и `analysis_cron_secret` (команды в начале `supabase/cron.sql`), выполнить `cron.sql`.
 5. **Сайт RAG** (Vercel) — ветка `lead-flow`. Перед этим `npm run build`, `npm run test:db`, `npm run test:fn` локально.
 6. **Админка → «Lead-Tabellen»:** подключить вкладки таблиц лидов (расшарить на e-mail сервисного аккаунта — его показывает страница), «Auf Dubletten prüfen».
 7. **CRM** (Vercel) — ветка `lead-flow`: QR с `cid`, новый промпт.
-8. **Проверка:** `/check?cid=<номер карточки из таблицы>&ref=TEST` → короткая регистрация → отчёт сразу, оценки как в письме; самостоятельная регистрация компании не из таблиц → первые результаты + очередь в «Analysen».
+8. **Grok:** когда будет доступ — подключить коннектор и автоматизацию по `docs/grok-mcp.md`.
+9. **Проверка:** `/check?cid=<номер карточки из таблицы>&ref=TEST` → короткая регистрация → отчёт сразу, оценки как в письме; самостоятельная регистрация компании не из таблиц → первые результаты + очередь в «Analysen».
 
 ## Требует проверки
 - **ИИ-поиск в письме.** Во всех 79 проверенных строках таблицы «Köln 134» Befund KI-Suche написан как ответы ChatGPT («In 3 von 3 Antworten von ChatGPT genannt»). Grok Bot, скорее всего, не может открыть ChatGPT и отвечает сам за себя — тогда в официальном письме стоит неподтверждённое утверждение. Решено пока оставить как есть. Проверить: как Grok на самом деле получает эти ответы; если сам — писать «laut KI-Suche (Grok)» или проверять пункт вручную.

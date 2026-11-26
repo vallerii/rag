@@ -375,6 +375,13 @@ await test('Ohne fertige Analyse: Teilbericht sofort, die fertige Analyse ersetz
   await fails(`select publish_partial_report($1, $2::jsonb)`, /permission denied/, c, places)
   await as(null)
 })
+await test('Protokoll des Grok-MCP sieht nur das Team', async () => {
+  await as(null); await db.query(`insert into grok_mcp_log (tool, ok, detail) values ('ping', true, '{}')`)
+  await as(A); assert.equal((await rows(`select id from grok_mcp_log`)).length, 0)
+  await fails(`insert into grok_mcp_log (tool, ok) values ('x', true)`, /permission denied/)
+  await as(MGR); assert.equal((await rows(`select id from grok_mcp_log`)).length, 1)
+  await as(null)
+})
 await test('Volle Tabellenzeile (Belege, Notizen) sieht nur das Team; fällt mit der Prüfung weg', async () => {
   await as(null)
   const c = (await one(`insert into checks (user_id, place) values ($1, '{"name":"A-Fünf"}') returning id`, A)).id

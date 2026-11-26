@@ -27,33 +27,38 @@ export function placesLines(check: Pick<QueueCheck, 'report_draft'>): Record<key
   return out
 }
 
-/** Задание для ИИ: правила + компании (без e-mail, имени и телефона клиента) + что уже проверено автоматически. */
-export function buildTask(list: QueueCheck[]): string {
-  const companies = list.map(c => {
-    const p = (c.place ?? {}) as Record<string, string | null>
-    const known = placesLines(c)
-    return {
-      id: c.id, Firma: p.name ?? '', Branche: p.category ?? '', Stadt: p.city ?? '', Adresse: p.address ?? '', Website: p.website ?? '',
-      Suchbegriff: c.audit?.keywords?.[0] ?? c.audit?.competitors?.query ?? '',
-      // Keine Autoprüfung (z. B. Kundenbereich nie geöffnet): ausdrücklich alles prüfen lassen.
-      'Schon automatisch geprüft (nicht erneut prüfen)': [...known.maps, ...known.search, ...known.social, ...known.ai].length
-        ? [...known.maps, ...known.search, ...known.social, ...known.ai] : ['nichts — bitte ALLE Punkte prüfen, auch Bewertungen, Google Maps und die Technik der Website'],
-    }
-  })
-  return `Ты — аналитик цифровой видимости местных фирм в Германии. Проверь каждую фирму из списка ниже по тем же правилам, что и строки таблицы лидов (промпт «rag-analysis-prompt»):
+/** Данные компании для ИИ: без e-mail, имени и телефона клиента; что уже проверено автоматически. */
+export function companyInfo(c: QueueCheck) {
+  const p = (c.place ?? {}) as Record<string, string | null>
+  const known = placesLines(c)
+  const all = [...known.maps, ...known.search, ...known.social, ...known.ai]
+  return {
+    id: c.id, Firma: p.name ?? '', Branche: p.category ?? '', Stadt: p.city ?? '', Adresse: p.address ?? '', Website: p.website ?? '',
+    Suchbegriff: c.audit?.keywords?.[0] ?? c.audit?.competitors?.query ?? '',
+    // Keine Autoprüfung (z. B. Kundenbereich nie geöffnet): ausdrücklich alles prüfen lassen.
+    'Schon automatisch geprüft (nicht erneut prüfen)': all.length ? all : ['nichts — bitte ALLE Punkte prüfen, auch Bewertungen, Google Maps und die Technik der Website'],
+  }
+}
+
+/** Правила анализа (как промпт таблицы лидов), общие для плана B и MCP. */
+export const TASK_RULES = `Ты — аналитик цифровой видимости местных фирм в Германии. Проверь каждую фирму по тем же правилам, что и строки таблицы лидов (промпт «rag-analysis-prompt»):
 - только то, что ты сам увидел и можешь подтвердить ссылкой; не удалось проверить — не пиши ничего;
 - в колонках «Befund …» — одна находка на строку, по-немецки, до 140 символов, каждая строка начинается со знака «+ » (выполнено), «~ » (частично) или «– » (не выполнено); записывай и хорошее, и плохое;
 - сухой тон протокола, без оценочных слов, без юридических оценок, конкурентов не называть по имени («ein Mitbewerber aus [Ort]»), отзывы не цитировать;
 - ссылки, даты и пометки для команды — только в «Belege».
 
-У каждой фирмы есть список «Schon automatisch geprüft» — эти пункты (отзывы, рейтинг, место в Google Maps, конкуренты, техника сайта, PageSpeed, Impressum) уже проверены автоматически. Их НЕ проверяй и НЕ повторяй. Проверь только остальное: подтверждён ли профиль, ответы владельца на отзывы, каталоги (Gelbe Seiten, Das Örtliche, 11880, Apple Maps, Bing Places …) и совпадение названия, адреса, телефона, соцсети, ИИ-поиск, место собственного сайта в Google-поиске, страницы под услуги, ответы на вопросы клиентов. Если в списке написано, что Google-профиля или сайта нет, — проверь эти пункты сам.
+У каждой фирмы есть список «Schon automatisch geprüft» — эти пункты (отзывы, рейтинг, место в Google Maps, конкуренты, техника сайта, PageSpeed, Impressum) уже проверены автоматически. Их НЕ проверяй и НЕ повторяй. Проверь только остальное: подтверждён ли профиль, ответы владельца на отзывы, каталоги (Gelbe Seiten, Das Örtliche, 11880, Apple Maps, Bing Places …) и совпадение названия, адреса, телефона, соцсети, ИИ-поиск, место собственного сайта в Google-поиске, страницы под услуги, ответы на вопросы клиентов. Если в списке написано, что Google-профиля или сайта нет, или что ничего не проверено, — проверь эти пункты сам.`
+
+/** Задание для ИИ (план B): правила + компании + формат ответа. */
+export function buildTask(list: QueueCheck[]): string {
+  return `${TASK_RULES}
 
 Ответь ТОЛЬКО JSON-массивом, по объекту на фирму, без текста вокруг:
 [{"id": "<id из списка>", "Befund Google-Profil": "+ …\\n– …", "Befund Website": "…", "Befund Social Media": "…", "Befund KI-Suche": "…", "Platz Google-Suche": "7 | nicht unter den ersten 10 | –", "KI-Antworten": "Frage — Platz N | Frage — nicht genannt (по строке на вопрос)", "Verzeichnisse": "…", "Empfehlungen": "Titel — kurze Erklärung (3 строки)", "Belege": "…"}]
 Пустые колонки можно не писать.
 
 Фирмы:
-${JSON.stringify(companies, null, 1)}`
+${JSON.stringify(list.map(companyInfo), null, 1)}`
 }
 
 export type ParsedResult = { id: string; columns: Record<string, string>; belege: string }
