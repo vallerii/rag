@@ -511,6 +511,53 @@ export async function loadAnalysisInfo(checkId: string): Promise<AnalysisInfo | 
   const { data } = await (await db()).from('check_analysis_private').select('source, sheet, row_number, matched_by, row, duplicates, from_check').eq('check_id', checkId).maybeSingle()
   return (data as AnalysisInfo | null) ?? null
 }
+// ── Analysen ohne fertige Zeile in den Lead-Tabellen (Plan B, Stichprobe) ──
+export type QueueRow = { id: string; name: string; city: string; created_at: string; analysis_status: string; analysis_source: string | null; analysis_error: string | null; analysis_at: string | null; analysis_taken_at: string | null; reviewed_at: string | null }
+export async function loadAnalysisQueue(): Promise<{ open: QueueRow[]; done: QueueRow[] }> {
+  const s = await db()
+  const cols = 'id, place, created_at, analysis_status, analysis_source, analysis_error, analysis_at, analysis_taken_at, reviewed_at'
+  const [o, d] = await Promise.all([
+    s.from('checks').select(cols).in('analysis_status', ['lookup', 'pending', 'in_progress']).order('created_at').limit(200),
+    s.from('checks').select(cols).eq('analysis_status', 'done').in('analysis_source', ['sheet', 'check', 'manual', 'grok']).order('analysis_tried_at', { ascending: false, nullsFirst: false }).limit(50),
+  ])
+  const map = (r: Record<string, unknown>): QueueRow => {
+    const p = (r.place ?? {}) as { name?: string; city?: string }
+    return { ...(r as unknown as QueueRow), name: p.name ?? '—', city: p.city ?? '' }
+  }
+  return { open: (o.data ?? []).map(map), done: (d.data ?? []).map(map) }
+}
+async function fnCall(name: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const proxy = (import.meta.env.VITE_PLACES_PROXY as string | undefined)?.replace(/\/$/, '')
+  if (!proxy) return { error: 'VITE_PLACES_PROXY ist nicht gesetzt' }
+  const { data } = await (await db()).auth.getSession()
+  const token = data.session?.access_token
+  if (!token) return { error: 'Keine Sitzung' }
+  try {
+    const res = await fetch(`${proxy}/${name}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) })
+    const j = await res.json().catch(() => ({})) as Record<string, unknown>
+    if (res.ok) return j
+    if (res.status === 404 && !j.error) return { error: `Funktion «${name}» ist nicht deployt.` }
+    return { error: String(j.detail ?? j.error ?? `HTTP ${res.status}`) }
+  } catch { return { error: `Funktion «${name}» ist nicht erreichbar.` } }
+}
+export async function analysisTask(ids: string[]): Promise<{ text: string } | { error: string }> {
+  const r = await fnCall('analysis-queue', { action: 'task', ids })
+  return r.error ? { error: String(r.error) } : { text: String(r.text ?? '') }
+}
+export async function saveAnalysisAnswer(text: string): Promise<{ saved: { id: string; ok: boolean; reason?: string }[]; errors: string[] } | { error: string }> {
+  const r = await fnCall('analysis-queue', { action: 'save', text })
+  return r.error ? { error: String(r.error) } : { saved: (r.saved ?? []) as { id: string; ok: boolean; reason?: string }[], errors: (r.errors ?? []) as string[] }
+}
+export async function releaseAnalyses(ids: string[]): Promise<boolean> { return !(await fnCall('analysis-queue', { action: 'release', ids })).error }
+/** Fertige Analyse erneut in den Lead-Tabellen suchen (z. B. nachdem eine Tabelle freigegeben wurde). */
+export async function retryLookup(checkId: string): Promise<string> {
+  const r = await fnCall('analysis-lookup', { checkId, force: true })
+  if (r.error) return String(r.error)
+  return r.status === 'done' ? 'Analyse gefunden, Bericht veröffentlicht.' : r.status === 'retry' ? `Google Sheets antwortet nicht: ${r.detail ?? ''}` : 'Keine Zeile mit Analyse gefunden.'
+}
+export async function markReviewed(checkId: string, reviewed: boolean): Promise<boolean> {
+  return !(await (await db()).rpc('mark_analysis_reviewed', { p_check: checkId, p_reviewed: reviewed })).error
+}
 /** Angebot einer Anfrage (oder null). */
 export async function loadOfferFor(kind: Kind, id: string): Promise<Offer | null> {
   const { data } = await (await db()).from('offers').select('*').eq('request_kind', kind).eq('request_id', id)

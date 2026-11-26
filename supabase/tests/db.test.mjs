@@ -329,6 +329,8 @@ await test('System veröffentlicht den Bericht aus fertiger Analyse: Version ohn
   const v = await rows(`select created_by from check_reports where check_id = $1`, c)
   assert.equal(v.length, 1); assert.equal(v[0].created_by, null)
   assert.equal((await rows(`select id from activity where client_key = $1 and kind = 'report_published' and detail->>'req' = $2`, `user:${A}`, `check:${c}`)).length, 1)
+  // sofort gezeigt (kein Teilbericht davor, ohne p_notify) → keine E-Mail
+  assert.equal((await rows(`select id from activity where kind = 'analysis_ready' and detail->>'req' = $1`, `check:${c}`)).length, 0)
   // zweites Mal: schon veröffentlicht
   assert.equal((await one(`select publish_system_report($1, $2::jsonb) ok`, c, rep)).ok, false)
   await as(A)
@@ -351,11 +353,24 @@ await test('Ohne fertige Analyse: Teilbericht sofort, die fertige Analyse ersetz
   r = await one(`select report->>'source' s, report->>'partial' p from checks where id = $1`, c)
   assert.deepEqual([r.s, r.p], ['analysis', null])
   assert.equal((await rows(`select id from check_reports where check_id = $1`, c)).length, 2)
+  // Teilbericht ersetzt → E-Mail «vollständige Analyse fertig» (Ereignis analysis_ready)
+  assert.equal((await rows(`select id from activity where kind = 'analysis_ready' and detail->>'req' = $1`, `check:${c}`)).length, 1)
   // vom Team veröffentlichter Bericht (nicht partial) wird nicht überschrieben
   const t = (await one(`insert into checks (user_id, place) values ($1, '{"name":"A-Acht"}') returning id`, A)).id
   await db.query(`update checks set status = 'ready', report = '{"channels":{}}', analysis_status = 'done', analysis = '{}', analysis_source = 'manual' where id = $1`, [t])
   assert.equal((await one(`select publish_system_report($1, $2::jsonb) ok`, t, full)).ok, false)
   assert.equal((await one(`select publish_partial_report($1, $2::jsonb) ok`, t, places)).ok, false)
+  // Analyse von Grok / manuell ohne Teilbericht davor: mit p_notify → E-Mail
+  const g = (await one(`insert into checks (user_id, place) values ($1, '{"name":"A-Neun"}') returning id`, A)).id
+  await db.query(`update checks set analysis_status = 'done', analysis = '{"columns":{}}', analysis_source = 'manual' where id = $1`, [g])
+  assert.equal((await one(`select publish_system_report($1, $2::jsonb, true) ok`, g, full)).ok, true)
+  assert.equal((await rows(`select id from activity where kind = 'analysis_ready' and detail->>'req' = $1`, `check:${g}`)).length, 1)
+  // Stichprobe: nur das Team markiert «geprüft»
+  await as(A); await fails(`select mark_analysis_reviewed($1)`, /not allowed/, g)
+  await as(MGR); await db.query(`select mark_analysis_reviewed($1)`, [g])
+  await as(null)
+  const rv = await one(`select reviewed_at is not null r, reviewed_by b from checks where id = $1`, g)
+  assert.equal(rv.r, true); assert.equal(rv.b, MGR)
   await as(A)
   await fails(`select publish_partial_report($1, $2::jsonb)`, /permission denied/, c, places)
   await as(null)

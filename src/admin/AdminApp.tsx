@@ -11,6 +11,7 @@ import {
 import ReportEditor from './ReportEditor'
 import OfferBuilder from './OfferBuilder'
 import LeadSheets from './LeadSheets'
+import Analyses from './Analyses'
 import { stopLive, useLive, useLiveStatus } from './live'
 import { CATALOG, totals, type OfferItem, type Unit } from './catalog'
 
@@ -160,9 +161,9 @@ function Login({ onDone }: { onDone: () => void }) {
 }
 
 // Разделы админки — отдельные адреса: работают «назад/вперёд», обновление страницы и ссылки.
-type View = 'requests' | 'sheets' | 'team' | 'profile'
-const VIEW_PATH: Record<View, string> = { requests: '/rag-intern', sheets: '/rag-intern/leads', team: '/rag-intern/team', profile: '/rag-intern/profil' }
-const viewFromPath = (): View => { const p = window.location.pathname; return /\/profil\/?$/.test(p) ? 'profile' : /\/team\/?$/.test(p) ? 'team' : /\/leads\/?$/.test(p) ? 'sheets' : 'requests' }
+type View = 'requests' | 'analyses' | 'sheets' | 'team' | 'profile'
+const VIEW_PATH: Record<View, string> = { requests: '/rag-intern', analyses: '/rag-intern/analysen', sheets: '/rag-intern/leads', team: '/rag-intern/team', profile: '/rag-intern/profil' }
+const viewFromPath = (): View => { const p = window.location.pathname; return /\/profil\/?$/.test(p) ? 'profile' : /\/team\/?$/.test(p) ? 'team' : /\/leads\/?$/.test(p) ? 'sheets' : /\/analysen\/?$/.test(p) ? 'analyses' : 'requests' }
 
 function NavLink({ to, onGo, style, children }: { to: View; onGo: (v: View) => void; style?: React.CSSProperties; children: React.ReactNode }) {
   return (
@@ -247,6 +248,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           <NavLink to="requests" onGo={v => { go(v, false) }} style={{ fontWeight: 600, fontSize: 19, color: ink }}>RAG<span style={{ color: accent }}>.</span></NavLink>
           <nav style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             <NavLink to="requests" onGo={v => go(v, false)} style={navLink(view === 'requests')}>Anfragen</NavLink>
+            <NavLink to="analyses" onGo={go} style={navLink(view === 'analyses')}>Analysen</NavLink>
             <NavLink to="sheets" onGo={go} style={navLink(view === 'sheets')}>Lead-Tabellen</NavLink>
             {admin && <NavLink to="team" onGo={go} style={navLink(view === 'team')}>Team</NavLink>}
           </nav>
@@ -258,7 +260,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           <button type="button" onClick={onLogout} style={{ ...linkBtn, color: ink }}>Abmelden</button>
         </span>
       </header>
-      {view === 'sheets' ? <LeadSheets onOpenRequest={key => { history.pushState(null, '', `${VIEW_PATH.requests}?r=${encodeURIComponent(key)}`); setView('requests'); setSel(key) }} /> : view === 'profile' ? <MyProfile /> : view === 'team' ? (admin ? <Team /> : <p style={{ padding: 20, color: muted }}>{admin === null ? 'Wird geladen…' : 'Nur für Admins.'}</p>)
+      {view === 'analyses' ? <Analyses onOpenRequest={key => { history.pushState(null, '', `${VIEW_PATH.requests}?r=${encodeURIComponent(key)}`); setView('requests'); setSel(key) }} /> : view === 'sheets' ? <LeadSheets onOpenRequest={key => { history.pushState(null, '', `${VIEW_PATH.requests}?r=${encodeURIComponent(key)}`); setView('requests'); setSel(key) }} /> : view === 'profile' ? <MyProfile /> : view === 'team' ? (admin ? <Team /> : <p style={{ padding: 20, color: muted }}>{admin === null ? 'Wird geladen…' : 'Nur für Admins.'}</p>)
         : sel ? (current && data
           ? <Detail key={sel} r={current} all={data.requests} profiles={data.profiles} me={me} onSelect={open} onBack={back} onPatch={p => patch(current, p)} />
           : <p style={{ padding: 24, color: muted }}>{data ? 'Anfrage nicht gefunden.' : 'Wird geladen…'} <button type="button" onClick={back} style={linkBtn}>← Alle Anfragen</button></p>)

@@ -15,16 +15,18 @@ export type LookupResult = { status: 'done' | 'pending' | 'retry'; source?: 'che
 type Sheet = { id: string; spreadsheet_id: string; gid: number; title: string | null; tab_title: string | null }
 type Db = SupabaseClient
 
-/** Отчёт из готового анализа (таблица / другая проверка) публикует система: без менеджера, без письма. */
+/** Отчёт из готового анализа публикует система, без менеджера. Таблица / другая проверка — без письма (клиент видит сразу);
+ *  Grok / вручную — с письмом «Analyse fertig». */
 export async function publishAnalysis(db: Db, checkId: string): Promise<boolean> {
   const { data: c } = await db.from('checks').select('analysis, analysis_at, analysis_status, analysis_source, status, report').eq('id', checkId).maybeSingle()
   // Schon veröffentlicht — außer es ist nur der Teilbericht der Autoprüfung (partial), den die fertige Analyse ersetzt.
   const partial = !!(c?.report as { partial?: boolean } | null)?.partial
-  if (!c || c.analysis_status !== 'done' || (c.status === 'ready' && !partial) || !['sheet', 'check'].includes(c.analysis_source)) return false
+  if (!c || c.analysis_status !== 'done' || (c.status === 'ready' && !partial) || !['sheet', 'check', 'grok', 'manual'].includes(c.analysis_source)) return false
   const columns = (c.analysis as { columns?: Record<string, string> } | null)?.columns ?? {}
   const report = analysisReport(columns, c.analysis_at ? String(c.analysis_at).slice(0, 10) : null)
   if (!Object.keys(report.channels).length) return false
-  const { data, error } = await db.rpc('publish_system_report', { p_check: checkId, p_report: report })
+  // Analyse von Grok / manuell kommt später als der Kunde → E-Mail «Ihre vollständige Analyse ist fertig».
+  const { data, error } = await db.rpc('publish_system_report', { p_check: checkId, p_report: report, p_notify: ['grok', 'manual'].includes(c.analysis_source) })
   if (error) throw error
   return data === true
 }

@@ -26,6 +26,7 @@
 --      без письма «Ihr Bericht ist fertig» (клиент видит отчёт сразу; см. notify.sql → rag.silent).
 --   6) publish_partial_report — готового анализа нет: клиент сразу видит отчёт автопроверки (Places, сайт, PageSpeed)
 --      с пометкой partial; полный анализ (Grok / вручную) потом заменяет его новой версией.
+--   7) mark_analysis_reviewed — выборочная проверка менеджером (отметка «проверено»).
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- 1) Старая копия лидов больше не нужна
@@ -160,27 +161,35 @@ drop trigger if exists check_analysis_private_touch on public.check_analysis_pri
 create trigger check_analysis_private_touch before update on public.check_analysis_private
 for each row execute function public.touch_updated_at();
 
--- 5) Отчёт из готового анализа публикует система
-create or replace function public.publish_system_report(p_check uuid, p_report jsonb) returns boolean
+-- 5) Отчёт из готового анализа публикует система.
+-- p_notify = true (анализ Grok / вручную) или заменён частичный отчёт → событие analysis_ready →
+-- письмо клиенту «Ihre vollständige Analyse ist fertig» (notify). Без этого — тихо (клиент видит отчёт сразу).
+drop function if exists public.publish_system_report(uuid, jsonb);
+create or replace function public.publish_system_report(p_check uuid, p_report jsonb, p_notify boolean default false) returns boolean
 language plpgsql security definer set search_path = public as $$
-declare ok boolean;
+declare ok boolean; was_partial boolean; c checks;
 begin
   if p_report is null or jsonb_typeof(p_report -> 'channels') is distinct from 'object' then raise exception 'bad_report'; end if;
+  select coalesce((report ->> 'partial')::boolean, false) into was_partial from checks where id = p_check;
   perform set_config('rag.silent', 'on', true);
   -- Заменяет и частичный отчёт автопроверки (partial), но не опубликованный командой полный отчёт.
   update checks set report = p_report, status = 'ready'
    where id = p_check and analysis_status = 'done'
-     and (status <> 'ready' or coalesce((report ->> 'partial')::boolean, false));
+     and (status <> 'ready' or coalesce((report ->> 'partial')::boolean, false))
+  returning * into c;
   ok := found;
   if ok then
-    insert into check_reports (check_id, user_id, report, created_by)
-    select id, user_id, p_report, null from checks where id = p_check;
+    insert into check_reports (check_id, user_id, report, created_by) values (c.id, c.user_id, p_report, null);
   end if;
   perform set_config('rag.silent', 'off', true);
+  if ok and (p_notify or coalesce(was_partial, false)) then
+    insert into activity (client_key, kind, detail)
+    values ('user:' || c.user_id, 'analysis_ready', jsonb_build_object('req', 'check:' || c.id, 'name', c.place ->> 'name', 'source', c.analysis_source));
+  end if;
   return ok;
 end $$;
-revoke all on function public.publish_system_report(uuid, jsonb) from public, anon, authenticated;
-grant execute on function public.publish_system_report(uuid, jsonb) to service_role;
+revoke all on function public.publish_system_report(uuid, jsonb, boolean) from public, anon, authenticated;
+grant execute on function public.publish_system_report(uuid, jsonb, boolean) to service_role;
 
 -- 6) Частичный отчёт автопроверки, пока полный анализ ждёт Grok / ручную проверку
 create or replace function public.publish_partial_report(p_check uuid, p_report jsonb) returns boolean
@@ -201,5 +210,16 @@ begin
 end $$;
 revoke all on function public.publish_partial_report(uuid, jsonb) from public, anon, authenticated;
 grant execute on function public.publish_partial_report(uuid, jsonb) to service_role;
+
+-- 7) Выборочная проверка менеджером: «проверено» (ничего не блокирует, отчёт уже у клиента)
+create or replace function public.mark_analysis_reviewed(p_check uuid, p_reviewed boolean default true) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_staff() then raise exception 'not allowed'; end if;
+  update checks set reviewed_at = case when p_reviewed then now() end, reviewed_by = case when p_reviewed then auth.uid() end
+   where id = p_check and analysis_status = 'done';
+end $$;
+revoke all on function public.mark_analysis_reviewed(uuid, boolean) from public, anon;
+grant execute on function public.mark_analysis_reviewed(uuid, boolean) to authenticated;
 
 notify pgrst, 'reload schema';

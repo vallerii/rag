@@ -31,3 +31,11 @@ verify_jwt = false
 # QR-Code aus dem Brief (/check?cid=…): Firma in den Lead-Tabellen — nur Name, Ort, Datum, Place ID. Bot-Schutz wie die Firmensuche.
 [functions.lead-preview]
 verify_jwt = false
+
+# Plan B: Aufgabe für die KI erstellen, Antwort speichern (nur Team). Prüft die Sitzung selbst.
+[functions.analysis-queue]
+verify_jwt = false
+
+# Zeitplan (supabase/cron.sql): Schutz über x-cron-secret.
+[functions.analysis-cron]
+verify_jwt = false
