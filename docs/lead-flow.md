@@ -2,7 +2,7 @@
 
 > **Для ИИ, который читает проект:** это главный документ о том, как компании попадают в RAG и откуда берётся их анализ. Версия 2 заменяет версию от 25.11 (утро): решения ниже приняты после разбора кода и реальной таблицы лидов «Köln 134». Если код или другие документы противоречат этому файлу (копия всех лидов в `prospects`, импорт CSV, кнопка «Kurzanalyse», коды писем `?c=`, параметр `t` в QR, передача строк из CRM в RAG, перепроверка строк Grok) — правильно то, что написано здесь.
 >
-> Где лежит: `rag/docs/lead-flow.md` (главная версия, рядом с кодом) и копия в проекте «rag» на claude.ai (`claude/lead-flow-2026-11.md`). Код CRM: `D:\my-project\agenturro\leadcrm` (ветка `crm-letters`), код RAG: `D:\my-project\agenturro\rag` (рабочая ветка `lead-flow`). Состояние на 26.11: этапы 1–3 сделаны в ветке `lead-flow` (не задеплоено); дальше — этап 4.
+> Где лежит: `rag/docs/lead-flow.md` (главная версия, рядом с кодом) и копия в проекте «rag» на claude.ai (`claude/lead-flow-2026-11.md`). Код CRM: `D:\my-project\agenturro\leadcrm` (рабочая ветка `lead-flow` от `crm-letters`), код RAG: `D:\my-project\agenturro\rag` (рабочая ветка `lead-flow`). Состояние на 26.11: этапы 1–7 сделаны (RAG и CRM, ветки `lead-flow`, не задеплоено); осталось этап 8 — Grok MCP, когда будет доступ к Grok. Порядок деплоя — раздел «Деплой».
 
 ## Логика в 6 пунктах
 1. **Лиды живут только в Google-таблицах.** Сторонний ИИ находит компании и записывает их в таблицу. Grok один раз проверяет каждую строку по промпту и дописывает анализ в ту же строку.
@@ -134,6 +134,16 @@ Grok получает: что уже известно (для контекста
 8. **Grok MCP** (тест `ping` → два инструмента → автоматизация).
 
 Правила работы: отдельная ветка, без коммита и деплоя без «ок»; `.env` и секреты не трогать; SQL идемпотентный, как существующие `supabase/*.sql`; тексты на сайте — на немецком.
+
+## Деплой (по порядку)
+1. **Supabase → секреты** (`npx supabase secrets set --project-ref bmajnndqvpemerecvjfz …`): `GOOGLE_SERVICE_ACCOUNT_JSON` (тот же JSON, что у CRM), `ANALYSIS_CRON_SECRET` (длинный случайный).
+2. **SQL Editor:** `analysis.sql` (после schema/admin/project/flow/addendum), затем `notify.sql` (письма: без «Bericht fertig» для системных отчётов, новое «Analyse fertig»). После любого повторного запуска `schema.sql` — снова `analysis.sql`.
+3. **Edge Functions:** `npx supabase functions deploy audit-collect analysis-lookup lead-sheets lead-preview analysis-queue analysis-cron notify --project-ref bmajnndqvpemerecvjfz`; старую удалить: `npx supabase functions delete prospects --project-ref bmajnndqvpemerecvjfz`.
+4. **Расписание:** включить pg_cron (Supabase → Integrations → Cron), положить в Vault `analysis_cron_url` и `analysis_cron_secret` (команды в начале `supabase/cron.sql`), выполнить `cron.sql`.
+5. **Сайт RAG** (Vercel) — ветка `lead-flow`. Перед этим `npm run build`, `npm run test:db`, `npm run test:fn` локально.
+6. **Админка → «Lead-Tabellen»:** подключить вкладки таблиц лидов (расшарить на e-mail сервисного аккаунта — его показывает страница), «Auf Dubletten prüfen».
+7. **CRM** (Vercel) — ветка `lead-flow`: QR с `cid`, новый промпт.
+8. **Проверка:** `/check?cid=<номер карточки из таблицы>&ref=TEST` → короткая регистрация → отчёт сразу, оценки как в письме; самостоятельная регистрация компании не из таблиц → первые результаты + очередь в «Analysen».
 
 ## Требует проверки
 - **ИИ-поиск в письме.** Во всех 79 проверенных строках таблицы «Köln 134» Befund KI-Suche написан как ответы ChatGPT («In 3 von 3 Antworten von ChatGPT genannt»). Grok Bot, скорее всего, не может открыть ChatGPT и отвечает сам за себя — тогда в официальном письме стоит неподтверждённое утверждение. Решено пока оставить как есть. Проверить: как Grok на самом деле получает эти ответы; если сам — писать «laut KI-Suche (Grok)» или проверять пункт вручную.
