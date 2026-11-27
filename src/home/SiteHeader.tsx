@@ -8,10 +8,10 @@ import { mountHeader } from './motion'
 // Hintergrund zwischen Schwarz und Weiß.
 // [Text, Anker auf der Startseite, Leistungsseite für Unterseiten]
 const NAV: [string, string, string][] = [
-  ['KI-Suche', '#ki', '/services/ai-search-optimization'],
-  ['Google Maps', '#maps', '/services/google-maps-business-profile'],
-  ['Google Search', '#website', '/services/website-google-search'],
-  ['Social Media', '#social', '/services/social-media'],
+  ['KI-Suche', '#ki', '/leistungen/ki-sichtbarkeit'],
+  ['Google Maps', '#maps', '/leistungen/google-unternehmensprofil'],
+  ['Google Search', '#website', '/leistungen/website-google-suche'],
+  ['Social Media', '#social', '/leistungen/social-media'],
 ]
 
 export default function SiteHeader({ home = false, menu }: { home?: boolean; menu?: React.ReactNode }) {

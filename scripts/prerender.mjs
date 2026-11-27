@@ -75,7 +75,7 @@ for (const route of routes) {
 
 // Sitemap und robots.txt aus derselben Routenliste — immer aktuell.
 const today = new Date().toISOString().slice(0, 10)
-const prio = r => (r === '/' ? '1.0' : /^\/(services|preise)/.test(r) ? '0.8' : r.startsWith('/ratgeber') ? '0.7' : '0.5')
+const prio = r => (r === '/' ? '1.0' : /^\/(leistungen|preise)/.test(r) ? '0.8' : r.startsWith('/ratgeber') ? '0.7' : '0.5')
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${routes.map(r => `  <url><loc>${SITE_URL}${r === '/' ? '/' : r}</loc><lastmod>${today}</lastmod><priority>${prio(r)}</priority></url>`).join('\n')}

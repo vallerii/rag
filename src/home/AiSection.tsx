@@ -33,7 +33,7 @@ export default function AiSection() {
                 </span>
               ))}
             </div>
-            <a className="rx-ai-detail-link" href="/services/ai-search-optimization">
+            <a className="rx-ai-detail-link" href="/leistungen/ki-sichtbarkeit">
               {'So entsteht KI-Sichtbarkeit '}
               <LineIcon kind="arrow" />
             </a>

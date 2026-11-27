@@ -831,7 +831,7 @@ function SlotPicker({ onConfirm }: { onConfirm: (day: { label: string; date: str
 // ─────────────────────────────────────────────────────────────────────────────
 // BOOK CALL MODAL
 // ─────────────────────────────────────────────────────────────────────────────
-// Dieselben vier Leistungen wie auf /services und der Startseite.
+// Dieselben vier Leistungen wie auf /leistungen und der Startseite.
 const serviceOptions = () => modules.map(m => m.label)
 
 function BookCallModal({ onClose }: { onClose: () => void }) {
@@ -1565,7 +1565,7 @@ function ServicesNavDropdown() {
   return (
     <div className={`rx-menu${open ? ' is-open' : ''}`} onMouseEnter={show} onMouseLeave={hide}
       onFocus={show} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) hide() }}>
-      <a href="/services" className="rx-menu-trigger" aria-expanded={open} aria-haspopup="true"
+      <a href="/leistungen" className="rx-menu-trigger" aria-expanded={open} aria-haspopup="true"
         onClick={e => { if (window.matchMedia('(hover: none)').matches && !open) { e.preventDefault(); setOpen(true) } }}>
         Wo man Sie sucht
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -1573,7 +1573,7 @@ function ServicesNavDropdown() {
       <div className="rx-menu-bridge">
         <div className="rx-menu-panel">
           {modules.map(m => (
-            <a key={m.slug} href={`/services/${m.slug}`} className="rx-menu-item">
+            <a key={m.slug} href={`/leistungen/${m.slug}`} className="rx-menu-item">
               <span className="rx-menu-icon"><ChannelIcon kind={channelKindOf(m.slug)} size={19} /></span>
               <span>
                 <strong>{m.label}</strong>
@@ -1581,7 +1581,7 @@ function ServicesNavDropdown() {
               </span>
             </a>
           ))}
-          <a href="/services" className="rx-menu-all">Überblick <span aria-hidden="true">→</span></a>
+          <a href="/leistungen" className="rx-menu-all">Überblick <span aria-hidden="true">→</span></a>
         </div>
       </div>
     </div>
@@ -1955,7 +1955,7 @@ function ChannelMaps() {
         title={<>Google Maps ist <span className="serif italic-serif">Pflicht</span> für lokale Unternehmen</>}
         body="Menschen suchen in der Nähe, lesen Bewertungen und rufen direkt an. Für ein lokales Unternehmen ist das einer der kürzesten Wege von der Suche zur Anfrage."
         actions={<>
-          <a href="/services/google-maps-business-profile" className="btn btn-md btn-paper">Mehr zu Google Maps <span className="arw">→</span></a>
+          <a href="/leistungen/google-unternehmensprofil" className="btn btn-md btn-paper">Mehr zu Google Maps <span className="arw">→</span></a>
         </>}
         aside={
           <div className="d-card" style={{ position: 'relative', padding: 'clamp(24px, 3vw, 40px)' }}>
@@ -1994,7 +1994,7 @@ function ChannelSearch() {
         title={<>Google Search schaut <span className="serif italic-serif">nicht nur auf Ihre Website</span></>}
         body="Über den Links stehen heute eine KI-Antwort und eine Karte mit drei Betrieben. Google sammelt Informationen über Sie im ganzen Netz: auf Ihrer Website, im Google-Profil, in Bewertungen und sozialen Netzwerken. Wir sorgen dafür, dass Google Sie findet und jede Kundenfrage beantworten kann."
         actions={<>
-          <a href="/services/website-google-search" className="btn btn-md btn-ink">Mehr zu Website & Google Search <span className="arw">→</span></a>
+          <a href="/leistungen/website-google-suche" className="btn btn-md btn-ink">Mehr zu Website & Google Search <span className="arw">→</span></a>
         </>}
         reverse
         aside={
@@ -2081,7 +2081,7 @@ function ChannelSocial() {
               <span style={{ fontSize: 15.5 }}>Auch einzeln buchbar: <strong>Social-Media-Betreuung · {SOCIAL_ADDON.price} €/Monat</strong></span>
               <span style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <button type="button" onClick={() => setOrder(true)} className="btn btn-md btn-electric">Social Media anfragen <span className="arw">→</span></button>
-                <a href="/services/social-media" className="btn btn-md btn-paper">Mehr erfahren</a>
+                <a href="/leistungen/social-media" className="btn btn-md btn-paper">Mehr erfahren</a>
               </span>
             </div>
           </div>
@@ -2137,7 +2137,7 @@ function ChannelSummary() {
 
         <Reveal delay={0.2}>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'clamp(32px, 3.5vw, 48px)' }}>
-            <a href="/services" className="btn btn-lg btn-paper">Zum Überblick <span className="arw">→</span></a>
+            <a href="/leistungen" className="btn btn-lg btn-paper">Zum Überblick <span className="arw">→</span></a>
           </div>
         </Reveal>
       </div>
@@ -2301,7 +2301,7 @@ const mapsArea: PromoArea = {
     'Regelmäßige Aktualisierung des Profils',
   ],
   change: 'Bei lokalen Suchen zeigt Google zuerst eine Karte mit drei Unternehmen. Dort fällt oft schon die Entscheidung.',
-  links: [{ href: '/services/google-maps-business-profile', label: 'Mehr zu Google Maps' }],
+  links: [{ href: '/leistungen/google-unternehmensprofil', label: 'Mehr zu Google Maps' }],
 }
 
 const promoAreas: PromoArea[] = [
@@ -2312,7 +2312,7 @@ const promoAreas: PromoArea[] = [
     body: 'Immer mehr Menschen stellen ihre Fragen direkt an KI-Systeme. Dafür braucht Ihr Unternehmen klare, zugängliche und glaubwürdige Informationen im Web, keine geheime Zusatz-Optimierung.',
     items: ['Inhalte für Suchsysteme abrufbar', 'Leistungen konkret beschrieben', 'Übereinstimmende Angaben auf allen Plattformen', 'Logische Seitenstruktur', 'Externe Erwähnungen und Bestätigungen'],
     change: 'ChatGPT, Perplexity und die KI-Übersichten bei Google fassen zusammen und nennen nur wenige Anbieter.',
-    links: [{ href: '/services/ai-search-optimization', label: 'Mehr erfahren' }],
+    links: [{ href: '/leistungen/ki-sichtbarkeit', label: 'Mehr erfahren' }],
   },
   {
     id: 'leistung-bewertungen',
@@ -2321,7 +2321,7 @@ const promoAreas: PromoArea[] = [
     body: 'Bewertungen beeinflussen, ob ein Kunde anruft oder sich für einen Mitbewerber entscheidet. Unser Ziel: mehr echte Bewertungen mit konkreten Erfahrungen.',
     items: ['Wann und wie Sie um Bewertungen bitten', 'Ein kurzer Weg zur Abgabe', 'Antworten auf Lob und Kritik', 'Bewertungen auf Google, Trustpilot und der Website', 'Laufende Beobachtung Ihrer Reputation'],
     change: 'Kunden vergleichen Sterne, Aktualität und die Antworten des Inhabers, bei Unternehmen, die sie noch nie erlebt haben.',
-    links: [{ href: '/services/google-maps-business-profile', label: 'Mehr erfahren' }],
+    links: [{ href: '/leistungen/google-unternehmensprofil', label: 'Mehr erfahren' }],
   },
   {
     id: 'leistung-website',
@@ -2330,7 +2330,7 @@ const promoAreas: PromoArea[] = [
     body: 'Eine gute Website sieht nicht nur gut aus. Sie erklärt Menschen, Suchmaschinen und KI-Systemen, wer Sie sind, welche Leistungen Sie anbieten und warum man Ihnen vertrauen kann.',
     items: ['Seiten für jede Leistung', 'Regionen und Servicegebiete', 'Unternehmen, Team und Referenzen', 'Ratgeber-Artikel und Glossar', 'Interne Verlinkung', 'Technische SEO-Struktur und Markup'],
     change: 'Google und KI-Systeme lesen dort nach, was Sie anbieten, wo Sie arbeiten und warum man Ihnen vertrauen kann.',
-    links: [{ href: '/services/website-google-search', label: 'Mehr erfahren' }],
+    links: [{ href: '/leistungen/website-google-suche', label: 'Mehr erfahren' }],
   },
   {
     id: 'leistung-verzeichnisse',
@@ -2339,7 +2339,7 @@ const promoAreas: PromoArea[] = [
     body: 'Name, Adresse, Telefon, Website, Leistungen und Beschreibung stimmen auf den wichtigen lokalen Plattformen und Branchenportalen überein, so entsteht ein widerspruchsfreies Bild Ihres Unternehmens.',
     items: ['Bestehende Einträge erfassen', 'Falsche und doppelte Einträge bereinigen', 'Fehlende Portale gezielt ergänzen', 'Angaben regelmäßig kontrollieren'],
     change: 'Name, Adresse und Telefonnummer werden zwischen Google, Website und Verzeichnissen verglichen. Widersprüche kosten Vertrauen.',
-    links: [{ href: '/services/ai-search-optimization', label: 'Mehr erfahren' }],
+    links: [{ href: '/leistungen/ki-sichtbarkeit', label: 'Mehr erfahren' }],
   },
   {
     id: 'leistung-social',
@@ -2348,7 +2348,7 @@ const promoAreas: PromoArea[] = [
     body: 'Für ein lokales Unternehmen reichen oft wenige, gut geplante Inhalte: wer hinter dem Unternehmen steht, wie gearbeitet wird und welche Ergebnisse Kunden erwarten können.',
     items: ['Das Team zeigen', 'Arbeitsweise und Ergebnisse sichtbar machen', 'Einheitlicher Auftritt', 'Aktivität und Echtheit belegen'],
     change: 'Viele Kunden werfen kurz einen Blick auf Instagram oder Facebook, um zu sehen, ob das Unternehmen aktiv ist und wer dahintersteht.',
-    links: [{ href: '/services/social-media', label: 'Mehr erfahren' }],
+    links: [{ href: '/leistungen/social-media', label: 'Mehr erfahren' }],
   },
   {
     id: 'leistung-anzeigen',
@@ -2357,8 +2357,8 @@ const promoAreas: PromoArea[] = [
     body: 'Organische Sichtbarkeit braucht Zeit. Mit lokalen Kampagnen erreichen wir relevante Kunden früher und sehen nebenbei, welche Suchanfragen und Leistungen wirklich Anfragen bringen.',
     items: ['Lokale Google-Ads- und Maps-Kampagnen', 'Meta-Anzeigen für Ihre Region', 'Plakate, Banner und Print, wo es passt', 'Messung über Anrufe und Anfragen'],
     links: [
-      { href: '/services/google-meta-ads', label: 'Online-Anzeigen' },
-      { href: '/services/offline-advertising', label: 'Offline-Werbung' },
+      { href: '/leistungen/google-meta-ads', label: 'Online-Anzeigen' },
+      { href: '/leistungen/offline-advertising', label: 'Offline-Werbung' },
     ],
     accelerator: true,
   },
@@ -2494,7 +2494,7 @@ function LocalPromotion() {
               lines={[<>Aus einzelnen Kanälen</>, <>wird ein <span className="serif italic-serif">klares Bild</span></>, <>Ihres Unternehmens</>]}
             />
             <Reveal delay={0.12}>
-              <a href="/services" className="btn btn-lg btn-ink" style={{ marginTop: 32 }}>
+              <a href="/leistungen" className="btn btn-lg btn-ink" style={{ marginTop: 32 }}>
                 Zum Überblick <span className="arw">→</span>
               </a>
             </Reveal>
@@ -2559,7 +2559,7 @@ const allModules = [
   {
     Illust: IllustMapsProfile,
     label: 'Google Maps & Unternehmensprofil',
-    slug: 'google-maps-business-profile',
+    slug: 'google-unternehmensprofil',
     sentence: 'Gefunden werden, wo Menschen in der Nähe suchen.',
     what: 'Ihr Eintrag bei Google Maps und in der Google-Suche mit Kategorie, Leistungen, Öffnungszeiten, Fotos und Bewertungen.',
     how: 'Wir richten das Profil ein oder überarbeiten es, wählen die Hauptkategorie, beschreiben Ihre Leistungen und bereiten alles für die ersten Bewertungen vor.',
@@ -2568,7 +2568,7 @@ const allModules = [
   {
     Illust: IllustWebsiteSearch,
     label: 'Website & Google Search',
-    slug: 'website-google-search',
+    slug: 'website-google-suche',
     sentence: 'Eine Website, die Menschen, Suchmaschinen und KI-Systeme klar verstehen.',
     what: 'Ihre Website erklärt Kunden, Google und KI-Systemen, was Sie tun, wo Sie arbeiten und warum man Ihnen vertrauen kann.',
     how: 'Vom One Pager bis zur mehrseitigen Website mit Seiten für jede Leistung und jeden Ort, mit sauberer Technik, strukturierten Daten und regelmäßigen Updates.',
@@ -2577,7 +2577,7 @@ const allModules = [
   {
     Illust: IllustAIOptimization,
     label: 'KI-Suche',
-    slug: 'ai-search-optimization',
+    slug: 'ki-sichtbarkeit',
     sentence: 'Genannt werden, wenn Kunden ChatGPT, Perplexity oder Google fragen.',
     what: 'KI-Assistenten nennen nur wenige Anbieter, die, die sie eindeutig verstehen und für vertrauenswürdig halten.',
     how: 'Wir sorgen für klare Inhalte, strukturierte Daten und einheitliche Einträge in Verzeichnissen und prüfen regelmäßig, wie die KI Sie darstellt.',
@@ -2633,20 +2633,20 @@ const allModules = [
 // 25.09.2026: Leistungen = die vier Kanäle der Startseite, in derselben Reihenfolge.
 // Bewertungen gehören zu Google Maps, Verzeichnisse zur KI-Suche; Anzeigen und
 // Offline-Werbung werden nicht mehr angeboten. Die Daten bleiben für später erhalten.
-const SERVICE_ORDER = ['ai-search-optimization', 'google-maps-business-profile', 'website-google-search', 'social-media']
+const SERVICE_ORDER = ['ki-sichtbarkeit', 'google-unternehmensprofil', 'website-google-suche', 'social-media']
 const SERVICE_REDIRECTS: Record<string, string> = {
-  'reviews': '/services/google-maps-business-profile',
-  'local-citations': '/services/ai-search-optimization',
-  'google-meta-ads': '/services',
-  'offline-advertising': '/services',
+  'reviews': '/leistungen/google-unternehmensprofil',
+  'local-citations': '/leistungen/ki-sichtbarkeit',
+  'google-meta-ads': '/leistungen',
+  'offline-advertising': '/leistungen',
 }
 const modules = SERVICE_ORDER.map(slug => allModules.find(m => m.slug === slug)!)
 
 // Was jede Leistung kostet und welches Formular sie öffnet (Preise wie auf /preise).
 const SERVICE_OFFER: Record<string, { price: string; note: string; order: 'profile' | PackageOrder }> = {
-  'ai-search-optimization': { price: '499 €/Monat', note: 'Im Paket AI Plus', order: { pkg: 'aiplus', social: false } },
-  'google-maps-business-profile': { price: '149 € einmalig', note: 'Google-Profil schlüsselfertig · auch in Local Website und AI Plus', order: 'profile' },
-  'website-google-search': { price: 'ab 30 €/Monat', note: 'One Pager, Local Website oder AI Plus', order: { pkg: 'onepager', social: false } },
+  'ki-sichtbarkeit': { price: '499 €/Monat', note: 'Im Paket AI Plus', order: { pkg: 'aiplus', social: false } },
+  'google-unternehmensprofil': { price: '149 € einmalig', note: 'Google-Profil schlüsselfertig · auch in Local Website und AI Plus', order: 'profile' },
+  'website-google-suche': { price: 'ab 30 €/Monat', note: 'One Pager, Local Website oder AI Plus', order: { pkg: 'onepager', social: false } },
   'social-media': { price: '199 €/Monat', note: 'Zu jedem Paket dazu, oder einzeln', order: { pkg: null, social: true } },
 }
 
@@ -2788,7 +2788,7 @@ function ServiceSelector() {
                               <p style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--muted)', margin: 0 }}>{col.v}</p>
                             </div>
                           ))}
-                          <a href={`/services/${m.slug}`} className="d-link" style={{ gridColumn: '1 / -1', fontSize: 14.5 }}>
+                          <a href={`/leistungen/${m.slug}`} className="d-link" style={{ gridColumn: '1 / -1', fontSize: 14.5 }}>
                             Zur vollständigen Service-Seite <span className="arw">→</span>
                           </a>
                         </div>
@@ -3540,7 +3540,7 @@ function Footer() {
             <a href={homeHref('unternehmen')} className="btn btn-md btn-electric">Sichtbarkeitsindex prüfen <span className="arw">→</span></a>
           </div>
           {[
-            { title: 'Navigation', items: [['Sichtbarkeit', 'leistungen'], ['Wo man Sie sucht', '/services'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], ['FAQ', 'faq']] as [string, string][] },
+            { title: 'Navigation', items: [['Sichtbarkeit', 'leistungen'], ['Wo man Sie sucht', '/leistungen'], ['Preise', '/preise'], ['Ratgeber', '/ratgeber'], ['Glossar', '/glossar'], ['FAQ', 'faq']] as [string, string][] },
           ].map(col => (
             <div key={col.title}>
               <p style={head}>{col.title}</p>
@@ -3607,7 +3607,7 @@ type ServicePageData = {
 
 const servicePages: ServicePageData[] = [
   {
-    slug: 'google-maps-business-profile',
+    slug: 'google-unternehmensprofil',
     Illust: IllustMapsProfile,
     kicker: 'GOOGLE MAPS & UNTERNEHMENSPROFIL',
     heroTitle: 'Google Maps ist Pflicht für lokale Unternehmen',
@@ -3639,7 +3639,7 @@ const servicePages: ServicePageData[] = [
     ctaBody: 'Wir prüfen Ihr Google-Unternehmensprofil und zeigen, was fehlt und was Sie zuerst verbessern sollten.',
   },
   {
-    slug: 'website-google-search',
+    slug: 'website-google-suche',
     Illust: IllustWebsiteSearch,
     kicker: 'WEBSITE & GOOGLE SEARCH',
     heroTitle: 'Google Search schaut nicht nur auf Ihre Website',
@@ -3670,7 +3670,7 @@ const servicePages: ServicePageData[] = [
     ctaBody: 'Wir prüfen Struktur, Inhalte und Technik Ihrer Website und zeigen Ihnen, welche Schritte Ihre Sichtbarkeit bei Google und in der KI-Suche am stärksten verbessern.',
   },
   {
-    slug: 'ai-search-optimization',
+    slug: 'ki-sichtbarkeit',
     Illust: IllustAIOptimization,
     kicker: 'KI-SUCHE',
     heroTitle: 'Lokale Suche beginnt immer öfter mit einer Frage an die KI',
@@ -3953,7 +3953,7 @@ const glossarEntries: GlossarEntry[] = [
     ],
     related: ["local-pack", "nap-konsistenz", "bewertungen", "servicegebiet"],
     ratgeber: "google-maps-ranking-verbessern",
-    service: "google-maps-business-profile",
+    service: "google-unternehmensprofil",
   },
   {
     slug: "local-pack",
@@ -3979,7 +3979,7 @@ const glossarEntries: GlossarEntry[] = [
     ],
     related: ["google-unternehmensprofil", "bewertungen", "lokale-sichtbarkeit"],
     ratgeber: "google-maps-ranking-verbessern",
-    service: "google-maps-business-profile",
+    service: "google-unternehmensprofil",
   },
   {
     slug: "nap-konsistenz",
@@ -4077,7 +4077,7 @@ const glossarEntries: GlossarEntry[] = [
     ],
     related: ["lokale-sichtbarkeit", "servicegebiet", "ki-suche-ai-overviews"],
     ratgeber: "wie-funktioniert-lokales-seo",
-    service: "website-google-search",
+    service: "website-google-suche",
   },
   {
     slug: "schema-markup",
@@ -4102,7 +4102,7 @@ const glossarEntries: GlossarEntry[] = [
     ],
     related: ["ki-suche-ai-overviews", "geo", "nap-konsistenz"],
     ratgeber: "in-chatgpt-und-perplexity-gefunden-werden",
-    service: "website-google-search",
+    service: "website-google-suche",
   },
   {
     slug: "ki-suche-ai-overviews",
@@ -4126,7 +4126,7 @@ const glossarEntries: GlossarEntry[] = [
     ],
     related: ["geo", "schema-markup", "lokale-verzeichnisse"],
     ratgeber: "in-chatgpt-und-perplexity-gefunden-werden",
-    service: "ai-search-optimization",
+    service: "ki-sichtbarkeit",
   },
   {
     slug: "geo",
@@ -4150,7 +4150,7 @@ const glossarEntries: GlossarEntry[] = [
     ],
     related: ["ki-suche-ai-overviews", "schema-markup", "lokale-verzeichnisse"],
     ratgeber: "in-chatgpt-und-perplexity-gefunden-werden",
-    service: "ai-search-optimization",
+    service: "ki-sichtbarkeit",
   },
   {
     slug: "servicegebiet",
@@ -4173,7 +4173,7 @@ const glossarEntries: GlossarEntry[] = [
       { q: "Kann ich Adresse und Servicegebiet gleichzeitig angeben?", a: "Ja, wenn Kunden Sie auch vor Ort besuchen. Wenn nicht, sollte die Adresse ausgeblendet werden." },
     ],
     related: ["google-unternehmensprofil", "local-pack", "suchintention"],
-    service: "website-google-search",
+    service: "website-google-suche",
   },
   {
     slug: "sichtbarkeits-check",
@@ -4318,7 +4318,7 @@ const ratgeberArticles: RatgeberArticle[] = [
     published: '2026-11-27',
     updated: '2026-11-27',
     terms: ['Local Pack', 'Google-Unternehmensprofil', 'NAP-Konsistenz', 'Suchintention'],
-    serviceSlug: 'google-maps-business-profile',
+    serviceSlug: 'google-unternehmensprofil',
     serviceNote: 'Wir richten Ihr Profil ein, wählen die Kategorien und bringen Ihre Einträge in Ordnung.',
   },
   {
@@ -4391,7 +4391,7 @@ const ratgeberArticles: RatgeberArticle[] = [
     published: '2026-11-27',
     updated: '2026-11-27',
     terms: ['Google-Unternehmensprofil', 'Local Pack', 'NAP-Konsistenz', 'Bewertungen'],
-    serviceSlug: 'google-maps-business-profile',
+    serviceSlug: 'google-unternehmensprofil',
     serviceNote: 'Wir übernehmen Einrichtung, Kategorien, Bewertungsprozess und laufende Pflege.',
   },
   {
@@ -4459,7 +4459,7 @@ const ratgeberArticles: RatgeberArticle[] = [
     published: '2026-11-27',
     updated: '2026-11-27',
     terms: ['KI-Suche & AI Overviews', 'GEO (Generative Engine Optimization)', 'Strukturierte Daten (Schema-Markup)', 'Lokale Verzeichnisse & Erwähnungen'],
-    serviceSlug: 'ai-search-optimization',
+    serviceSlug: 'ki-sichtbarkeit',
     serviceNote: 'Wir strukturieren Ihre Unternehmensdaten und beobachten, wie KI-Systeme Sie wiedergeben.',
   },
   {
@@ -4601,8 +4601,8 @@ function JsonLd({ data }: { data: object }) {
 // index.html ist statisch und liefert sonst überall dieselben Angaben.
 /** Suchergebnis-Titel der Leistungsseiten (die H1 bleibt die lange Marketing-Überschrift; Titel ≤ 60 Zeichen). */
 const SERVICE_SEO_TITLE: Record<string, string> = {
-  'ai-search-optimization': 'KI-Suche: in ChatGPT & Co. empfohlen werden',
-  'website-google-search': 'Website & Google Search für lokale Betriebe',
+  'ki-sichtbarkeit': 'KI-Suche: in ChatGPT & Co. empfohlen werden',
+  'website-google-suche': 'Website & Google Search für lokale Betriebe',
 }
 
 /** Meta-Description auf ~155 Zeichen kürzen (Google schneidet sonst selbst ab), an einer Wortgrenze. */
@@ -4902,7 +4902,7 @@ function RatgeberArticlePage({ slug }: { slug: string }) {
               <div style={{ marginBottom: 16 }}><IconTile kind={channelKindOf(service.slug)} /></div>
               <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 28px)', margin: '0 0 10px' }}>{service.label}</h2>
               <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '0 0 22px' }}>{a.serviceNote}</p>
-              <a href={`/services/${service.slug}`} className="btn btn-md btn-electric">Zur Leistungsseite <span className="arw">→</span></a>
+              <a href={`/leistungen/${service.slug}`} className="btn btn-md btn-electric">Zur Leistungsseite <span className="arw">→</span></a>
             </div>
             <div style={{ marginTop: 'clamp(34px, 4vw, 52px)' }}>
               <Kicker>Weiterlesen</Kicker>
@@ -5181,7 +5181,7 @@ function GlossarTermPage({ slug }: { slug: string }) {
                   <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 28px)', margin: '0 0 10px' }}>{service.label}</h2>
                   <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '0 0 8px' }}>{service.sentence}</p>
                   <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 22px' }}>Wie wir das für Ihr Unternehmen umsetzen, lesen Sie auf der Leistungsseite.</p>
-                  <a href={`/services/${service.slug}`} className="btn btn-md btn-electric">Zur Leistungsseite <span className="arw">→</span></a>
+                  <a href={`/leistungen/${service.slug}`} className="btn btn-md btn-electric">Zur Leistungsseite <span className="arw">→</span></a>
                 </div>
               </section>
             )}
@@ -5235,7 +5235,7 @@ function ServicesIndex() {
           '@type': 'ListItem',
           position: i + 1,
           name: m.label,
-          url: siteOrigin() + '/services/' + m.slug,
+          url: siteOrigin() + '/leistungen/' + m.slug,
         })),
       }} />
       <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) var(--rx-edge) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
@@ -5263,19 +5263,19 @@ function ServicesIndex() {
 // Pakete auf den Leistungsseiten — dieselben Preise wie auf /preise (25.09.2026).
 type PriceItemId = 'profile' | PackageId | 'social'
 const SERVICE_PACKAGES: Record<string, { title?: string; intro: string; items: PriceItemId[]; highlight: PriceItemId; combo?: boolean; fromYou?: string; addons?: ('social' | 'onepager')[] }> = {
-  'google-maps-business-profile': {
+  'google-unternehmensprofil': {
     title: 'Wir richten Ihr Profil bei Google Maps ein',
     intro: 'Wir machen das für Sie, einmal und richtig. Danach gehört das Profil Ihnen, ganz ohne Abo.',
     items: ['profile'], highlight: 'profile', addons: ['social', 'onepager'],
     fromYou: 'Von Ihnen: 15 Minuten für ein paar Fragen, 10–15 Fotos vom Handy und der Bestätigungscode von Google.',
   },
-  'website-google-search': {
+  'website-google-suche': {
     title: 'Wir bauen Ihre Website so, dass Google sie versteht',
     intro: 'Sie kümmern sich um Ihre Kunden, wir um Ihre Website und darum, dass Google sie richtig liest.',
     items: ['onepager', 'local', 'aiplus'], highlight: 'local',
     fromYou: 'Von Ihnen: ein Gespräch von 30–45 Minuten und Fotos Ihrer Arbeiten. Die Texte schreiben wir, Sie geben nur frei.',
   },
-  'ai-search-optimization': {
+  'ki-sichtbarkeit': {
     title: 'Wir sorgen dafür, dass die KI Sie kennt',
     intro: 'Wir kümmern uns darum, damit Sie sich auf Ihre Aufträge konzentrieren können. Was sich verändert, sehen Sie im Bericht.',
     items: ['local', 'aiplus'], highlight: 'aiplus',
@@ -5421,7 +5421,7 @@ function ServicePackages({ slug }: { slug: string }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LEISTUNGSSEITEN /services/:slug — 6 Blöcke nach den Kundendokumenten (30.09.2026):
+// LEISTUNGSSEITEN /leistungen/:slug — 6 Blöcke nach den Kundendokumenten (30.09.2026):
 // 1 Hero + Check-Formular · 2 Problem · 3 Was Sie brauchen — und wobei wir helfen ·
 // 4 Preis · 5 FAQ · 6 Abschlussleiste (Button zurück zum Formular im Hero).
 // Block 3 zählt NICHT noch einmal die Punkte aus dem Problem auf, sondern sagt,
@@ -5430,18 +5430,18 @@ function ServicePackages({ slug }: { slug: string }) {
 
 /** Zeile unter dem Check-Formular im Hero: führt je Leistungsseite zum Quiz /start. */
 const SERVICE_CONSULT: Record<string, { lead: string; link: string }> = {
-  'google-maps-business-profile': { lead: 'Noch kein Google-Profil?', link: 'In 2 Minuten zu Ihrem Plan' },
-  'website-google-search': { lead: 'Noch keine Website oder unsicher, welche Sie brauchen?', link: 'Finden Sie es mit 4 kurzen Fragen heraus' },
-  'ai-search-optimization': { lead: 'Sie wissen nicht, wo Sie anfangen sollen?', link: '4 Fragen, und wir zeigen Ihnen den Startpunkt' },
+  'google-unternehmensprofil': { lead: 'Noch kein Google-Profil?', link: 'In 2 Minuten zu Ihrem Plan' },
+  'website-google-suche': { lead: 'Noch keine Website oder unsicher, welche Sie brauchen?', link: 'Finden Sie es mit 4 kurzen Fragen heraus' },
+  'ki-sichtbarkeit': { lead: 'Sie wissen nicht, wo Sie anfangen sollen?', link: '4 Fragen, und wir zeigen Ihnen den Startpunkt' },
   'social-media': { lead: 'Noch kein Profil oder keine Zeit dafür?', link: 'Ihre Ausgangslage in 4 Fragen' },
 }
 
 // Beschriftung des Check-Buttons im Hero je Leistungsseite — das Formular ist überall dasselbe (/check).
 // Logos auf der Check-Karte: welche Dienste wir für diese Seite prüfen. ChatGPT und LinkedIn ohne Logo (nicht frei verfügbar).
 const SERVICE_CHECK_BRANDS: Record<string, string[]> = {
-  'ai-search-optimization': ['chatgpt', 'googlegemini', 'claude', 'perplexity'],
-  'google-maps-business-profile': ['googlemaps'],
-  'website-google-search': ['google'],
+  'ki-sichtbarkeit': ['chatgpt', 'googlegemini', 'claude', 'perplexity'],
+  'google-unternehmensprofil': ['googlemaps'],
+  'website-google-suche': ['google'],
   'social-media': ['instagram', 'facebook', 'tiktok', 'threads'],
 }
 const BRAND_TEXT_ONLY: Record<string, string> = { chatgpt: 'ChatGPT', linkedin: 'LinkedIn' }
@@ -5468,9 +5468,9 @@ function BrandChips({ ids }: { ids: string[] }) {
 }
 
 const SERVICE_CHECK_BUTTON: Record<string, string> = {
-  'google-maps-business-profile': 'Google-Profil prüfen',
-  'website-google-search': 'Website prüfen',
-  'ai-search-optimization': 'KI-Sichtbarkeit prüfen',
+  'google-unternehmensprofil': 'Google-Profil prüfen',
+  'website-google-suche': 'Website prüfen',
+  'ki-sichtbarkeit': 'KI-Sichtbarkeit prüfen',
   'social-media': 'Social Media prüfen',
 }
 
@@ -5494,7 +5494,7 @@ type ServiceContent = {
 }
 
 const SERVICE_CONTENT: Record<string, ServiceContent> = {
-  'ai-search-optimization': {
+  'ki-sichtbarkeit': {
     title: 'Lokale Suche beginnt immer öfter mit einer Frage an die KI',
     sub: 'Wer etwas sucht, bekommt die Antwort immer öfter von ChatGPT, Perplexity oder den KI-Übersichten bei Google. Sie nennen und beschreiben die Betriebe, über die es im Netz die meisten verständlichen Informationen gibt. Wir sorgen dafür, dass Sie dabei sind.',
     priceLink: 'Paket und Preis',
@@ -5556,7 +5556,7 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
     ],
     final: { text: 'Sehen wir nach, was die KI schon über Sie weiß', button: 'In der KI prüfen' },
   },
-  'google-maps-business-profile': {
+  'google-unternehmensprofil': {
     title: 'Google Maps ist Pflicht für lokale Unternehmen',
     sub: 'Wenn man schnell etwas in der Nähe braucht, öffnet man die Karte und entscheidet nach dem Profil. Wir richten Ihr Google-Profil so ein, dass die Wahl auf Sie fällt.',
     priceLink: 'Ihr Profil bei Google Maps: 149 € einmalig',
@@ -5620,7 +5620,7 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
     ],
     final: { text: 'Prüfen Sie, wie man Sie auf der Karte sieht', button: 'Mein Profil prüfen' },
   },
-  'website-google-search': {
+  'website-google-suche': {
     title: 'Google baut seine Antwort aus allem, was es über Sie findet',
     sub: 'Wir sorgen dafür, dass Google Sie findet und jede Kundenfrage beantworten kann.',
     priceLink: 'Website ab 30 € im Monat',
@@ -5762,9 +5762,9 @@ const SERVICE_CONTENT: Record<string, ServiceContent> = {
 /** Icons der Karten „Was Sie brauchen“ — je Leistungsseite in der Reihenfolge von `needs`. */
 type NeedIconKind = 'page' | 'data' | 'star' | 'chart' | 'list' | 'camera' | 'shield' | 'chat' | 'refresh' | 'calendar' | 'users'
 const NEED_ICONS: Record<string, NeedIconKind[]> = {
-  'ai-search-optimization': ['page', 'list', 'star', 'data'],
-  'google-maps-business-profile': ['list', 'chat', 'camera', 'shield'],
-  'website-google-search': ['page', 'list', 'data', 'shield'],
+  'ki-sichtbarkeit': ['page', 'list', 'star', 'data'],
+  'google-unternehmensprofil': ['list', 'chat', 'camera', 'shield'],
+  'website-google-suche': ['page', 'list', 'data', 'shield'],
   'social-media': ['list', 'calendar', 'users', 'camera'],
 }
 function NeedIcon({ kind }: { kind: NeedIconKind }) {
@@ -5957,7 +5957,7 @@ function ServicePage({ slug }: { slug: string }) {
         <main id="inhalt" style={{ padding: '180px var(--rx-edge) 120px' }}>
           <div style={{ ...SHELL }}>
           <h1 className="display" style={{ fontSize: 30, marginBottom: 14 }}>{accent('Leistung nicht gefunden')}</h1>
-          <a href="/services" className="d-link">← Zurück zu den Leistungen</a>
+          <a href="/leistungen" className="d-link">← Zurück zu den Leistungen</a>
           </div>
         </main>
         <Footer />
@@ -5999,7 +5999,7 @@ function ServicePage({ slug }: { slug: string }) {
       <section style={{ backgroundColor: 'var(--bone)', color: 'var(--ink)', padding: 'clamp(140px, 16vh, 190px) var(--rx-edge) clamp(70px, 8vw, 110px)', position: 'relative', overflow: 'hidden' }}>
         <MapBackdrop fade="left" shift={120} pins={false} />
         <div style={{ ...SHELL, position: 'relative' }}>
-          <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Wo man Sie sucht', href: '/services' }, { label: moduleLabel ?? content.title }]} tone="light" />
+          <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Wo man Sie sucht', href: '/leistungen' }, { label: moduleLabel ?? content.title }]} tone="light" />
           <div className="svc-hero" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.45fr) minmax(0, 0.8fr)', gap: 'clamp(28px, 4vw, 56px)', alignItems: 'center' }}>
             <div>
               <h1 className="display" style={{ fontSize: 'clamp(36px, 4.6vw, 64px)', lineHeight: 1.03, letterSpacing: '-0.04em', marginBottom: 24 }}>{accent(content.title)}</h1>
@@ -6495,7 +6495,7 @@ function LandingPage() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ROOT — plain pathname dispatch, no router lib. "/" renders the full
-// landing page; "/services/:slug" renders a standalone service page. Vite's
+// landing page; "/leistungen/:slug" renders a standalone service page. Vite's
 // dev server (and any SPA-fallback host) serves index.html for both.
 // ─────────────────────────────────────────────────────────────────────────────
 // Admin-Bereich: eigene, nicht verlinkte Adresse; Code wird nur dort geladen.
@@ -6505,8 +6505,8 @@ const AdminApp = lazy(() => import('./admin/AdminApp'))
 export function prerenderRoutes(): string[] {
   return [
     '/',
-    '/services',
-    ...modules.map(m => `/services/${m.slug}`),
+    '/leistungen',
+    ...modules.map(m => `/leistungen/${m.slug}`),
     '/preise',
     '/ratgeber',
     ...ratgeberArticles.map(a => `/ratgeber/${a.slug}`),
@@ -6520,14 +6520,14 @@ export function prerenderRoutes(): string[] {
 }
 
 export default function App() {
-  // Doppelte Schrägstriche (z. B. //services/…) wie einfache behandeln, statt 404 zu zeigen.
+  // Doppelte Schrägstriche (z. B. //leistungen/…) wie einfache behandeln, statt 404 zu zeigen.
   const rawPath = currentPath()
   const path = rawPath.replace(/\/{2,}/g, '/')
   if (!isServer && path !== rawPath) window.history.replaceState(null, '', path + window.location.search + window.location.hash)
   if (/^\/rag-intern(\/(einladung|profil|team|leads|passwort-neu))?\/?$/.test(path)) {
     return <Suspense fallback={null}><AdminApp /></Suspense>
   }
-  const serviceMatch = path.match(/^\/services\/([a-z0-9-]+)\/?$/)
+  const serviceMatch = path.match(/^\/leistungen\/([a-z0-9-]+)\/?$/)
   if (serviceMatch && SERVICE_REDIRECTS[serviceMatch[1]]) {
     if (isServer) return null
     window.location.replace(SERVICE_REDIRECTS[serviceMatch[1]])
@@ -6536,7 +6536,7 @@ export default function App() {
   if (serviceMatch) {
     return <ServicePage slug={serviceMatch[1]} />
   }
-  if (/^\/services\/?$/.test(path)) {
+  if (/^\/leistungen\/?$/.test(path)) {
     return <ServicesIndex />
   }
   const ratgeberMatch = path.match(/^\/ratgeber\/([a-z0-9-]+)\/?$/)
@@ -6628,12 +6628,12 @@ type QuizRec = { title: string; text: string; href: string; kind: ChannelKind }
 function quizRecommendations(a: QuizAnswers): QuizRec[] {
   const has = (h: QuizHave) => a.have.includes(h)
   const recs: QuizRec[] = []
-  if (!has('profile')) recs.push({ kind: 'maps', title: 'Zuerst: Google-Profil', text: 'Wer Sie in der Nähe sucht, schaut auf die Karte. Ohne Profil tauchen Sie dort nicht auf. Das ist der schnellste Start, schlüsselfertig für 149 € einmalig.', href: '/services/google-maps-business-profile' })
-  if (!has('website')) recs.push({ kind: 'search', title: 'Eine Website, die Fragen beantwortet', text: 'Damit Google und die KI verstehen, was Sie anbieten und wo. Eine eigene Seite pro Leistung bringt Anfragen genau für die Arbeiten, die Sie wollen.', href: '/services/website-google-search' })
-  else if (a.goal === 'service' || a.goal === 'region') recs.push({ kind: 'search', title: 'Seiten für Ihre Leistungen und Orte', text: 'Ihre Website ist eine gute Basis. Mit eigenen Seiten für die Leistung oder den Ort, um den es Ihnen geht, zeigt Google Sie genau bei diesen Suchen.', href: '/services/website-google-search' })
-  if (a.sources.includes('portals')) recs.push({ kind: 'maps', title: 'Weniger abhängig von Portalen', text: 'Portale nehmen Provision und zeigen Ihre Konkurrenz direkt daneben. Eigene Sichtbarkeit bei Google bringt Anfragen ohne Zwischenhändler.', href: '/services/google-maps-business-profile' })
-  if (a.goal === 'trust' || (!has('social') && recs.length < 2)) recs.push({ kind: 'social', title: 'Social Media, das Vertrauen schafft', text: 'Wer Sie gefunden hat, prüft Sie. Ein lebendiges Profil mit Team und echten Arbeiten macht aus dem Klick einen Anruf.', href: '/services/social-media' })
-  if (has('profile') && has('website')) recs.push({ kind: 'ki', title: 'Sichtbar in der KI-Suche', text: 'Immer mehr Kunden fragen ChatGPT oder sehen die KI-Übersicht bei Google. Genannt wird, über wen es klare, übereinstimmende Informationen gibt.', href: '/services/ai-search-optimization' })
+  if (!has('profile')) recs.push({ kind: 'maps', title: 'Zuerst: Google-Profil', text: 'Wer Sie in der Nähe sucht, schaut auf die Karte. Ohne Profil tauchen Sie dort nicht auf. Das ist der schnellste Start, schlüsselfertig für 149 € einmalig.', href: '/leistungen/google-unternehmensprofil' })
+  if (!has('website')) recs.push({ kind: 'search', title: 'Eine Website, die Fragen beantwortet', text: 'Damit Google und die KI verstehen, was Sie anbieten und wo. Eine eigene Seite pro Leistung bringt Anfragen genau für die Arbeiten, die Sie wollen.', href: '/leistungen/website-google-suche' })
+  else if (a.goal === 'service' || a.goal === 'region') recs.push({ kind: 'search', title: 'Seiten für Ihre Leistungen und Orte', text: 'Ihre Website ist eine gute Basis. Mit eigenen Seiten für die Leistung oder den Ort, um den es Ihnen geht, zeigt Google Sie genau bei diesen Suchen.', href: '/leistungen/website-google-suche' })
+  if (a.sources.includes('portals')) recs.push({ kind: 'maps', title: 'Weniger abhängig von Portalen', text: 'Portale nehmen Provision und zeigen Ihre Konkurrenz direkt daneben. Eigene Sichtbarkeit bei Google bringt Anfragen ohne Zwischenhändler.', href: '/leistungen/google-unternehmensprofil' })
+  if (a.goal === 'trust' || (!has('social') && recs.length < 2)) recs.push({ kind: 'social', title: 'Social Media, das Vertrauen schafft', text: 'Wer Sie gefunden hat, prüft Sie. Ein lebendiges Profil mit Team und echten Arbeiten macht aus dem Klick einen Anruf.', href: '/leistungen/social-media' })
+  if (has('profile') && has('website')) recs.push({ kind: 'ki', title: 'Sichtbar in der KI-Suche', text: 'Immer mehr Kunden fragen ChatGPT oder sehen die KI-Übersicht bei Google. Genannt wird, über wen es klare, übereinstimmende Informationen gibt.', href: '/leistungen/ki-sichtbarkeit' })
   return recs.slice(0, 3)
 }
 
@@ -6809,7 +6809,7 @@ function NotFoundPage() {
   useEffect(() => { setAsked(decodeURIComponent(window.location.pathname)) }, [])
   const ways: [string, string, string][] = [
     ['Startseite', 'Alles über lokale Sichtbarkeit auf einen Blick.', '/'],
-    ['Wo man Sie sucht', 'KI-Suche, Google Maps, Google Search und Social Media.', '/services'],
+    ['Wo man Sie sucht', 'KI-Suche, Google Maps, Google Search und Social Media.', '/leistungen'],
     ['Preise', 'Google-Profil ab 149 €, Websites als Monatspaket.', '/preise'],
     ['Ratgeber', 'Ehrliche Antworten auf die häufigsten Fragen.', '/ratgeber'],
   ]

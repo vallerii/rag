@@ -80,27 +80,52 @@
   "redirects": [
     {
       "source": "/services/reviews",
-      "destination": "/services/google-maps-business-profile",
+      "destination": "/leistungen/google-unternehmensprofil",
       "permanent": true
     },
     {
       "source": "/services/local-citations",
-      "destination": "/services/ai-search-optimization",
+      "destination": "/leistungen/ki-sichtbarkeit",
       "permanent": true
     },
     {
       "source": "/services/google-meta-ads",
-      "destination": "/services",
+      "destination": "/leistungen",
       "permanent": true
     },
     {
       "source": "/services/offline-advertising",
-      "destination": "/services",
+      "destination": "/leistungen",
       "permanent": true
     },
     {
       "source": "/index.html",
       "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/services/ai-search-optimization",
+      "destination": "/leistungen/ki-sichtbarkeit",
+      "permanent": true
+    },
+    {
+      "source": "/services/google-maps-business-profile",
+      "destination": "/leistungen/google-unternehmensprofil",
+      "permanent": true
+    },
+    {
+      "source": "/services/website-google-search",
+      "destination": "/leistungen/website-google-suche",
+      "permanent": true
+    },
+    {
+      "source": "/services/social-media",
+      "destination": "/leistungen/social-media",
+      "permanent": true
+    },
+    {
+      "source": "/services",
+      "destination": "/leistungen",
       "permanent": true
     }
   ]
