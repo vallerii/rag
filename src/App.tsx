@@ -4192,160 +4192,265 @@ const glossarEntries: GlossarEntry[] = [
   },
 ]
 
+type RatgeberSection = {
+  /** H2 als Frage, so wie Kunden bei Google oder ChatGPT fragen. */
+  h: string
+  /** Erster Satz = direkte Antwort auf die Frage im H2. */
+  p: string[]
+  /** Optional: Liste nach den Absätzen (Schritte, Punkte), die man als Antwort herausnehmen kann. */
+  list?: string[]
+  ordered?: boolean
+  /** Optional: Absätze nach der Liste. */
+  after?: string[]
+}
+
+type RatgeberSource = { label: string; url: string; stand: string }
+
 type RatgeberArticle = {
   slug: string
+  /** H1. Enthält den Hauptsuchbegriff (keyword) wörtlich. */
   title: string
+  /** Hauptsuchbegriff aus der Tabelle «Ключи»: in H1, «Kurz gesagt» und im ersten Absatz. */
+  keyword: string
   teaser: string
   minutes: number
+  /** «Kurz gesagt» unter dem H1: direkte Antwort in 2–3 Sätzen (40–60 Wörter). Diesen Absatz zitieren KI-Assistenten. */
+  kurz: string
   intro: string
-  sections: { h: string; p: string[] }[]
+  sections: RatgeberSection[]
+  /** 3–5 Fragen, als FAQPage ausgezeichnet. */
+  faq: { q: string; a: string }[]
+  /** Erstquellen für Fakten im Text, mit Stand. */
+  sources: RatgeberSource[]
+  /** ISO-Datum der Erstveröffentlichung und der letzten inhaltlichen Änderung. */
+  published: string
+  updated: string
   terms: string[]
   serviceSlug: string
   serviceNote: string
 }
 
+/** Autor der Ratgeber-Artikel: echte Person mit LinkedIn-Profil. Solange leer, steht «Redaktion <SITE_NAME>» da. */
+const RATGEBER_AUTHOR = { name: '', role: '', linkedin: '' }
+
+/** Abschluss-Block «Kostenloser Sichtbarkeits-Check» unter Artikeln. Erst ab 14.12.2026 einschalten, wenn die Beta läuft. */
+const RATGEBER_CHECK_CTA = false
+
+const SRC_GOOGLE_RANKING: RatgeberSource = { label: 'Google Unternehmensprofil-Hilfe: Ranking in lokalen Suchergebnissen', url: 'https://support.google.com/business/answer/7091?hl=de', stand: 'November 2026' }
+const SRC_GOOGLE_GUIDELINES: RatgeberSource = { label: 'Google: Richtlinien für die Präsentation Ihres Unternehmens auf Google', url: 'https://support.google.com/business/answer/3038177?hl=de', stand: 'November 2026' }
+const SRC_GOOGLE_REVIEWS: RatgeberSource = { label: 'Google Maps: Verbotene und eingeschränkt zulässige Inhalte', url: 'https://support.google.com/contributionpolicy/answer/7400114?hl=de', stand: 'November 2026' }
+
 const ratgeberArticles: RatgeberArticle[] = [
   {
     slug: 'wie-funktioniert-lokales-seo',
     title: 'Wie funktioniert lokales SEO?',
-    teaser: 'Warum lokale Ergebnisse anders zustande kommen als normale Suchergebnisse, und woran Sie tatsächlich arbeiten können.',
-    minutes: 6,
-    intro: 'Lokales SEO ist die Arbeit daran, bei Suchanfragen mit örtlichem Bezug gefunden zu werden: „Zahnarzt in der Nähe", „Heizung reparieren Köln", „bestes Café Innenstadt". Diese Ergebnisse funktionieren nach anderen Regeln als eine gewöhnliche Websuche.',
+    keyword: 'lokales SEO',
+    teaser: 'Nach welchen Regeln Google lokale Ergebnisse zeigt, und woran Sie als Betrieb tatsächlich arbeiten können.',
+    minutes: 3,
+    kurz: 'Lokales SEO sorgt dafür, dass ein Betrieb bei Suchen mit Ortsbezug gefunden wird, etwa „Elektriker Siegen“. Google ordnet lokale Ergebnisse nach drei Faktoren: Relevanz, Entfernung und Bekanntheit. Die Entfernung können Sie nicht ändern. An Relevanz und Bekanntheit arbeiten Sie mit einem vollständigen Google-Unternehmensprofil, einheitlichen Firmendaten, echten Bewertungen und einer klaren Website.',
+    intro: 'Wer in Siegen „Heizung reparieren“ sucht, sieht zuerst eine Karte mit drei Betrieben und erst darunter die normalen Websites. Für diese Karte gelten andere Regeln als für die gewöhnliche Websuche. Lokales SEO ist die Arbeit an genau diesen Regeln.',
     sections: [
       {
-        h: 'Der Unterschied zur klassischen Suche',
+        h: 'Was unterscheidet lokale Suchmaschinenoptimierung von normaler SEO?',
         p: [
-          'Bei einer normalen Suche ranken Seiten. Bei einer lokalen Suche ranken Unternehmen. Google zeigt zuerst eine Karte mit drei Einträgen (das Local Pack) und erst darunter klassische Ergebnisse. Diese drei Plätze bekommen den größten Teil der Anrufe und Routenanfragen.',
-          'Deshalb reicht eine gut gebaute Website allein nicht aus: Ohne gepflegtes Google-Unternehmensprofil fehlt Ihnen der Eintrag, um den es in diesem Block überhaupt geht.',
+          'Bei einer normalen Suche ranken Seiten, bei einer lokalen Suche ranken Unternehmen. Google zeigt bei Suchen mit Ortsbezug oft zuerst eine Karte mit drei Einträgen, das Local Pack, und erst darunter die klassischen Ergebnisse. Diese drei Einträge sieht jeder, der sucht, als Erstes.',
+          'Deshalb reicht eine gute Website allein nicht aus: Ohne gepflegtes Google-Unternehmensprofil fehlt der Eintrag, um den es in diesem Block geht.',
         ],
       },
       {
-        h: 'Die drei Faktoren, die Google selbst nennt',
-        p: [
-          'Google beschreibt für lokale Ergebnisse drei Faktoren: Relevanz (passt Ihr Profil zur Suchanfrage?), Entfernung (wie weit sind Sie vom Suchenden entfernt?) und Bekanntheit (wie bekannt ist Ihr Unternehmen: Erwähnungen, Verlinkungen, Bewertungen).',
-          'Die Entfernung können Sie nicht beeinflussen. Genau deshalb sind pauschale Versprechen auf „Platz 1" unseriös: Derselbe Betrieb steht für einen Nutzer zwei Straßen weiter oben und für einen Nutzer am anderen Stadtrand weiter unten.',
+        h: 'Nach welchen Faktoren sortiert Google lokale Ergebnisse?',
+        p: ['Google nennt selbst drei Faktoren:'],
+        list: [
+          'Relevanz: Passt Ihr Profil zu dem, was gesucht wird?',
+          'Entfernung: Wie weit ist Ihr Betrieb von der suchenden Person oder vom gesuchten Ort entfernt?',
+          'Bekanntheit: Wie bekannt ist Ihr Betrieb, etwa durch Bewertungen, Erwähnungen und Links?',
+        ],
+        after: [
+          'Die Entfernung können Sie nicht beeinflussen. Deshalb sind Versprechen auf „Platz 1“ unseriös: Derselbe Betrieb aus Kreuztal steht für jemanden in Kreuztal weiter oben als für jemanden in Netphen. Einen besseren Platz kann man laut Google auch nicht kaufen.',
         ],
       },
       {
-        h: 'Woran Sie tatsächlich arbeiten können',
-        p: [
-          'Relevanz entsteht durch ein vollständiges Profil mit korrekter Hauptkategorie, klar benannten Leistungen und einer Website, die dieselben Leistungen ausführlich erklärt. Bekanntheit entsteht durch echte Bewertungen, einheitliche Angaben in Verzeichnissen und Erwähnungen außerhalb Ihrer eigenen Kanäle.',
-          'Das klingt unspektakulär, ist aber der Grund, warum in den meisten Städten dieselben zwei, drei Betriebe dauerhaft oben stehen: Bei ihnen kümmert sich jemand regelmäßig darum.',
+        h: 'Woran können Handwerker beim Local SEO selbst arbeiten?',
+        p: ['An Relevanz und Bekanntheit, und zwar mit wenigen, gut bekannten Mitteln:'],
+        list: [
+          'Relevanz: die richtige Hauptkategorie im Profil, klar benannte Leistungen und eine Website, die dieselben Leistungen ausführlich erklärt.',
+          'Bekanntheit: echte Bewertungen, einheitliche Angaben in Verzeichnissen und Erwähnungen außerhalb Ihrer eigenen Kanäle, etwa beim Verband oder in der Lokalzeitung.',
+        ],
+        after: [
+          'Das klingt unspektakulär. Es ist aber oft der Grund, warum in einer Stadt dieselben Betriebe dauerhaft oben stehen: Bei ihnen kümmert sich jemand regelmäßig darum.',
         ],
       },
       {
-        h: 'In welcher Reihenfolge man arbeitet',
-        p: [
-          'Zuerst das Google-Unternehmensprofil, weil es am schnellsten wirkt. Dann die einheitlichen Firmendaten in den wichtigsten Verzeichnissen, weil widersprüchliche Angaben jede weitere Maßnahme ausbremsen. Dann die Website mit eigenen Seiten je Leistung und je Region. Dann ein verlässlicher Ablauf für Bewertungen.',
-          'Anzeigen kommen zuletzt, nicht weil sie unwichtig wären, sondern weil sie die Lücke überbrücken, solange die organische Sichtbarkeit noch wächst.',
+        h: 'In welcher Reihenfolge geht man vor?',
+        p: ['Zuerst das Google-Unternehmensprofil, dann die Firmendaten, dann die Website, dann die Bewertungen:'],
+        ordered: true,
+        list: [
+          'Google-Unternehmensprofil vollständig ausfüllen: Es wirkt meist am schnellsten.',
+          'Name, Adresse und Telefonnummer in den wichtigsten Verzeichnissen angleichen: Widersprüchliche Angaben bremsen alles andere.',
+          'Website mit einer eigenen Seite je Leistung aufbauen.',
+          'Einen festen Moment einführen, in dem Sie Kunden um eine Bewertung bitten.',
+        ],
+        after: [
+          'Anzeigen kommen zuletzt. Sie sind nicht unwichtig, aber sie überbrücken nur die Zeit, bis die unbezahlte Sichtbarkeit gewachsen ist.',
         ],
       },
       {
-        h: 'Wie lange es dauert',
+        h: 'Wie lange dauert lokales SEO?',
         p: [
-          'Profil- und Verzeichnisarbeit zeigt sich häufig innerhalb weniger Wochen an Aufrufen und Anrufen. Bewertungen und Website-Inhalte brauchen länger, weil sie sich aufbauen müssen. Wichtig ist, dass Sie beides messen: Ohne Zahlen zu Aufrufen, Anrufen und Anfragen bleibt jede Einschätzung Gefühlssache.',
+          'Pauschal lässt sich das nicht sagen. Änderungen am Profil und an Verzeichniseinträgen zeigen sich in der Regel früher als neue Website-Inhalte und Bewertungen, die sich erst aufbauen müssen.',
+          'Wichtig ist, dass Sie messen: Aufrufe des Profils, Anrufe und Anfragen. Ohne diese Zahlen bleibt jede Einschätzung Gefühlssache.',
         ],
       },
     ],
+    faq: [
+      { q: 'Kann man Platz 1 bei Google garantieren?', a: 'Nein. Die Reihenfolge hängt auch davon ab, wo die suchende Person gerade ist. Seriös ist nur die Arbeit an Relevanz und Bekanntheit.' },
+      { q: 'Brauche ich für lokales SEO eine Website?', a: 'Für den Einstieg reicht ein vollständiges Google-Unternehmensprofil. Eine Website stärkt die Relevanz, weil sie Ihre Leistungen ausführlich erklärt, und sie ist eine Quelle, auf die Google und KI-Assistenten zurückgreifen.' },
+      { q: 'Kann ich lokales SEO selbst machen?', a: 'Ja. Profil, Firmendaten und Bewertungen kann jeder Betrieb selbst pflegen. Es kostet vor allem Zeit und Regelmäßigkeit.' },
+    ],
+    sources: [SRC_GOOGLE_RANKING],
+    published: '2026-11-27',
+    updated: '2026-11-27',
     terms: ['Local Pack', 'Google-Unternehmensprofil', 'NAP-Konsistenz', 'Suchintention'],
     serviceSlug: 'google-maps-business-profile',
     serviceNote: 'Wir richten Ihr Profil ein, wählen die Kategorien und bringen Ihre Einträge in Ordnung.',
   },
   {
     slug: 'google-maps-ranking-verbessern',
-    title: 'Wie kommt mein Unternehmen bei Google Maps nach oben?',
-    teaser: 'Die Arbeitsschritte, die bei Google Maps tatsächlich etwas bewegen, und die Abkürzungen, die Ihr Profil gefährden.',
-    minutes: 7,
-    intro: 'Google Maps ist für die meisten lokalen Betriebe der wichtigste Kanal überhaupt: Wer dort in den ersten Ergebnissen steht, bekommt Anrufe, ohne dass ein einziger Klick bezahlt werden muss. Was dorthin führt, ist keine Geheimwissenschaft, sondern eine Liste, die konsequent abgearbeitet werden will.',
+    title: 'Google Maps Ranking verbessern: Wie kommt mein Betrieb nach oben?',
+    keyword: 'Google Maps Ranking verbessern',
+    teaser: 'Die Schritte, die bei Google Maps tatsächlich etwas bewegen, und die Abkürzungen, die Ihr Profil gefährden.',
+    minutes: 3,
+    kurz: 'Ihr Google Maps Ranking verbessern Sie in fünf Schritten: Profil vollständig ausfüllen, die passende Hauptkategorie wählen, regelmäßig echte Bewertungen sammeln, Firmendaten überall gleich halten und das Profil sichtbar pflegen. Einen Platz garantieren kann niemand, weil Google auch die Entfernung zur suchenden Person berücksichtigt. Gekaufte Bewertungen und erfundene Adressen gefährden das ganze Profil.',
+    intro: 'Wer in Siegen „Dachdecker“ in Google Maps eingibt, sieht zuerst eine Handvoll Betriebe. Wer dort steht, bekommt Anrufe, ohne für einen einzigen Klick zu bezahlen. Wer sein Google Maps Ranking verbessern will, braucht keine Geheimtricks, sondern eine Liste, die konsequent abgearbeitet wird.',
     sections: [
       {
-        h: '1. Das Profil vollständig ausfüllen',
+        h: 'Was muss im Google-Profil ausgefüllt sein?',
+        p: ['Alles, was das Profil anbietet: Jedes leere Feld ist eine Information, die Google nicht hat und ein Kunde nicht sieht.'],
+        list: [
+          'Name, Adresse oder Servicegebiet, Telefonnummer',
+          'Öffnungszeiten, auch an Feiertagen',
+          'Leistungen mit kurzen Beschreibungen',
+          'Beschreibung des Betriebs und Link zur Website',
+          'Fotos aus dem Arbeitsalltag',
+        ],
+        after: ['Vollständigkeit ist der Schritt mit dem besten Verhältnis von Aufwand zu Wirkung.'],
+      },
+      {
+        h: 'Welche Hauptkategorie ist die richtige?',
         p: [
-          'Öffnungszeiten, Leistungen, Beschreibung, Kontaktdaten, Verbindung zur Website, Fotos: Jedes leere Feld ist eine Information, die Google nicht hat und ein Kunde nicht sieht. Vollständigkeit ist der Schritt mit dem besten Verhältnis von Aufwand zu Wirkung.',
+          'Die Kategorie, die am genauesten beschreibt, was Sie hauptsächlich tun, nicht das breiteste denkbare Feld. Sie entscheidet mit darüber, bei welchen Suchen Ihr Profil überhaupt in Frage kommt.',
+          'Weitere Tätigkeiten tragen Sie als Zusatzkategorien und als Leistungen ein. Ein Betrieb aus Olpe, der vor allem Bäder saniert und nebenbei Heizungen wartet, nimmt die Bad-Tätigkeit als Hauptkategorie und die Heizung als Zusatz.',
         ],
       },
       {
-        h: '2. Die richtige Hauptkategorie wählen',
+        h: 'Wie bekomme ich mehr Google-Bewertungen?',
         p: [
-          'Die Hauptkategorie entscheidet mit darüber, bei welchen Suchanfragen Ihr Profil überhaupt in Frage kommt. Sie sollte exakt beschreiben, was Sie hauptsächlich tun, nicht das breiteste denkbare Feld. Weitere Tätigkeiten kommen als Nebenkategorien und als Leistungen dazu.',
+          'Mit einem festen Ablauf: ein fester Moment, in dem Sie fragen, ein kurzer Weg zur Abgabe und eine Antwort auf jede Bewertung, auch auf Kritik.',
+          'Die Anzahl der Bewertungen gehört laut Google zu den Signalen für die Bekanntheit eines Betriebs. Es geht aber um echte Bewertungen mit konkreten Erfahrungen. Ein stetiger Strom frischer Rückmeldungen überzeugt Kunden mehr als ein sehr guter Durchschnitt von vor zwei Jahren.',
+          'Wichtig: keine Gegenleistung für eine Bewertung, also kein Rabatt und kein Geschenk. Google entfernt solche Bewertungen.',
         ],
       },
       {
-        h: '3. Bewertungen zu einem Ablauf machen',
+        h: 'Warum müssen Name, Adresse und Telefon überall gleich sein?',
         p: [
-          'Nicht „mehr Bewertungen", sondern mehr echte Bewertungen mit konkreten Erfahrungen. Dafür braucht es einen festen Moment, in dem gefragt wird, einen kurzen Weg zur Abgabe und Antworten auf das, was geschrieben wird, auch auf Kritik.',
-          'Alte Bewertungen verlieren an Überzeugungskraft. Ein stetiger Strom frischer Rückmeldungen wirkt auf Kunden wie auf Google anders als ein sehr guter Durchschnitt von vor zwei Jahren.',
+          'Weil Google Ihre Angaben aus vielen Quellen abgleicht, und Widersprüche Zweifel säen. Name, Adresse und Telefonnummer sollten auf Ihrer Website, im Profil und in den Verzeichnissen genau gleich geschrieben sein.',
+          'Alte Einträge mit früherer Adresse oder alter Rufnummer sind erstaunlich oft der Grund, warum sich ein Profil trotz guter Pflege nicht bewegt.',
         ],
       },
       {
-        h: '4. Einheitliche Firmendaten überall',
+        h: 'Bringt es etwas, das Profil regelmäßig zu aktualisieren?',
         p: [
-          'Name, Adresse und Telefonnummer müssen auf Ihrer Website, im Profil und in den relevanten Verzeichnissen identisch sein. Alte Einträge mit früherer Adresse oder alter Rufnummer sind erstaunlich oft der Grund, warum sich ein Profil trotz guter Pflege nicht bewegt.',
+          'Ja: Ein gepflegtes Profil wirkt auf Kunden lebendig und hält Ihre Angaben aktuell. Neue Fotos, aktualisierte Leistungen, Öffnungszeiten an Feiertagen und beantwortete Fragen zeigen, dass der Betrieb arbeitet.',
         ],
       },
       {
-        h: '5. Aktivität zeigen',
-        p: [
-          'Neue Fotos, aktualisierte Leistungen, gepflegte Öffnungszeiten an Feiertagen, beantwortete Fragen: Ein Profil, an dem sichtbar gearbeitet wird, wirkt für Kunden lebendig, und liefert Google laufend frische Informationen.',
-        ],
-      },
-      {
-        h: 'Was Sie nicht tun sollten',
-        p: [
-          'Keine gekauften oder erfundenen Bewertungen. Keine Keywords im Unternehmensnamen, die nicht zum tatsächlichen Namen gehören. Keine Adressen, an denen Sie nicht arbeiten. All das verstößt gegen die Google-Richtlinien und kann zur Sperrung des Profils führen, dann ist nicht die Platzierung weg, sondern der gesamte Eintrag.',
+        h: 'Was gefährdet mein Google-Profil?',
+        p: ['Alles, was gegen die Google-Richtlinien verstößt. Das kann zur Sperrung führen, und dann ist nicht nur die Platzierung weg, sondern der ganze Eintrag:'],
+        list: [
+          'gekaufte oder erfundene Bewertungen',
+          'Bewertungen gegen Rabatt oder Geschenk',
+          'Zusätze im Firmennamen, die nicht zum echten Namen gehören, etwa „Elektriker Siegen günstig“',
+          'Adressen, an denen Sie nicht arbeiten',
         ],
       },
     ],
+    faq: [
+      { q: 'Kann man Platz 1 bei Google Maps garantieren?', a: 'Nein. Google berücksichtigt auch die Entfernung zur suchenden Person, und einen besseren Platz kann man laut Google nicht kaufen.' },
+      { q: 'Wie schnell kann ich bei Google Maps weiter oben erscheinen?', a: 'Das lässt sich nicht vorhersagen. Ein vollständiges Profil und bereinigte Einträge wirken meist früher als Bewertungen, die sich erst aufbauen müssen.' },
+      { q: 'Darf ich Kunden um eine Bewertung bitten?', a: 'Ja. Nicht erlaubt ist, etwas dafür zu geben, zum Beispiel einen Rabatt oder ein Geschenk.' },
+      { q: 'Darf ich Suchbegriffe in den Firmennamen schreiben?', a: 'Nein. Im Profil steht nur der Name, unter dem Ihr Betrieb tatsächlich auftritt. Zusätze können zur Sperrung führen.' },
+    ],
+    sources: [SRC_GOOGLE_RANKING, SRC_GOOGLE_GUIDELINES, SRC_GOOGLE_REVIEWS],
+    published: '2026-11-27',
+    updated: '2026-11-27',
     terms: ['Google-Unternehmensprofil', 'Local Pack', 'NAP-Konsistenz', 'Bewertungen'],
     serviceSlug: 'google-maps-business-profile',
     serviceNote: 'Wir übernehmen Einrichtung, Kategorien, Bewertungsprozess und laufende Pflege.',
   },
   {
     slug: 'in-chatgpt-und-perplexity-gefunden-werden',
-    title: 'Wie wird ein Unternehmen in ChatGPT und Perplexity gefunden?',
-    teaser: 'Was KI-Systeme brauchen, um Ihr Unternehmen zu nennen, und warum es dafür keine getrennte Zauberformel gibt.',
-    minutes: 6,
-    intro: 'Immer mehr Menschen stellen ihre Frage direkt an ein KI-System, statt eine Ergebnisliste durchzusehen. Die Antwort nennt dann zwei, drei Anbieter. Wer dort nicht vorkommt, existiert für diese Kundschaft nicht, auch mit guter klassischer Platzierung.',
+    title: 'In ChatGPT gefunden werden: Was braucht ein Betrieb dafür?',
+    keyword: 'in ChatGPT gefunden werden',
+    teaser: 'Was ChatGPT, Perplexity und die KI-Übersichten von Google brauchen, um Ihren Betrieb zu nennen, und warum es dafür keine getrennte Zauberformel gibt.',
+    minutes: 3,
+    kurz: 'Wer in ChatGPT gefunden werden will, braucht keine geheime KI-Optimierung. ChatGPT, Perplexity und die KI-Übersichten von Google nennen Betriebe, über die sie im Netz klare und übereinstimmende Angaben finden: eine verständliche Website, ein gepflegtes Google-Unternehmensprofil, einheitliche Firmendaten und echte Bewertungen. Eine Nennung garantieren kann niemand.',
+    intro: 'Immer mehr Menschen stellen ihre Frage direkt einem KI-Assistenten, statt eine Ergebnisliste durchzusehen. Die Antwort nennt dann nur wenige Betriebe. Wer in ChatGPT gefunden werden will, muss deshalb verstehen, woher diese Antworten kommen.',
     sections: [
       {
-        h: 'Wie eine KI-Antwort entsteht',
+        h: 'Wie entsteht eine KI-Antwort?',
         p: [
-          'Moderne KI-Systeme antworten nicht nur aus dem Gedächtnis. Sie rufen bei aktuellen Fragen Webinhalte ab, fassen sie zusammen und geben einige Quellen an. Für Ihr Unternehmen heißt das: Es zählt, was im Web verlässlich über Sie zu finden ist, und ob es abrufbar ist.',
+          'Bei aktuellen Fragen durchsuchen ChatGPT und Perplexity das Web, fassen gefundene Inhalte zusammen und nennen einige Quellen. Für Ihren Betrieb heißt das: Es zählt, was verlässlich über Sie im Netz steht, und ob es abrufbar ist.',
         ],
       },
       {
-        h: 'Klare Inhalte statt Werbesprache',
+        h: 'Wie werde ich von ChatGPT empfohlen?',
         p: [
-          'Ein Sprachmodell kann nur wiedergeben, was eindeutig formuliert ist. „Ganzheitliche Lösungen für Ihren Erfolg" ist für ein KI-System wertlos. „Wir reparieren Gasheizungen in Freiburg und im Umkreis von 30 Kilometern, Notdienst rund um die Uhr" ist eine Aussage, die zitiert werden kann.',
-          'Deshalb ist die Website die Grundlage: Sie ist der einzige Ort, an dem Sie vollständig bestimmen, welche Informationen über Sie im Umlauf sind.',
+          'Mit klaren Aussagen darüber, was Sie tun, wo und für wen. Ein Sprachmodell kann nur wiedergeben, was eindeutig formuliert ist.',
+          '„Ganzheitliche Lösungen für Ihren Erfolg“ hilft keiner KI. „Wir reparieren Gasheizungen in Siegen und im Umkreis von 30 Kilometern, Notdienst rund um die Uhr“ ist eine Aussage, die zitiert werden kann.',
+          'Deshalb ist die Website die Grundlage: Sie ist der einzige Ort, an dem Sie selbst bestimmen, welche Informationen über Sie im Umlauf sind.',
         ],
       },
       {
-        h: 'Abrufbar sein',
+        h: 'Kann die KI meine Website überhaupt lesen?',
+        p: ['Nur wenn sie technisch erreichbar ist. Für KI-Assistenten unsichtbar sind zum Beispiel:'],
+        list: [
+          'Seiten, die für Suchmaschinen gesperrt sind',
+          'Inhalte, die erst nach einem Klick oder einer Eingabe erscheinen',
+          'Websites, die in der robots.txt die Crawler der KI-Anbieter aussperren, etwa OAI-SearchBot von OpenAI oder PerplexityBot',
+        ],
+        after: ['Ob Sie diese Crawler zulassen, ist eine bewusste Entscheidung. Treffen Sie sie, statt sie dem Zufall zu überlassen.'],
+      },
+      {
+        h: 'Warum sind einheitliche Firmendaten für KI-Assistenten wichtig?',
         p: [
-          'Inhalte, die technisch nicht erreichbar sind, existieren für KI-Systeme nicht. Dazu gehören blockierte Seiten, Inhalte, die erst nach Interaktion erscheinen, und Zugriffsregeln, die die Crawler der KI-Anbieter aussperren. Wer dort vorkommen möchte, muss diese Zugriffe zulassen, eine bewusste Entscheidung, die man treffen sollte, statt sie dem Zufall zu überlassen.',
+          'Weil KI-Systeme Quellen miteinander abgleichen. Steht Ihre Telefonnummer auf der Website, im Google-Profil und in Verzeichnissen unterschiedlich, sinkt die Wahrscheinlichkeit, dass eine Antwort Sie sicher nennt. Jede korrekte Erwähnung an anderer Stelle stärkt dagegen das Bild.',
         ],
       },
       {
-        h: 'Übereinstimmung und externe Bestätigung',
+        h: 'Braucht man für die KI-Suche eine eigene Optimierung?',
         p: [
-          'KI-Systeme gleichen Quellen ab. Wenn Ihre Telefonnummer auf der Website, im Google-Profil und in Verzeichnissen unterschiedlich ist, sinkt die Wahrscheinlichkeit, dass eine Antwort Sie sicher nennt. Umgekehrt stärkt jede korrekte externe Erwähnung das Bild.',
+          'Nein. Google schreibt selbst, dass es keine zusätzlichen Anforderungen gibt, um in den KI-Übersichten zu erscheinen. Es gelten die bekannten Grundlagen: nützliche Inhalte, saubere Technik, auffindbare Seiten und ein aktuelles Unternehmensprofil.',
+          'Seriös ist deshalb nicht das Versprechen einer geheimen KI-Optimierung, sondern die Arbeit an diesen Grundlagen, plus der regelmäßige Blick darauf, wie KI-Assistenten Ihren Betrieb beschreiben.',
         ],
       },
       {
-        h: 'Was das mit SEO zu tun hat',
+        h: 'Kann jemand garantieren, dass ChatGPT meinen Betrieb nennt?',
         p: [
-          'Sehr viel. Google selbst hält fest, dass es für die KI-Funktionen der Suche keine gesonderte Optimierung braucht. Es gelten die bekannten Grundlagen: nützliche Inhalte, saubere Technik, indexierbare Seiten, interne Verlinkung, ein aktuelles Unternehmensprofil.',
-          'Seriös ist deshalb nicht das Versprechen einer geheimen KI-Optimierung, sondern die konsequente Arbeit an diesen Grundlagen, plus die Beobachtung, ob und wie Ihr Unternehmen in KI-Antworten auftaucht.',
-        ],
-      },
-      {
-        h: 'Was niemand garantieren kann',
-        p: [
-          'KI-Antworten sind nicht deterministisch: Dieselbe Frage kann zu unterschiedlichen Antworten führen. Garantierte Nennungen kann niemand zusagen. Was man tun kann, ist die Wahrscheinlichkeit systematisch erhöhen und regelmäßig prüfen, was die Systeme über Sie sagen.',
+          'Nein. Dieselbe Frage kann zu unterschiedlichen Antworten führen. Man kann die Wahrscheinlichkeit erhöhen und regelmäßig prüfen, was die Systeme über Sie sagen, mehr nicht.',
         ],
       },
     ],
+    faq: [
+      { q: 'Wie finde ich heraus, ob ChatGPT meinen Betrieb kennt?', a: 'Stellen Sie die Frage so, wie ein Kunde sie stellt, etwa „Welcher Elektriker in Siegen hat einen Notdienst?“, in einem neuen Chat. Wiederholen Sie das einmal im Monat und notieren Sie, wer genannt wird.' },
+      { q: 'Wird ein Unternehmen bei Perplexity anders gefunden als bei ChatGPT?', a: 'Die Grundlagen sind dieselben: klare Inhalte, abrufbare Seiten und übereinstimmende Firmendaten. Beide Dienste durchsuchen das Web und nennen ihre Quellen.' },
+      { q: 'Brauche ich eine eigene Agentur für KI-Suche?', a: 'Nicht unbedingt. Wer Website, Google-Profil und Firmendaten sauber pflegt, schafft die Grundlage für Google und für KI-Assistenten zugleich.' },
+    ],
+    sources: [
+      { label: 'Google Search Central: KI-Funktionen und deine Website', url: 'https://developers.google.com/search/docs/appearance/ai-features?hl=de', stand: 'November 2026' },
+      { label: 'OpenAI: Übersicht der Crawler (OAI-SearchBot, GPTBot, ChatGPT-User)', url: 'https://platform.openai.com/docs/bots', stand: 'November 2026' },
+    ],
+    published: '2026-11-27',
+    updated: '2026-11-27',
     terms: ['KI-Suche & AI Overviews', 'GEO (Generative Engine Optimization)', 'Strukturierte Daten (Schema-Markup)', 'Lokale Verzeichnisse & Erwähnungen'],
     serviceSlug: 'ai-search-optimization',
     serviceNote: 'Wir strukturieren Ihre Unternehmensdaten und beobachten, wie KI-Systeme Sie wiedergeben.',
@@ -4353,68 +4458,96 @@ const ratgeberArticles: RatgeberArticle[] = [
   {
     slug: 'brauchen-handwerker-instagram',
     title: 'Brauchen Handwerker Instagram?',
-    teaser: 'Instagram bringt selten von allein Aufträge, aber es entscheidet oft, ob jemand anruft. Wann sich ein Profil lohnt, welcher Kanal passt und was mindestens drin sein muss.',
-    minutes: 6,
-    intro: 'Die ehrliche Antwort: Nicht jeder Handwerksbetrieb braucht Instagram. Aber fast jeder wird dort gesucht. Wer Sie bei Google gefunden hat, schaut oft noch kurz in Ihr Profil, bevor er anruft, und ein Profil, dessen letzter Beitrag zwei Jahre alt ist, wirkt wie ein Betrieb, der aufgegeben hat. In diesem Artikel geht es darum, wann sich der Aufwand lohnt, welcher Kanal zu Ihnen passt und was ein Profil mindestens braucht.',
+    keyword: 'Brauchen Handwerker Instagram',
+    teaser: 'Instagram bringt selten von allein Aufträge, aber es entscheidet oft mit, ob jemand anruft. Wann sich ein Profil lohnt, welcher Kanal passt und was mindestens drin sein muss.',
+    minutes: 5,
+    kurz: 'Brauchen Handwerker Instagram? Nicht jeder Betrieb, aber viele profitieren davon. Instagram bringt selten den ersten Kontakt, doch Kunden prüfen dort vor dem Anruf, ob ein Betrieb aktiv ist und gute Arbeit zeigt. Es lohnt sich bei sichtbaren Arbeiten, bei Privatkunden und bei der Suche nach Azubis. Ein verlassenes Profil wirkt schlechter als gar keins.',
+    intro: 'Brauchen Handwerker Instagram? Die ehrliche Antwort: nicht jeder Betrieb. Aber fast jeder wird dort angeschaut. Wer Sie bei Google gefunden hat, schaut oft noch kurz in Ihr Profil, bevor er anruft. Ein Profil, dessen letzter Beitrag zwei Jahre alt ist, wirkt wie ein Betrieb, der aufgegeben hat.',
     sections: [
       {
-        h: 'Wofür Instagram im Handwerk wirklich da ist',
+        h: 'Wofür ist Instagram für Handwerker wirklich da?',
         p: [
-          'Die meisten Aufträge im Handwerk beginnen mit einer Suche: „Elektriker in der Nähe“, „Bad sanieren Freiburg“, bei Google, in Google Maps oder inzwischen auch in ChatGPT. Instagram ist selten der Ort, an dem jemand einen Betrieb zum ersten Mal entdeckt.',
-          'Seine Stärke liegt im zweiten Schritt: Der Kunde hat Sie gefunden und prüft jetzt, ob er Ihnen vertraut. Er will sehen, wer dahintersteht, ob der Betrieb gerade arbeitet und wie Ihre Arbeiten aussehen. Genau das zeigt ein gepflegtes Profil besser als jede Website.',
-          'Dazu kommt ein Grund, der mit Kunden gar nichts zu tun hat: Nachwuchs. Azubis und junge Fachkräfte schauen sich einen Betrieb zuerst in sozialen Netzwerken an. Für viele Betriebe ist das inzwischen der wichtigere Grund, überhaupt ein Profil zu pflegen.',
+          'Für den zweiten Schritt: Der Kunde hat Sie gefunden und prüft jetzt, ob er Ihnen vertraut. Die meisten Aufträge beginnen mit einer Suche, etwa „Elektriker Siegen“ oder „Bad sanieren Kreuztal“, bei Google, in Google Maps oder in ChatGPT. Instagram ist selten der Ort, an dem jemand einen Betrieb zum ersten Mal entdeckt.',
+          'Im Profil will der Kunde sehen, wer dahintersteht, ob der Betrieb gerade arbeitet und wie Ihre Arbeiten aussehen. Dazu kommt ein Grund, der mit Kunden nichts zu tun hat: Nachwuchs. Azubis und junge Fachkräfte schauen sich einen Betrieb oft auch in sozialen Netzwerken an.',
         ],
       },
       {
-        h: 'Wann sich ein Profil lohnt, und wann nicht',
+        h: 'Wann lohnt sich ein Instagram-Profil, und wann nicht?',
         p: [
-          'Es lohnt sich, wenn Ihre Arbeit sichtbar ist: Bäder, Küchen, Dächer, Gärten, Fassaden, Malerarbeiten, Möbel. Vorher-nachher-Bilder sind hier das stärkste Argument, das es gibt. Es lohnt sich auch, wenn Sie Privatkunden haben, die zwischen mehreren Angeboten abwägen, oder wenn Sie Personal suchen.',
-          'Weniger wichtig ist Instagram, wenn Sie fast nur für Hausverwaltungen, Bauträger oder Industrie arbeiten. Dort entscheidet eher ein gepflegtes LinkedIn-Profil des Inhabers, oder schlicht die Empfehlung.',
-          'Und: Kein Profil ist besser als ein totes. Wer keine Zeit für regelmäßige Beiträge hat, sollte lieber das Google-Unternehmensprofil mit aktuellen Fotos pflegen, als ein Instagram-Konto anzulegen, das nach drei Wochen verstummt.',
+          'Es lohnt sich, wenn Ihre Arbeit sichtbar ist, Sie Privatkunden haben oder Personal suchen. Bäder, Küchen, Dächer, Gärten, Fassaden, Malerarbeiten und Möbel zeigen sich in Vorher-nachher-Bildern am besten.',
+          'Weniger wichtig ist Instagram, wenn Sie fast nur für Hausverwaltungen, Bauträger oder Industrie arbeiten. Dort entscheidet eher ein gepflegtes LinkedIn-Profil des Inhabers oder schlicht die Empfehlung.',
+          'Und: Kein Profil ist besser als ein totes. Wer keine Zeit für regelmäßige Beiträge hat, pflegt lieber das Google-Unternehmensprofil mit aktuellen Fotos.',
         ],
       },
       {
-        h: 'Instagram, Facebook, TikTok oder LinkedIn?',
-        p: [
-          'Ein Kanal, der gepflegt wird, bringt mehr als vier, die halb gepflegt werden. Wählen Sie den Hauptkanal danach, wo Ihre Kunden sind:',
-          'Instagram passt für Privatkunden zwischen etwa 25 und 55 und für sichtbare Arbeiten. Facebook erreicht eher ältere Hausbesitzer und lokale Gruppen im Ort. Beiträge lassen sich aus Instagram automatisch dorthin mitveröffentlichen. TikTok und kurze Videos funktionieren vor allem für die Suche nach Azubis. LinkedIn ist der richtige Ort, wenn Ihre Auftraggeber selbst Unternehmen sind.',
+        h: 'Instagram, Facebook, TikTok oder LinkedIn: Welcher Kanal passt?',
+        p: ['Der Kanal, auf dem Ihre Kunden sind, und zwar einer als Hauptkanal. Ein gepflegter Kanal bringt mehr als vier halb gepflegte.'],
+        list: [
+          'Instagram: Privatkunden und Arbeiten, die man gut zeigen kann.',
+          'Facebook: eher ältere Hausbesitzer und lokale Gruppen im Ort. Beiträge lassen sich aus Instagram automatisch mitveröffentlichen.',
+          'TikTok und kurze Videos: vor allem für die Suche nach Azubis.',
+          'LinkedIn: wenn Ihre Auftraggeber selbst Unternehmen sind.',
         ],
       },
       {
-        h: 'Was ein Profil mindestens braucht',
-        p: [
-          'Eine klare Kopfzeile: Wer sind Sie, was machen Sie, wo. Zum Beispiel „Sanitär & Heizung · Bad komplett aus einer Hand · Freiburg und 30 km Umkreis“. Dazu ein Knopf zum Anrufen und ein Link zur Website oder zum Google-Profil.',
-          'Ein Impressum: Auch für Instagram-Profile von Betrieben gilt die Impressumspflicht. Ein Link in der Profilbeschreibung auf das Impressum Ihrer Website genügt. Fehlt er, sind Abmahnungen möglich.',
-          'Dieselben Angaben wie überall: Name, Adresse und Telefonnummer sollten genau so geschrieben sein wie im Google-Profil und auf der Website. Google und KI-Assistenten gleichen diese Angaben ab; Widersprüche kosten Vertrauen.',
+        h: 'Was muss in ein Instagram-Profil für Handwerker?',
+        p: ['Mindestens diese fünf Dinge:'],
+        list: [
+          'Eine klare Kopfzeile: wer, was, wo. Zum Beispiel „Sanitär & Heizung · Bad komplett aus einer Hand · Siegen und 30 km Umkreis“.',
+          'Ein Knopf zum Anrufen und ein Link zur Website oder zum Google-Profil.',
+          'Ein Link zum Impressum Ihrer Website in der Profilbeschreibung: Die Impressumspflicht gilt auch für geschäftliche Profile in sozialen Netzwerken.',
+          'Dieselben Angaben wie überall: Name, Adresse und Telefonnummer genau so geschrieben wie im Google-Profil und auf der Website.',
           'Hervorgehobene Stories (Highlights) für das, was Kunden zuerst wissen wollen: Leistungen, Referenzen, Team, Kontakt.',
         ],
       },
       {
-        h: 'Was Sie posten können, ohne Influencer zu werden',
+        h: 'Was kann ich posten, ohne Influencer zu werden?',
         p: [
-          'Niemand erwartet, dass Sie tanzen. Im Handwerk funktionieren Inhalte, die ohnehin bei der Arbeit entstehen: Vorher und nachher. Ein kurzer Blick in die Baustelle. Ein Detail, das man nur sieht, wenn man vom Fach ist, und eine Erklärung dazu. Das Team bei der Arbeit. Antworten auf Fragen, die Kunden immer wieder stellen: „Was kostet ein neues Bad ungefähr?“, „Lohnt sich eine Wärmepumpe im Altbau?“',
-          'Wenn Sie nicht vor die Kamera möchten, zeigen Sie Ihre Hände, Ihr Werkzeug, Ihre Ergebnisse. Gesichter schaffen mehr Vertrauen, aber Pflicht sind sie nicht.',
-          'Rechtlich wichtig: Fotos aus der Wohnung eines Kunden und Bilder von Mitarbeitern nur mit deren Einverständnis veröffentlichen, am besten kurz schriftlich festhalten. Hausnummern, Kennzeichen und persönliche Gegenstände nicht zeigen.',
+          'Das, was ohnehin bei der Arbeit entsteht. Niemand erwartet, dass Sie tanzen.',
+        ],
+        list: [
+          'Vorher und nachher',
+          'Ein kurzer Blick in die Baustelle',
+          'Ein Detail, das nur Fachleute sehen, mit einer Erklärung dazu',
+          'Das Team bei der Arbeit',
+          'Antworten auf Fragen, die Kunden immer wieder stellen, etwa „Lohnt sich eine Wärmepumpe im Altbau?“',
+        ],
+        after: [
+          'Wenn Sie nicht vor die Kamera möchten, zeigen Sie Hände, Werkzeug und Ergebnisse. Gesichter schaffen mehr Vertrauen, Pflicht sind sie nicht.',
+          'Rechtlich wichtig: Fotos aus der Wohnung eines Kunden und Bilder von Mitarbeitern nur mit deren Einwilligung veröffentlichen, am besten kurz schriftlich festhalten. Hausnummern, Kennzeichen und persönliche Gegenstände nicht zeigen.',
         ],
       },
       {
-        h: 'Wie oft, und wie viel Zeit kostet das?',
+        h: 'Wie oft sollte ich als Handwerker posten?',
         p: [
-          'Als Richtwert reichen drei Beiträge pro Woche und kurze Stories an Arbeitstagen. Wichtiger als die Menge ist, dass es nicht abreißt.',
-          'Der eigentliche Aufwand ist nicht das Fotografieren (das dauert auf der Baustelle zwei Minuten), sondern Planen, Texten und Veröffentlichen. Genau diesen Teil geben viele Betriebe ab: Das Team schickt Fotos und kurze Videos in einen Chat, jemand anderes macht daraus Beiträge und legt einmal im Monat den Plan zur Freigabe vor.',
+          'Unsere Empfehlung: drei Beiträge pro Woche und kurze Stories an Arbeitstagen. Wichtiger als die Menge ist, dass es nicht abreißt.',
+          'Der eigentliche Aufwand ist nicht das Fotografieren, das dauert auf der Baustelle zwei Minuten, sondern Planen, Texten und Veröffentlichen. Genau diesen Teil geben viele Betriebe ab: Das Team schickt Fotos in einen Chat, jemand anderes macht daraus Beiträge und legt einmal im Monat den Plan zur Freigabe vor.',
         ],
       },
       {
-        h: 'Wie Instagram mit Google und KI zusammenspielt',
+        h: 'Hilft Instagram bei Google und in der KI-Suche?',
         p: [
-          'Instagram ersetzt weder Google-Profil noch Website, aber es stärkt beide. Öffentliche Beiträge von Business-Konten können in der Google-Suche erscheinen, und Ihr Profil ist eine weitere Quelle, die bestätigt, dass es Ihren Betrieb gibt und er aktiv ist. Die besten Fotos gehören außerdem ins Google-Unternehmensprofil, dort sehen sie die Menschen, die gerade nach einem Betrieb wie Ihrem suchen.',
-          'Die Reihenfolge ist deshalb klar: zuerst ein vollständiges Google-Profil und echte Bewertungen, dann eine Website, die Ihre Leistungen erklärt, und Instagram als Schaufenster, das zeigt, dass hinter all dem echte Menschen und echte Arbeit stehen.',
+          'Ja, als Ergänzung. Seit Juli 2025 können öffentliche Beiträge professioneller Instagram-Konten in Suchmaschinen wie Google erscheinen. Ihr Profil ist außerdem eine weitere Quelle, die bestätigt, dass es Ihren Betrieb gibt und dass er aktiv ist.',
+          'Die besten Fotos gehören zusätzlich ins Google-Unternehmensprofil, denn dort sehen sie die Menschen, die gerade nach einem Betrieb wie Ihrem suchen. Die Reihenfolge bleibt: zuerst ein vollständiges Google-Profil und echte Bewertungen, dann eine Website, die Ihre Leistungen erklärt, und Instagram als Schaufenster.',
         ],
       },
     ],
+    faq: [
+      { q: 'Braucht ein Instagram-Profil für Handwerker ein Impressum?', a: 'Ja, wenn es geschäftlich genutzt wird. Ein gut sichtbarer Link auf das Impressum Ihrer Website in der Profilbeschreibung ist üblich.' },
+      { q: 'Darf ich Fotos von Kunden und Mitarbeitern zeigen?', a: 'Nur mit Einwilligung der abgebildeten Personen, am besten schriftlich. Bei Fotos aus Kundenwohnungen fragen Sie vorher, auch wenn niemand zu sehen ist.' },
+      { q: 'Reicht Facebook statt Instagram?', a: 'Wenn Ihre Kunden eher ältere Hausbesitzer sind, ja. Für Privatkunden mit sichtbaren Arbeiten und für die Suche nach Azubis ist Instagram meist die bessere Wahl.' },
+      { q: 'Was soll ich als Handwerker auf Instagram posten?', a: 'Vorher-nachher-Bilder, Einblicke in die Baustelle, das Team bei der Arbeit und Antworten auf typische Kundenfragen.' },
+    ],
+    sources: [
+      { label: '§ 5 Digitale-Dienste-Gesetz (DDG): Allgemeine Informationspflichten', url: 'https://www.gesetze-im-internet.de/ddg/__5.html', stand: 'November 2026' },
+      { label: '§ 22 Kunsturhebergesetz (KUG): Recht am eigenen Bild', url: 'https://www.gesetze-im-internet.de/kunsturhg/__22.html', stand: 'November 2026' },
+      { label: 'netzwelt.de: Instagram-Inhalte professioneller Konten in Suchmaschinen ab 10. Juli 2025', url: 'https://www.netzwelt.de/news/242994-instagram-aenderung-107-zwischen-datenschutz-reichweite-entscheiden-muss.html', stand: 'November 2026' },
+    ],
+    published: '2026-11-27',
+    updated: '2026-11-27',
     terms: ['Google-Unternehmensprofil', 'NAP-Konsistenz', 'Bewertungen', 'Lokale Sichtbarkeit'],
     serviceSlug: 'social-media',
-    serviceNote: 'Wir betreuen Ihren Hauptkanal: Profil einrichten, Plan zur Freigabe, Beiträge und Stories aus Ihren Fotos: 199 € im Monat, auch ohne Website.',
+    serviceNote: 'Wir betreuen Ihren Hauptkanal: Profil einrichten, Plan zur Freigabe, Beiträge und Stories aus Ihren Fotos. 199 € netto im Monat, auch ohne Website.',
   },
 ]
 
@@ -4600,6 +4733,12 @@ function RatgeberIndex() {
   )
 }
 
+/** 2026-11-27 → 27.11.2026 */
+function formatDateDE(iso: string) {
+  const [y, m, d] = iso.split('-')
+  return `${d}.${m}.${y}`
+}
+
 function RatgeberArticlePage({ slug }: { slug: string }) {
   const a = ratgeberArticles.find(x => x.slug === slug)
   usePageMeta(
@@ -4628,6 +4767,7 @@ function RatgeberArticlePage({ slug }: { slug: string }) {
 
   return (
     <>
+      <style>{glossarCSS}</style>
       <Nav />
       <main id="inhalt">
       <article>
@@ -4638,29 +4778,93 @@ function RatgeberArticlePage({ slug }: { slug: string }) {
         description: a.teaser,
         inLanguage: 'de',
         image: siteOrigin() + '/og-image.png',
-        author: { '@type': 'Organization', '@id': siteOrigin() + '/#organization', name: SITE_NAME },
+        keywords: a.keyword,
+        datePublished: a.published,
+        dateModified: a.updated,
+        author: RATGEBER_AUTHOR.name
+          ? { '@type': 'Person', name: RATGEBER_AUTHOR.name, ...(RATGEBER_AUTHOR.linkedin ? { url: RATGEBER_AUTHOR.linkedin, sameAs: [RATGEBER_AUTHOR.linkedin] } : {}) }
+          : { '@type': 'Organization', '@id': siteOrigin() + '/#organization', name: SITE_NAME },
         publisher: { '@type': 'Organization', '@id': siteOrigin() + '/#organization', name: SITE_NAME, logo: { '@type': 'ImageObject', url: siteOrigin() + '/icon-512.png' } },
         mainEntityOfPage: siteOrigin() + '/ratgeber/' + a.slug,
+        citation: a.sources.map(src => src.url),
       }} />
+      {a.faq.length > 0 && (
+        <JsonLd data={{
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: a.faq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+        }} />
+      )}
       <ContentHero
         crumbs={[{ label: 'Start', href: '/' }, { label: 'Ratgeber', href: '/ratgeber' }, { label: a.title }]}
         kicker="RATGEBER"
         title={a.title}
         sub={a.teaser}
-        meta={`${a.minutes} Minuten Lesezeit`}
+        meta={`${a.minutes} Minuten Lesezeit · Aktualisiert am ${formatDateDE(a.updated)}`}
       />
 
       <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(56px, 7vw, 90px) var(--rx-edge)' }}>
         <div style={{ ...SHELL }}><div style={{ maxWidth: 760 }}>
+          <aside aria-label="Kurz gesagt" style={{ borderLeft: '3px solid var(--electric)', backgroundColor: 'var(--bone)', padding: 'clamp(18px, 2.4vw, 28px) clamp(18px, 2.6vw, 32px)', margin: '0 0 clamp(30px, 3.6vw, 44px)' }}>
+            <p className="kick" style={{ fontSize: 12, margin: '0 0 10px' }}>Kurz gesagt</p>
+            <p style={{ fontSize: 17, lineHeight: 1.7, color: 'var(--ink)', margin: 0 }}>{a.kurz}</p>
+          </aside>
           <p className="lead" style={{ color: 'var(--ink)', margin: '0 0 clamp(34px, 4vw, 52px)' }}>{a.intro}</p>
-          {a.sections.map(sec => (
-            <div key={sec.h} style={{ marginBottom: 'clamp(30px, 4vw, 48px)' }}>
-              <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 27px)', lineHeight: 1.22, margin: '0 0 14px' }}>{sec.h}</h2>
-              {sec.p.map((t, i) => (
-                <p key={i} style={{ fontSize: 15.5, lineHeight: 1.85, color: 'var(--muted)', margin: '0 0 14px' }}>{t}</p>
-              ))}
-            </div>
-          ))}
+          {a.sections.map(sec => {
+            const List = sec.ordered ? 'ol' : 'ul'
+            return (
+              <div key={sec.h} style={{ marginBottom: 'clamp(30px, 4vw, 48px)' }}>
+                <h2 className="display" style={{ fontSize: 'clamp(20px, 2vw, 27px)', lineHeight: 1.22, margin: '0 0 14px' }}>{sec.h}</h2>
+                {sec.p.map((t, i) => (
+                  <p key={i} style={{ fontSize: 15.5, lineHeight: 1.85, color: i === 0 ? 'var(--ink)' : 'var(--muted)', margin: '0 0 14px' }}>{t}</p>
+                ))}
+                {sec.list && (
+                  <List style={{ fontSize: 15.5, lineHeight: 1.75, color: 'var(--muted)', margin: '0 0 14px', paddingLeft: 22, listStyle: sec.ordered ? 'decimal' : 'disc' }}>
+                    {sec.list.map(li => <li key={li} style={{ marginBottom: 8 }}>{li}</li>)}
+                  </List>
+                )}
+                {sec.after?.map((t, i) => (
+                  <p key={i} style={{ fontSize: 15.5, lineHeight: 1.85, color: 'var(--muted)', margin: '0 0 14px' }}>{t}</p>
+                ))}
+              </div>
+            )
+          })}
+
+          {a.faq.length > 0 && (
+            <section className="gl-faq" aria-labelledby="ratgeber-faq" style={{ marginTop: 'clamp(10px, 2vw, 20px)', marginBottom: 'clamp(30px, 4vw, 48px)' }}>
+              <h2 id="ratgeber-faq" className="display" style={{ fontSize: 'clamp(20px, 2vw, 27px)', lineHeight: 1.22, margin: '0 0 14px' }}>Häufige Fragen</h2>
+              <div style={{ borderTop: '1px solid var(--line)' }}>
+                {a.faq.map(f => (
+                  <details key={f.q} style={{ borderBottom: '1px solid var(--line)' }}>
+                    <summary style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, padding: '18px 0' }}>
+                      <h3 className="display" style={{ fontSize: 16.5, lineHeight: 1.4, margin: 0 }}>{f.q}</h3>
+                      <span className="gl-plus" aria-hidden style={{ fontSize: 22, lineHeight: 1, color: 'var(--electric)', flexShrink: 0 }}>+</span>
+                    </summary>
+                    <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '0 0 20px', maxWidth: 680 }}>{f.a}</p>
+                  </details>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <div style={{ borderTop: '1px solid var(--line)', paddingTop: 22, fontSize: 14, lineHeight: 1.75, color: 'var(--muted)' }}>
+            <p style={{ margin: '0 0 12px' }}>
+              {RATGEBER_AUTHOR.name
+                ? <>Von {RATGEBER_AUTHOR.linkedin ? <a href={RATGEBER_AUTHOR.linkedin} className="ul" rel="author noopener" target="_blank" style={{ color: 'var(--ink)', fontWeight: 600 }}>{RATGEBER_AUTHOR.name}</a> : <strong style={{ color: 'var(--ink)' }}>{RATGEBER_AUTHOR.name}</strong>}{RATGEBER_AUTHOR.role ? `, ${RATGEBER_AUTHOR.role}` : ''}</>
+                : <>Von der <strong style={{ color: 'var(--ink)' }}>Redaktion {SITE_NAME}</strong></>}
+              {' · '}Veröffentlicht am {formatDateDE(a.published)}{a.updated !== a.published ? ` · Aktualisiert am ${formatDateDE(a.updated)}` : ''}
+            </p>
+            {a.sources.length > 0 && (
+              <>
+                <p style={{ margin: '0 0 6px', fontWeight: 600, color: 'var(--ink)' }}>Quellen</p>
+                <ul style={{ margin: 0, paddingLeft: 20, listStyle: 'disc' }}>
+                  {a.sources.map(src => (
+                    <li key={src.url}><a href={src.url} className="ul" target="_blank" rel="noopener" style={{ color: 'inherit' }}>{src.label}</a> (Stand: {src.stand})</li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
         </div></div>
       </section>
 
@@ -4708,7 +4912,7 @@ function RatgeberArticlePage({ slug }: { slug: string }) {
       )}
 
       </article>
-      <ContentCTA />
+      {RATGEBER_CHECK_CTA && <ContentCTA />}
       </main>
       <Footer />
     </>
