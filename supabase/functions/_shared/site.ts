@@ -39,7 +39,7 @@ export type SiteScan = {
   hay?: string
 }
 
-const UA = 'Mozilla/5.0 (compatible; RAG-Sichtbarkeits-Check/1.0; +https://rag.agency)'
+const UA = 'Mozilla/5.0 (compatible; OrtsFuchs-Sichtbarkeits-Check/1.0; +https://ortsfuchs.de)'
 
 function decode(s: string) {
   return s.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim()

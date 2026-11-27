@@ -55,7 +55,7 @@ const staffName = (ps: Profile[], uid: string | null) => { const p = ps.find(x =
 const profileOf = (ps: Profile[], uid: string | null) => ps.find(p => p.id === uid)
 
 export default function AdminApp() {
-  useNoindex('Intern | RAG')
+  useNoindex('Intern | OrtsFuchs')
   if (/\/einladung\/?$/.test(window.location.pathname)) return <AcceptInvite />
   if (/\/passwort-neu\/?$/.test(window.location.pathname)) return <StaffResetPassword />
   return <AdminRoot />
@@ -141,7 +141,7 @@ function Login({ onDone }: { onDone: () => void }) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bone)', padding: 20 }}>
       <form onSubmit={submit} style={{ ...card, width: '100%', maxWidth: 380, padding: 28, display: 'grid', gap: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 600, fontSize: 20, margin: 0 }}>RAG<span style={{ color: accent }}>.</span> · Team-Login</p><LangSwitch /></div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 600, fontSize: 20, margin: 0 }}>Orts<span style={{ color: accent, fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400, fontSize: '1.15em' }}>Fuchs</span> · Team-Login</p><LangSwitch /></div>
         {mode === 'sent' ? <>
           <p style={{ fontSize: 14, margin: 0, lineHeight: 1.55 }}>Wenn es für diese Adresse ein Team-Konto gibt, haben wir einen Link zum Zurücksetzen geschickt. Schauen Sie auch im Spam-Ordner nach.</p>
           <button type="button" onClick={() => switchTo('login')} style={linkBtn}>← Zurück zur Anmeldung</button>
@@ -245,7 +245,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bone)', color: ink }}>
       <header style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 24px', borderBottom: `1px solid ${line}`, backgroundColor: '#fff', position: 'sticky', top: 0, zIndex: 5 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 22, flexWrap: 'wrap' }}>
-          <NavLink to="requests" onGo={v => { go(v, false) }} style={{ fontWeight: 600, fontSize: 19, color: ink }}>RAG<span style={{ color: accent }}>.</span></NavLink>
+          <NavLink to="requests" onGo={v => { go(v, false) }} style={{ fontWeight: 600, fontSize: 19, color: ink }}>Orts<span style={{ color: accent, fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400, fontSize: '1.15em' }}>Fuchs</span></NavLink>
           <nav style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             <NavLink to="requests" onGo={v => go(v, false)} style={navLink(view === 'requests')}>Anfragen</NavLink>
             <NavLink to="analyses" onGo={go} style={navLink(view === 'analyses')}>Analysen</NavLink>
@@ -1184,7 +1184,7 @@ function StaffResetPassword() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bone)', padding: 20, color: ink }}>
       <form onSubmit={submit} style={{ ...card, width: '100%', maxWidth: 380, padding: 28, display: 'grid', gap: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 600, fontSize: 20, margin: 0 }}>RAG<span style={{ color: accent }}>.</span> · Neues Passwort</p><LangSwitch /></div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 600, fontSize: 20, margin: 0 }}>Orts<span style={{ color: accent, fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400, fontSize: '1.15em' }}>Fuchs</span> · Neues Passwort</p><LangSwitch /></div>
         {ready === 'wait' && <p style={{ ...small, margin: 0 }}>Wird geladen…</p>}
         {ready === 'invalid' && <>
           <p style={{ fontSize: 14, margin: 0 }}>Der Link ist abgelaufen oder wurde schon benutzt.</p>
@@ -1301,7 +1301,7 @@ function AcceptInvite() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bone)', padding: 20, color: ink }}>
       <div style={{ ...card, width: '100%', maxWidth: 420, padding: 28, display: 'grid', gap: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 600, fontSize: 20, margin: 0 }}>RAG<span style={{ color: accent }}>.</span> · Einladung ins Team</p><LangSwitch /></div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><p style={{ fontWeight: 600, fontSize: 20, margin: 0 }}>Orts<span style={{ color: accent, fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400, fontSize: '1.15em' }}>Fuchs</span> · Einladung ins Team</p><LangSwitch /></div>
         {!token && <p style={{ margin: 0 }}>Der Link enthält keinen Einladungscode. Bitten Sie um einen neuen Link.</p>}
         {token && email === undefined && <p style={small}>Wird geladen…</p>}
         {token && email && (

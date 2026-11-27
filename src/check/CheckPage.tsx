@@ -45,7 +45,7 @@ export function Logo({ dark = false }: { dark?: boolean }) {
   return (
     // Recto-Wortmarke: Geist 500, Punkt in Instrument Serif kursiv orange.
     <a href="/" style={{ fontWeight: 500, fontSize: 25, color: dark ? '#fff' : 'var(--ink)', letterSpacing: '-1.2px', lineHeight: 1, textDecoration: 'none' }}>
-      RAG<em style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400, fontSize: '1.28em', color: 'var(--accent)', marginLeft: 1 }}>.</em>
+      OrtsFuchs<em style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400, fontSize: '1.28em', color: 'var(--accent)', marginLeft: 1 }}>.</em>
     </a>
   )
 }
@@ -214,7 +214,7 @@ function NotListed({ query, nothingFound, startOpen = false, onManual }: { query
 }
 
 export default function CheckPage() {
-  useNoindex('Kostenloser Sichtbarkeits-Check | RAG')
+  useNoindex('Kostenloser Sichtbarkeits-Check | OrtsFuchs')
   const params = new URLSearchParams(window.location.search)
   const initialPlace = params.get('place')
   // Brief aus der Lead-CRM: /check?place=<place_id>&ref=<Code> → Herkunft «crm-<Code>» in der Anfrage.

@@ -10,7 +10,7 @@ const LANG = 'de'
 // Sauberer wäre ein eigener Server-Schlüssel ohne Referrer-Beschränkung (nur «Places API (New)»).
 const REFERER = (globalThis as { Deno?: { env: { get(k: string): string | undefined } } }).Deno?.env.get('PLACES_REFERER')
   ?? (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env.PLACES_REFERER
-  ?? 'https://rag-theta-one.vercel.app/'
+  ?? 'https://ortsfuchs.de/'
 
 /** Suchgebiet Deutschland. Das Rechteck schneidet Randgebiete der Nachbarländer an — die filtert onlyDE() unten heraus. */
 const DE = { low: { latitude: 47.27, longitude: 5.86 }, high: { latitude: 55.06, longitude: 15.05 } }

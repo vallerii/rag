@@ -146,7 +146,7 @@ export function AgbBody() {
   const n = (k: number, t: string) => <h2 style={h2}>§ {k} {t}</h2>
   return (
     <>
-      <p style={p}>Allgemeine Geschäftsbedingungen von <Todo v={c.legalName} label="Firmenname mit Rechtsform" /> («RAG», «wir») für Leistungen rund um lokale Sichtbarkeit.</p>
+      <p style={p}>Allgemeine Geschäftsbedingungen von <Todo v={c.legalName} label="Firmenname mit Rechtsform" /> («OrtsFuchs», «wir») für Leistungen rund um lokale Sichtbarkeit.</p>
 
       {n(1, 'Geltungsbereich')}
       <p style={p}>(1) Diese AGB gelten für alle Verträge zwischen uns und unseren Kunden. Unsere Leistungen richten sich ausschließlich an Unternehmer im Sinne von § 14 BGB, juristische Personen des öffentlichen Rechts und öffentlich-rechtliche Sondervermögen, nicht an Verbraucher.</p>

@@ -1,7 +1,7 @@
 // Druckfertige Briefe im Stil eines sachlichen Amtsschreibens (DIN 5008, Form B — Anschrift im Fenster eines DIN-lang-Umschlags).
 // Öffnet ein Druckfenster: drucken oder im Druckdialog «Als PDF speichern».
 // Anfragen: veröffentlichter Prüfbericht. Briefe an Leads erstellt die Lead-CRM (LetterXpress).
-// Bewusst ohne Hoheitszeichen, Behördennamen oder Zahlungsaufforderung: Absender ist immer klar RAG (UWG § 5).
+// Bewusst ohne Hoheitszeichen, Behördennamen oder Zahlungsaufforderung: Absender ist immer klar OrtsFuchs (UWG § 5).
 import { COMPANY, TERMS, fill } from '../company'
 
 type Mark = 'ok' | 'warn' | 'bad'
@@ -41,7 +41,7 @@ function grade(score: number | null | undefined): string {
 }
 const eur = (n: number) => n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-const brandName = () => esc(COMPANY.legalName || 'RAG Regionale Agentur')
+const brandName = () => esc(COMPANY.legalName || 'OrtsFuchs')
 const sender = () => `${brandName()} · ${esc(fill(COMPANY.street, 'Straße'))} · ${esc(fill(COMPANY.zip, 'PLZ'))} ${esc(fill(COMPANY.city, 'Ort'))}`
 const footer = () => `
   <div class="foot">
@@ -159,7 +159,7 @@ const frame = (h: Head, inner: string) => `<span class="fold" style="top:105mm">
   <div class="ret">${sender()}</div>
   <div class="addr">${esc(h.recipient)}<br>${h.address.map(esc).join('<br>')}</div>
   <div class="info">
-    <div class="box"><small>Auskunft erteilt:</small><b>RAG-Prüfteam</b></div>
+    <div class="box"><small>Auskunft erteilt:</small><b>OrtsFuchs-Prüfteam</b></div>
     <div class="box"><small>Telefon / E-Mail:</small><b>${esc(fill(COMPANY.phone, 'Telefon'))}</b><br>${esc(COMPANY.email)}</div>
     <dl><dt>Aktenzeichen:</dt><dd class="mono">${esc(h.ref)}</dd>${h.refNote ? `<dd class="note">${esc(h.refNote)}</dd>` : ''}<dt>Datum:</dt><dd>${esc(h.date)}</dd></dl>
   </div>
@@ -211,7 +211,7 @@ async function reportDoc(r: ReportForPrint): Promise<string> {
         <tfoot>${sumOnce ? `<tr><td></td><td colspan="2">Summe einmalig</td><td class="mono num">${eur(sumOnce)}</td></tr>` : ''}${sumMonth ? `<tr><td></td><td colspan="2">Summe monatlich</td><td class="mono num">${eur(sumMonth)}</td></tr>` : ''}</tfoot></table>
         <p class="small">${vat}${r.recommended?.why ? ` ${esc(r.recommended.why)}` : ''}</p>
         <p class="small">Annehmen können Sie das Angebot in Ihrem Kundenbereich (QR-Code oben): ${esc(shortUrl(siteUrl()))}/kabinett</p></div>` : ''}
-      <div class="keep"><p class="sig">Mit freundlichen Grüßen<br>Ihr RAG-Prüfteam</p>
+      <div class="keep"><p class="sig">Mit freundlichen Grüßen<br>Ihr OrtsFuchs-Prüfteam</p>
       ${MACH}</div>
       <div class="ch keep"><h2>Hinweise</h2><p class="small">Grundlage der Prüfung sind öffentlich zugängliche Daten (Google-Unternehmensprofil, Google-Suche und Google Maps, Ihre Website, Social-Media-Profile, Antworten von KI-Assistenten) zum Stand ${esc(r.date)}. Die Punkte je Prüfbereich (0–100) ergeben sich aus den aufgeführten Prüfpunkten; die Gesamtbewertung ist ihr Durchschnitt. Ergebnisse können sich durch Änderungen bei Google und den Plattformen jederzeit ändern. Dies ist ein Bericht eines privaten Dienstleisters, keine behördliche Mitteilung.</p></div>
     </div>`)}</section>`

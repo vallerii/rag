@@ -375,7 +375,7 @@ export function mfaEnroll(): Promise<{ factorId: string; qr: string; secret: str
     const s = await db()
     const { data: f } = await s.auth.mfa.listFactors()
     for (const x of f?.all ?? []) if (x.status !== 'verified') await s.auth.mfa.unenroll({ factorId: x.id })
-    const name = `RAG ${new Date().toISOString().slice(0, 10)} ${Math.random().toString(36).slice(2, 6)}`
+    const name = `OrtsFuchs ${new Date().toISOString().slice(0, 10)} ${Math.random().toString(36).slice(2, 6)}`
     const { data, error } = await s.auth.mfa.enroll({ factorType: 'totp', friendlyName: name })
     if (error || !data || data.type !== 'totp') {
       enrolling = null
@@ -450,7 +450,7 @@ export async function setStaffNewPassword(password: string, totp?: string): Prom
   return 'Link abgelaufen oder ungültig. Fordern Sie einen neuen an.'
 }
 
-// ── Tabellen der Leads (docs/lead-flow.md): Registerkarten, in denen RAG bei der Registrierung die Analyse sucht ──
+// ── Tabellen der Leads (docs/lead-flow.md): Registerkarten, in denen OrtsFuchs bei der Registrierung die Analyse sucht ──
 export type LeadSheet = { id: string; spreadsheet_id: string; gid: number; url: string; title: string | null; tab_title: string | null; active: boolean; row_count: number | null; last_read_at: string | null; last_error: string | null; created_at: string }
 export type SheetStats = { rows: number; analysed: number; analysed_without_key: number }
 export type SheetScan = { sheets: ((SheetStats & { id: string }) | { id: string; error: string })[]; duplicates: { sheet: string; tab: string; n: number; name: string; analysed: boolean }[][] }

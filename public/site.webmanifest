@@ -1,12 +1,12 @@
 {
-  "name": "RAG — Regionale Agentur",
-  "short_name": "RAG",
-  "description": "System für lokale Sichtbarkeit bei Google Maps, Google und in der KI-Suche.",
+  "name": "OrtsFuchs",
+  "short_name": "OrtsFuchs",
+  "description": "Lokale Sichtbarkeit bei Google Maps, Google und in der KI-Suche.",
   "lang": "de",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#07070C",
-  "theme_color": "#07070C",
+  "background_color": "#F7F6F4",
+  "theme_color": "#101114",
   "icons": [
     {
       "src": "/icon-192.png",

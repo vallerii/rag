@@ -77,7 +77,7 @@ Headline-Muster: zwei Zeilen, zweite Zeile kursiv-orange.
 
 ## 6. Bausteine
 
-- **Wortmarke** `RAG<em>.</em>` — Geist 29px/500, Punkt in Recto Serif orange.
+- **Wortmarke** `Orts<em>Fuchs</em>` (Marke OrtsFuchs, Domain ortsfuchs.de) — «Orts» Geist 29px/500, «Fuchs» Instrument Serif kursiv orange (1.28em). Icon/Favicon: «OF» – weißes O, oranges kursives F auf Ink.
 - **Kopfzeile**: Wortmarke links · Menü-Insel («Wo man Sie sucht» als Aufklappmenü mit den vier Leistungen + Überblick, Preise, Ratgeber) · Aktions-Insel
   (DE/RU, schwarzer Pill-Button «Sichtbarkeitsindex prüfen», Login-Icon).
 - **Buttons**: `rx-primary` = Ink-Pill (schwarz, Text Papier), hover orange; `rx-secondary` = weiß mit Haarlinie;

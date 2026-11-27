@@ -1,6 +1,6 @@
 // Admin: Tabellen der Leads (docs/lead-flow.md). Hier werden die Registerkarten der Google-Tabellen verbunden,
-// in denen RAG bei einer Registrierung die fertige Analyse der Firma sucht. Leads werden NICHT kopiert:
-// RAG liest die Tabellen nur im Moment der Registrierung, für genau diese eine Firma.
+// in denen OrtsFuchs bei einer Registrierung die fertige Analyse der Firma sucht. Leads werden NICHT kopiert:
+// OrtsFuchs liest die Tabellen nur im Moment der Registrierung, für genau diese eine Firma.
 import { useCallback, useEffect, useState } from 'react'
 import { tr } from '../i18n'
 import {
@@ -85,7 +85,7 @@ export default function LeadSheets({ onOpenRequest }: { onOpenRequest: (key: str
       <div>
         <h1 style={{ margin: '0 0 4px', fontSize: 26, fontWeight: 600 }}>Lead-Tabellen</h1>
         <p style={{ margin: 0, fontSize: 14, color: muted, lineHeight: 1.6 }}>
-          Registriert sich eine Firma, sucht RAG ihre fertige Analyse in diesen Registerkarten und zeigt den Bericht sofort. Leads werden nicht kopiert.
+          Registriert sich eine Firma, sucht OrtsFuchs ihre fertige Analyse in diesen Registerkarten und zeigt den Bericht sofort. Leads werden nicht kopiert.
         </p>
       </div>
 
@@ -141,7 +141,7 @@ export default function LeadSheets({ onOpenRequest }: { onOpenRequest: (key: str
           <strong style={{ fontSize: 16 }}>Dubletten in den Tabellen</strong>
           {!scan.duplicates.length ? <p style={{ margin: 0, fontSize: 14, color: good }}>Keine Firma steht in mehr als einer Zeile.</p> : (
             <>
-              <p style={{ ...small, margin: 0 }}>Diese Firmen stehen mehrfach in den Tabellen. Bitte überflüssige Zeilen in Google Sheets löschen: bei einer Registrierung nimmt RAG die Zeile mit Analyse und dem neuesten Prüfdatum.</p>
+              <p style={{ ...small, margin: 0 }}>Diese Firmen stehen mehrfach in den Tabellen. Bitte überflüssige Zeilen in Google Sheets löschen: bei einer Registrierung nimmt OrtsFuchs die Zeile mit Analyse und dem neuesten Prüfdatum.</p>
               <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, lineHeight: 1.7 }}>
                 {scan.duplicates.map((g, i) => (
                   <li key={i}>

@@ -14,9 +14,9 @@ const db = createClient(Deno.env.get('SUPABASE_URL')!, SERVER_KEY, { auth: { per
 const BREVO_KEY = Deno.env.get('BREVO_API_KEY') ?? ''
 const SECRET = Deno.env.get('NOTIFY_SECRET') ?? ''
 const FROM_EMAIL = Deno.env.get('MAIL_FROM_EMAIL') ?? 'tools@agenturro.co'
-const FROM_NAME = Deno.env.get('MAIL_FROM_NAME') ?? 'RAG'
+const FROM_NAME = Deno.env.get('MAIL_FROM_NAME') ?? 'OrtsFuchs'
 const TEAM_EMAIL = Deno.env.get('TEAM_EMAIL') ?? ''
-const SITE = (Deno.env.get('SITE_URL') ?? 'https://rag-theta-one.vercel.app').replace(/\/$/, '')
+const SITE = (Deno.env.get('SITE_URL') ?? 'https://ortsfuchs.de').replace(/\/$/, '')
 const MESSAGE_PAUSE_MIN = Number(Deno.env.get('MESSAGE_PAUSE_MIN') ?? 15)
 
 type Activity = { id: string; client_key: string; kind: string; detail: Record<string, unknown> | null; actor: string | null; created_at: string }
@@ -32,7 +32,7 @@ async function staff(): Promise<Person[]> {
   const seen = new Set<string>()
   const list = (data ?? []).filter(p => p.email && !seen.has(p.email.toLowerCase()) && seen.add(p.email.toLowerCase()))
     .map(p => ({ email: p.email as string, name: (p.name as string) ?? '' }))
-  return list.length ? list : TEAM_EMAIL ? [{ email: TEAM_EMAIL, name: 'RAG-Team' }] : []
+  return list.length ? list : TEAM_EMAIL ? [{ email: TEAM_EMAIL, name: 'OrtsFuchs-Team' }] : []
 }
 
 async function profile(id: unknown): Promise<(Person & { role: string }) | null> {
@@ -167,10 +167,10 @@ function html(m: Mail): string {
   return `<!doctype html><html lang="de"><body style="margin:0;padding:0;background:#F4F3FA;font-family:Arial,Helvetica,sans-serif">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F3FA;padding:32px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:18px;padding:32px">
-<tr><td style="font-size:20px;font-weight:800;color:#0B0B1A;padding-bottom:22px">RAG<span style="color:#2600FF">.</span></td></tr>
+<tr><td style="font-size:20px;font-weight:800;color:#0B0B1A;padding-bottom:22px">Orts<span style="color:#FF5B2E;font-family:Georgia,serif;font-style:italic;font-weight:400">Fuchs</span></td></tr>
 <tr><td><h1 style="margin:0 0 18px;font-size:22px;line-height:1.25;color:#0B0B1A">${esc(m.title)}</h1>${p}
 <a href="${esc(m.cta.href)}" style="display:inline-block;margin-top:8px;background:#2600FF;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:13px 22px;border-radius:12px">${esc(m.cta.label)}</a></td></tr>
-<tr><td style="padding-top:28px;font-size:12px;line-height:1.6;color:#8A88A0">Diese E-Mail wurde automatisch versendet. Bitte antworten Sie im Kundenbereich, damit Ihre Nachricht direkt bei Ihrem Ansprechpartner ankommt.<br>RAG · <a href="${esc(SITE)}" style="color:#8A88A0">${esc(SITE.replace(/^https?:\/\//, ''))}</a></td></tr>
+<tr><td style="padding-top:28px;font-size:12px;line-height:1.6;color:#8A88A0">Diese E-Mail wurde automatisch versendet. Bitte antworten Sie im Kundenbereich, damit Ihre Nachricht direkt bei Ihrem Ansprechpartner ankommt.<br>OrtsFuchs · <a href="${esc(SITE)}" style="color:#8A88A0">${esc(SITE.replace(/^https?:\/\//, ''))}</a></td></tr>
 </table></td></tr></table></body></html>`
 }
 const text = (m: Mail) => [m.title, '', ...m.lines, '', `${m.cta.label}: ${m.cta.href}`].join('\n')

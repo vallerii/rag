@@ -26,7 +26,7 @@ export function LockedBooking({ hint, size = 'md' }: { hint: string; size?: 'md'
 export function ManagerCard({ manager, assigned = !!manager, onWrite, canBook, lockedHint, compact = false }: { manager: Manager | null; assigned?: boolean; onWrite: () => void; canBook: boolean; lockedHint: string; compact?: boolean }) {
   const link = canBook ? bookingLink(manager) : null
   // Zugeteilt, aber Profil des Ansprechpartners nicht lesbar (my_manager leer) → nicht «wird zugeteilt» anzeigen.
-  const name = manager?.name || (assigned ? 'Ihr Ansprechpartner' : 'Ihr RAG-Team')
+  const name = manager?.name || (assigned ? 'Ihr Ansprechpartner' : 'Ihr OrtsFuchs-Team')
   if (compact) return (
     <section style={card}>
       {kick(manager ? (manager.title || 'Ihr Ansprechpartner') : 'Ihr Ansprechpartner')}

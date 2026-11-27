@@ -80,7 +80,7 @@ export default function HomePage({ children, headerMenu }: { children?: React.Re
         <button className="rx-theme" type="button" onClick={toggleTheme} aria-label={dark ? 'Helle Ansicht aktivieren' : 'Dunkle Ansicht aktivieren'} aria-pressed={dark}>
           <ThemeIcon dark={dark} />
         </button>
-        <a className="rx-logo" href="/">RAG<span>.</span></a>
+        <a className="rx-logo rx-wordmark rx-footer-wordmark" href="/" aria-label="OrtsFuchs Startseite">Orts<em>Fuchs</em></a>
         <div>
           <a href="/preise">Preise</a>
           <a href="/ratgeber">Ratgeber</a>

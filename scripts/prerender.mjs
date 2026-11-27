@@ -8,9 +8,9 @@ import { pathToFileURL } from 'node:url'
 
 const root = process.cwd()
 const dist = path.join(root, 'dist')
-const SITE_URL = (process.env.VITE_SITE_URL || process.env.SITE_URL || 'https://rag-theta-one.vercel.app').replace(/\/+$/, '')
+const SITE_URL = (process.env.VITE_SITE_URL || process.env.SITE_URL || 'https://ortsfuchs.de').replace(/\/+$/, '')
 const OG_IMAGE = `${SITE_URL}/og-image.png`
-const SITE_NAME = 'RAG Regionale Agentur'
+const SITE_NAME = 'OrtsFuchs'
 
 const { render, prerenderRoutes, organizationJsonLd, COMPANY } = await import(pathToFileURL(path.join(root, 'dist-ssr', 'entry-server.js')).href)
 
@@ -39,6 +39,7 @@ function page(route, html, meta) {
     `<meta property="og:image" content="${OG_IMAGE}" />`,
     `<meta property="og:image:width" content="1200" />`,
     `<meta property="og:image:height" content="630" />`,
+    `<meta property="og:image:alt" content="${esc(SITE_NAME)} – lokale Sichtbarkeit bei Google Maps, Google und KI-Suche" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:title" content="${esc(meta.title)}" />`,
     `<meta name="twitter:description" content="${esc(meta.description)}" />`,
@@ -53,7 +54,7 @@ function page(route, html, meta) {
 }
 
 if (!COMPANY.ready) console.warn('\n⚠  src/company.ts: Firmendaten noch nicht vollständig (ready: false) — Impressum zeigt Platzhalter.\n')
-// Standard: aktuelle Vercel-Adresse. Bei eigener Domain VITE_SITE_URL in Vercel setzen.
+// Standard: https://ortsfuchs.de (Hauptdomain). Für eine andere Adresse VITE_SITE_URL in Vercel setzen.
 
 const routes = prerenderRoutes()
 let count = 0
@@ -83,7 +84,7 @@ ${routes.map(r => `  <url><loc>${SITE_URL}${r === '/' ? '/' : r}</loc><lastmod>$
 fs.writeFileSync(path.join(dist, 'sitemap.xml'), sitemap)
 const robotsFile = path.join(dist, 'robots.txt')
 if (fs.existsSync(robotsFile)) {
-  fs.writeFileSync(robotsFile, fs.readFileSync(robotsFile, 'utf8').replace(/https:\/\/rag-agentur\.de/g, SITE_URL))
+  fs.writeFileSync(robotsFile, fs.readFileSync(robotsFile, 'utf8').replace(/^Sitemap: .*$/m, `Sitemap: ${SITE_URL}/sitemap.xml`))
 }
 
 fs.rmSync(path.join(root, 'dist-ssr'), { recursive: true, force: true })

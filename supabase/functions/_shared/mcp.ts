@@ -27,7 +27,7 @@ export async function handleRpc(msg: Rpc, tools: Tool[], log?: (tool: string, ok
         protocolVersion: VERSIONS.includes(want) ? want : VERSIONS[0],
         capabilities: { tools: { listChanged: false } },
         serverInfo: SERVER_INFO,
-        instructions: 'RAG: Analysen von Firmen, die auf eine vollständige Analyse warten. Erst list_pending_analyses, dann je Firma save_analysis.',
+        instructions: 'OrtsFuchs: Analysen von Firmen, die auf eine vollständige Analyse warten. Erst list_pending_analyses, dann je Firma save_analysis.',
       })
     }
     case 'ping': return ok(msg.id, {})

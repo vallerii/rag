@@ -24,7 +24,7 @@ export default function SiteHeader({ home = false, menu }: { home?: boolean; men
   const header = (
     <div ref={ref} className="approved-block" data-approved-block="header">
       <header className="rx-header">
-        <a className="rx-logo rx-wordmark" href={home ? '#sichtbarkeit' : '/'} aria-label="RAG Startseite">RAG<em>.</em></a>
+        <a className="rx-logo rx-wordmark" href={home ? '#sichtbarkeit' : '/'} aria-label="OrtsFuchs Startseite">Orts<em>Fuchs</em></a>
         <nav className="rx-nav" aria-label="Hauptnavigation">
           {/* Navigation aus App.tsx (Aufklappmenü «Wo man Sie sucht», Preise, Ratgeber); ohne Angabe die vier Kanäle. */}
           {menu ?? NAV.map(([label, anchor, page]) => <a key={label} href={home ? anchor : page}>{label}</a>)}

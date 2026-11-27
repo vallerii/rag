@@ -263,7 +263,7 @@ export default function SocialStory() {
         id="rag-article-dialog"
       >
         <div className="rag-dialog-top">
-          <span>RAG RATGEBER · ARTIKELVORSCHAU</span>
+          <span>ORTSFUCHS RATGEBER · ARTIKELVORSCHAU</span>
           <button
             aria-label="Artikel schließen"
             className="rag-dialog-close"
@@ -301,7 +301,7 @@ export default function SocialStory() {
             lokale Empfehlungen und Anfragen unterstützen.
           </p>
           <div className="rag-dialog-end">
-            <span>Vorschau für das RAG-Design · Artikel noch nicht veröffentlicht</span>
+            <span>Vorschau für das OrtsFuchs-Design · Artikel noch nicht veröffentlicht</span>
             <button id="rag-dialog-return" type="button" onClick={() => dialog.current?.close()}>
               Zurück zur Vorschau
             </button>

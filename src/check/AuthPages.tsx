@@ -57,7 +57,7 @@ function PasswordInput({ id, value, onChange, autoComplete }: { id: string; valu
 }
 
 export function LoginPage() {
-  useNoindex('Anmelden | RAG')
+  useNoindex('Anmelden | OrtsFuchs')
   const [email, setEmail] = useState(() => new URLSearchParams(window.location.search).get('email') ?? '')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -102,7 +102,7 @@ export function LoginPage() {
 }
 
 export function ForgotPasswordPage() {
-  useNoindex('Passwort vergessen | RAG')
+  useNoindex('Passwort vergessen | OrtsFuchs')
   const [email, setEmail] = useState(() => new URLSearchParams(window.location.search).get('email') ?? '')
   const [busy, setBusy] = useState(false)
   const [sent, setSent] = useState(false)
@@ -141,7 +141,7 @@ export function ForgotPasswordPage() {
 }
 
 export function ResetPasswordPage() {
-  useNoindex('Neues Passwort | RAG')
+  useNoindex('Neues Passwort | OrtsFuchs')
   // Der Link aus der E-Mail meldet den Nutzer an (Token in der URL). Erst danach ist das Formular nutzbar.
   const [ready, setReady] = useState<'wait' | 'ok' | 'invalid'>('wait')
   const [password, setPassword] = useState('')

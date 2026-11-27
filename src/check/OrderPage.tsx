@@ -9,7 +9,7 @@ import { accent } from '../home/accent'
 // Hier: Konto anlegen oder anmelden → Anfrage speichern → Kundenbereich (dort Angaben zum Unternehmen).
 
 export default function OrderPage({ items }: { items: OrderItem[] }) {
-  useNoindex('Paket anfragen | RAG')
+  useNoindex('Paket anfragen | OrtsFuchs')
   const from = new URLSearchParams(window.location.search).get('from')
 
   const createAndGo = async (): Promise<string | null> => {

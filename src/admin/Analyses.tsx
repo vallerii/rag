@@ -94,7 +94,7 @@ export default function Analyses({ onOpenRequest }: { onOpenRequest: (key: strin
 
       <section style={{ ...card, display: 'grid', gap: 10 }}>
         <strong style={{ fontSize: 16 }}>{task ? '2. ' : ''}Antwort der KI einfügen</strong>
-        <p style={{ ...small, margin: 0 }}>Das JSON aus der Antwort. RAG prüft das Format, ergänzt die Ergebnisse der Autoprüfung, veröffentlicht den Bericht und schickt dem Kunden die E-Mail «Ihre vollständige Analyse ist fertig».</p>
+        <p style={{ ...small, margin: 0 }}>Das JSON aus der Antwort. OrtsFuchs prüft das Format, ergänzt die Ergebnisse der Autoprüfung, veröffentlicht den Bericht und schickt dem Kunden die E-Mail «Ihre vollständige Analyse ist fertig».</p>
         <textarea value={answer} onChange={e => setAnswer(e.target.value)} placeholder='[{"id": "…", "Befund Google-Profil": "+ …", …}]' style={{ ...input, minHeight: 140 }} aria-label="Antwort der KI" />
         <button type="button" className="btn btn-sm btn-electric" style={{ justifySelf: 'start' }} disabled={!!busy || !answer.trim()} onClick={save}>{busy === 'save' ? 'Wird gespeichert…' : 'Prüfen und veröffentlichen'}</button>
         {msg && <p role="status" style={{ margin: 0, fontSize: 14, color: msg.ok ? good : bad }}>{msg.text}</p>}

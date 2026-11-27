@@ -7,8 +7,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const COMPANY = {
-  brand: 'RAG Regionale Agentur',
-  /** TODO: Firmenname mit Rechtsform, z. B. «RAG Regionale Agentur GmbH» oder «Max Muster, RAG Regionale Agentur». */
+  brand: 'OrtsFuchs',
+  /** TODO: Firmenname mit Rechtsform, z. B. «OrtsFuchs GmbH» oder «Max Muster, OrtsFuchs». */
   legalName: '',
   /** TODO: Bei GmbH/UG: Geschäftsführer. Bei Einzelunternehmen: Inhaber. */
   representative: '',
@@ -20,8 +20,8 @@ export const COMPANY = {
   countryCode: 'DE',
   /** TODO: Telefon im internationalen Format, z. B. +49 30 1234567 (für tel:-Links ohne Leerzeichen). */
   phone: '',
-  /** TODO: echte Adresse — hallo@rag-agentur.de existiert nicht (Platzhalter). */
-  email: 'hallo@rag-agentur.de',
+  /** TODO: echte Adresse — Postfach info@ortsfuchs.de. */
+  email: 'info@ortsfuchs.de',
   /** TODO bei GmbH/UG: z. B. «Amtsgericht Berlin-Charlottenburg» und «HRB 123456 B». Sonst leer lassen. */
   registerCourt: '',
   registerNumber: '',
@@ -68,8 +68,9 @@ export function organizationJsonLd(siteUrl: string) {
     '@type': 'ProfessionalService',
     '@id': `${siteUrl}/#organization`,
     name: c.brand,
+    alternateName: 'OrtsFuchs – lokale Sichtbarkeit',
     url: `${siteUrl}/`,
-    logo: `${siteUrl}/icon-512.png`,
+    logo: { '@type': 'ImageObject', url: `${siteUrl}/icon-512.png`, width: 512, height: 512 },
     image: `${siteUrl}/og-image.png`,
     description: 'System für lokale Sichtbarkeit in Deutschland: Google Maps und Unternehmensprofil, Website und Google Search, KI-Suche (ChatGPT, Perplexity, Google AI Overviews), Bewertungen und Social Media.',
     areaServed: [

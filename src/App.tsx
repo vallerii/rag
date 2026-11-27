@@ -102,7 +102,7 @@ function IllustConnected() {
       {/* Central hub */}
       <circle cx={112} cy={68} r={22} fill="#101114" opacity="0.12" />
       <circle cx={112} cy={68} r={14} fill="#101114" />
-      <text x={112} y={72.5} textAnchor="middle" fontSize="9" fontWeight="700" fill="white" fontFamily="Satoshi, 'RAG Cyrillic Sans', Inter, sans-serif">RAG</text>
+      <text x={112} y={72.5} textAnchor="middle" fontSize="9" fontWeight="700" fill="white" fontFamily="Satoshi, 'RAG Cyrillic Sans', Inter, sans-serif">OrtsFuchs</text>
     </svg>
   )
 }
@@ -936,7 +936,7 @@ function BookCallModal({ onClose }: { onClose: () => void }) {
 // PREISE (25.09.2026) — Die Website ist ein eigenes Produkt: drei Pakete pro Monat.
 // Social-Media-Betreuung ist das Add-on: zu jedem Paket dazu — oder ganz allein.
 // Das Google-Unternehmensprofil (149 € einmalig) bleibt als separater Einstieg.
-// Quelle: Produktkatalog «RAG · Каталог продуктов» vom 24.09.2026.
+// Quelle: Produktkatalog «OrtsFuchs · Каталог продуктов» vom 24.09.2026.
 // ─────────────────────────────────────────────────────────────────────────────
 type PackageId = 'onepager' | 'local' | 'aiplus'
 type PackageOrder = { pkg: PackageId | null; social: boolean }
@@ -1459,8 +1459,8 @@ function Pricing() {
 
 function PreisePage() {
   usePageMeta(
-    'Preise: Google-Profil, Website-Pakete und Social Media | RAG',
-    'Google-Profil schlüsselfertig für 149 € einmalig. Websites als Monatspaket: One Pager 30 €, Local Website 299 €, AI Plus 499 €. Social-Media-Betreuung 199 € im Monat, dazu oder einzeln.',
+    'Preise: Google-Profil, Websites und Social Media | OrtsFuchs',
+    'Google-Profil einmalig 149 €. Websites als Monatspaket ab 30 €, Social-Media-Betreuung 199 € im Monat. Alle Preise netto, ohne versteckte Kosten.',
   )
   return (
     <>
@@ -1469,7 +1469,7 @@ function PreisePage() {
       <ContentHero
         crumbs={[{ label: 'Start', href: '/' }, { label: 'Preise' }]}
         kicker="PREISE"
-        title={<>Klare Preise für Ihre <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>lokale Sichtbarkeit</span></>}
+        title={<>Klare Preise für Ihre <span className="serif italic-serif">lokale Sichtbarkeit</span></>}
         sub="Starten Sie mit dem Google-Profil, wählen Sie eine Website als Monatspaket, und nehmen Sie Social Media dazu oder einzeln."
       />
       <Pricing />
@@ -1503,15 +1503,15 @@ function PriceFacts() {
 
 // Impressum, Datenschutz, AGB — Texte in src/legal/LegalPages.tsx, Firmendaten in src/company.ts.
 const LEGAL = {
-  impressum: { title: 'Impressum', meta: 'Impressum von RAG Regionale Agentur: Anbieter, Kontakt, Registerangaben.', Body: ImpressumBody },
-  datenschutz: { title: 'Datenschutzerklärung', meta: 'Welche Daten RAG auf der Website und im Kundenbereich verarbeitet, wozu und welche Rechte Sie haben. Keine Tracking-Cookies.', Body: DatenschutzBody },
-  agb: { title: 'Allgemeine Geschäftsbedingungen', meta: 'AGB von RAG für Unternehmen: Vertragsschluss, Laufzeit, Preise, was Ihnen bei Vertragsende gehört.', Body: AgbBody },
+  impressum: { title: 'Impressum', meta: 'Impressum von OrtsFuchs: Anbieter, Kontakt, Registerangaben.', Body: ImpressumBody },
+  datenschutz: { title: 'Datenschutzerklärung', meta: 'Welche Daten OrtsFuchs auf der Website und im Kundenbereich verarbeitet, wozu und welche Rechte Sie haben. Keine Tracking-Cookies.', Body: DatenschutzBody },
+  agb: { title: 'Allgemeine Geschäftsbedingungen', meta: 'AGB von OrtsFuchs für Unternehmen: Vertragsschluss, Laufzeit, Preise, was Ihnen bei Vertragsende gehört.', Body: AgbBody },
 } as const
 type LegalKind = keyof typeof LEGAL
 
 function LegalPage({ kind }: { kind: LegalKind }) {
   const { title, meta, Body } = LEGAL[kind]
-  usePageMeta(`${title} | RAG`, meta)
+  usePageMeta(`${title} | OrtsFuchs`, meta)
   return (
     <>
       <Nav />
@@ -2225,7 +2225,7 @@ function MarketShift() {
         <div style={{ marginTop: 28, maxWidth: 1000 }}>
           <MaskHeading
             className="h-lg"
-            lines={[<>Ihre Kunden suchen nicht</>, <>mehr <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>nur bei Google</span></>]}
+            lines={[<>Ihre Kunden suchen nicht</>, <>mehr <span className="serif italic-serif">nur bei Google</span></>]}
           />
           <Reveal delay={0.1}>
             <p className="lead" style={{ color: 'var(--muted)', maxWidth: 620, margin: '22px 0 0' }}>
@@ -2433,7 +2433,7 @@ function LocalPromotion() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(24px, 4vw, 72px)', alignItems: 'end', marginTop: 26, marginBottom: 'clamp(40px, 5vw, 64px)' }}>
           <MaskHeading
             className="h-lg"
-            lines={[<>Woraus lokale</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>Sichtbarkeit heute besteht</span></>]}
+            lines={[<>Woraus lokale</>, <><span className="serif italic-serif">Sichtbarkeit heute besteht</span></>]}
           />
           <Reveal delay={0.1}>
             <div>
@@ -2491,7 +2491,7 @@ function LocalPromotion() {
             <MaskHeading
               className="h-md"
               style={{ marginTop: 22 }}
-              lines={[<>Aus einzelnen Kanälen</>, <>wird ein <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>klares Bild</span></>, <>Ihres Unternehmens</>]}
+              lines={[<>Aus einzelnen Kanälen</>, <>wird ein <span className="serif italic-serif">klares Bild</span></>, <>Ihres Unternehmens</>]}
             />
             <Reveal delay={0.12}>
               <a href="/services" className="btn btn-lg btn-ink" style={{ marginTop: 32 }}>
@@ -2528,7 +2528,7 @@ function RatgeberTeaser() {
           <div>
             <Kicker>Ratgeber</Kicker>
             <p className="display" style={{ fontSize: 'clamp(20px, 1.9vw, 26px)', lineHeight: 1.2, margin: '18px 0 18px' }}>
-              Was lokale Sichtbarkeit <span className="serif italic-serif" style={{ color: 'var(--electric)' }}>heute wirklich bedeutet</span>
+              Was lokale Sichtbarkeit <span className="serif italic-serif">heute wirklich bedeutet</span>
             </p>
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
               <a href="/ratgeber" className="ul" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--ink)' }}>Zum Ratgeber →</a>
@@ -2731,7 +2731,7 @@ function ServiceSelector() {
             <MaskHeading
               className="h-lg"
               style={{ maxWidth: 1080 }}
-              lines={[<>Vier Kanäle,</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>ein System</span></>]}
+              lines={[<>Vier Kanäle,</>, <><span className="serif italic-serif">ein System</span></>]}
             />
             <Reveal delay={0.12}>
               <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--muted)', margin: '26px 0 0', maxWidth: 600 }}>
@@ -2856,7 +2856,7 @@ function TwoRoutes() {
           <div style={{ marginTop: 20, marginBottom: 'clamp(28px, 3vw, 44px)', maxWidth: 900 }}>
             <MaskHeading
               className="h-md"
-              lines={[<>Wo steht Ihr</>, <><span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>Unternehmen heute?</span></>]}
+              lines={[<>Wo steht Ihr</>, <><span className="serif italic-serif">Unternehmen heute?</span></>]}
             />
           </div>
 
@@ -2949,7 +2949,7 @@ function Process() {
         <MaskHeading
           className="h-lg"
           style={{ marginTop: 26, marginBottom: 'clamp(36px, 4vw, 56px)', maxWidth: 900 }}
-          lines={[<>So bauen wir Ihre</>, <><span className="serif italic-serif" style={{ color: 'var(--electric)' }}>lokale Sichtbarkeit</span> auf</>]}
+          lines={[<>So bauen wir Ihre</>, <><span className="serif italic-serif">lokale Sichtbarkeit</span> auf</>]}
         />
 
         <div className="process-wrap" style={{ display: 'grid', gridTemplateColumns: '80px minmax(0,1fr)', gap: 'clamp(16px, 3vw, 48px)' }}>
@@ -3189,7 +3189,7 @@ function RealResults() {
 
         <div className="res-head" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap', marginTop: 26, marginBottom: 'clamp(40px, 5vw, 64px)' }}>
           <div>
-            <MaskHeading className="h-lg" lines={[<>Echte Ergebnisse,</>, <><span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>echte Unternehmen</span></>]} />
+            <MaskHeading className="h-lg" lines={[<>Echte Ergebnisse,</>, <><span className="serif italic-serif">echte Unternehmen</span></>]} />
           </div>
           {/* tabs */}
           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
@@ -3533,7 +3533,7 @@ function Footer() {
       <div style={{ ...SHELL, position: 'relative' }}>
         <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) repeat(3, minmax(0,1fr))', gap: 'clamp(28px, 4vw, 56px)', marginBottom: 'clamp(40px, 5vw, 64px)' }}>
           <div>
-            <p style={{ fontWeight: 500, fontSize: 29, letterSpacing: '-1.4px', lineHeight: 1, margin: '0 0 16px' }}>RAG<em style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1.28em', color: 'var(--accent)', fontWeight: 400 }}>.</em></p>
+            <p style={{ fontWeight: 500, fontSize: 29, letterSpacing: '-1.4px', lineHeight: 1, margin: '0 0 16px' }}>Orts<em style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1.22em', color: 'var(--accent)', fontWeight: 400, letterSpacing: '-0.03em' }}>Fuchs</em></p>
             <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--muted)', maxWidth: 320, margin: '0 0 22px' }}>
               Gute Arbeit. Besser gefunden. Das einheitliche System für lokale Sichtbarkeit bei Google, KI und Offline-Kanälen.
             </p>
@@ -3566,7 +3566,7 @@ function Footer() {
         </div>
 
         <div style={{ borderTop: '1px solid var(--divider)', paddingTop: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-          <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>© 2026 RAG Regionale Agentur. Alle Rechte vorbehalten.</p>
+          <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>© 2026 OrtsFuchs. Alle Rechte vorbehalten.</p>
           <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>Keine Tracking-Cookies · Schriften und Daten in der EU</p>
         </div>
       </div>
@@ -4451,7 +4451,7 @@ function Breadcrumbs({ items, tone = 'dark' }: { items: Crumb[]; tone?: 'dark' |
   )
 }
 
-const SITE_NAME = 'RAG Regionale Agentur'
+const SITE_NAME = 'OrtsFuchs'
 
 function JsonLd({ data }: { data: object }) {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
@@ -4459,7 +4459,21 @@ function JsonLd({ data }: { data: object }) {
 
 // Seitentitel, Description, Canonical und Social-Tags pro Route —
 // index.html ist statisch und liefert sonst überall dieselben Angaben.
-function usePageMeta(title: string, description: string, ogType: 'website' | 'article' = 'website') {
+/** Suchergebnis-Titel der Leistungsseiten (die H1 bleibt die lange Marketing-Überschrift; Titel ≤ 60 Zeichen). */
+const SERVICE_SEO_TITLE: Record<string, string> = {
+  'ai-search-optimization': 'KI-Suche: in ChatGPT & Co. empfohlen werden',
+  'website-google-search': 'Website & Google Search für lokale Betriebe',
+}
+
+/** Meta-Description auf ~155 Zeichen kürzen (Google schneidet sonst selbst ab), an einer Wortgrenze. */
+function clipDescription(s: string, max = 158): string {
+  if (s.length <= max) return s
+  const cut = s.slice(0, max - 1)
+  return cut.slice(0, cut.lastIndexOf(' ')).replace(/[\s,.;:–—-]+$/, '') + '…'
+}
+
+function usePageMeta(title: string, rawDescription: string, ogType: 'website' | 'article' = 'website') {
+  const description = clipDescription(rawDescription)
   if (isServer) ssr.meta = { title, description, ogType }
   useEffect(() => {
     document.documentElement.lang = 'de'
@@ -4539,7 +4553,7 @@ function ContentHero({ kicker, title, sub, meta, crumbs }: { kicker: string; tit
 
 function RatgeberIndex() {
   usePageMeta(
-    'Ratgeber: lokale Sichtbarkeit verständlich erklärt | RAG',
+    'Ratgeber: lokale Sichtbarkeit verständlich erklärt | OrtsFuchs',
     'Wie lokales SEO funktioniert, wie Sie bei Google Maps nach oben kommen und wie Ihr Unternehmen in ChatGPT und Perplexity gefunden wird.',
   )
   return (
@@ -4549,7 +4563,7 @@ function RatgeberIndex() {
       <ContentHero
         crumbs={[{ label: 'Start', href: '/' }, { label: 'Ratgeber' }]}
         kicker="RATGEBER"
-        title={<>Lokale Sichtbarkeit, <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>ohne Fachchinesisch</span></>}
+        title={<>Lokale Sichtbarkeit, <span className="serif italic-serif">ohne Fachchinesisch</span></>}
         sub="Die Fragen, die uns Inhaberinnen und Inhaber am häufigsten stellen, ausführlich beantwortet, ohne Versprechen, die niemand halten kann."
       />
       <section style={{ backgroundColor: 'var(--bone)', padding: 'clamp(24px, 4vw, 56px) var(--rx-edge) clamp(56px, 6vw, 88px)' }}>
@@ -4589,7 +4603,7 @@ function RatgeberIndex() {
 function RatgeberArticlePage({ slug }: { slug: string }) {
   const a = ratgeberArticles.find(x => x.slug === slug)
   usePageMeta(
-    a ? `${a.title} | RAG Ratgeber` : 'Artikel nicht gefunden | RAG',
+    a ? `${a.title} | OrtsFuchs` : 'Artikel nicht gefunden | OrtsFuchs',
     a ? a.teaser : 'Dieser Ratgeber-Artikel existiert nicht.',
     'article',
   )
@@ -4623,8 +4637,9 @@ function RatgeberArticlePage({ slug }: { slug: string }) {
         headline: a.title,
         description: a.teaser,
         inLanguage: 'de',
-        author: { '@type': 'Organization', name: SITE_NAME },
-        publisher: { '@type': 'Organization', name: SITE_NAME },
+        image: siteOrigin() + '/og-image.png',
+        author: { '@type': 'Organization', '@id': siteOrigin() + '/#organization', name: SITE_NAME },
+        publisher: { '@type': 'Organization', '@id': siteOrigin() + '/#organization', name: SITE_NAME, logo: { '@type': 'ImageObject', url: siteOrigin() + '/icon-512.png' } },
         mainEntityOfPage: siteOrigin() + '/ratgeber/' + a.slug,
       }} />
       <ContentHero
@@ -4728,7 +4743,7 @@ const glossarCSS = `
 // Suche, Buchstabenleiste, Begriffe nach Anfangsbuchstaben, jeder Begriff verlinkt auf seine eigene Seite.
 function GlossarPage() {
   usePageMeta(
-    'Glossar: Begriffe der lokalen Sichtbarkeit | RAG',
+    'Glossar: Begriffe der lokalen Sichtbarkeit | OrtsFuchs',
     'Local Pack, NAP-Konsistenz, GEO, strukturierte Daten: die wichtigsten Begriffe rund um Google Maps, lokale Suche und KI-Suche, kurz erklärt.',
   )
   const [q, setQ] = useState('')
@@ -4762,7 +4777,7 @@ function GlossarPage() {
       <ContentHero
         crumbs={[{ label: 'Start', href: '/' }, { label: 'Glossar' }]}
         kicker="GLOSSAR"
-        title={<>Die Begriffe, <span className="serif italic-serif" style={{ color: 'var(--electric-2)' }}>kurz erklärt</span></>}
+        title={<>Die Begriffe, <span className="serif italic-serif">kurz erklärt</span></>}
         sub="Alle Begriffe von A bis Z, mit Suche. Jeder Begriff hat eine eigene Seite mit Erklärung, Praxis-Tipps und häufigen Fragen."
       />
       <section style={{ backgroundColor: 'var(--paper)', padding: 'clamp(48px, 6vw, 80px) var(--rx-edge) clamp(70px, 8vw, 110px)' }}>
@@ -4842,7 +4857,7 @@ function GlossarPage() {
 function GlossarTermPage({ slug }: { slug: string }) {
   const g = glossarEntries.find(x => x.slug === slug)
   usePageMeta(
-    g ? `${g.term}: einfach erklärt | RAG Glossar` : 'Begriff nicht gefunden | RAG',
+    g ? `${g.term}: einfach erklärt | OrtsFuchs` : 'Begriff nicht gefunden | OrtsFuchs',
     g ? g.short : 'Diesen Begriff gibt es im Glossar nicht.',
     'article',
   )
@@ -4994,7 +5009,7 @@ function GlossarTermPage({ slug }: { slug: string }) {
 
 function ServicesIndex() {
   usePageMeta(
-    'Wo man Sie sucht: woraus lokale Sichtbarkeit besteht | RAG',
+    'Wo man Sie sucht: woraus lokale Sichtbarkeit besteht | OrtsFuchs',
     'KI-Suche, Google Maps, Website & Google Search und Social Media: die vier Kanäle lokaler Sichtbarkeit, einzeln erklärt, mit Preisen und Paketen.',
   )
   return (
@@ -5004,7 +5019,7 @@ function ServicesIndex() {
       <JsonLd data={{
         '@context': 'https://schema.org',
         '@type': 'ItemList',
-        name: 'Leistungen von RAG',
+        name: 'Leistungen von OrtsFuchs',
         itemListElement: modules.map((m, i) => ({
           '@type': 'ListItem',
           position: i + 1,
@@ -5720,7 +5735,7 @@ function ServicePage({ slug }: { slug: string }) {
   const [faqOpen, setFaqOpen] = useState<number | null>(0)
   const moduleLabel = modules.find(m => m.slug === slug)?.label
   usePageMeta(
-    data ? `${content?.title ?? data.heroTitle} | RAG` : 'Leistung nicht gefunden | RAG',
+    data ? `${SERVICE_SEO_TITLE[slug] ?? content?.title ?? data.heroTitle} | OrtsFuchs` : 'Leistung nicht gefunden | OrtsFuchs',
     data ? (content?.sub ?? data.heroSubtitle) : 'Diese Leistungsseite existiert nicht.',
   )
 
@@ -5757,7 +5772,7 @@ function ServicePage({ slug }: { slug: string }) {
         description: content.sub,
         serviceType: data.kicker,
         areaServed: ['Germany'],
-        provider: { '@type': 'ProfessionalService', name: SITE_NAME },
+        provider: { '@type': 'ProfessionalService', '@id': siteOrigin() + '/#organization', name: SITE_NAME },
         offers: (SERVICE_PACKAGES[slug]?.items ?? []).map(id => {
           const it = priceItem(id)
           return { '@type': 'Offer', name: it.name, price: it.price, priceCurrency: 'EUR' }
@@ -6243,12 +6258,21 @@ function LandingPage() {
     return () => timers.forEach(clearTimeout)
   }, [])
   usePageMeta(
-    'RAG – Werden Sie zur ersten Wahl in Ihrer Region',
+    'OrtsFuchs – Werden Sie zur ersten Wahl in Ihrer Region',
     'Google Maps, Website, Bewertungen und KI-Suche: Wir machen Ihren lokalen Betrieb sichtbar. Starten Sie Ihren kostenlosen Sichtbarkeits-Check.',
   )
   // Startseite im Recto-Stil: src/home/HomePage.tsx (Stilbeschreibung: DESIGN.md).
   return (
     <HomePage headerMenu={<HeaderMenu />}>
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        '@id': siteOrigin() + '/#website',
+        name: SITE_NAME,
+        url: siteOrigin() + '/',
+        inLanguage: 'de-DE',
+        publisher: { '@id': siteOrigin() + '/#organization' },
+      }} />
       <JsonLd data={{
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
@@ -6418,7 +6442,7 @@ function QuizOptionTile({ label, hint, selected, multi, onClick }: { label: stri
 }
 
 function StartQuizPage() {
-  usePageMeta('In 4 Fragen zu Ihrem Plan | RAG', 'Noch keine Website oder kein Google-Profil? Beantworten Sie 4 kurze Fragen, wir zeigen, womit Sie anfangen sollten.')
+  usePageMeta('In 4 Fragen zu Ihrem Plan | OrtsFuchs', 'Noch keine Website oder kein Google-Profil? Beantworten Sie 4 kurze Fragen, wir zeigen, womit Sie anfangen sollten.')
   const from = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('from') ?? '' : ''
   const [step, setStep] = useState(0)
   const [a, setA] = useState<QuizAnswers>({ have: [], sources: [], goal: null, branche: '', ort: '', firma: '', email: '' })
@@ -6558,7 +6582,7 @@ function StartQuizPage() {
 
 // Unknown URL — real "not found" instead of silently rendering the landing page.
 function NotFoundPage() {
-  usePageMeta('Seite nicht gefunden | RAG', 'Diese Seite existiert nicht.')
+  usePageMeta('Seite nicht gefunden | OrtsFuchs', 'Diese Seite existiert nicht.')
   if (isServer && ssr.meta) ssr.meta.noindex = true
   useEffect(() => {
     let robots = document.head.querySelector('meta[name="robots"]') as HTMLMetaElement | null

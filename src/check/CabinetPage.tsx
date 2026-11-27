@@ -111,7 +111,7 @@ function Loading() {
 }
 
 export default function CabinetPage() {
-  useNoindex('Kundenbereich | RAG')
+  useNoindex('Kundenbereich | OrtsFuchs')
   const [loading, setLoading] = useState(true)
   const [userEmail, setUserEmail] = useState('')
   const [check, setCheck] = useState<CheckRow | null>(null)
@@ -681,7 +681,7 @@ export default function CabinetPage() {
             </div>
             <div style={card}>
               <Eyebrow>Ihr Kontakt</Eyebrow>
-              <p style={{ fontWeight: 700, fontSize: 16, margin: '0 0 4px' }}>{manager?.name || 'RAG-Team'}</p>
+              <p style={{ fontWeight: 700, fontSize: 16, margin: '0 0 4px' }}>{manager?.name || 'OrtsFuchs-Team'}</p>
               <p style={{ fontSize: 13.5, color: 'var(--muted)', margin: '0 0 14px' }}>{manager ? (manager.title || 'Ihr Ansprechpartner') : 'Regionale Agentur'}</p>
               {book && <a href={book} target="_blank" rel="noopener noreferrer" className="btn btn-md btn-electric" style={{ marginBottom: 14 }}>Termin vereinbaren</a>}
               <br />

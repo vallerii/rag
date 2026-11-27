@@ -1,6 +1,6 @@
 // Отчёт клиента из готового анализа (строка таблицы лидов или анализ Grok) — формат checks.report v2,
 // как в src/check/data.ts → Report. Оценки — формула CRM (grade.ts), поэтому отчёт совпадает с письмом.
-// Области CRM → каналы RAG: maps → maps, website → search, social → social, ai → ai.
+// Области CRM → каналы OrtsFuchs: maps → maps, website → search, social → social, ai → ai.
 import { gradeAnalysis, type Finding, type SectionKey } from './grade.ts'
 import { PRIO, RECS, REC_ORDER } from './audit.ts'
 

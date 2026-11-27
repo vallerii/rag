@@ -25,7 +25,7 @@ async function pageSpeed(url: string): Promise<{ score: number | null; error?: s
   for (const k of [...new Set(keys)]) {
     const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 45_000)
     try {
-      const res = await fetch(base + (k ? `&key=${k}` : ''), { signal: ctrl.signal, headers: { Referer: Deno.env.get('PLACES_REFERER') ?? 'https://rag-theta-one.vercel.app/' } })
+      const res = await fetch(base + (k ? `&key=${k}` : ''), { signal: ctrl.signal, headers: { Referer: Deno.env.get('PLACES_REFERER') ?? 'https://ortsfuchs.de/' } })
       const data = await res.json().catch(() => ({}))
       const v = data?.lighthouseResult?.categories?.performance?.score
       if (res.ok && typeof v === 'number') return { score: Math.round(v * 100) }
@@ -95,7 +95,7 @@ Deno.serve(handler(10, async (req, body) => {
       try {
         const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': key, 'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress', 'Referer': Deno.env.get('PLACES_REFERER') ?? 'https://rag-theta-one.vercel.app/' },
+          headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': key, 'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress', 'Referer': Deno.env.get('PLACES_REFERER') ?? 'https://ortsfuchs.de/' },
           body: JSON.stringify({ textQuery: query, languageCode: 'de', regionCode: 'de', pageSize: 5 }),
         })
         const data = await res.json().catch(() => ({})) as { places?: { id: string; displayName?: { text?: string }; formattedAddress?: string }[]; error?: { message?: string } }
