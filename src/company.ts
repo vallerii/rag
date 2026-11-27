@@ -20,8 +20,8 @@ export const COMPANY = {
   countryCode: 'DE',
   /** TODO: Telefon im internationalen Format, z. B. +49 30 1234567 (für tel:-Links ohne Leerzeichen). */
   phone: '',
-  /** TODO: echte Adresse — Postfach info@ortsfuchs.de. */
-  email: 'info@ortsfuchs.de',
+  /** Vorläufig (27.11.2026): Gmail-Postfach. Sobald info@ortsfuchs.de eingerichtet ist, hier ersetzen. */
+  email: 'ortsfuchs.team@gmail.com',
   /** TODO bei GmbH/UG: z. B. «Amtsgericht Berlin-Charlottenburg» und «HRB 123456 B». Sonst leer lassen. */
   registerCourt: '',
   registerNumber: '',
@@ -33,7 +33,14 @@ export const COMPANY = {
   bankName: '',
   iban: '',
   bic: '',
-  /** Profile für JSON-LD `sameAs` (Google-Profil-Link, LinkedIn, Instagram, Branchenbücher) — sobald angelegt. */
+  /** Eigene Social-Media-Profile — erscheinen im Footer und in JSON-LD `sameAs`. Leere Einträge werden ausgelassen. */
+  social: [
+    { name: 'Instagram', url: 'https://www.instagram.com/orts.fuchs/' },
+    { name: 'Facebook', url: 'https://www.facebook.com/profile.php?id=61596663525827' },
+    { name: 'Threads', url: 'https://www.threads.com/@orts.fuchs' },
+    { name: 'LinkedIn', url: '' },
+  ],
+  /** Weitere Profile für JSON-LD `sameAs` (Google-Profil-Link, Branchenbücher) — sobald angelegt. */
   sameAs: [] as string[],
   /** Erst auf true setzen, wenn alles oben echt ausgefüllt ist. */
   ready: false,
@@ -57,6 +64,9 @@ export function priceNote(): string {
 
 /** Platzhalter, solange ein Feld leer ist. */
 export const fill = (v: string, label: string) => v.trim() || `[${label}]`
+
+/** Nur die Social-Profile mit echter Adresse. */
+export const socialLinks = () => COMPANY.social.filter(s => s.url.trim())
 
 export const phoneHref = () => `tel:${COMPANY.phone.replace(/[^\d+]/g, '')}`
 
@@ -85,6 +95,7 @@ export function organizationJsonLd(siteUrl: string) {
     data.address = { '@type': 'PostalAddress', streetAddress: c.street, postalCode: c.zip, addressLocality: c.city, addressCountry: c.countryCode }
   }
   if (c.vatId) data.vatID = c.vatId
-  if (c.sameAs.length) data.sameAs = c.sameAs
+  const sameAs = [...socialLinks().map(s => s.url), ...c.sameAs]
+  if (sameAs.length) data.sameAs = sameAs
   return data
 }

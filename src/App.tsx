@@ -4,7 +4,7 @@ import { rememberLead } from './check/data'
 import { getLang, dateLocale } from './i18n'
 import LangSwitch from './LangSwitch'
 import { currentPath, isServer, siteOrigin, ssr } from './ssr'
-import { COMPANY, phoneHref } from './company'
+import { COMPANY, phoneHref, socialLinks } from './company'
 import { BRAND_ICONS } from './brandIcons'
 import { AgbBody, DatenschutzBody, ImpressumBody, LEGAL_UPDATED, PRICE_FACTS } from './legal/LegalPages'
 import CompanySearch from './check/CompanySearch'
@@ -3562,6 +3562,13 @@ function Footer() {
               {COMPANY.phone && <><a href={phoneHref()} className="ul" style={{ color: 'inherit' }}>{COMPANY.phone}</a><br /></>}
               <a href={`mailto:${COMPANY.email}`} className="ul" style={{ color: 'inherit' }}>{COMPANY.email}</a>
             </p>
+            {socialLinks().length > 0 && (
+              <p style={{ fontSize: 13.5, lineHeight: 1.9, margin: '10px 0 0', display: 'flex', flexWrap: 'wrap', gap: '0 14px' }}>
+                {socialLinks().map(s => (
+                  <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer me" className="ul" style={{ color: 'var(--muted)' }}>{s.name}</a>
+                ))}
+              </p>
+            )}
           </div>
         </div>
 
