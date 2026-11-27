@@ -37,7 +37,7 @@ function GoogleG() {
   )
 }
 
-export default function AccountStep({ submitLabel, loggedInLabel, onAuthed, onBack, googleNext, onBeforeGoogle }: {
+export default function AccountStep({ submitLabel, loggedInLabel, onAuthed, onBack, googleNext, onBeforeGoogle, compact }: {
   submitLabel: string
   /** Text des Knopfs, wenn schon angemeldet (Standard: submitLabel) */
   loggedInLabel?: string
@@ -48,6 +48,8 @@ export default function AccountStep({ submitLabel, loggedInLabel, onAuthed, onBa
   googleNext?: string
   /** Wird direkt vor der Weiterleitung zu Google aufgerufen (z. B. um Eingaben zu sichern). */
   onBeforeGoogle?: () => void
+  /** Kurze Registrierung (QR-Code aus dem Brief): nur E-Mail und Passwort, kein Telefon. */
+  compact?: boolean
 }) {
   const [mode, setMode] = useState<Mode>('register')
   const [user, setUser] = useState<User | null>(null)
@@ -145,11 +147,11 @@ export default function AccountStep({ submitLabel, loggedInLabel, onAuthed, onBa
               <label style={labelSt} htmlFor="acc-email">E-Mail</label>
               <input id="acc-email" type="email" style={field} value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" placeholder="name@firma.de" />
             </div>
-            <div style={{ visibility: mode === 'register' ? 'visible' : 'hidden' }}>
+            {compact ? <div /> : <div style={{ visibility: mode === 'register' ? 'visible' : 'hidden' }}>
               <label style={labelSt} htmlFor="acc-phone">Telefon (optional)</label>
               <input id="acc-phone" type="tel" style={field} value={phone} onChange={e => setPhone(e.target.value)} autoComplete="tel" placeholder="+49 …" tabIndex={mode === 'register' ? 0 : -1} />
               <p style={{ fontSize: 12.5, margin: '6px 2px 0', color: 'var(--muted)' }}>Für Rückfragen zu Ihrem Bericht</p>
-            </div>
+            </div>}
           </div>
           <div className="ck-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
             <div>

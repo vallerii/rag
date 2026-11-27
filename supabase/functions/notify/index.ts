@@ -3,7 +3,7 @@
 //   Team:  neue Anfrage (Check, Paket, Fragebogen), Nachricht vom Kunden, Angebot angenommen.
 //          Ohne zugeteilten Ansprechpartner an alle Admins und Manager (profiles.role), sonst nur an den Ansprechpartner.
 //          TEAM_EMAIL ist nur die Reserve, falls es keine Admins/Manager mit E-Mail gibt.
-//   Kunde: Nachricht vom Team, Ansprechpartner zugeteilt, Bericht fertig, Angebot, Termin, Projektstatus, Rechnung.
+//   Kunde: Nachricht vom Team, Ansprechpartner zugeteilt, Bericht fertig, vollständige Analyse fertig (analysis_ready), Angebot, Termin, Projektstatus, Rechnung.
 // Chat-Nachrichten: höchstens eine E-Mail pro Empfänger in MESSAGE_PAUSE_MIN Minuten (Standard 15).
 // Automatische Begrüßungen (Trigger greet_new_*) lösen keine E-Mail aus.
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -125,6 +125,10 @@ async function mailsFor(a: Activity): Promise<Mail[]> {
         [`ab jetzt betreut ${name} Ihre Anfrage persönlich.`, 'Fragen können Sie jederzeit im Kundenbereich stellen.'], '', { kind: 'assigned', minutes: 60 })
       break
     }
+    case 'analysis_ready':
+      toClient('Ihre vollständige Analyse ist fertig', 'Ihre vollständige Analyse ist fertig',
+        ['wir haben die Analyse Ihres Unternehmens abgeschlossen: Google-Profil, Website, KI-Suche, Verzeichnisse und Social Media. Ihren vollständigen Bericht mit Empfehlungen finden Sie im Kundenbereich.'], '#report')
+      break
     case 'report_published':
       toClient('Ihr Bericht ist fertig', 'Die Analyse ist abgeschlossen',
         ['wir haben die Analyse Ihres Unternehmens abgeschlossen. Ihr Bericht mit Bewertung und Empfehlungen liegt im Kundenbereich.'], '#report')

@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "format": "oxfmt",
     "check:places": "node --experimental-strip-types --no-warnings scripts/check-places.ts",
-    "test:db": "node supabase/tests/db.test.mjs"
+    "test:db": "node supabase/tests/db.test.mjs",
+    "test:fn": "node --experimental-strip-types --no-warnings --test supabase/tests/leads.test.ts supabase/tests/grade.test.ts supabase/tests/manual.test.ts supabase/tests/mcp.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

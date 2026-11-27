@@ -111,6 +111,17 @@ export function sameCompany(name: string, hit: Suggestion, city?: string | null)
   return !c || hit.secondary.toLowerCase().includes(c)
 }
 
+/** Google Place ID zur Kartennummer (cid) aus einer Lead-Tabelle: eine Textsuche nach Name + Adresse,
+ *  nur der Treffer mit genau dieser Kartennummer zählt (googleMapsUri enthält «?cid=…»). Kein Treffer → null. */
+export async function placeIdByCid(key: string, cid: string, query: string): Promise<string | null> {
+  const data = await call<{ places?: { id: string; googleMapsUri?: string }[] }>(key, '/places:searchText', {
+    method: 'POST',
+    body: { textQuery: query, languageCode: LANG, regionCode: 'de', pageSize: 5, locationRestriction: { rectangle: DE } },
+  }, 'places.id,places.googleMapsUri')
+  const want = cid.replace(/^0+/, '')
+  return (data.places ?? []).find(p => /[?&]cid=(\d+)/.exec(p.googleMapsUri ?? '')?.[1]?.replace(/^0+/, '') === want)?.id ?? null
+}
+
 export async function placeRaw(key: string, id: string, full = false): Promise<GPlace> {
   return call<GPlace>(key, `/places/${encodeURIComponent(id)}?languageCode=${LANG}`, { method: 'GET' }, full ? MASK_AUDIT : MASK_CARD)
 }

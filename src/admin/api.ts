@@ -43,7 +43,7 @@ export type Kind = 'lead' | 'order' | 'check'
 export type Profile = { id: string; email: string | null; name: string | null; phone: string | null; role: string; created_at: string; title?: string | null; photo_url?: string | null; booking_url?: string | null }
 export type Lead = { id: string; created_at: string; from_page: string | null; answers: Record<string, unknown>; recommendations: string[]; booking_clicked_at: string | null; user_id: string | null; stage: Stage; next_contact_at: string | null; assignee_id: string | null }
 export type Order = { id: string; user_id: string; email: string | null; items: OfferItem[]; details: Record<string, unknown> | null; status: string; stage: Stage; next_contact_at: string | null; assignee_id: string | null; source_page: string | null; created_at: string }
-export type Check = { wish?: OfferItem[] | null; quiz?: Record<string, unknown> | null; scratch?: boolean; profile_hint?: string | null; from_prospect?: string | null; from_check?: string | null; id: string; user_id: string; email: string | null; place_id: string | null; place: Record<string, unknown>; sources: { key: string; value: string }[]; sources_confirmed: boolean; contact: Record<string, unknown>; status: string; report: unknown; report_draft: unknown; audit: unknown; audited_at: string | null; stage: Stage; next_contact_at: string | null; assignee_id: string | null; source_page: string | null; created_at: string }
+export type Check = { analysis_status?: 'lookup' | 'pending' | 'in_progress' | 'done' | 'none'; analysis_source?: 'check' | 'sheet' | 'grok' | 'manual' | null; analysis_at?: string | null; analysis_error?: string | null; wish?: OfferItem[] | null; quiz?: Record<string, unknown> | null; scratch?: boolean; profile_hint?: string | null; id: string; user_id: string; email: string | null; place_id: string | null; place: Record<string, unknown>; sources: { key: string; value: string }[]; sources_confirmed: boolean; contact: Record<string, unknown>; status: string; report: unknown; report_draft: unknown; audit: unknown; audited_at: string | null; stage: Stage; next_contact_at: string | null; assignee_id: string | null; source_page: string | null; created_at: string }
 export type Request = { kind: Kind; id: string; clientKey: string; userId: string | null; created_at: string; stage: Stage; next: string | null; assignee: string | null; title: string; sub: string; row: Lead | Order | Check; unanswered?: number; reportDue?: boolean }
 export type Message = { id: string; author: 'client' | 'rag'; body: string; created_at: string; read_at?: string | null }
 export type Note = { id: string; body: string; author_id: string | null; created_at: string }
@@ -80,7 +80,7 @@ const quiz = (l: Lead) => l.answers as { branche?: string; ort?: string; firma?:
 
 export async function loadAll(): Promise<{ requests: Request[]; profiles: Profile[] }> {
   const s = await db()
-  const checkCols = 'id, user_id, email, place_id, place, sources, sources_confirmed, contact, status, report, report_draft, audited_at, stage, next_contact_at, assignee_id, source_page, created_at, from_prospect:audit->>from_prospect, from_check:audit->>from_check'
+  const checkCols = 'id, user_id, email, place_id, place, sources, sources_confirmed, contact, status, report, report_draft, audited_at, stage, next_contact_at, assignee_id, source_page, created_at, analysis_status, analysis_source, analysis_at, analysis_error'
   const loadChecks = async () => {
     // Spalten aus supabase/flow.sql (Wunschpaket, Quiz, Start bei null) — ohne sie weiter funktionsfähig.
     const r = await s.from('checks').select(checkCols + ', wish, quiz, scratch, profile_hint').order('created_at', { ascending: false }).limit(500)
@@ -450,59 +450,113 @@ export async function setStaffNewPassword(password: string, totp?: string): Prom
   return 'Link abgelaufen oder ungültig. Fordern Sie einen neuen an.'
 }
 
-// ── Leads (potenzielle Kunden aus der Google-Tabelle) ───────────────────────
-export type ProspectStatus = 'new' | 'checking' | 'checked' | 'error' | 'printed' | 'responded' | 'hidden'
-export type Prospect = {
-  id: string; created_at: string; name: string; category: string | null; city: string | null; address: string | null; phone: string | null
-  website: string | null; maps_url: string | null; query: string | null; place_id: string | null; status: ProspectStatus; error: string | null
-  score: number | null; issues: { mark: 'ok' | 'warn' | 'bad'; text: string }[]; audited_at: string | null; printed_at: string | null
-  responded_at: string | null; check_id: string | null; code: string
-}
-const PROSPECT_COLS = 'id, created_at, name, category, city, address, phone, website, maps_url, query, place_id, status, error, score, issues, audited_at, printed_at, responded_at, check_id, code'
+// ── Tabellen der Leads (docs/lead-flow.md): Registerkarten, in denen RAG bei der Registrierung die Analyse sucht ──
+export type LeadSheet = { id: string; spreadsheet_id: string; gid: number; url: string; title: string | null; tab_title: string | null; active: boolean; row_count: number | null; last_read_at: string | null; last_error: string | null; created_at: string }
+export type SheetStats = { rows: number; analysed: number; analysed_without_key: number }
+export type SheetScan = { sheets: ((SheetStats & { id: string }) | { id: string; error: string })[]; duplicates: { sheet: string; tab: string; n: number; name: string; analysed: boolean }[][] }
+export type DuplicateCheck = { check_id: string; name: string; sheet: string; row_number: number | null; duplicates: { sheet: string; tab: string; row_number: number }[] }
 
-export async function loadProspects(): Promise<Prospect[] | null> {
-  const { data, error } = await (await db()).from('prospects').select(PROSPECT_COLS).order('created_at', { ascending: false }).limit(2000)
-  return error ? null : (data as Prospect[])
+export async function loadLeadSheets(): Promise<LeadSheet[] | null> {
+  const { data, error } = await (await db()).from('lead_sheets').select('*').order('created_at')
+  return error ? null : (data as LeadSheet[])
 }
-export async function updateProspects(ids: string[], patch: Partial<Prospect>): Promise<boolean> {
-  return !(await (await db()).from('prospects').update(patch).in('id', ids)).error
+export async function setLeadSheetActive(id: string, active: boolean): Promise<boolean> {
+  return !(await (await db()).from('lead_sheets').update({ active }).eq('id', id)).error
 }
-async function prospectsCall(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+export async function deleteLeadSheet(id: string): Promise<boolean> {
+  return !(await (await db()).from('lead_sheets').delete().eq('id', id)).error
+}
+/** Registrierte Firmen, die bei der Übernahme in mehreren Zeilen der Tabellen standen. */
+export async function loadDuplicateChecks(): Promise<DuplicateCheck[]> {
+  const { data } = await (await db()).from('check_analysis_private').select('check_id, sheet, row_number, duplicates, checks(place)')
+    .neq('duplicates', '[]').order('created_at', { ascending: false }).limit(100)
+  return ((data ?? []) as unknown as { check_id: string; sheet: { title?: string; tab_title?: string } | null; row_number: number | null; duplicates: DuplicateCheck['duplicates']; checks: { place?: { name?: string } } | null }[])
+    .map(r => ({ check_id: r.check_id, name: r.checks?.place?.name ?? '—', sheet: [r.sheet?.title, r.sheet?.tab_title].filter(Boolean).join(' / '), row_number: r.row_number, duplicates: r.duplicates ?? [] }))
+}
+async function leadSheetsCall(body: Record<string, unknown>): Promise<Record<string, unknown>> {
   const proxy = (import.meta.env.VITE_PLACES_PROXY as string | undefined)?.replace(/\/$/, '')
   if (!proxy) return { error: 'VITE_PLACES_PROXY ist nicht gesetzt' }
   const { data } = await (await db()).auth.getSession()
   const token = data.session?.access_token
   if (!token) return { error: 'Keine Sitzung' }
   try {
-    const res = await fetch(`${proxy}/prospects`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) })
+    const res = await fetch(`${proxy}/lead-sheets`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) })
     const j = await res.json().catch(() => ({})) as Record<string, unknown>
-    return res.ok ? j : { ...j, error: j.error ?? `HTTP ${res.status}` }
-  } catch (e) { return { error: e instanceof Error ? e.message : 'Netzwerkfehler' } }
+    if (res.ok) return j
+    if (res.status === 404 || res.status === 503 && !j.detail) return { error: 'Funktion «lead-sheets» ist nicht deployt.' }
+    return { error: String(j.detail ?? j.error ?? `HTTP ${res.status}`) }
+  } catch { return { error: 'Funktion «lead-sheets» ist nicht erreichbar.' } }
 }
-export async function importProspects(src: { csvUrl?: string; csv?: string }): Promise<{ added?: number; total?: number; error?: string }> {
-  const r = await prospectsCall({ action: 'import', ...src })
-  if (r.error) {
-    const e = String(r.error)
-    return { error: e === 'bad_url' ? 'Das ist kein Link auf eine veröffentlichte Google-Tabelle.' : e === 'not_csv' ? 'Unter dem Link liegt keine CSV-Datei: in Google Sheets «Im Web veröffentlichen» → Format «CSV» wählen.'
-      : e === 'no_name_column' ? 'In der Tabelle fehlt die Spalte «Firma» (oder «Компания»).' : /Failed to fetch|404|function/i.test(e) ? 'Funktion «prospects» ist nicht deployt.' : e }
+/** E-Mail des Dienstkontos, für das die Tabellen freigegeben werden; null = Secret fehlt. */
+export async function leadSheetsInfo(): Promise<string | null> {
+  const r = await leadSheetsCall({ action: 'info' })
+  return typeof r.email === 'string' ? r.email : null
+}
+type SheetResult = (SheetStats & { id: string; title: string; tab: string }) | { error: string }
+export async function addLeadSheet(url: string): Promise<SheetResult> {
+  const r = await leadSheetsCall({ action: 'add', url })
+  return r.error ? { error: String(r.error) } : (r as unknown as SheetResult)
+}
+export async function refreshLeadSheet(id: string): Promise<SheetResult> {
+  const r = await leadSheetsCall({ action: 'refresh', id })
+  return r.error ? { error: String(r.error) } : (r as unknown as SheetResult)
+}
+export async function scanLeadSheets(): Promise<SheetScan | { error: string }> {
+  const r = await leadSheetsCall({ action: 'scan' })
+  return r.error ? { error: String(r.error) } : (r as unknown as SheetScan)
+}
+export type AnalysisInfo = { source: string; sheet: { title?: string; tab_title?: string } | null; row_number: number | null; matched_by: string | null; row: Record<string, string> | null; duplicates: DuplicateCheck['duplicates']; from_check: string | null }
+/** Woher die Analyse einer Prüfung stammt (Tabelle, Zeile, Belege) — nur für das Team. */
+export async function loadAnalysisInfo(checkId: string): Promise<AnalysisInfo | null> {
+  const { data } = await (await db()).from('check_analysis_private').select('source, sheet, row_number, matched_by, row, duplicates, from_check').eq('check_id', checkId).maybeSingle()
+  return (data as AnalysisInfo | null) ?? null
+}
+// ── Analysen ohne fertige Zeile in den Lead-Tabellen (Plan B, Stichprobe) ──
+export type QueueRow = { id: string; name: string; city: string; created_at: string; analysis_status: string; analysis_source: string | null; analysis_error: string | null; analysis_at: string | null; analysis_taken_at: string | null; reviewed_at: string | null }
+export async function loadAnalysisQueue(): Promise<{ open: QueueRow[]; done: QueueRow[] }> {
+  const s = await db()
+  const cols = 'id, place, created_at, analysis_status, analysis_source, analysis_error, analysis_at, analysis_taken_at, reviewed_at'
+  const [o, d] = await Promise.all([
+    s.from('checks').select(cols).in('analysis_status', ['lookup', 'pending', 'in_progress']).order('created_at').limit(200),
+    s.from('checks').select(cols).eq('analysis_status', 'done').in('analysis_source', ['sheet', 'check', 'manual', 'grok']).order('analysis_tried_at', { ascending: false, nullsFirst: false }).limit(50),
+  ])
+  const map = (r: Record<string, unknown>): QueueRow => {
+    const p = (r.place ?? {}) as { name?: string; city?: string }
+    return { ...(r as unknown as QueueRow), name: p.name ?? '—', city: p.city ?? '' }
   }
-  return { added: Number(r.added ?? 0), total: Number(r.total ?? 0) }
+  return { open: (o.data ?? []).map(map), done: (d.data ?? []).map(map) }
 }
-export async function auditProspect(id: string): Promise<string> {
-  const r = await prospectsCall({ action: 'audit', id })
-  return String(r.status ?? r.error ?? 'error')
+async function fnCall(name: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const proxy = (import.meta.env.VITE_PLACES_PROXY as string | undefined)?.replace(/\/$/, '')
+  if (!proxy) return { error: 'VITE_PLACES_PROXY ist nicht gesetzt' }
+  const { data } = await (await db()).auth.getSession()
+  const token = data.session?.access_token
+  if (!token) return { error: 'Keine Sitzung' }
+  try {
+    const res = await fetch(`${proxy}/${name}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) })
+    const j = await res.json().catch(() => ({})) as Record<string, unknown>
+    if (res.ok) return j
+    if (res.status === 404 && !j.error) return { error: `Funktion «${name}» ist nicht deployt.` }
+    return { error: String(j.detail ?? j.error ?? `HTTP ${res.status}`) }
+  } catch { return { error: `Funktion «${name}» ist nicht erreichbar.` } }
 }
-export async function getSetting(key: string): Promise<string> {
-  const { data } = await (await db()).from('staff_settings').select('value').eq('key', key).maybeSingle()
-  return (data?.value as string | undefined) ?? ''
+export async function analysisTask(ids: string[]): Promise<{ text: string } | { error: string }> {
+  const r = await fnCall('analysis-queue', { action: 'task', ids })
+  return r.error ? { error: String(r.error) } : { text: String(r.text ?? '') }
 }
-export async function setSetting(key: string, value: string): Promise<boolean> {
-  return !(await (await db()).from('staff_settings').upsert({ key, value, updated_at: new Date().toISOString() })).error
+export async function saveAnalysisAnswer(text: string): Promise<{ saved: { id: string; ok: boolean; reason?: string }[]; errors: string[] } | { error: string }> {
+  const r = await fnCall('analysis-queue', { action: 'save', text })
+  return r.error ? { error: String(r.error) } : { saved: (r.saved ?? []) as { id: string; ok: boolean; reason?: string }[], errors: (r.errors ?? []) as string[] }
 }
-/** Лид с тем же Google-профилем (для отметки в карточке заявки). Нет таблицы или нет лида → null. */
-export async function prospectByPlace(placeId: string): Promise<Prospect | null> {
-  const { data } = await (await db()).from('prospects').select(PROSPECT_COLS).eq('place_id', placeId).order('created_at').limit(1)
-  return ((data ?? [])[0] as Prospect | undefined) ?? null
+export async function releaseAnalyses(ids: string[]): Promise<boolean> { return !(await fnCall('analysis-queue', { action: 'release', ids })).error }
+/** Fertige Analyse erneut in den Lead-Tabellen suchen (z. B. nachdem eine Tabelle freigegeben wurde). */
+export async function retryLookup(checkId: string): Promise<string> {
+  const r = await fnCall('analysis-lookup', { checkId, force: true })
+  if (r.error) return String(r.error)
+  return r.status === 'done' ? 'Analyse gefunden, Bericht veröffentlicht.' : r.status === 'retry' ? `Google Sheets antwortet nicht: ${r.detail ?? ''}` : 'Keine Zeile mit Analyse gefunden.'
+}
+export async function markReviewed(checkId: string, reviewed: boolean): Promise<boolean> {
+  return !(await (await db()).rpc('mark_analysis_reviewed', { p_check: checkId, p_reviewed: reviewed })).error
 }
 /** Angebot einer Anfrage (oder null). */
 export async function loadOfferFor(kind: Kind, id: string): Promise<Offer | null> {

@@ -20,6 +20,26 @@ verify_jwt = false
 [functions.notify]
 verify_jwt = false
 
-# Leads (nur Team): Import aus der Google-Tabelle + Kurzanalyse. Prüft die Sitzung selbst.
-[functions.prospects]
+# Fertige Analyse für eine neue Prüfung suchen (andere Prüfung, Tabellen der Leads). Prüft die Sitzung selbst.
+[functions.analysis-lookup]
+verify_jwt = false
+
+# Tabellen der Leads verbinden und auf Dubletten prüfen (nur Team). Prüft die Sitzung selbst.
+[functions.lead-sheets]
+verify_jwt = false
+
+# QR-Code aus dem Brief (/check?cid=…): Firma in den Lead-Tabellen — nur Name, Ort, Datum, Place ID. Bot-Schutz wie die Firmensuche.
+[functions.lead-preview]
+verify_jwt = false
+
+# Plan B: Aufgabe für die KI erstellen, Antwort speichern (nur Team). Prüft die Sitzung selbst.
+[functions.analysis-queue]
+verify_jwt = false
+
+# Zeitplan (supabase/cron.sql): Schutz über x-cron-secret.
+[functions.analysis-cron]
+verify_jwt = false
+
+# MCP-Server für Grok (docs/grok-mcp.md): Schutz über GROK_MCP_KEY (?key=… oder Bearer).
+[functions.grok-mcp]
 verify_jwt = false

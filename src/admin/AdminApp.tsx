@@ -3,14 +3,15 @@ import { tr } from '../i18n'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNoindex } from '../check/CheckPage'
 import {
-  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, addAppointment, deleteAppointment, loadAll, loadClient, loadMyProfile, setAppointmentStatus, loadTeam, myId, saveMyProfile, myAccount, changeMyEmail, changeMyPassword, prospectByPlace, markMessagesRead, type Prospect, sendStaffPasswordReset, hasRecoverySession, setStaffNewPassword,
+  OPEN, STAGES, acceptInvite, addNote, checkState, createInvite, currentEmail, getAssignee, isAdmin, isStaff, addAppointment, deleteAppointment, loadAll, loadClient, loadMyProfile, setAppointmentStatus, loadTeam, myId, saveMyProfile, myAccount, changeMyEmail, changeMyPassword, markMessagesRead, loadAnalysisInfo, type AnalysisInfo, sendStaffPasswordReset, hasRecoverySession, setStaffNewPassword,
   revokeInvite, saveOffer, saveProject, projectLabel, versionTotal, sendStaffMessage, setAssignee, setNextContact, setRole, setStage, signInPlain, signInStaff, mfaEnroll, mfaState, mfaVerify, signOutStaff, signUpStaff, stageLabel,
   type Invite, type Kind, type Project, type ProjectStatus, type ReportVersionRow,
   type Activity, type Appointment, type Check, type Lead, type Message, type Note, type Offer, type Order, type Profile, type Request, type Stage,
 } from './api'
 import ReportEditor from './ReportEditor'
-import Leads from './Leads'
 import OfferBuilder from './OfferBuilder'
+import LeadSheets from './LeadSheets'
+import Analyses from './Analyses'
 import { stopLive, useLive, useLiveStatus } from './live'
 import { CATALOG, totals, type OfferItem, type Unit } from './catalog'
 
@@ -160,9 +161,9 @@ function Login({ onDone }: { onDone: () => void }) {
 }
 
 // Разделы админки — отдельные адреса: работают «назад/вперёд», обновление страницы и ссылки.
-type View = 'requests' | 'leads' | 'team' | 'profile'
-const VIEW_PATH: Record<View, string> = { requests: '/rag-intern', leads: '/rag-intern/leads', team: '/rag-intern/team', profile: '/rag-intern/profil' }
-const viewFromPath = (): View => { const p = window.location.pathname; return /\/profil\/?$/.test(p) ? 'profile' : /\/team\/?$/.test(p) ? 'team' : /\/leads\/?$/.test(p) ? 'leads' : 'requests' }
+type View = 'requests' | 'analyses' | 'sheets' | 'team' | 'profile'
+const VIEW_PATH: Record<View, string> = { requests: '/rag-intern', analyses: '/rag-intern/analysen', sheets: '/rag-intern/leads', team: '/rag-intern/team', profile: '/rag-intern/profil' }
+const viewFromPath = (): View => { const p = window.location.pathname; return /\/profil\/?$/.test(p) ? 'profile' : /\/team\/?$/.test(p) ? 'team' : /\/leads\/?$/.test(p) ? 'sheets' : /\/analysen\/?$/.test(p) ? 'analyses' : 'requests' }
 
 function NavLink({ to, onGo, style, children }: { to: View; onGo: (v: View) => void; style?: React.CSSProperties; children: React.ReactNode }) {
   return (
@@ -247,7 +248,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           <NavLink to="requests" onGo={v => { go(v, false) }} style={{ fontWeight: 600, fontSize: 19, color: ink }}>RAG<span style={{ color: accent }}>.</span></NavLink>
           <nav style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             <NavLink to="requests" onGo={v => go(v, false)} style={navLink(view === 'requests')}>Anfragen</NavLink>
-            <NavLink to="leads" onGo={go} style={navLink(view === 'leads')}>Leads</NavLink>
+            <NavLink to="analyses" onGo={go} style={navLink(view === 'analyses')}>Analysen</NavLink>
+            <NavLink to="sheets" onGo={go} style={navLink(view === 'sheets')}>Lead-Tabellen</NavLink>
             {admin && <NavLink to="team" onGo={go} style={navLink(view === 'team')}>Team</NavLink>}
           </nav>
         </span>
@@ -258,7 +260,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           <button type="button" onClick={onLogout} style={{ ...linkBtn, color: ink }}>Abmelden</button>
         </span>
       </header>
-      {view === 'leads' ? <Leads onOpenRequest={key => { history.pushState(null, '', `${VIEW_PATH.requests}?r=${encodeURIComponent(key)}`); setView('requests'); setSel(key) }} /> : view === 'profile' ? <MyProfile /> : view === 'team' ? (admin ? <Team /> : <p style={{ padding: 20, color: muted }}>{admin === null ? 'Wird geladen…' : 'Nur für Admins.'}</p>)
+      {view === 'analyses' ? <Analyses onOpenRequest={key => { history.pushState(null, '', `${VIEW_PATH.requests}?r=${encodeURIComponent(key)}`); setView('requests'); setSel(key) }} /> : view === 'sheets' ? <LeadSheets onOpenRequest={key => { history.pushState(null, '', `${VIEW_PATH.requests}?r=${encodeURIComponent(key)}`); setView('requests'); setSel(key) }} /> : view === 'profile' ? <MyProfile /> : view === 'team' ? (admin ? <Team /> : <p style={{ padding: 20, color: muted }}>{admin === null ? 'Wird geladen…' : 'Nur für Admins.'}</p>)
         : sel ? (current && data
           ? <Detail key={sel} r={current} all={data.requests} profiles={data.profiles} me={me} onSelect={open} onBack={back} onPatch={p => patch(current, p)} />
           : <p style={{ padding: 24, color: muted }}>{data ? 'Anfrage nicht gefunden.' : 'Wird geladen…'} <button type="button" onClick={back} style={linkBtn}>← Alle Anfragen</button></p>)
@@ -330,6 +332,31 @@ function LiveBadge() {
   )
 }
 
+const MATCHED: Record<string, string> = { place: 'Google Place ID', cid: 'Google-Maps-Karte', web: 'Website', tel: 'Telefon', name: 'Name + PLZ' }
+const ANALYSIS: Record<string, string> = { lookup: 'Fertige Analyse wird gesucht', pending: 'Wartet auf Analyse (Grok / manuell)', in_progress: 'Analyse läuft (Grok)' }
+/** Herkunft der Analyse: Lead-Tabelle (Zeile, Schlüssel, Belege), andere Prüfung oder Warteschlange. */
+function AnalysisLine({ check, info, onSelect }: { check: Check; info: AnalysisInfo | null; onSelect: (key: string) => void }) {
+  const s = check.analysis_status
+  if (!s || s === 'none') return null
+  const date = check.analysis_at ? new Date(check.analysis_at).toLocaleDateString('ru-RU') : null
+  const belege = info?.row ? Object.entries(info.row).find(([h]) => /^belege$/i.test(h.trim()))?.[1] : null
+  return (
+    <div style={{ display: 'grid', gap: 4, padding: '10px 14px', borderRadius: 12, backgroundColor: s === 'done' ? '#F2FAF5' : '#FFF8EC', border: `1px solid ${s === 'done' ? '#CDEBD8' : '#F1DDB8'}`, fontSize: 13.5 }}>
+      {s !== 'done' ? <span><strong>{ANALYSIS[s] ?? s}</strong>{check.analysis_error && <> · <span>{check.analysis_error}</span></>}</span> : (
+        <span>
+          <strong>Analyse ohne Manager veröffentlicht</strong>
+          {check.analysis_source === 'sheet' && info?.sheet && <> · <span>aus der Tabelle</span> <span data-no-translate>{info.sheet.title} / {info.sheet.tab_title}</span>, <span>Zeile</span> <span>{info.row_number}</span></>}
+          {check.analysis_source === 'check' && info?.from_check && <> · <button type="button" onClick={() => onSelect(`check:${info.from_check}`)} style={{ ...linkBtn, fontSize: 13.5 }}>aus einer anderen Prüfung dieser Firma</button></>}
+          {info?.matched_by && <> · <span>gefunden über</span> <span>{MATCHED[info.matched_by] ?? info.matched_by}</span></>}
+          {date && <> · <span>geprüft am</span> <span>{date}</span></>}
+        </span>
+      )}
+      {!!info?.duplicates?.length && <span style={{ color: '#8A4B00' }}><span>Dublette: auch in</span> {info.duplicates.map((d, i) => <span key={i}>{i ? '; ' : ''}<span data-no-translate>{d.sheet} / {d.tab}</span>, <span>Zeile</span> <span>{d.row_number}</span></span>)}</span>}
+      {belege && <details><summary style={{ cursor: 'pointer', color: accent, fontWeight: 600 }}>Belege (nur Team)</summary><pre data-no-translate style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 13, margin: '6px 0 0' }}>{belege}</pre></details>}
+    </div>
+  )
+}
+
 function Detail({ r, all, profiles, me, onSelect, onBack, onPatch }: { r: Request; all: Request[]; profiles: Profile[]; me: string | null; onSelect: (k: string) => void; onBack: () => void; onPatch: (p: Partial<Request>) => void }) {
   const staff = profiles.filter(p => p.role === 'admin' || p.role === 'manager')
   const prof = profileOf(profiles, r.userId)
@@ -349,12 +376,12 @@ function Detail({ r, all, profiles, me, onSelect, onBack, onPatch }: { r: Reques
   const changeAssignee = async (uid: string | null) => { if (await setAssignee(r.kind, r.id, uid)) { onPatch({ assignee: uid }); reloadClient() } }
   const changeNext = async (d: string) => { if (await setNextContact(r.kind, r.id, d)) onPatch({ next: d || null }) }
 
-  // Та же компания в других местах: лид (письмо) и проверки других клиентов.
+  // Та же компания у других клиентов.
   const placeId = r.kind === 'check' ? (r.row as Check).place_id : null
   const samePlace = placeId ? all.filter(x => x.kind === 'check' && x.id !== r.id && (x.row as Check).place_id === placeId) : []
-  const [lead, setLead] = useState<Prospect | null>(null)
-  useEffect(() => { setLead(null); if (placeId && !placeId.startsWith('manual:')) prospectByPlace(placeId).then(setLead).catch(() => {}) }, [placeId])
-  const fromLead = r.kind === 'check' && !!(r.row as Check).from_prospect
+  const ck = r.kind === 'check' ? (r.row as Check) : null
+  const [info, setInfo] = useState<AnalysisInfo | null>(null)
+  useEffect(() => { setInfo(null); if (ck && ck.analysis_status === 'done') loadAnalysisInfo(ck.id).then(setInfo).catch(() => {}) }, [ck?.id, ck?.analysis_status]) // eslint-disable-line react-hooks/exhaustive-deps
   type Tab = 'reports' | 'offer' | 'appointments' | 'project'
   const [tab, setTab] = useState<Tab | null>(null)
   const [panel, setPanel] = useState<'' | 'chat' | 'notes' | 'history' | 'client'>('')
@@ -421,16 +448,9 @@ function Detail({ r, all, profiles, me, onSelect, onBack, onPatch }: { r: Reques
           {me && r.assignee !== me && <button type="button" className="btn btn-sm btn-outline-light" onClick={() => changeAssignee(me)}>Übernehmen</button>}
         </div>
         {r.assignee && r.assignee !== me && <p style={{ ...small, margin: 0, color: '#B26B00' }}>Die Anfrage betreut {staffName(profiles, r.assignee)}.</p>}
-        {(lead || samePlace.length > 0) && (
+        {ck && <AnalysisLine check={ck} info={info} onSelect={onSelect} />}
+        {samePlace.length > 0 && (
           <div style={{ display: 'grid', gap: 4, padding: '10px 14px', borderRadius: 12, backgroundColor: '#F2FAF5', border: '1px solid #CDEBD8', fontSize: 13.5 }}>
-            {lead && (
-              <span>
-                <strong>War ein Lead</strong>{lead.printed_at ? <> · Brief gedruckt {new Date(lead.printed_at).toLocaleDateString('ru-RU')}</> : null}
-                {' · Code '}<span data-no-translate>{lead.code}</span>{lead.score !== null ? <> · Kurzanalyse {lead.score}/100</> : null}
-                {fromLead && <> · Analyse aus dem Lead übernommen, keine neuen Google-Abfragen</>}
-              </span>
-            )}
-            {!lead && r.kind === 'check' && (r.row as Check).from_check && <span>Analyse aus einer anderen Prüfung dieses Unternehmens übernommen, keine neuen Google-Abfragen</span>}
             {samePlace.length > 0 && (
               <span>Dieses Unternehmen hat noch {samePlace.length === 1 ? 'eine weitere Prüfung' : `${samePlace.length} weitere Prüfungen`}:{' '}
                 {samePlace.map(x => <button key={x.id} type="button" onClick={() => onSelect(`check:${x.id}`)} style={{ ...linkBtn, fontSize: 13.5, marginRight: 10 }}>{(x.row as Check).email ?? x.title} · {fmt(x.created_at)}</button>)}

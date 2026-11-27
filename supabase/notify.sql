@@ -20,6 +20,7 @@
 --      select vault.create_secret('<derselbe Zufallswert wie NOTIFY_SECRET>', 'notify_secret');
 -- 5) Diese Datei im SQL Editor ausführen (wiederholbar).
 -- Abschalten: drop trigger activity_notify on public.activity;
+-- Ab 26.11.2026 (Lead-Flow): nach dem Update dieser Datei erneut ausführen (Ausnahme für vom System veröffentlichte Berichte).
 
 create extension if not exists pg_net with schema extensions;
 
@@ -45,6 +46,9 @@ create or replace function public.notify_activity() returns trigger
 language plpgsql security definer set search_path = public, extensions as $$
 declare v_url text; v_secret text;
 begin
+  -- Bericht hat das System sofort veröffentlicht (analysis.sql → publish_system_report): der Kunde sieht ihn schon,
+  -- keine E-Mail «Ihr Bericht ist fertig».
+  if current_setting('rag.silent', true) = 'on' and new.kind in ('report_published', 'report_version') then return new; end if;
   select decrypted_secret into v_url from vault.decrypted_secrets where name = 'notify_url';
   select decrypted_secret into v_secret from vault.decrypted_secrets where name = 'notify_secret';
   if v_url is null or v_secret is null then return new; end if;

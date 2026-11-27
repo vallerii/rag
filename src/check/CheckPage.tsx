@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import CompanySearch from './CompanySearch'
 import {
-  SOURCE_LABELS, SOURCE_ORDER, createCheck, placeFromCode, discoverSources, findMyCheck, getCompany, loadMyChecks, manualPlace, newSessionToken, searchCompanies,
+  SOURCE_LABELS, SOURCE_ORDER, createCheck, discoverSources, findMyCheck, getCompany, leadPreview, loadMyChecks, markAuditStarted, runAuditNow, type LeadPreview, manualPlace, newSessionToken, searchCompanies,
   type Contact, type Place, type Source, type SourceKey, type Suggestion,
 } from './data'
 import AccountStep from './AccountStep'
@@ -74,6 +74,9 @@ function StepHead({ title, sub }: { n?: string; title: string; sub?: string }) {
     </>
   )
 }
+
+/** «2026-11-11» → «11.11.2026» */
+const deDate = (iso: string) => { const [y, m, d] = iso.slice(0, 10).split('-'); return y && m && d ? `${d}.${m}.${y}` : iso }
 
 function Spinner({ label }: { label: string }) {
   return (
@@ -214,19 +217,23 @@ export default function CheckPage() {
   useNoindex('Kostenloser Sichtbarkeits-Check | RAG')
   const params = new URLSearchParams(window.location.search)
   const initialPlace = params.get('place')
-  // Code aus dem Brief (QR-Code / Link): /check?c=ABC123 → Unternehmen ist schon ausgewählt.
-  const briefCode = (params.get('c') ?? '').trim().toUpperCase()
   // Brief aus der Lead-CRM: /check?place=<place_id>&ref=<Code> → Herkunft «crm-<Code>» in der Anfrage.
   const crmRef = (params.get('ref') ?? '').trim().replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64)
+  // QR-Code aus dem Brief: /check?cid=<Google-Kartennummer>&ref=<Code> → fertige Analyse liegt vor, kurzer Zugang (docs/lead-flow.md).
+  const leadCid = (params.get('cid') ?? '').replace(/\D/g, '').slice(0, 25)
   const initialQ = params.get('q') ?? ''
   const returning = params.get('step') === '3'
   // Von der Startseite über «Mein Unternehmen ist nicht in der Liste»: Formular sofort offen, keine neue Google-Suche.
   const [manualMode, setManualMode] = useState(params.get('manual') === '1')
 
-  const [step, setStep] = useState<Step>(initialPlace || briefCode ? (returning ? 'account' : 'review') : 'find')
+  const [step, setStep] = useState<Step>(leadCid ? 'account' : initialPlace ? (returning ? 'account' : 'review') : 'find')
   const [place, setPlace] = useState<Place | null>(null)
-  const [loadingPlace, setLoadingPlace] = useState(!!initialPlace || !!briefCode)
+  const [loadingPlace, setLoadingPlace] = useState(!!initialPlace || !!leadCid)
   const [notFound, setNotFound] = useState(false)
+  // Firma aus der Lead-Tabelle (QR-Code). null = normaler Ablauf.
+  const [lead, setLead] = useState<LeadPreview | null>(null)
+  // Nach der Registrierung: Bericht wird geladen (aus der vorhandenen Analyse, nicht neu geprüft).
+  const [loadingReport, setLoadingReport] = useState(false)
   // Website + Social-Profile werden im Hintergrund gesucht. Bestätigt werden sie in Schritt 2.
   const discovery = useRef<Promise<Source[]> | null>(null)
   const [found, setFound] = useState<Source[] | null>(null)
@@ -297,13 +304,25 @@ export default function CheckPage() {
   // Zurück zur Suche (z. B. «Ändern» oder «Zurück» in Schritt 2).
   const backToFind = () => {
     const sp = new URLSearchParams(window.location.search)
-    sp.delete('place'); sp.delete('step')
+    sp.delete('place'); sp.delete('step'); sp.delete('cid'); setLead(null)
     if (query) sp.set('q', query)
     history.replaceState(null, '', `/check?${sp.toString()}`)
     setStep('find')
   }
 
   useEffect(() => {
+    if (leadCid) {
+      // Zeile in den Lead-Tabellen suchen. Gefunden → Firmenkarte + kurzer Zugang. Sonst normale Suche nach Name und Ort.
+      leadPreview(leadCid).then(p => {
+        const id = initialPlace || p?.placeId
+        if (p?.found) setLead(p)
+        if (p?.found && id) { loadPlace(id, 'account'); return }
+        setLoadingPlace(false)
+        const q = p?.found ? [p.name, p.city].filter(Boolean).join(' ') : initialQ
+        if (q) newSearch(q); else setStep('find')
+      })
+      return
+    }
     if (initialPlace) {
       // Manuell eingetragene Firma (ohne Google-Profil) lässt sich nicht von Google neu laden → aus dem Browser übernehmen.
       const kept = restoreRef.current?.place
@@ -312,8 +331,6 @@ export default function CheckPage() {
       } else {
         loadPlace(initialPlace, returning ? 'account' : 'review')
       }
-    } else if (briefCode) {
-      placeFromCode(briefCode).then(id => { if (id) loadPlace(id); else { setLoadingPlace(false); setStep('find') } })
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { topRef.current?.scrollIntoView({ block: 'start' }) }, [step])
@@ -341,9 +358,14 @@ export default function CheckPage() {
     // Anmeldung = Bestätigung der Quellen: die Analyse startet sofort (Kundenbereich ruft audit-collect auf).
     const id = await createCheck({
       place: withPhone(place), region: `${place.city} + 30 km`, sources: found.length ? found : empty, contact, confirmed: true,
-      sourcePage: params.get('from') ?? (crmRef ? `crm-${crmRef}` : briefCode ? `brief-${briefCode}` : null),
+      sourcePage: params.get('from') ?? (crmRef ? `crm-${crmRef}` : null),
     })
     if (!id) return 'Das Speichern hat nicht geklappt. Bitte versuchen Sie es noch einmal.'
+    // QR-Code aus dem Brief: die Analyse liegt schon vor — Bericht laden (höchstens 45 s), dann direkt in den Kundenbereich.
+    if (lead) {
+      setLoadingReport(true); markAuditStarted(id)
+      await runAuditNow(id)
+    }
     // Neues Konto (gerade angelegt) → Begrüßung; bestehendes Konto → Hinweis «weitere Firma hinzugefügt».
     const fresh = Date.now() - new Date(user.created_at).getTime() < 15 * 60 * 1000 && !hadChecks
     window.location.href = `/kabinett?firma=${id}&${fresh ? 'welcome=1' : 'neu=1'}`
@@ -424,7 +446,7 @@ export default function CheckPage() {
                 Ihr Unternehmen ist noch nicht bei Google?{' '}
                 <a href="/start?from=check" className="ul" style={{ color: 'var(--electric)', fontWeight: 600 }}>Beantworten Sie 4 kurze Fragen →</a>
               </p>
-              <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: '18px 0 0' }}>Kostenlos und unverbindlich. Den Bericht prüft ein Mensch aus unserem Team, nicht nur ein Tool.</p>
+              <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--muted)', margin: '18px 0 0' }}>Kostenlos und unverbindlich. Erste Ergebnisse sehen Sie sofort, den vollständigen Bericht erhalten Sie innerhalb von 24 Stunden.</p>
             </>
           )}
 
@@ -447,9 +469,31 @@ export default function CheckPage() {
               </div>
               <p style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.55, margin: '12px 0 0' }}>Die vollständige Prüfung zeigt: Ihren Platz bei Google Maps im Vergleich zu Wettbewerbern, ob ChatGPT, Perplexity und Gemini Sie empfehlen, die Technik und Smartphone-Geschwindigkeit Ihrer Website sowie Ihre Bewertungen und Einträge in wichtigen Verzeichnissen.</p>
             </>
+          ) : step === 'account' && lead ? (
+            loadingReport ? (
+              <div role="status">
+                <h1 className="display" style={{ fontSize: 'clamp(24px, 2.6vw, 32px)', lineHeight: 1.08, margin: '0 0 14px' }}>Ihr Bericht wird geladen</h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0 6px', fontSize: 15 }}>
+                  <span className="ck-spin" aria-hidden="true" />
+                  {lead.date ? <span><span>Wir laden Ihre Analyse vom</span> <span>{deDate(lead.date)}</span>.</span> : <span>Wir laden Ihre Analyse.</span>}
+                </div>
+                <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--muted)', margin: '8px 0 0' }}>Ihr Unternehmen wurde bereits geprüft. Das dauert nur einen Moment.</p>
+              </div>
+            ) : (
+              <>
+                <h1 className="display" style={{ fontSize: 'clamp(24px, 2.6vw, 32px)', lineHeight: 1.08, margin: '0 0 10px' }}>Ihre Analyse ist fertig</h1>
+                <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--muted)', margin: '0 0 18px' }}>
+                  <span>Diese Firma haben wir bereits geprüft:</span> <strong style={{ color: 'var(--ink)' }}>{lead.name}</strong>
+                  {lead.date && <> <span>(Stand:</span> <span>{deDate(lead.date)})</span></>}. <span>Legen Sie Ihren Zugang an, dann sehen Sie den vollständigen Bericht sofort.</span>
+                </p>
+                <SelectedCompany place={place} loading={loadingPlace} onChange={backToFind} />
+                <AccountStep compact submitLabel="Bericht ansehen" loggedInLabel="Bericht ansehen" onAuthed={createAndGo}
+                  googleNext={googleNext} onBeforeGoogle={keepDraftForGoogle} />
+              </>
+            )
           ) : step === 'account' ? (
             <>
-              <StepHead n="Schritt 3 von 3" title="Ihr Kundenbereich" sub="In Ihrem Kundenbereich sehen Sie den Stand der Analyse und Ihren Bericht: wo Sie bei Google Maps stehen, wie Sie im Vergleich zu Wettbewerbern dastehen und was Sie an Ihrer Website verbessern können. Der Bericht ist in der Regel innerhalb von 1 Werktag fertig." />
+              <StepHead n="Schritt 3 von 3" title="Ihr Kundenbereich" sub="In Ihrem Kundenbereich sehen Sie den Stand der Analyse und Ihren Bericht: wo Sie bei Google Maps stehen, wie Sie im Vergleich zu Wettbewerbern dastehen und was Sie an Ihrer Website verbessern können. Erste Ergebnisse sehen Sie sofort, den vollständigen Bericht innerhalb von 24 Stunden." />
               <AccountStep submitLabel="Analyse starten" loggedInLabel="Analyse starten" onAuthed={createAndGo} onBack={() => setStep('review')}
                 googleNext={googleNext} onBeforeGoogle={keepDraftForGoogle} />
             </>
