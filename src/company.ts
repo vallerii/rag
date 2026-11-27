@@ -36,7 +36,7 @@ export const COMPANY = {
   /** Eigene Social-Media-Profile — erscheinen im Footer und in JSON-LD `sameAs`. Leere Einträge werden ausgelassen. */
   social: [
     { name: 'Instagram', url: 'https://www.instagram.com/orts.fuchs/' },
-    { name: 'Facebook', url: 'https://www.facebook.com/profile.php?id=61596663525827' },
+    { name: 'Facebook', url: 'https://www.facebook.com/profile.php?id=61597231551328' },
     { name: 'Threads', url: 'https://www.threads.com/@orts.fuchs' },
     { name: 'LinkedIn', url: '' },
   ],
